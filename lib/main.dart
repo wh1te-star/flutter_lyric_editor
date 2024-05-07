@@ -35,7 +35,6 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   @override
   void initState() {
     super.initState();
-    // Initialize other state variables here if needed
   }
 
   @override
@@ -74,33 +73,31 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
           children: <Widget>[
             Container(
               height: bottomPaneHeight,
-              child: Expanded(
-                child: Row(
-                  children: <Widget>[
-                    Container(
-                      width: leftPaneWidth,
-                      color: Colors.blue,
-                      child: Center(child: Text('Left Pane')),
+              child: Row(
+                children: <Widget>[
+                  Container(
+                    width: leftPaneWidth,
+                    color: Colors.blue,
+                    child: Center(child: Text('Left Pane')),
+                  ),
+                  GestureDetector(
+                    onHorizontalDragUpdate: (details) {
+                      setState(() {
+                        leftPaneWidth += details.delta.dx;
+                      });
+                    },
+                    child: Container(
+                      width: horizontalBorderWidth,
+                      color: Colors.grey,
                     ),
-                    GestureDetector(
-                      onHorizontalDragUpdate: (details) {
-                        setState(() {
-                          leftPaneWidth += details.delta.dx;
-                        });
-                      },
-                      child: Container(
-                        width: horizontalBorderWidth,
-                        color: Colors.grey,
-                      ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      color: Colors.green,
+                      child: Center(child: Text('Right Pane')),
                     ),
-                    Expanded(
-                      child: Container(
-                        color: Colors.green,
-                        child: Center(child: Text('Right Pane')),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             GestureDetector(
