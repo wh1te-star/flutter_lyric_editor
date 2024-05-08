@@ -47,7 +47,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     leftPaneWidth = screenWidth / 2.0;
     bottomPaneHeight = screenHeight / 2.0;
 
-    player.play(AssetSource('01 SF.mp3'));
+    player.play(AssetSource('01 鬼願抄.mp3'));
     player.onPlayerStateChanged.listen((state) {
       switch (state) {
         case PlayerState.playing:
