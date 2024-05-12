@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'music_player_service.dart';
 import 'video_pane.dart';
 import 'text_pane.dart';
 import 'adjustable_pane_border.dart';
@@ -33,25 +34,14 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   double leftPaneWidth = 100;
   double bottomPaneHeight = 100;
 
-  AudioPlayer player = AudioPlayer();
+  MusicPlayerService musicPlayerService = MusicPlayerService();
 
   @override
   void initState() {
     super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    screenWidth = 1000.0; //MediaQuery.of(context).size.width;
-    screenHeight = 1000.0; //MediaQuery.of(context).size.height;
-    exactWidth = screenWidth * MediaQuery.of(context).devicePixelRatio;
-    exactHeight = screenHeight * MediaQuery.of(context).devicePixelRatio;
-    leftPaneWidth = screenWidth / 2.0;
-    bottomPaneHeight = screenHeight / 2.0;
-
-    player.play(AssetSource('01 鬼願抄.mp3'));
-    player.onPlayerStateChanged.listen((state) {
+    musicPlayerService.play(AssetSource('01 鬼願抄.mp3'));
+    /*
+    musicPlayerService.playerStateStream.listen((state) {
       switch (state) {
         case PlayerState.playing:
           print("Playing...");
@@ -66,6 +56,18 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
           print("Unknown state");
       }
     });
+    */
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    screenWidth = 1000.0; //MediaQuery.of(context).size.width;
+    screenHeight = 1000.0; //MediaQuery.of(context).size.height;
+    exactWidth = screenWidth * MediaQuery.of(context).devicePixelRatio;
+    exactHeight = screenHeight * MediaQuery.of(context).devicePixelRatio;
+    leftPaneWidth = screenWidth / 2.0;
+    bottomPaneHeight = screenHeight / 2.0;
   }
 
   @override
