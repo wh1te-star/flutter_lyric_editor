@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'video_pane.dart';
+import 'text_pane.dart';
+import 'adjustable_pane_border.dart';
 
 void main() => runApp(MyApp());
 
@@ -75,42 +78,33 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
               height: bottomPaneHeight,
               child: Row(
                 children: <Widget>[
-                  Container(
-                    width: leftPaneWidth,
-                    color: Colors.blue,
-                    child: Center(child: Text('Left Pane')),
-                  ),
-                  GestureDetector(
-                    onHorizontalDragUpdate: (details) {
-                      setState(() {
-                        leftPaneWidth += details.delta.dx;
-                      });
-                    },
-                    child: Container(
-                      width: horizontalBorderWidth,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      color: Colors.green,
-                      child: Center(child: Text('Right Pane')),
-                    ),
-                  ),
+                  Container(width: leftPaneWidth, child: VideoPane()),
+                  AdjustablePaneBorder(
+                      child: Container(
+                        width: horizontalBorderWidth,
+                        color: Colors.grey,
+                      ),
+                      onHorizontalDragUpdate: (details) {
+                        setState(() {
+                          leftPaneWidth += details.delta.dx;
+                        });
+                      },
+                      onVerticalDragUpdate: (details) {}),
+                  Expanded(child: TextPane()),
                 ],
               ),
             ),
-            GestureDetector(
-              onVerticalDragUpdate: (details) {
-                setState(() {
-                  bottomPaneHeight += details.delta.dy;
-                });
-              },
-              child: Container(
-                height: verticalBorderHeight,
-                color: Colors.grey,
-              ),
-            ),
+            AdjustablePaneBorder(
+                child: Container(
+                  height: verticalBorderHeight,
+                  color: Colors.grey,
+                ),
+                onHorizontalDragUpdate: (details) {},
+                onVerticalDragUpdate: (details) {
+                  setState(() {
+                    bottomPaneHeight += details.delta.dy;
+                  });
+                }),
             Expanded(
               child: Container(
                 color: Colors.red,
