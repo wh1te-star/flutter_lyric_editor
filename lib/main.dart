@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'music_player_service.dart';
 import 'video_pane.dart';
 import 'text_pane.dart';
@@ -41,23 +40,6 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     super.initState();
     musicPlayerService.initAudio('01 鬼願抄.mp3');
     musicPlayerService.play();
-    /*
-    musicPlayerService.playerStateStream.listen((state) {
-      switch (state) {
-        case PlayerState.playing:
-          print("Playing...");
-          break;
-        case PlayerState.paused:
-          print("Paused");
-          break;
-        case PlayerState.completed:
-          print("Completed");
-          break;
-        default:
-          print("Unknown state");
-      }
-    });
-    */
   }
 
   @override

@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:lyric_editor/media_control_interface.dart';
 import 'package:flutter/foundation.dart';
