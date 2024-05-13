@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:lyric_editor/media_control_interface.dart';
+import 'package:flutter/foundation.dart';
 
 class MusicPlayerService implements MediaControlInterface {
   AudioPlayer player = AudioPlayer();
@@ -15,12 +16,12 @@ class MusicPlayerService implements MediaControlInterface {
 
   @override
   void onPlayPause() {
-    print("Play/Pause button tapped in music_player_service.dart");
+    debugPrint("Play/Pause button tapped in music_player_service.dart");
     if (player.state == PlayerState.playing) {
-      print("playing");
+      debugPrint("playing");
       player.pause();
     } else {
-      print("stopping");
+      debugPrint("stopping");
       player.resume();
     }
   }

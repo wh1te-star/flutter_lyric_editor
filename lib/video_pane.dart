@@ -10,7 +10,7 @@ class VideoPane extends StatelessWidget implements MediaControlInterface {
   @override
   void onPlayPause() {
     musicPlayerService.onPlayPause();
-    print("Play/Pause button tapped in the video_pane.dart");
+    debugPrint("Play/Pause button tapped in the video_pane.dart");
   }
 
   @override
