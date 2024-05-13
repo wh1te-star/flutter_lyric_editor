@@ -39,7 +39,8 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   @override
   void initState() {
     super.initState();
-    musicPlayerService.play(AssetSource('01 鬼願抄.mp3'));
+    musicPlayerService.initAudio('01 鬼願抄.mp3');
+    musicPlayerService.play();
     /*
     musicPlayerService.playerStateStream.listen((state) {
       switch (state) {
@@ -80,7 +81,9 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
               height: bottomPaneHeight,
               child: Row(
                 children: <Widget>[
-                  Container(width: leftPaneWidth, child: VideoPane()),
+                  Container(
+                      width: leftPaneWidth,
+                      child: VideoPane(musicPlayerService: musicPlayerService)),
                   AdjustablePaneBorder(
                       child: Container(
                         width: horizontalBorderWidth,
