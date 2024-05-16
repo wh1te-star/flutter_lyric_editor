@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'music_player_service.dart';
 import 'video_pane.dart';
 import 'text_pane.dart';
+import 'timeline_pane.dart';
 import 'adjustable_pane_border.dart';
 
 void main() => runApp(MyApp());
@@ -34,6 +35,9 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   double bottomPaneHeight = 100;
 
   MusicPlayerService musicPlayerService = MusicPlayerService();
+  VideoPane videoPane = VideoPane();
+  TextPane textPane = TextPane();
+  TimelinePane timelinePane = TimelinePane();
 
   @override
   void initState() {
@@ -63,9 +67,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
               height: bottomPaneHeight,
               child: Row(
                 children: <Widget>[
-                  Container(
-                      width: leftPaneWidth,
-                      child: VideoPane(musicPlayerService: musicPlayerService)),
+                  Container(width: leftPaneWidth, child: videoPane),
                   AdjustablePaneBorder(
                       child: Container(
                         width: horizontalBorderWidth,
@@ -77,7 +79,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
                         });
                       },
                       onVerticalDragUpdate: (details) {}),
-                  Expanded(child: TextPane()),
+                  Expanded(child: textPane),
                 ],
               ),
             ),
@@ -93,10 +95,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
                   });
                 }),
             Expanded(
-              child: Container(
-                color: Colors.red,
-                child: Center(child: Text('bottom Pane')),
-              ),
+              child: timelinePane,
             ),
           ],
         );

@@ -1,20 +1,42 @@
 import 'package:flutter/material.dart';
 import 'media_control_interface.dart';
-import 'music_player_service.dart';
 
-class VideoPane extends StatelessWidget implements MediaControlInterface {
-  final MusicPlayerService musicPlayerService;
+class VideoPane extends StatefulWidget {
+  @override
+  _VideoPaneState createState() => _VideoPaneState();
+}
 
-  VideoPane({required this.musicPlayerService});
+class _VideoPaneState extends State<VideoPane>
+    implements MediaControlInterface {
+  bool isPlaying = true;
+  String time = "";
+  String defaultText = "Video Pane";
 
   @override
   void onPlayPause() {
-    musicPlayerService.onPlayPause();
+    if (isPlaying == false) {
+      isPlaying = true;
+    } else {
+      isPlaying = false;
+    }
+    updateString();
     debugPrint("Play/Pause button tapped in the video_pane.dart");
   }
 
   @override
   void onChangeColor() {}
+
+  void updateString() {
+    String newText;
+    if (isPlaying) {
+      newText = "Playing, $time";
+    } else {
+      newText = "Stopping, $time";
+    }
+    setState(() {
+      defaultText = newText;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +46,7 @@ class VideoPane extends StatelessWidget implements MediaControlInterface {
       },
       child: Container(
         color: Colors.blue,
-        child: Center(child: Text('Left Pane')),
+        child: Center(child: Text(defaultText)),
       ),
     );
   }
