@@ -1,9 +1,8 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:lyric_editor/media_control_interface.dart';
 import 'package:flutter/foundation.dart';
 
-class MusicPlayerService implements MediaControlInterface {
+class MusicPlayerService {
   final PublishSubject<dynamic> masterSubject;
 
   MusicPlayerService({required this.masterSubject}) {
@@ -31,14 +30,6 @@ class MusicPlayerService implements MediaControlInterface {
   void play() {
     player.play(audioFile);
   }
-
-  @override
-  void onPlayPause() {
-    debugPrint("Play/Pause button tapped in music_player_service.dart");
-  }
-
-  @override
-  void onChangeColor() {}
 
   void setVolume(double volume) {
     player.setVolume(volume);
