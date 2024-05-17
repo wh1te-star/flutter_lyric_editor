@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rxdart/rxdart.dart';
 import 'music_player_service.dart';
 import 'video_pane.dart';
 import 'text_pane.dart';
@@ -34,14 +35,21 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   double leftPaneWidth = 100;
   double bottomPaneHeight = 100;
 
-  MusicPlayerService musicPlayerService = MusicPlayerService();
-  VideoPane videoPane = VideoPane();
-  TextPane textPane = TextPane();
-  TimelinePane timelinePane = TimelinePane();
+  final masterSubject = PublishSubject<dynamic>();
+  late MusicPlayerService musicPlayerService;
+  late VideoPane videoPane;
+  late TextPane textPane;
+  late TimelinePane timelinePane;
 
   @override
   void initState() {
     super.initState();
+
+    musicPlayerService = MusicPlayerService(masterSubject: masterSubject);
+    videoPane = VideoPane(masterSubject: masterSubject);
+    textPane = TextPane(masterSubject: masterSubject);
+    timelinePane = TimelinePane(masterSubject: masterSubject);
+
     musicPlayerService.initAudio('01 鬼願抄.mp3');
     musicPlayerService.play();
   }

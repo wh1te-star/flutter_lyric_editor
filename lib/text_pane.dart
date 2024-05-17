@@ -1,38 +1,42 @@
 import 'package:flutter/material.dart';
-import 'media_control_interface.dart';
+import 'package:rxdart/rxdart.dart';
 
 class TextPane extends StatefulWidget {
+  final PublishSubject<dynamic> masterSubject;
+
+  TextPane({required this.masterSubject}) : super(key: Key('TextPane'));
+
   @override
-  _TextPaneState createState() => _TextPaneState();
+  _TextPaneState createState() => _TextPaneState(masterSubject);
 }
 
-class _TextPaneState extends State<TextPane> implements MediaControlInterface {
+class _TextPaneState extends State<TextPane> {
+  final PublishSubject<dynamic> masterSubject;
+  _TextPaneState(this.masterSubject);
+
+  @override
+  void initState() {
+    super.initState();
+    masterSubject.stream.listen((signal) {
+      if (signal['type'] == 'play') {
+        updateString();
+        print('TextPane: Handling play signal');
+      }
+    });
+  }
+
   bool isPlaying = true;
   String time = "";
   String defaultText = "Text Pane";
 
-  @override
-  void onPlayPause() {
-    if (isPlaying == false) {
-      isPlaying = true;
-    } else {
-      isPlaying = false;
-    }
-    updateString();
-    debugPrint("Play/Pause button tapped in the video_pane.dart");
-  }
-
-  @override
-  void onChangeColor() {
-    debugPrint("Play/Pause button tapped in the text_pane.dart");
-  }
-
   void updateString() {
     String newText;
     if (isPlaying) {
-      newText = "Playing, $time";
-    } else {
+      isPlaying = false;
       newText = "Stopping, $time";
+    } else {
+      isPlaying = true;
+      newText = "Playing, $time";
     }
     setState(() {
       defaultText = newText;
@@ -43,7 +47,12 @@ class _TextPaneState extends State<TextPane> implements MediaControlInterface {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        onPlayPause();
+        print('TextPane: Tapped');
+        masterSubject.add({
+          'sender': 'TextPane',
+          'type': 'play',
+          'data': 'Tapped from TextPane'
+        });
       },
       child: Container(
         color: Colors.green,

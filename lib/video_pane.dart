@@ -1,37 +1,42 @@
 import 'package:flutter/material.dart';
-import 'media_control_interface.dart';
+import 'package:rxdart/rxdart.dart';
 
 class VideoPane extends StatefulWidget {
+  final PublishSubject<dynamic> masterSubject;
+
+  VideoPane({required this.masterSubject}) : super(key: Key('VideoPane'));
+
   @override
-  _VideoPaneState createState() => _VideoPaneState();
+  _VideoPaneState createState() => _VideoPaneState(masterSubject);
 }
 
-class _VideoPaneState extends State<VideoPane>
-    implements MediaControlInterface {
+class _VideoPaneState extends State<VideoPane> {
+  final PublishSubject<dynamic> masterSubject;
+  _VideoPaneState(this.masterSubject);
+
+  @override
+  void initState() {
+    super.initState();
+    masterSubject.stream.listen((signal) {
+      if (signal['type'] == 'play') {
+        updateString();
+        print('VideoPane: Handling play signal');
+      }
+    });
+  }
+
   bool isPlaying = true;
   String time = "";
   String defaultText = "Video Pane";
 
-  @override
-  void onPlayPause() {
-    if (isPlaying == false) {
-      isPlaying = true;
-    } else {
-      isPlaying = false;
-    }
-    updateString();
-    debugPrint("Play/Pause button tapped in the video_pane.dart");
-  }
-
-  @override
-  void onChangeColor() {}
-
   void updateString() {
     String newText;
     if (isPlaying) {
-      newText = "Playing, $time";
-    } else {
+      isPlaying = false;
       newText = "Stopping, $time";
+    } else {
+      isPlaying = true;
+      newText = "Playing, $time";
     }
     setState(() {
       defaultText = newText;
@@ -42,7 +47,12 @@ class _VideoPaneState extends State<VideoPane>
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        onPlayPause();
+        print('VideoPane: Tapped');
+        masterSubject.add({
+          'sender': 'VideoPane',
+          'type': 'play',
+          'data': 'Tapped from VideoPane'
+        });
       },
       child: Container(
         color: Colors.blue,
