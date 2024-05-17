@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
+import 'signal_structure.dart';
 
 class TextPane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
@@ -18,9 +19,8 @@ class _TextPaneState extends State<TextPane> {
   void initState() {
     super.initState();
     masterSubject.stream.listen((signal) {
-      if (signal['type'] == 'play') {
-        updateString();
-        print('TextPane: Handling play signal');
+      if (signal is RespondGetIsPlaying) {
+        updateString(signal.isPlaying);
       }
     });
   }
@@ -29,7 +29,7 @@ class _TextPaneState extends State<TextPane> {
   String time = "";
   String defaultText = "Text Pane";
 
-  void updateString() {
+  void updateString(bool isPlaying) {
     String newText;
     if (isPlaying) {
       isPlaying = false;

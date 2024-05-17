@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lyric_editor/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
 
 class VideoPane extends StatefulWidget {
@@ -18,9 +19,8 @@ class _VideoPaneState extends State<VideoPane> {
   void initState() {
     super.initState();
     masterSubject.stream.listen((signal) {
-      if (signal['type'] == 'play') {
-        updateString();
-        print('VideoPane: Handling play signal');
+      if (signal is RespondGetIsPlaying) {
+        updateString(signal.isPlaying);
       }
     });
   }
@@ -29,7 +29,7 @@ class _VideoPaneState extends State<VideoPane> {
   String time = "";
   String defaultText = "Video Pane";
 
-  void updateString() {
+  void updateString(bool isPlaying) {
     String newText;
     if (isPlaying) {
       isPlaying = false;
@@ -47,12 +47,8 @@ class _VideoPaneState extends State<VideoPane> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        print('VideoPane: Tapped');
-        masterSubject.add({
-          'sender': 'VideoPane',
-          'type': 'play',
-          'data': 'Tapped from VideoPane'
-        });
+        masterSubject.add(RequestGetIsPlaying());
+        masterSubject.add(RequestPlayPause());
       },
       child: Container(
         color: Colors.blue,
