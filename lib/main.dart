@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
+import 'appbar_menu.dart';
 import 'music_player_service.dart';
 import 'video_pane.dart';
 import 'text_pane.dart';
@@ -13,6 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+        appBar: buildAppBarWithMenu(context),
         body: AdjustablePaneLayout(),
       ),
     );
