@@ -14,29 +14,45 @@ class TextPane extends StatefulWidget {
 class _TextPaneState extends State<TextPane> {
   final PublishSubject<dynamic> masterSubject;
   _TextPaneState(this.masterSubject);
+  bool isPlaying = true;
+  int time = 0;
 
   @override
   void initState() {
     super.initState();
     masterSubject.stream.listen((signal) {
       if (signal is NotifyIsPlaying) {
-        updateString(signal.isPlaying);
+        isPlaying = signal.isPlaying;
       }
+      if (signal is NotifySeekPosition) {
+        time = signal.seekPosition;
+      }
+      updateString(isPlaying, time);
     });
   }
 
-  bool isPlaying = true;
-  String time = "";
   String defaultText = "Text Pane";
 
-  void updateString(bool isPlaying) {
+  String formatMillisec(int inMillisecFormat) {
+    int hours = inMillisecFormat ~/ Duration.millisecondsPerHour;
+    int minutes = inMillisecFormat ~/ Duration.millisecondsPerMinute;
+    int seconds = inMillisecFormat ~/ Duration.millisecondsPerSecond;
+    int millisec = inMillisecFormat % Duration.millisecondsPerSecond;
+
+    String formattedHours = hours.toString().padLeft(2, '0');
+    String formattedMinutes = minutes.toString().padLeft(2, '0');
+    String formattedSeconds = seconds.toString().padLeft(2, '0');
+    String formattedMillisec = millisec.toString().padLeft(3, '0');
+
+    return "$formattedHours:$formattedMinutes:$formattedSeconds.$formattedMillisec";
+  }
+
+  void updateString(bool isPlaying, int timeMillisec) {
     String newText;
     if (isPlaying) {
-      isPlaying = false;
-      newText = "Stopping, $time";
+      newText = "Playing, ${formatMillisec(timeMillisec)}";
     } else {
-      isPlaying = true;
-      newText = "Playing, $time";
+      newText = "Stopping, ${formatMillisec(timeMillisec)}";
     }
     setState(() {
       defaultText = newText;
@@ -47,15 +63,10 @@ class _TextPaneState extends State<TextPane> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        print('TextPane: Tapped');
-        masterSubject.add({
-          'sender': 'TextPane',
-          'type': 'play',
-          'data': 'Tapped from TextPane'
-        });
+        masterSubject.add(RequestPlayPause());
       },
       child: Container(
-        color: Colors.green,
+        color: Colors.blue,
         child: Center(child: Text(defaultText)),
       ),
     );

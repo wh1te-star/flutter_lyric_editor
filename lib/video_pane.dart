@@ -66,7 +66,7 @@ class _VideoPaneState extends State<VideoPane> {
         masterSubject.add(RequestPlayPause());
       },
       child: Container(
-        color: Colors.blue,
+        color: Colors.green,
         child: Center(child: Text(defaultText)),
       ),
     );
