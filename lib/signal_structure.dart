@@ -1,8 +1,11 @@
 class RequestPlayPause {}
 
-class RequestGetIsPlaying {}
+class NotifyIsPlaying {
+  bool isPlaying;
+  NotifyIsPlaying(this.isPlaying);
+}
 
-class RespondGetIsPlaying {
-  final bool isPlaying;
-  RespondGetIsPlaying(this.isPlaying);
+class NotifySeekPosition {
+  int seekPosition;
+  NotifySeekPosition(this.seekPosition);
 }

@@ -19,7 +19,7 @@ class _TextPaneState extends State<TextPane> {
   void initState() {
     super.initState();
     masterSubject.stream.listen((signal) {
-      if (signal is RespondGetIsPlaying) {
+      if (signal is NotifyIsPlaying) {
         updateString(signal.isPlaying);
       }
     });
