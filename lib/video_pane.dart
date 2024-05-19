@@ -61,14 +61,88 @@ class _VideoPaneState extends State<VideoPane> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        masterSubject.add(RequestPlayPause());
-      },
-      child: Container(
-        color: Colors.green,
-        child: Center(child: Text(defaultText)),
-      ),
+    return Column(
+      children: <Widget>[
+        Flexible(
+          child: GestureDetector(
+            onTap: () {
+              masterSubject.add(RequestPlayPause());
+            },
+            child: Container(
+              color: Colors.green,
+              child: Center(child: Text(defaultText)),
+            ),
+          ),
+        ),
+        Container(
+          height: 30,
+          color: Colors.yellow,
+          child: Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                playbackSpeedWidget,
+                volumeControlWidget,
+                playbackControlWidget,
+                seekPositionWidget,
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
+
+  Widget playbackSpeedWidget = Row(children: [
+    const Text('Volume: 1.000'),
+    IconButton(
+      icon: const Icon(Icons.volume_down),
+      onPressed: () {},
+    ),
+    IconButton(
+      icon: const Icon(Icons.volume_up),
+      onPressed: () {},
+    ),
+  ]);
+  Widget volumeControlWidget = Row(children: [
+    const Text('Playback Speed: ×1.0'),
+    IconButton(
+      icon: const Icon(Icons.arrow_left),
+      onPressed: () {},
+    ),
+    IconButton(
+      icon: const Icon(Icons.arrow_right),
+      onPressed: () {},
+    ),
+  ]);
+  Widget playbackControlWidget = Row(children: [
+    IconButton(
+      icon: const Icon(Icons.arrow_left),
+      onPressed: () {},
+    ),
+    IconButton(
+      icon: const Icon(Icons.arrow_right),
+      onPressed: () {},
+    ),
+    IconButton(
+      icon: const Icon(Icons.arrow_right),
+      onPressed: () {},
+    ),
+  ]);
+  Widget seekPositionWidget = Row(children: [
+    const Text('Seek Position: 01:23:45.678'),
+    IconButton(
+      icon: const Icon(Icons.arrow_left),
+      onPressed: () {},
+    ),
+    Slider(
+      value: 50,
+      min: 0,
+      max: 100,
+      divisions: 5,
+      label: "50",
+      onChanged: (double newValue) {},
+    ),
+  ]);
 }

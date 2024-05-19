@@ -87,7 +87,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     screenHeight = 1000.0; //MediaQuery.of(context).size.height;
     exactWidth = screenWidth * MediaQuery.of(context).devicePixelRatio;
     exactHeight = screenHeight * MediaQuery.of(context).devicePixelRatio;
-    leftPaneWidth = screenWidth / 2.0;
+    leftPaneWidth = screenWidth;
     bottomPaneHeight = screenHeight / 2.0;
   }
 
