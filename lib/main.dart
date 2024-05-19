@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
 import 'appbar_menu.dart';
 import 'music_player_service.dart';
@@ -13,13 +14,28 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: buildAppBarWithMenu(context),
-        body: AdjustablePaneLayout(),
+      home: Shortcuts(
+        shortcuts: {
+          LogicalKeySet(LogicalKeyboardKey.space): ActivateIntent(),
+        },
+        child: Actions(
+          actions: {
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (ActivateIntent intent) =>
+                  debugPrint('Shortcut is pressed.'),
+            ),
+          },
+          child: Scaffold(
+            appBar: buildAppBarWithMenu(context),
+            body: AdjustablePaneLayout(),
+          ),
+        ),
       ),
     );
   }
 }
+
+class ActivateIntent extends Intent {}
 
 class AdjustablePaneLayout extends StatefulWidget {
   @override
