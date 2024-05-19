@@ -42,6 +42,8 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   late VideoPane videoPane;
   late TextPane textPane;
   late TimelinePane timelinePane;
+  late AdjustablePaneBorder videoTextBorder;
+  late AdjustablePaneBorder upperTimelineBorder;
 
   @override
   void initState() {
@@ -51,6 +53,28 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     videoPane = VideoPane(masterSubject: masterSubject);
     textPane = TextPane(masterSubject: masterSubject);
     timelinePane = TimelinePane(masterSubject: masterSubject);
+    videoTextBorder = AdjustablePaneBorder(
+        child: Container(
+          width: horizontalBorderWidth,
+          color: Colors.grey,
+        ),
+        onHorizontalDragUpdate: (details) {
+          setState(() {
+            leftPaneWidth += details.delta.dx;
+          });
+        },
+        onVerticalDragUpdate: (details) {});
+    upperTimelineBorder = AdjustablePaneBorder(
+        child: Container(
+          height: verticalBorderHeight,
+          color: Colors.grey,
+        ),
+        onHorizontalDragUpdate: (details) {},
+        onVerticalDragUpdate: (details) {
+          setState(() {
+            bottomPaneHeight += details.delta.dy;
+          });
+        });
 
     musicPlayerService.initAudio('01 鬼願抄.mp3');
     musicPlayerService.play();
@@ -78,32 +102,12 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
               child: Row(
                 children: <Widget>[
                   Container(width: leftPaneWidth, child: videoPane),
-                  AdjustablePaneBorder(
-                      child: Container(
-                        width: horizontalBorderWidth,
-                        color: Colors.grey,
-                      ),
-                      onHorizontalDragUpdate: (details) {
-                        setState(() {
-                          leftPaneWidth += details.delta.dx;
-                        });
-                      },
-                      onVerticalDragUpdate: (details) {}),
+                  videoTextBorder,
                   Expanded(child: textPane),
                 ],
               ),
             ),
-            AdjustablePaneBorder(
-                child: Container(
-                  height: verticalBorderHeight,
-                  color: Colors.grey,
-                ),
-                onHorizontalDragUpdate: (details) {},
-                onVerticalDragUpdate: (details) {
-                  setState(() {
-                    bottomPaneHeight += details.delta.dy;
-                  });
-                }),
+            upperTimelineBorder,
             Expanded(
               child: timelinePane,
             ),
