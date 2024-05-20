@@ -60,14 +60,18 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     videoPaneFocusNode = FocusNode();
     textPaneFocusNode = FocusNode();
     timelinePaneFocusNode = FocusNode();
-    videoPane =
-        VideoPane(masterSubject: masterSubject, focusNode: videoPaneFocusNode);
+    videoPane = VideoPane(
+      masterSubject: masterSubject,
+      focusNode: videoPaneFocusNode,
+    );
     textPane = TextPane(
       masterSubject: masterSubject,
       focusNode: textPaneFocusNode,
     );
     timelinePane = TimelinePane(
-        masterSubject: masterSubject, focusNode: timelinePaneFocusNode);
+      masterSubject: masterSubject,
+      focusNode: timelinePaneFocusNode,
+    );
     videoTextBorder = AdjustablePaneBorder(
         child: Container(
           width: horizontalBorderWidth,
@@ -110,14 +114,22 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   Widget build(BuildContext context) {
     return Shortcuts(
       shortcuts: {
-        LogicalKeySet(LogicalKeyboardKey.space): ActivateIntent(),
+        LogicalKeySet(LogicalKeyboardKey.space): ActivatePlayPauseIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.arrowLeft):
+            ActivateRewindIntent(),
       },
       child: Actions(
         actions: {
-          ActivateIntent: CallbackAction<ActivateIntent>(
-            onInvoke: (ActivateIntent intent) => () {
-              debugPrint('Shortcut is pressed.');
+          ActivatePlayPauseIntent: CallbackAction<ActivatePlayPauseIntent>(
+            onInvoke: (ActivatePlayPauseIntent intent) => () {
+              debugPrint('Space key is pressed.');
               masterSubject.add(RequestPlayPause());
+            }(),
+          ),
+          ActivateRewindIntent: CallbackAction<ActivateRewindIntent>(
+            onInvoke: (ActivateRewindIntent intent) => () {
+              debugPrint('Ctrl + Left Arrow is pressed.');
+              masterSubject.add(RequestRewind(10000));
             }(),
           ),
         },
@@ -147,3 +159,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     );
   }
 }
+
+class ActivatePlayPauseIntent extends Intent {}
+
+class ActivateRewindIntent extends Intent {}

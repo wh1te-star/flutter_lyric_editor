@@ -28,7 +28,21 @@ class MusicPlayerService {
           player.resume();
         }
       }
+      if (signal is RequestRewind) {
+        rewind(signal.millisec);
+      }
     });
+  }
+
+  void rewind(int millisec) async {
+    var currentPosition = await player.getCurrentPosition();
+    if (currentPosition != null) {
+      Duration newPosition = currentPosition - Duration(milliseconds: millisec);
+      if (newPosition.inMilliseconds < 0) {
+        newPosition = Duration.zero;
+      }
+      player.seek(newPosition);
+    }
   }
 
   void initAudio(String audioPath) {
