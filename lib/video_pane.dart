@@ -73,7 +73,7 @@ class _VideoPaneState extends State<VideoPane> {
               onTap: () {
                 masterSubject.add(RequestPlayPause());
                 focusNode.requestFocus();
-                debugPrint("focus");
+                debugPrint("The video pane is focused");
               },
               child: Container(
                 color: Colors.green,

@@ -4,16 +4,19 @@ import 'signal_structure.dart';
 
 class TextPane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
+  final FocusNode focusNode;
 
-  TextPane({required this.masterSubject}) : super(key: Key('TextPane'));
+  TextPane({required this.masterSubject, required this.focusNode})
+      : super(key: Key('TextPane'));
 
   @override
-  _TextPaneState createState() => _TextPaneState(masterSubject);
+  _TextPaneState createState() => _TextPaneState(masterSubject, focusNode);
 }
 
 class _TextPaneState extends State<TextPane> {
   final PublishSubject<dynamic> masterSubject;
-  _TextPaneState(this.masterSubject);
+  final FocusNode focusNode;
+  _TextPaneState(this.masterSubject, this.focusNode);
   bool isPlaying = true;
   int time = 0;
 
@@ -64,6 +67,8 @@ class _TextPaneState extends State<TextPane> {
     return GestureDetector(
       onTap: () {
         masterSubject.add(RequestPlayPause());
+        focusNode.requestFocus();
+        debugPrint("The text pane is focused");
       },
       child: Container(
         color: Colors.blue,

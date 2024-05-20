@@ -44,6 +44,8 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   final masterSubject = PublishSubject<dynamic>();
   late MusicPlayerService musicPlayerService;
   late FocusNode videoPaneFocusNode;
+  late FocusNode textPaneFocusNode;
+  late FocusNode timelinePaneFocusNode;
   late VideoPane videoPane;
   late TextPane textPane;
   late TimelinePane timelinePane;
@@ -56,10 +58,16 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
 
     musicPlayerService = MusicPlayerService(masterSubject: masterSubject);
     videoPaneFocusNode = FocusNode();
+    textPaneFocusNode = FocusNode();
+    timelinePaneFocusNode = FocusNode();
     videoPane =
         VideoPane(masterSubject: masterSubject, focusNode: videoPaneFocusNode);
-    textPane = TextPane(masterSubject: masterSubject);
-    timelinePane = TimelinePane(masterSubject: masterSubject);
+    textPane = TextPane(
+      masterSubject: masterSubject,
+      focusNode: textPaneFocusNode,
+    );
+    timelinePane = TimelinePane(
+        masterSubject: masterSubject, focusNode: timelinePaneFocusNode);
     videoTextBorder = AdjustablePaneBorder(
         child: Container(
           width: horizontalBorderWidth,

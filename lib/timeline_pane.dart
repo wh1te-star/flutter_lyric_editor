@@ -4,16 +4,20 @@ import 'signal_structure.dart';
 
 class TimelinePane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
+  final FocusNode focusNode;
 
-  TimelinePane({required this.masterSubject}) : super(key: Key('TimelinePane'));
+  TimelinePane({required this.masterSubject, required this.focusNode})
+      : super(key: Key('TimelinePane'));
 
   @override
-  _TimelinePaneState createState() => _TimelinePaneState(masterSubject);
+  _TimelinePaneState createState() =>
+      _TimelinePaneState(masterSubject, focusNode);
 }
 
 class _TimelinePaneState extends State<TimelinePane> {
   final PublishSubject<dynamic> masterSubject;
-  _TimelinePaneState(this.masterSubject);
+  final FocusNode focusNode;
+  _TimelinePaneState(this.masterSubject, this.focusNode);
   bool isPlaying = true;
   int time = 0;
 
@@ -64,6 +68,8 @@ class _TimelinePaneState extends State<TimelinePane> {
     return GestureDetector(
       onTap: () {
         masterSubject.add(RequestPlayPause());
+        focusNode.requestFocus();
+        debugPrint("The timeline pane is focused");
       },
       child: Container(
         color: Colors.red,
