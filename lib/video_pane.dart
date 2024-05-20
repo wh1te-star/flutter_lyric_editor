@@ -4,16 +4,19 @@ import 'package:rxdart/rxdart.dart';
 
 class VideoPane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
+  final FocusNode focusNode;
 
-  VideoPane({required this.masterSubject}) : super(key: Key('VideoPane'));
+  VideoPane({required this.masterSubject, required this.focusNode})
+      : super(key: Key('VideoPane'));
 
   @override
-  _VideoPaneState createState() => _VideoPaneState(masterSubject);
+  _VideoPaneState createState() => _VideoPaneState(masterSubject, focusNode);
 }
 
 class _VideoPaneState extends State<VideoPane> {
   final PublishSubject<dynamic> masterSubject;
-  _VideoPaneState(this.masterSubject);
+  final FocusNode focusNode;
+  _VideoPaneState(this.masterSubject, this.focusNode);
   bool isPlaying = true;
   int time = 0;
 
@@ -61,36 +64,41 @@ class _VideoPaneState extends State<VideoPane> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Flexible(
-          child: GestureDetector(
-            onTap: () {
-              masterSubject.add(RequestPlayPause());
-            },
-            child: Container(
-              color: Colors.green,
-              child: Center(child: Text(defaultText)),
+    return Focus(
+      focusNode: focusNode,
+      child: Column(
+        children: <Widget>[
+          Flexible(
+            child: GestureDetector(
+              onTap: () {
+                masterSubject.add(RequestPlayPause());
+                focusNode.requestFocus();
+                debugPrint("focus");
+              },
+              child: Container(
+                color: Colors.green,
+                child: Center(child: Text(defaultText)),
+              ),
             ),
           ),
-        ),
-        Container(
-          height: 30,
-          color: Colors.yellow,
-          child: Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                playbackSpeedWidget,
-                volumeControlWidget,
-                playbackControlWidget,
-                seekPositionWidget,
-              ],
+          Container(
+            height: 30,
+            color: Colors.yellow,
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  playbackSpeedWidget,
+                  volumeControlWidget,
+                  playbackControlWidget,
+                  seekPositionWidget,
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

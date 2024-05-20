@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lyric_editor/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
 import 'appbar_menu.dart';
 import 'music_player_service.dart';
@@ -14,22 +15,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Shortcuts(
-        shortcuts: {
-          LogicalKeySet(LogicalKeyboardKey.space): ActivateIntent(),
-        },
-        child: Actions(
-          actions: {
-            ActivateIntent: CallbackAction<ActivateIntent>(
-              onInvoke: (ActivateIntent intent) =>
-                  debugPrint('Shortcut is pressed.'),
-            ),
-          },
-          child: Scaffold(
-            appBar: buildAppBarWithMenu(context),
-            body: AdjustablePaneLayout(),
-          ),
-        ),
+      home: Scaffold(
+        appBar: buildAppBarWithMenu(context),
+        body: AdjustablePaneLayout(),
       ),
     );
   }
@@ -55,6 +43,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
 
   final masterSubject = PublishSubject<dynamic>();
   late MusicPlayerService musicPlayerService;
+  late FocusNode videoPaneFocusNode;
   late VideoPane videoPane;
   late TextPane textPane;
   late TimelinePane timelinePane;
@@ -66,7 +55,9 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     super.initState();
 
     musicPlayerService = MusicPlayerService(masterSubject: masterSubject);
-    videoPane = VideoPane(masterSubject: masterSubject);
+    videoPaneFocusNode = FocusNode();
+    videoPane =
+        VideoPane(masterSubject: masterSubject, focusNode: videoPaneFocusNode);
     textPane = TextPane(masterSubject: masterSubject);
     timelinePane = TimelinePane(masterSubject: masterSubject);
     videoTextBorder = AdjustablePaneBorder(
@@ -109,27 +100,42 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        return Column(
-          children: <Widget>[
-            Container(
-              height: bottomPaneHeight,
-              child: Row(
-                children: <Widget>[
-                  Container(width: leftPaneWidth, child: videoPane),
-                  videoTextBorder,
-                  Expanded(child: textPane),
-                ],
-              ),
-            ),
-            upperTimelineBorder,
-            Expanded(
-              child: timelinePane,
-            ),
-          ],
-        );
+    return Shortcuts(
+      shortcuts: {
+        LogicalKeySet(LogicalKeyboardKey.space): ActivateIntent(),
       },
+      child: Actions(
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (ActivateIntent intent) => () {
+              debugPrint('Shortcut is pressed.');
+              masterSubject.add(RequestPlayPause());
+            }(),
+          ),
+        },
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            return Column(
+              children: <Widget>[
+                Container(
+                  height: bottomPaneHeight,
+                  child: Row(
+                    children: <Widget>[
+                      Container(width: leftPaneWidth, child: videoPane),
+                      videoTextBorder,
+                      Expanded(child: textPane),
+                    ],
+                  ),
+                ),
+                upperTimelineBorder,
+                Expanded(
+                  child: timelinePane,
+                ),
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 }
