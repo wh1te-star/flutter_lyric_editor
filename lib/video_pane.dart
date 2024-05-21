@@ -102,7 +102,7 @@ class _VideoPaneState extends State<VideoPane> {
     );
   }
 
-  Widget playbackSpeedWidget = Row(children: [
+  Widget volumeControlWidget = Row(children: [
     const Text('Volume: 1.000'),
     IconButton(
       icon: const Icon(Icons.volume_down),
@@ -113,7 +113,7 @@ class _VideoPaneState extends State<VideoPane> {
       onPressed: () {},
     ),
   ]);
-  Widget volumeControlWidget = Row(children: [
+  Widget playbackSpeedWidget = Row(children: [
     const Text('Playback Speed: ×1.0'),
     IconButton(
       icon: const Icon(Icons.arrow_left),

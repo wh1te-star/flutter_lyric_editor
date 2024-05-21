@@ -45,6 +45,18 @@ class MusicPlayerService {
     }
   }
 
+  void forward(int millisec) async {
+    var currentPosition = await player.getCurrentPosition();
+    var musicDuration = await player.getDuration();
+    if (currentPosition != null && musicDuration != null) {
+      Duration newPosition = currentPosition + Duration(milliseconds: millisec);
+      if (newPosition.inMilliseconds > musicDuration.inMilliseconds) {
+        newPosition = musicDuration;
+      }
+      player.seek(newPosition);
+    }
+  }
+
   void initAudio(String audioPath) {
     audioFile = AssetSource(audioPath);
   }
