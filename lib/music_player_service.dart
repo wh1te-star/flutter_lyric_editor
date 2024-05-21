@@ -31,6 +31,9 @@ class MusicPlayerService {
       if (signal is RequestRewind) {
         rewind(signal.millisec);
       }
+      if (signal is RequestForward) {
+        forward(signal.millisec);
+      }
     });
   }
 

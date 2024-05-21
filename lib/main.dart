@@ -115,21 +115,48 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     return Shortcuts(
       shortcuts: {
         LogicalKeySet(LogicalKeyboardKey.space): ActivatePlayPauseIntent(),
-        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.arrowLeft):
-            ActivateRewindIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyH): ActivateRewindIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyL): ActivateForwardIntent(),
+        LogicalKeySet(LogicalKeyboardKey.arrowLeft): ActivateSpeedDownIntent(),
+        LogicalKeySet(LogicalKeyboardKey.arrowRight): ActivateSpeedUpIntent(),
+        LogicalKeySet(LogicalKeyboardKey.arrowUp): ActivateVolumeUpIntent(),
+        LogicalKeySet(LogicalKeyboardKey.arrowDown): ActivateVolumeDownIntent(),
       },
       child: Actions(
         actions: {
           ActivatePlayPauseIntent: CallbackAction<ActivatePlayPauseIntent>(
             onInvoke: (ActivatePlayPauseIntent intent) => () {
-              debugPrint('Space key is pressed.');
               masterSubject.add(RequestPlayPause());
             }(),
           ),
           ActivateRewindIntent: CallbackAction<ActivateRewindIntent>(
             onInvoke: (ActivateRewindIntent intent) => () {
-              debugPrint('Ctrl + Left Arrow is pressed.');
-              masterSubject.add(RequestRewind(10000));
+              masterSubject.add(RequestRewind(1000));
+            }(),
+          ),
+          ActivateForwardIntent: CallbackAction<ActivateForwardIntent>(
+            onInvoke: (ActivateForwardIntent intent) => () {
+              masterSubject.add(RequestForward(1000));
+            }(),
+          ),
+          ActivateVolumeUpIntent: CallbackAction<ActivateVolumeUpIntent>(
+            onInvoke: (ActivateVolumeUpIntent intent) => () {
+              masterSubject.add(RequestVolumeUp(1000));
+            }(),
+          ),
+          ActivateVolumeDownIntent: CallbackAction<ActivateVolumeDownIntent>(
+            onInvoke: (ActivateVolumeDownIntent intent) => () {
+              masterSubject.add(RequestVolumeDown(1000));
+            }(),
+          ),
+          ActivateSpeedUpIntent: CallbackAction<ActivateSpeedUpIntent>(
+            onInvoke: (ActivateSpeedUpIntent intent) => () {
+              masterSubject.add(RequestSpeedUp(1000));
+            }(),
+          ),
+          ActivateSpeedDownIntent: CallbackAction<ActivateSpeedDownIntent>(
+            onInvoke: (ActivateSpeedDownIntent intent) => () {
+              masterSubject.add(RequestSpeedDown(1000));
             }(),
           ),
         },
@@ -162,4 +189,14 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
 
 class ActivatePlayPauseIntent extends Intent {}
 
+class ActivateForwardIntent extends Intent {}
+
 class ActivateRewindIntent extends Intent {}
+
+class ActivateVolumeUpIntent extends Intent {}
+
+class ActivateVolumeDownIntent extends Intent {}
+
+class ActivateSpeedUpIntent extends Intent {}
+
+class ActivateSpeedDownIntent extends Intent {}
