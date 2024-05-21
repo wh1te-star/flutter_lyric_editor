@@ -22,11 +22,7 @@ class MusicPlayerService {
     });
     masterSubject.stream.listen((signal) {
       if (signal is RequestPlayPause) {
-        if (player.state == PlayerState.playing) {
-          player.pause();
-        } else {
-          player.resume();
-        }
+        playPause();
       }
       if (signal is RequestRewind) {
         rewind(signal.millisec);
@@ -34,7 +30,27 @@ class MusicPlayerService {
       if (signal is RequestForward) {
         forward(signal.millisec);
       }
+      if (signal is RequestVolumeUp) {
+        volumeUp(signal.value);
+      }
+      if (signal is RequestVolumeDown) {
+        volumeDown(signal.value);
+      }
+      if (signal is RequestSpeedUp) {
+        speedUp(signal.rate);
+      }
+      if (signal is RequestSpeedDown) {
+        speedDown(signal.rate);
+      }
     });
+  }
+
+  void playPause() {
+    if (player.state == PlayerState.playing) {
+      player.pause();
+    } else {
+      player.resume();
+    }
   }
 
   void rewind(int millisec) async {
@@ -58,6 +74,22 @@ class MusicPlayerService {
       }
       player.seek(newPosition);
     }
+  }
+
+  void volumeUp(double value) {
+    player.setVolume(player.volume + value);
+  }
+
+  void volumeDown(double value) {
+    player.setVolume(player.volume - value);
+  }
+
+  void speedUp(double rate) {
+    player.setPlaybackRate(player.playbackRate + rate);
+  }
+
+  void speedDown(double rate) {
+    player.setPlaybackRate(player.playbackRate - rate);
   }
 
   void initAudio(String audioPath) {

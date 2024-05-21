@@ -141,22 +141,22 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
           ),
           ActivateVolumeUpIntent: CallbackAction<ActivateVolumeUpIntent>(
             onInvoke: (ActivateVolumeUpIntent intent) => () {
-              masterSubject.add(RequestVolumeUp(1000));
+              masterSubject.add(RequestVolumeUp(0.1));
             }(),
           ),
           ActivateVolumeDownIntent: CallbackAction<ActivateVolumeDownIntent>(
             onInvoke: (ActivateVolumeDownIntent intent) => () {
-              masterSubject.add(RequestVolumeDown(1000));
+              masterSubject.add(RequestVolumeDown(0.1));
             }(),
           ),
           ActivateSpeedUpIntent: CallbackAction<ActivateSpeedUpIntent>(
             onInvoke: (ActivateSpeedUpIntent intent) => () {
-              masterSubject.add(RequestSpeedUp(1000));
+              masterSubject.add(RequestSpeedUp(0.1));
             }(),
           ),
           ActivateSpeedDownIntent: CallbackAction<ActivateSpeedDownIntent>(
             onInvoke: (ActivateSpeedDownIntent intent) => () {
-              masterSubject.add(RequestSpeedDown(1000));
+              masterSubject.add(RequestSpeedDown(0.1));
             }(),
           ),
         },
