@@ -37,10 +37,18 @@ class _VideoPaneState extends State<VideoPane> {
   String defaultText = "Video Pane";
 
   String formatMillisec(int inMillisecFormat) {
-    int hours = inMillisecFormat ~/ Duration.millisecondsPerHour;
-    int minutes = inMillisecFormat ~/ Duration.millisecondsPerMinute;
-    int seconds = inMillisecFormat ~/ Duration.millisecondsPerSecond;
-    int millisec = inMillisecFormat % Duration.millisecondsPerSecond;
+    int remainingMillisec = inMillisecFormat;
+
+    int hours = remainingMillisec ~/ Duration.millisecondsPerHour;
+    remainingMillisec = remainingMillisec % Duration.millisecondsPerHour;
+
+    int minutes = remainingMillisec ~/ Duration.millisecondsPerMinute;
+    remainingMillisec = remainingMillisec % Duration.millisecondsPerMinute;
+
+    int seconds = remainingMillisec ~/ Duration.millisecondsPerSecond;
+    remainingMillisec = remainingMillisec % Duration.millisecondsPerSecond;
+
+    int millisec = remainingMillisec % Duration.millisecondsPerSecond;
 
     String formattedHours = hours.toString().padLeft(2, '0');
     String formattedMinutes = minutes.toString().padLeft(2, '0');
