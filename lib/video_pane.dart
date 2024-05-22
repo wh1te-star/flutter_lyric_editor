@@ -93,7 +93,7 @@ class _VideoPaneState extends State<VideoPane> {
             height: 30,
             color: Colors.yellow,
             child: Padding(
-              padding: EdgeInsets.all(8.0),
+              padding: EdgeInsets.zero,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
@@ -148,10 +148,6 @@ class _VideoPaneState extends State<VideoPane> {
   ]);
   Widget seekPositionWidget = Row(children: [
     const Text('Seek Position: 01:23:45.678'),
-    IconButton(
-      icon: const Icon(Icons.arrow_left),
-      onPressed: () {},
-    ),
     Slider(
       value: 50,
       min: 0,
