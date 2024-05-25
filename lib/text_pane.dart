@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
 import 'package:xterm/xterm.dart';
@@ -29,6 +30,8 @@ class _TextPaneState extends State<TextPane> {
     terminal.onOutput = (output) {
       debugPrint('output: $output');
     };
+
+    terminal.write('C:\\users\\name\\>');
   }
 
   @override
@@ -39,7 +42,15 @@ class _TextPaneState extends State<TextPane> {
         focusNode.requestFocus();
         debugPrint("The text pane is focused");
       },
-      child: TerminalView(terminal),
+      child: KeyboardListener(
+        focusNode: focusNode,
+        onKeyEvent: (KeyEvent event) {
+          if (event is KeyDownEvent && event.character != null) {
+            terminal.write(event.character!);
+          }
+        },
+        child: TerminalView(terminal),
+      ),
     );
   }
 }
