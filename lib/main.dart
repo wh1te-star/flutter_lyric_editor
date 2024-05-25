@@ -79,7 +79,8 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
         ),
         onHorizontalDragUpdate: (details) {
           setState(() {
-            leftPaneWidth += details.delta.dx;
+            if (leftPaneWidth > 1000 || details.delta.dx > 0)
+              leftPaneWidth += details.delta.dx;
           });
         },
         onVerticalDragUpdate: (details) {});
