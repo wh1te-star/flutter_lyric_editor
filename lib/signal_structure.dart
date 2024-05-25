@@ -39,3 +39,8 @@ class NotifySeekPosition {
   int seekPosition;
   NotifySeekPosition(this.seekPosition);
 }
+
+class NotifyVideoPaneWidthLimit {
+  double widthLimit;
+  NotifyVideoPaneWidthLimit(this.widthLimit);
+}

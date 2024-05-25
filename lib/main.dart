@@ -52,6 +52,8 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   late AdjustablePaneBorder videoTextBorder;
   late AdjustablePaneBorder upperTimelineBorder;
 
+  double videoPaneWidthlimit = 1000.0;
+
   @override
   void initState() {
     super.initState();
@@ -79,8 +81,15 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
         ),
         onHorizontalDragUpdate: (details) {
           setState(() {
-            if (leftPaneWidth > 1000 || details.delta.dx > 0)
+            if (details.delta.dx > 0) {
               leftPaneWidth += details.delta.dx;
+            } else {
+              if (leftPaneWidth > videoPaneWidthlimit) {
+                leftPaneWidth += details.delta.dx;
+              } else {
+                leftPaneWidth = videoPaneWidthlimit;
+              }
+            }
           });
         },
         onVerticalDragUpdate: (details) {});
@@ -95,6 +104,12 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
             bottomPaneHeight += details.delta.dy;
           });
         });
+
+    masterSubject.listen((signal) {
+      if (signal is NotifyVideoPaneWidthLimit) {
+        videoPaneWidthlimit = signal.widthLimit;
+      }
+    });
 
     musicPlayerService.initAudio('01 鬼願抄.mp3');
     musicPlayerService.play();
