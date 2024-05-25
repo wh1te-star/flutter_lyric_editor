@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
+import 'square_icon_button.dart';
 
 class PlaybackControlPane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
@@ -27,77 +28,73 @@ class _PlaybackControlPaneState extends State<PlaybackControlPane> {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         double width = constraints.maxWidth;
-        double height = 30;
-        double aspectRatio = 30.0;
+        const double height = 30.0;
 
-        return AspectRatio(
-          aspectRatio: aspectRatio,
-          child: Container(
-            height: height,
-            color: Colors.yellow,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                playbackSpeedWidget,
-                volumeControlWidget,
-                playbackControlWidget,
-                seekPositionWidget,
-              ],
-            ),
+        Widget volumeControlWidget = const Row(children: [
+          Text('Volume: 1.000'),
+          SquareIconButton(
+            icon: Icons.volume_down,
+            size: height,
+          ),
+          SquareIconButton(
+            icon: Icons.volume_up,
+            size: height,
+          ),
+        ]);
+
+        Widget playbackSpeedWidget = const Row(children: [
+          Text('Playback Speed: ×1.00'),
+          SquareIconButton(
+            icon: Icons.arrow_left,
+            size: height,
+          ),
+          SquareIconButton(
+            icon: Icons.arrow_right,
+            size: height,
+          ),
+        ]);
+
+        Widget playbackControlWidget = const Row(children: [
+          SquareIconButton(
+            icon: Icons.arrow_left,
+            size: height,
+          ),
+          SquareIconButton(
+            icon: Icons.arrow_right,
+            size: height,
+          ),
+          SquareIconButton(
+            icon: Icons.arrow_right,
+            size: height,
+          ),
+        ]);
+
+        Widget seekPositionWidget = Row(children: [
+          const Text('Seek Position: 01:23:45.678'),
+          Slider(
+            value: 50,
+            min: 0,
+            max: 100,
+            divisions: 5,
+            label: "50",
+            onChanged: (double newValue) {},
+          ),
+        ]);
+
+        return Container(
+          height: height,
+          color: Colors.yellow,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              playbackSpeedWidget,
+              volumeControlWidget,
+              playbackControlWidget,
+              seekPositionWidget,
+            ],
           ),
         );
       },
     );
   }
-
-  Widget volumeControlWidget = Row(children: [
-    const Text('Volume: 1.000'),
-    IconButton(
-      icon: const Icon(Icons.volume_down),
-      onPressed: () {},
-    ),
-    IconButton(
-      icon: const Icon(Icons.volume_up),
-      onPressed: () {},
-    ),
-  ]);
-
-  Widget playbackSpeedWidget = Row(children: [
-    const Text('Playback Speed: ×1.00'),
-    IconButton(
-      icon: const Icon(Icons.arrow_left),
-      onPressed: () {},
-    ),
-    IconButton(
-      icon: const Icon(Icons.arrow_right),
-      onPressed: () {},
-    ),
-  ]);
-
-  Widget playbackControlWidget = Row(children: [
-    IconButton(
-      icon: const Icon(Icons.arrow_left),
-      onPressed: () {},
-    ),
-    IconButton(
-      icon: const Icon(Icons.arrow_right),
-      onPressed: () {},
-    ),
-    IconButton(
-      icon: const Icon(Icons.arrow_right),
-      onPressed: () {},
-    ),
-  ]);
-
-  Widget seekPositionWidget = Row(children: [
-    const Text('Seek Position: 01:23:45.678'),
-    Slider(
-      value: 50,
-      min: 0,
-      max: 100,
-      divisions: 5,
-      label: "50",
-      onChanged: (double newValue) {},
-    ),
-  ]);
 }
