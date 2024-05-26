@@ -18,39 +18,106 @@ class TextPane extends StatefulWidget {
 class _TextPaneState extends State<TextPane> {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
-  _TextPaneState(this.masterSubject, this.focusNode);
+  bool _isFocused = false;
 
-  Terminal terminal = Terminal();
+  _TextPaneState(this.masterSubject, this.focusNode);
 
   @override
   void initState() {
     super.initState();
     masterSubject.stream.listen((signal) {});
+    focusNode.addListener(_onFocusChange);
+  }
 
-    terminal.onOutput = (output) {
-      debugPrint('output: $output');
-    };
-
-    terminal.write('C:\\users\\name\\>');
+  void _onFocusChange() {
+    setState(() {
+      _isFocused = focusNode.hasFocus;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        masterSubject.add(RequestPlayPause());
+        widget.masterSubject.add(RequestPlayPause());
         focusNode.requestFocus();
         debugPrint("The text pane is focused");
+        setState(() {
+          _isFocused = true;
+        });
       },
-      child: KeyboardListener(
-        focusNode: focusNode,
-        onKeyEvent: (KeyEvent event) {
-          if (event is KeyDownEvent && event.character != null) {
-            terminal.write(event.character!);
-          }
-        },
-        child: TerminalView(terminal),
+      child: _isFocused ? _editableView() : _displayView(),
+    );
+  }
+
+  Widget _editableView() {
+    return TextField(
+      controller: _textEditingController,
+      maxLines: null,
+      keyboardType: TextInputType.multiline,
+      decoration: InputDecoration(
+        border: OutlineInputBorder(),
+        labelText: 'Edit your text...',
+      ),
+      focusNode: focusNode,
+    );
+  }
+
+  Widget _displayView() {
+    String text = _textEditingController.text;
+    List<String> lines = text.split('\n');
+    double screenWidth = MediaQuery.of(context).size.width;
+
+    return SingleChildScrollView(
+      child: Column(
+        children: lines.map((line) {
+          return Container(
+            margin: EdgeInsets.all(8.0),
+            child:
+                Text(line, style: TextStyle(fontSize: 16, color: Colors.black)),
+          );
+        }).toList(),
       ),
     );
   }
+
+  @override
+  void dispose() {
+    focusNode.removeListener(_onFocusChange);
+    focusNode.dispose();
+    super.dispose();
+  }
+
+  final _textEditingController = TextEditingController(text: '''
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.
+    long text.''');
 }

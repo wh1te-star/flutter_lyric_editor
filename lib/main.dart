@@ -118,11 +118,11 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    screenWidth = 1000.0; //MediaQuery.of(context).size.width;
-    screenHeight = 1000.0; //MediaQuery.of(context).size.height;
+    screenWidth = MediaQuery.of(context).size.width;
+    screenHeight = MediaQuery.of(context).size.height;
     exactWidth = screenWidth * MediaQuery.of(context).devicePixelRatio;
     exactHeight = screenHeight * MediaQuery.of(context).devicePixelRatio;
-    leftPaneWidth = screenWidth;
+    leftPaneWidth = screenWidth * 2.0 / 3.0;
     bottomPaneHeight = screenHeight / 2.0;
   }
 
