@@ -18,6 +18,8 @@ class TextPane extends StatefulWidget {
 class _TextPaneState extends State<TextPane> {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
+  var highlightPosition = 0;
+  var itemCount = 100;
   bool _isFocused = false;
 
   _TextPaneState(this.masterSubject, this.focusNode);
@@ -25,7 +27,13 @@ class _TextPaneState extends State<TextPane> {
   @override
   void initState() {
     super.initState();
-    masterSubject.stream.listen((signal) {});
+    masterSubject.stream.listen((signal) {
+      if (signal is NotifyIsPlaying) {
+        setState(() {
+          highlightPosition = (highlightPosition + 1) % itemCount;
+        });
+      }
+    });
     focusNode.addListener(_onFocusChange);
   }
 
@@ -68,16 +76,25 @@ class _TextPaneState extends State<TextPane> {
     List<String> lines = text.split('\n');
     double screenWidth = MediaQuery.of(context).size.width;
 
-    return SingleChildScrollView(
-      child: Column(
-        children: lines.map((line) {
-          return Container(
-            margin: EdgeInsets.all(8.0),
-            child:
-                Text(line, style: TextStyle(fontSize: 16, color: Colors.black)),
-          );
-        }).toList(),
-      ),
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: lines.length,
+      itemBuilder: (context, index) {
+        Color backgroundColor = Colors.transparent;
+        if (index == highlightPosition) {
+          backgroundColor = Colors.yellowAccent;
+        }
+        itemCount = lines.length;
+
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            color: backgroundColor,
+            child: Text(lines[index],
+                style: TextStyle(fontSize: 16, color: Colors.black)),
+          ),
+        );
+      },
     );
   }
 

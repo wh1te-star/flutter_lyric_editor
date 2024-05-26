@@ -38,8 +38,8 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
 
   double horizontalBorderWidth = 10;
   double verticalBorderHeight = 10;
-  double leftPaneWidth = 100;
-  double bottomPaneHeight = 100;
+  double VideoPaneWidth = 100;
+  double VideoPaneHeight = 100;
 
   final masterSubject = PublishSubject<dynamic>();
   late MusicPlayerService musicPlayerService;
@@ -82,12 +82,12 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
         onHorizontalDragUpdate: (details) {
           setState(() {
             if (details.delta.dx > 0) {
-              leftPaneWidth += details.delta.dx;
+              VideoPaneWidth += details.delta.dx;
             } else {
-              if (leftPaneWidth > videoPaneWidthlimit) {
-                leftPaneWidth += details.delta.dx;
+              if (VideoPaneWidth > videoPaneWidthlimit) {
+                VideoPaneWidth += details.delta.dx;
               } else {
-                leftPaneWidth = videoPaneWidthlimit;
+                VideoPaneWidth = videoPaneWidthlimit;
               }
             }
           });
@@ -101,7 +101,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
         onHorizontalDragUpdate: (details) {},
         onVerticalDragUpdate: (details) {
           setState(() {
-            bottomPaneHeight += details.delta.dy;
+            VideoPaneHeight += details.delta.dy;
           });
         });
 
@@ -122,8 +122,8 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     screenHeight = MediaQuery.of(context).size.height;
     exactWidth = screenWidth * MediaQuery.of(context).devicePixelRatio;
     exactHeight = screenHeight * MediaQuery.of(context).devicePixelRatio;
-    leftPaneWidth = screenWidth * 2.0 / 3.0;
-    bottomPaneHeight = screenHeight / 2.0;
+    VideoPaneWidth = screenWidth * 2.0 / 3.0;
+    VideoPaneHeight = screenHeight * 2.0 / 3.0;
   }
 
   @override
@@ -181,10 +181,10 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
             return Column(
               children: <Widget>[
                 Container(
-                  height: bottomPaneHeight,
+                  height: VideoPaneHeight,
                   child: Row(
                     children: <Widget>[
-                      Container(width: leftPaneWidth, child: videoPane),
+                      Container(width: VideoPaneWidth, child: videoPane),
                       videoTextBorder,
                       Expanded(child: textPane),
                     ],
