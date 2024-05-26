@@ -29,11 +29,23 @@ class LyricService {
 
   List<String> parseLyric(String rawLyricText) {
     xml.XmlDocument parsedXmlText = xml.XmlDocument.parse(rawLyricText);
-    List<String> words = [];
-    parsedXmlText.findAllElements('WordTimestamp').forEach((element) {
-      words.add(element.innerText);
-    });
-    return words;
+    final lineTimestamps = parsedXmlText.findAllElements('LineTimestamp');
+    List<String> sentences = [];
+
+    for (var timestamp in lineTimestamps) {
+      String sentence = '';
+      final wordTimestamps = timestamp.findElements('WordTimestamp');
+
+      for (var wordTimestamp in wordTimestamps) {
+        sentence += wordTimestamp.innerText;
+      }
+
+      if (sentence.isNotEmpty) {
+        sentences.add(sentence);
+      }
+    }
+
+    return sentences;
   }
 
   Future<void> printLyric() async {

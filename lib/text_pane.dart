@@ -18,7 +18,7 @@ class _TextPaneState extends State<TextPane> {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
 
-  List<String> wordList = [];
+  List<String> sentenceList = [];
   var highlightPosition = 0;
   var itemCount = 100;
   bool _isFocused = false;
@@ -36,7 +36,7 @@ class _TextPaneState extends State<TextPane> {
       }
       if (signal is NotifyLyricParsed) {
         setState(() {
-          wordList = signal.wordList;
+          sentenceList = signal.sentenceList;
         });
       }
     });
@@ -81,19 +81,19 @@ class _TextPaneState extends State<TextPane> {
 
     return ListView.builder(
       shrinkWrap: true,
-      itemCount: wordList.length,
+      itemCount: sentenceList.length,
       itemBuilder: (context, index) {
         Color backgroundColor = Colors.transparent;
         if (index == highlightPosition) {
           backgroundColor = Colors.yellowAccent;
         }
-        itemCount = wordList.length;
+        itemCount = sentenceList.length;
 
         return Padding(
           padding: const EdgeInsets.all(8.0),
           child: Container(
             color: backgroundColor,
-            child: Text(wordList[index],
+            child: Text(sentenceList[index],
                 style: TextStyle(fontSize: 16, color: Colors.black)),
           ),
         );
