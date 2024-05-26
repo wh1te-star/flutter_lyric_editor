@@ -45,7 +45,12 @@ class NotifyVideoPaneWidthLimit {
   NotifyVideoPaneWidthLimit(this.widthLimit);
 }
 
-class NotifyLyricLoadCompleted {
+class NotifyLyricLoaded {
   String rawLyricText;
-  NotifyLyricLoadCompleted(this.rawLyricText);
+  NotifyLyricLoaded(this.rawLyricText);
+}
+
+class NotifyLyricParsed {
+  List<String> wordList;
+  NotifyLyricParsed(this.wordList);
 }

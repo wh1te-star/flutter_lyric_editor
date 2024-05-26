@@ -18,7 +18,7 @@ class _TextPaneState extends State<TextPane> {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
 
-  var _textEditingController = TextEditingController(text: "");
+  List<String> wordList = [];
   var highlightPosition = 0;
   var itemCount = 100;
   bool _isFocused = false;
@@ -34,9 +34,9 @@ class _TextPaneState extends State<TextPane> {
           highlightPosition = (highlightPosition + 1) % itemCount;
         });
       }
-      if (signal is NotifyLyricLoadCompleted) {
+      if (signal is NotifyLyricParsed) {
         setState(() {
-          _textEditingController.text = signal.rawLyricText;
+          wordList = signal.wordList;
         });
       }
     });
@@ -66,7 +66,6 @@ class _TextPaneState extends State<TextPane> {
 
   Widget _editableView() {
     return TextField(
-      controller: _textEditingController,
       maxLines: null,
       keyboardType: TextInputType.multiline,
       decoration: InputDecoration(
@@ -78,25 +77,23 @@ class _TextPaneState extends State<TextPane> {
   }
 
   Widget _displayView() {
-    String text = _textEditingController.text;
-    List<String> lines = text.split('\n');
     double screenWidth = MediaQuery.of(context).size.width;
 
     return ListView.builder(
       shrinkWrap: true,
-      itemCount: lines.length,
+      itemCount: wordList.length,
       itemBuilder: (context, index) {
         Color backgroundColor = Colors.transparent;
         if (index == highlightPosition) {
           backgroundColor = Colors.yellowAccent;
         }
-        itemCount = lines.length;
+        itemCount = wordList.length;
 
         return Padding(
           padding: const EdgeInsets.all(8.0),
           child: Container(
             color: backgroundColor,
-            child: Text(lines[index],
+            child: Text(wordList[index],
                 style: TextStyle(fontSize: 16, color: Colors.black)),
           ),
         );
