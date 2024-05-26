@@ -89,35 +89,16 @@ class _TextPaneState extends State<TextPane> {
   }
 
   final _textEditingController = TextEditingController(text: '''
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
-    long text.
+    long text. long text. long text. long text. long text. long text. long text. long text. long text. long text. long text. long text. 
+    long text. long text. long text. long text. long text. long text. long text. long text. long text. long text. long text.
+    long text. long text. long text. long text. long text. long text. long text. long text. long text. long text.
+    long text. long text. long text. long text. long text. long text. long text. long text. long text.
+    long text. long text. long text. long text. long text. long text. long text. long text.
+    long text. long text. long text. long text. long text. long text. long text.
+    long text. long text. long text. long text. long text. long text.
+    long text. long text. long text. long text. long text.
+    long text. long text. long text. long text.
+    long text. long text. long text.
+    long text. long text.
     long text.''');
 }
