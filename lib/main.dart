@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lyric_editor/lyric_service.dart';
 import 'package:lyric_editor/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
 import 'appbar_menu.dart';
@@ -43,6 +44,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
 
   final masterSubject = PublishSubject<dynamic>();
   late MusicPlayerService musicPlayerService;
+  late LyricService lyricService;
   late FocusNode videoPaneFocusNode;
   late FocusNode textPaneFocusNode;
   late FocusNode timelinePaneFocusNode;
@@ -59,6 +61,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     super.initState();
 
     musicPlayerService = MusicPlayerService(masterSubject: masterSubject);
+    lyricService = LyricService(masterSubject: masterSubject);
     videoPaneFocusNode = FocusNode();
     textPaneFocusNode = FocusNode();
     timelinePaneFocusNode = FocusNode();
@@ -111,8 +114,10 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
       }
     });
 
-    musicPlayerService.initAudio('01 鬼願抄.mp3');
+    musicPlayerService.initAudio('09 ウェルカムティーフレンド.mp3');
     musicPlayerService.play();
+
+    lyricService.printLyric();
   }
 
   @override
