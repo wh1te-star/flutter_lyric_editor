@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
-import 'package:xterm/xterm.dart';
 
 class TextPane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
@@ -18,6 +17,8 @@ class TextPane extends StatefulWidget {
 class _TextPaneState extends State<TextPane> {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
+
+  var _textEditingController = TextEditingController(text: "");
   var highlightPosition = 0;
   var itemCount = 100;
   bool _isFocused = false;
@@ -31,6 +32,11 @@ class _TextPaneState extends State<TextPane> {
       if (signal is NotifyIsPlaying) {
         setState(() {
           highlightPosition = (highlightPosition + 1) % itemCount;
+        });
+      }
+      if (signal is NotifyLyricLoadCompleted) {
+        setState(() {
+          _textEditingController.text = signal.rawLyricText;
         });
       }
     });
@@ -104,18 +110,4 @@ class _TextPaneState extends State<TextPane> {
     focusNode.dispose();
     super.dispose();
   }
-
-  final _textEditingController = TextEditingController(text: '''
-    long text. long text. long text. long text. long text. long text. long text. long text. long text. long text. long text. long text. 
-    long text. long text. long text. long text. long text. long text. long text. long text. long text. long text. long text.
-    long text. long text. long text. long text. long text. long text. long text. long text. long text. long text.
-    long text. long text. long text. long text. long text. long text. long text. long text. long text.
-    long text. long text. long text. long text. long text. long text. long text. long text.
-    long text. long text. long text. long text. long text. long text. long text.
-    long text. long text. long text. long text. long text. long text.
-    long text. long text. long text. long text. long text.
-    long text. long text. long text. long text.
-    long text. long text. long text.
-    long text. long text.
-    long text.''');
 }

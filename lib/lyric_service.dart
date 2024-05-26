@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
+import 'signal_structure.dart';
 
 class LyricService {
   final PublishSubject<dynamic> masterSubject;
@@ -15,6 +16,7 @@ class LyricService {
   Future<void> loadLyrics() async {
     try {
       rawLyricText = await rootBundle.loadString('assets/ウェルカムティーフレンド.lrc');
+      masterSubject.add(NotifyLyricLoadCompleted(rawLyricText));
     } catch (e) {
       debugPrint("Error loading lyrics: $e");
     }
@@ -24,7 +26,7 @@ class LyricService {
     if (_loadLyricsFuture != null) {
       await _loadLyricsFuture;
     }
-    String first30Chars = rawLyricText.substring(0, 30);
-    debugPrint(first30Chars);
+    //String first30Chars = rawLyricText.substring(0, 30);
+    //debugPrint(first30Chars);
   }
 }
