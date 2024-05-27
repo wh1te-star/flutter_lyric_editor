@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
 
@@ -21,7 +20,6 @@ class _TextPaneState extends State<TextPane> {
   List<String> sentenceList = [];
   var highlightPosition = 0;
   var itemCount = 100;
-  bool _isFocused = false;
 
   _TextPaneState(this.masterSubject, this.focusNode);
 
@@ -44,9 +42,7 @@ class _TextPaneState extends State<TextPane> {
   }
 
   void _onFocusChange() {
-    setState(() {
-      _isFocused = focusNode.hasFocus;
-    });
+    //setState(() {});
   }
 
   @override
@@ -56,23 +52,9 @@ class _TextPaneState extends State<TextPane> {
         widget.masterSubject.add(RequestPlayPause());
         focusNode.requestFocus();
         debugPrint("The text pane is focused");
-        setState(() {
-          _isFocused = true;
-        });
+        setState(() {});
       },
-      child: _isFocused ? _editableView() : _displayView(),
-    );
-  }
-
-  Widget _editableView() {
-    return TextField(
-      maxLines: null,
-      keyboardType: TextInputType.multiline,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(),
-        labelText: 'Edit your text...',
-      ),
-      focusNode: focusNode,
+      child: _displayView(),
     );
   }
 
@@ -84,17 +66,22 @@ class _TextPaneState extends State<TextPane> {
       itemCount: sentenceList.length,
       itemBuilder: (context, index) {
         Color backgroundColor = Colors.transparent;
+        double fontSize = 16;
+        EdgeInsets padding = const EdgeInsets.symmetric(vertical: 1.0);
         if (index == highlightPosition) {
           backgroundColor = Colors.yellowAccent;
+          fontSize = 20;
+          padding = const EdgeInsets.symmetric(vertical: 10.0);
         }
-        itemCount = sentenceList.length;
 
         return Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: padding,
           child: Container(
             color: backgroundColor,
-            child: Text(sentenceList[index],
-                style: TextStyle(fontSize: 16, color: Colors.black)),
+            child: Text(
+              sentenceList[index],
+              style: TextStyle(fontSize: fontSize, color: Colors.black),
+            ),
           ),
         );
       },
