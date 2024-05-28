@@ -7,7 +7,7 @@ import 'signal_structure.dart';
 class LyricService {
   final PublishSubject<dynamic> masterSubject;
   var rawLyricText = "";
-  late final List<String> parsedLyricList;
+  late final String parsedLyricList;
   Future<void>? _loadLyricsFuture;
 
   LyricService({required this.masterSubject}) {
@@ -27,10 +27,10 @@ class LyricService {
     }
   }
 
-  List<String> parseLyric(String rawLyricText) {
+  String parseLyric(String rawLyricText) {
     xml.XmlDocument parsedXmlText = xml.XmlDocument.parse(rawLyricText);
     final lineTimestamps = parsedXmlText.findAllElements('LineTimestamp');
-    List<String> sentences = [];
+    String sentences = "";
 
     for (var timestamp in lineTimestamps) {
       String sentence = '';
@@ -41,7 +41,7 @@ class LyricService {
       }
 
       if (sentence.isNotEmpty) {
-        sentences.add(sentence);
+        sentences += sentence;
       }
     }
 
