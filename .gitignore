@@ -56,3 +56,7 @@ app.*.map.json
 *.ape
 *.wv
 *.shn
+
+# lyric file.
+*.lrc
+assets/ウェルカムティーフレンド.txt
