@@ -68,6 +68,19 @@ class _TextPaneState extends State<TextPane> {
         Color backgroundColor = Colors.transparent;
         double fontSize = 16;
         EdgeInsets padding = const EdgeInsets.symmetric(vertical: 1.0);
+
+        Map<int, String> spacePositions = {
+          2: "|",
+          5: "|",
+          9: "|",
+        };
+        MapEntry<int, String> cursorPosition = MapEntry(5, "●");
+
+        Map<int, String> charPositions =
+            AddCursorChar(spacePositions, cursorPosition);
+        String modifiedSentence =
+            InsertChars(sentenceList[index], charPositions);
+
         if (index == highlightPosition) {
           backgroundColor = Colors.yellowAccent;
           fontSize = 20;
@@ -79,13 +92,36 @@ class _TextPaneState extends State<TextPane> {
           child: Container(
             color: backgroundColor,
             child: Text(
-              sentenceList[index],
+              modifiedSentence,
               style: TextStyle(fontSize: fontSize, color: Colors.black),
             ),
           ),
         );
       },
     );
+  }
+
+  Map<int, String> AddCursorChar(
+      Map<int, String> spacePositions, MapEntry<int, String> cursorPosition) {
+    Map<int, String> charPositions = {...spacePositions};
+    charPositions[cursorPosition.key] = cursorPosition.value;
+    return charPositions;
+  }
+
+  String InsertChars(String originalString, Map<int, String> charPositions) {
+    List<MapEntry<int, String>> sortedCharPositions =
+        charPositions.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+    String resultString = "";
+    int previousPosition = 0;
+
+    for (MapEntry<int, String> entry in sortedCharPositions) {
+      resultString +=
+          originalString.substring(previousPosition, entry.key) + entry.value;
+      previousPosition = entry.key;
+    }
+    resultString += originalString.substring(previousPosition);
+
+    return resultString;
   }
 
   @override
