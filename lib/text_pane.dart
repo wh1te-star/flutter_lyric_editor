@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
 
 class TextPane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
-  final FocusNode focusNode;
 
-  TextPane({required this.masterSubject, required this.focusNode})
-      : super(key: Key('TextPane'));
+  TextPane({required this.masterSubject}) : super(key: Key('TextPane'));
 
   @override
-  _TextPaneState createState() => _TextPaneState(masterSubject, focusNode);
+  _TextPaneState createState() => _TextPaneState(masterSubject);
 }
 
 class _TextPaneState extends State<TextPane> {
   final PublishSubject<dynamic> masterSubject;
-  final FocusNode focusNode;
+  late final FocusNode focusNode;
 
   String entireLyricString = "";
   var cursorPosition = 0;
@@ -24,40 +23,64 @@ class _TextPaneState extends State<TextPane> {
   var linefeedPoints = [19, 38, 57, 82, 100];
   var sectionPoints = [82];
 
-  _TextPaneState(this.masterSubject, this.focusNode);
+  _TextPaneState(this.masterSubject);
 
   @override
   void initState() {
     super.initState();
     masterSubject.stream.listen((signal) {
-      if (signal is NotifyIsPlaying) {
-        setState(() {
-          cursorPosition = (cursorPosition + 1) % itemCount;
-        });
-      }
       if (signal is NotifyLyricParsed) {
         setState(() {
           entireLyricString = signal.sentenceList;
         });
       }
     });
+    focusNode = FocusNode();
     focusNode.addListener(_onFocusChange);
   }
 
   void _onFocusChange() {
-    //setState(() {});
+    if (focusNode.hasFocus)
+      debugPrint("focus enabled");
+    else
+      debugPrint("focus released");
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        widget.masterSubject.add(RequestPlayPause());
-        focusNode.requestFocus();
-        debugPrint("The text pane is focused");
-        setState(() {});
+    return Focus(
+      focusNode: focusNode,
+      onKeyEvent: (FocusNode node, KeyEvent event) {
+        if (event is KeyDownEvent &&
+            event.logicalKey == LogicalKeyboardKey.keyH) {
+          if (cursorPosition > 0) {
+            cursorPosition--;
+            setState(() {});
+            debugPrint("H key: ${cursorPosition}");
+          }
+          return KeyEventResult.handled;
+        }
+        if (event is KeyDownEvent &&
+            event.logicalKey == LogicalKeyboardKey.keyL) {
+          if (cursorPosition <= entireLyricString.length) {
+            cursorPosition++;
+            setState(() {});
+            debugPrint("L key: ${cursorPosition}");
+          }
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
       },
-      child: _displayView(),
+      child: GestureDetector(
+        onTap: () {
+          widget.masterSubject.add(RequestPlayPause());
+          focusNode.requestFocus();
+          debugPrint("The text pane is focused");
+          setState(() {});
+        },
+        child: _displayView(),
+      ),
     );
   }
 
@@ -138,3 +161,5 @@ class _TextPaneState extends State<TextPane> {
     super.dispose();
   }
 }
+
+class TogglePlayPauseShortcut extends Intent {}
