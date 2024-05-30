@@ -51,6 +51,6 @@ class NotifyLyricLoaded {
 }
 
 class NotifyLyricParsed {
-  String sentenceList;
-  NotifyLyricParsed(this.sentenceList);
+  String entireLyricString;
+  NotifyLyricParsed(this.entireLyricString);
 }

@@ -16,23 +16,41 @@ class _TextPaneState extends State<TextPane> {
   final PublishSubject<dynamic> masterSubject;
   late final FocusNode focusNode;
 
-  String entireLyricString = "";
-  var cursorPosition = 0;
-  var itemCount = 1;
+  //String entireLyricString = "";
+  var cursorPositionChar = 0;
+  var cursorPositionLine = 0;
   var timingPoints = [1, 4, 5, 16, 24, 36, 46, 50, 67, 90];
-  var linefeedPoints = [19, 38, 57, 82, 100];
+  var linefeedPoints = [19, 38, 57, 100];
   var sectionPoints = [82];
+
+  List<String> listItems = [];
+  Map<int, String> timingPointMap = {};
+  Map<int, String> linefeedPointMap = {};
+  Map<int, String> sectionPointMap = {};
 
   _TextPaneState(this.masterSubject);
 
   @override
   void initState() {
     super.initState();
+
+    timingPointMap =
+        timingPoints.asMap().map((key, value) => MapEntry(value, "|"));
+    linefeedPointMap =
+        linefeedPoints.asMap().map((key, value) => MapEntry(value, "\n"));
+    sectionPointMap =
+        sectionPoints.asMap().map((key, value) => MapEntry(value, "\n\n"));
+
     masterSubject.stream.listen((signal) {
       if (signal is NotifyLyricParsed) {
-        setState(() {
-          entireLyricString = signal.sentenceList;
-        });
+        var entireLyricString = signal.entireLyricString;
+        var combinedMap = <int, String>{};
+        combinedMap.addAll(timingPointMap);
+        combinedMap.addAll(linefeedPointMap);
+        combinedMap.addAll(sectionPointMap);
+        entireLyricString = InsertChars(entireLyricString, combinedMap);
+        listItems = entireLyricString.split('\n');
+        setState(() {});
       }
     });
     focusNode = FocusNode();
@@ -53,20 +71,38 @@ class _TextPaneState extends State<TextPane> {
       focusNode: focusNode,
       onKeyEvent: (FocusNode node, KeyEvent event) {
         if (event is KeyDownEvent &&
-            event.logicalKey == LogicalKeyboardKey.keyH) {
-          if (cursorPosition > 0) {
-            cursorPosition--;
+            event.logicalKey == LogicalKeyboardKey.keyK) {
+          if (cursorPositionLine > 0) {
+            cursorPositionLine--;
             setState(() {});
-            debugPrint("H key: ${cursorPosition}");
+            debugPrint("K key: ${cursorPositionLine}");
+          }
+          return KeyEventResult.handled;
+        }
+        if (event is KeyDownEvent &&
+            event.logicalKey == LogicalKeyboardKey.keyJ) {
+          if (cursorPositionLine < listItems.length - 1) {
+            cursorPositionLine++;
+            setState(() {});
+            debugPrint("J key: ${cursorPositionLine}");
+          }
+          return KeyEventResult.handled;
+        }
+        if (event is KeyDownEvent &&
+            event.logicalKey == LogicalKeyboardKey.keyH) {
+          if (cursorPositionChar > 0) {
+            cursorPositionChar--;
+            setState(() {});
+            debugPrint("H key: ${cursorPositionChar}");
           }
           return KeyEventResult.handled;
         }
         if (event is KeyDownEvent &&
             event.logicalKey == LogicalKeyboardKey.keyL) {
-          if (cursorPosition <= entireLyricString.length) {
-            cursorPosition++;
+          if (cursorPositionChar <= listItems[cursorPositionLine].length) {
+            cursorPositionChar++;
             setState(() {});
-            debugPrint("L key: ${cursorPosition}");
+            debugPrint("L key: ${cursorPositionChar}");
           }
           return KeyEventResult.handled;
         }
@@ -85,31 +121,17 @@ class _TextPaneState extends State<TextPane> {
   }
 
   Widget _displayView() {
-    Map<int, String> timingPointMap =
-        timingPoints.asMap().map((key, value) => MapEntry(value, "|"));
-    Map<int, String> linefeedPointMap =
-        linefeedPoints.asMap().map((key, value) => MapEntry(value, "\n"));
-    Map<int, String> sectionPointMap =
-        sectionPoints.asMap().map((key, value) => MapEntry(value, "\n\n"));
-    Map<int, String> cursorMap = {cursorPosition: "●"};
+    //cursor code.
 
-    Map<int, String> indicatorChars = timingPointMap;
-    indicatorChars = AddChar(indicatorChars, linefeedPointMap);
-    indicatorChars = AddChar(indicatorChars, sectionPointMap);
-    indicatorChars = AddChar(indicatorChars, cursorMap);
-    String modifiedSentence = InsertChars(entireLyricString, indicatorChars);
-
-    List<String> sentenceList = modifiedSentence.split('\n');
-    itemCount = sentenceList.length;
     return ListView.builder(
       shrinkWrap: true,
-      itemCount: sentenceList.length,
+      itemCount: listItems.length,
       itemBuilder: (context, index) {
         Color backgroundColor = Colors.transparent;
         double fontSize = 16;
         EdgeInsets padding = const EdgeInsets.symmetric(vertical: 1.0);
 
-        if (index == cursorPosition) {
+        if (index == cursorPositionLine) {
           backgroundColor = Colors.yellowAccent;
           fontSize = 20;
           padding = const EdgeInsets.symmetric(vertical: 10.0);
@@ -120,7 +142,7 @@ class _TextPaneState extends State<TextPane> {
           child: Container(
             color: backgroundColor,
             child: Text(
-              sentenceList[index],
+              listItems[index],
               style: TextStyle(fontSize: fontSize, color: Colors.black),
             ),
           ),
