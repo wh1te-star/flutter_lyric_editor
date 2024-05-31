@@ -16,12 +16,16 @@ class _TextPaneState extends State<TextPane> {
   final PublishSubject<dynamic> masterSubject;
   late final FocusNode focusNode;
 
+  static const String timingPointChar = '|';
+  static const String linefeedChar = '\n';
+  //static const String sectionChar = '\n\n';
+
   //String entireLyricString = "";
-  var cursorPositionChar = 0;
-  var cursorPositionLine = 0;
-  var timingPoints = [1, 4, 5, 16, 24, 36, 46, 50, 67, 90];
-  var linefeedPoints = [19, 38, 57, 100];
-  var sectionPoints = [82];
+  int cursorPositionChar = 0;
+  int cursorPositionLine = 0;
+  List<int> timingPoints = [1, 4, 5, 16, 24, 36, 46, 50, 67, 90];
+  List<int> linefeedPoints = [19, 38, 57, 70, 98, 100];
+  //List<int> sectionPoints = [82];
 
   List<String> listItems = [];
   Map<int, String> timingPointMap = {};
@@ -34,22 +38,31 @@ class _TextPaneState extends State<TextPane> {
   void initState() {
     super.initState();
 
-    timingPointMap =
-        timingPoints.asMap().map((key, value) => MapEntry(value, "|"));
-    linefeedPointMap =
-        linefeedPoints.asMap().map((key, value) => MapEntry(value, "\n"));
-    sectionPointMap =
-        sectionPoints.asMap().map((key, value) => MapEntry(value, "\n\n"));
+    timingPointMap = timingPoints
+        .asMap()
+        .map((key, value) => MapEntry(value, timingPointChar));
+    linefeedPointMap = linefeedPoints
+        .asMap()
+        .map((key, value) => MapEntry(value, linefeedChar));
+    //sectionPointMap = sectionPoints.asMap().map((key, value) => MapEntry(value, sectionChar));
 
     masterSubject.stream.listen((signal) {
       if (signal is NotifyLyricParsed) {
         var entireLyricString = signal.entireLyricString;
         var combinedMap = <int, String>{};
-        combinedMap.addAll(timingPointMap);
         combinedMap.addAll(linefeedPointMap);
-        combinedMap.addAll(sectionPointMap);
+        //combinedMap.addAll(sectionPointMap);
         entireLyricString = InsertChars(entireLyricString, combinedMap);
-        listItems = entireLyricString.split('\n');
+        listItems = entireLyricString.split("\n");
+        List<List<int>> timingPointsForEachLine =
+            divideLists(timingPoints, linefeedPoints);
+        for (int i = 0; i < timingPointsForEachLine.length; i++) {
+          Map<int, String> timingPointsForEachLineMap =
+              timingPointsForEachLine[i]
+                  .asMap()
+                  .map((key, value) => MapEntry(value, timingPointChar));
+          listItems[i] = InsertChars(listItems[i], timingPointsForEachLineMap);
+        }
         setState(() {});
       }
     });
@@ -174,6 +187,30 @@ class _TextPaneState extends State<TextPane> {
     resultString += originalString.substring(previousPosition);
 
     return resultString;
+  }
+
+  List<List<int>> divideLists(
+      List<int> timingPoints, List<int> linefeedPoints) {
+    List<List<int>> result = [];
+    int start = 0;
+
+    for (int i = 0; i < linefeedPoints.length; i++) {
+      int end = linefeedPoints[i];
+      List<int> segment =
+          timingPoints.where((point) => point > start && point <= end).toList();
+      if (segment.isNotEmpty) {
+        result.add(segment.map((point) => point - start).toList());
+      }
+      start = end;
+    }
+
+    List<int> lastSegment =
+        timingPoints.where((point) => point > start).toList();
+    if (lastSegment.isNotEmpty) {
+      result.add(lastSegment.map((point) => point - start).toList());
+    }
+
+    return result;
   }
 
   @override
