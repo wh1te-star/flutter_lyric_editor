@@ -16,6 +16,7 @@ class _TextPaneState extends State<TextPane> {
   final PublishSubject<dynamic> masterSubject;
   late final FocusNode focusNode;
 
+  static const String cursorChar = '●';
   static const String timingPointChar = '|';
   static const String linefeedChar = '\n';
   //static const String sectionChar = '\n\n';
@@ -26,6 +27,8 @@ class _TextPaneState extends State<TextPane> {
   List<int> timingPoints = [1, 4, 5, 16, 24, 36, 46, 50, 67, 90];
   List<int> linefeedPoints = [19, 38, 57, 70, 98, 100];
   //List<int> sectionPoints = [82];
+
+  List<List<int>> timingPointsForEachLine = [];
 
   List<String> listItems = [];
   Map<int, String> timingPointMap = {};
@@ -49,13 +52,13 @@ class _TextPaneState extends State<TextPane> {
     masterSubject.stream.listen((signal) {
       if (signal is NotifyLyricParsed) {
         var entireLyricString = signal.entireLyricString;
-        var combinedMap = <int, String>{};
-        combinedMap.addAll(linefeedPointMap);
+        var combinedLineMap = <int, String>{};
+        combinedLineMap.addAll(linefeedPointMap);
         //combinedMap.addAll(sectionPointMap);
-        entireLyricString = InsertChars(entireLyricString, combinedMap);
+        entireLyricString = InsertChars(entireLyricString, combinedLineMap);
         listItems = entireLyricString.split("\n");
-        List<List<int>> timingPointsForEachLine =
-            divideLists(timingPoints, linefeedPoints);
+
+        timingPointsForEachLine = divideLists(timingPoints, linefeedPoints);
         for (int i = 0; i < timingPointsForEachLine.length; i++) {
           Map<int, String> timingPointsForEachLineMap =
               timingPointsForEachLine[i]
@@ -128,14 +131,12 @@ class _TextPaneState extends State<TextPane> {
           debugPrint("The text pane is focused");
           setState(() {});
         },
-        child: _displayView(),
+        child: lyricListWidget(),
       ),
     );
   }
 
-  Widget _displayView() {
-    //cursor code.
-
+  Widget lyricListWidget() {
     return ListView.builder(
       shrinkWrap: true,
       itemCount: listItems.length,
@@ -150,18 +151,80 @@ class _TextPaneState extends State<TextPane> {
           padding = const EdgeInsets.symmetric(vertical: 10.0);
         }
 
-        return Padding(
-          padding: padding,
-          child: Container(
-            color: backgroundColor,
-            child: Text(
-              listItems[index],
-              style: TextStyle(fontSize: fontSize, color: Colors.black),
+        if (index == cursorPositionLine) {
+          return Padding(
+            padding: padding,
+            child: Container(
+              color: backgroundColor,
+              child: highlightedLyricItemWidget(
+                  listItems[index], cursorPositionLine, cursorPositionChar),
             ),
-          ),
-        );
+          );
+        } else {
+          return Padding(
+            padding: padding,
+            child: Container(
+              color: backgroundColor,
+              child: Text(
+                listItems[index],
+                style: TextStyle(fontSize: fontSize, color: Colors.black),
+              ),
+            ),
+          );
+        }
       },
     );
+  }
+
+  Widget highlightedLyricItemWidget(
+      String lyrics, int lineIndex, int charIndex) {
+    int timingPointsBeforeCursor = 0;
+    List<int> currentLineTimingPoint = timingPointsForEachLine[lineIndex];
+    while (timingPointsBeforeCursor < currentLineTimingPoint.length &&
+        currentLineTimingPoint[timingPointsBeforeCursor] < charIndex) {
+      timingPointsBeforeCursor++;
+    }
+    int cursorIndexTimingPoints = currentLineTimingPoint.indexOf(charIndex);
+
+    charIndex = charIndex + timingPointsBeforeCursor;
+    if (cursorIndexTimingPoints >= 0) {
+      lyrics = replaceNthCharacter(lyrics, charIndex, cursorChar);
+    } else {
+      lyrics = inserCharacterAt(lyrics, charIndex, cursorChar);
+    }
+
+    String beforeN = lyrics.substring(0, charIndex);
+    String charAtN = lyrics[charIndex].toString();
+    String afterN = lyrics.substring(charIndex + 1);
+
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+              text: beforeN,
+              style: const TextStyle(fontSize: 20, color: Colors.black)),
+          TextSpan(
+              text: charAtN,
+              style: const TextStyle(fontSize: 40, color: Colors.red)),
+          TextSpan(
+              text: afterN,
+              style: const TextStyle(fontSize: 20, color: Colors.black)),
+        ],
+      ),
+    );
+  }
+
+  String replaceNthCharacter(String originalString, int index, String newChar) {
+    return originalString.substring(0, index) +
+        newChar +
+        originalString.substring(index + 1);
+  }
+
+  String inserCharacterAt(
+      String originalString, int index, String insertingChar) {
+    return originalString.substring(0, index) +
+        insertingChar +
+        originalString.substring(index);
   }
 
   Map<int, String> AddChar(
@@ -198,17 +261,13 @@ class _TextPaneState extends State<TextPane> {
       int end = linefeedPoints[i];
       List<int> segment =
           timingPoints.where((point) => point > start && point <= end).toList();
-      if (segment.isNotEmpty) {
-        result.add(segment.map((point) => point - start).toList());
-      }
+      result.add(segment.map((point) => point - start).toList());
       start = end;
     }
 
     List<int> lastSegment =
         timingPoints.where((point) => point > start).toList();
-    if (lastSegment.isNotEmpty) {
-      result.add(lastSegment.map((point) => point - start).toList());
-    }
+    result.add(lastSegment.map((point) => point - start).toList());
 
     return result;
   }
