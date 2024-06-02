@@ -22,6 +22,7 @@ class _TextPaneState extends State<TextPane> {
   //static const String sectionChar = '\n\n';
 
   //String entireLyricString = "";
+  int cursorPosition = 0;
   int cursorPositionChar = 0;
   int cursorPositionLine = 0;
   List<int> timingPoints = [1, 4, 5, 16, 24, 36, 46, 50, 67, 90];
@@ -90,6 +91,10 @@ class _TextPaneState extends State<TextPane> {
             event.logicalKey == LogicalKeyboardKey.keyK) {
           if (cursorPositionLine > 0) {
             cursorPositionLine--;
+            cursorPosition = listItems
+                    .take(cursorPositionLine)
+                    .fold(0, (prev, curr) => prev + curr.length) +
+                cursorPositionChar;
             setState(() {});
             debugPrint("K key: ${cursorPositionLine}");
           }
@@ -99,6 +104,10 @@ class _TextPaneState extends State<TextPane> {
             event.logicalKey == LogicalKeyboardKey.keyJ) {
           if (cursorPositionLine < listItems.length - 1) {
             cursorPositionLine++;
+            cursorPosition = listItems
+                    .take(cursorPositionLine)
+                    .fold(0, (prev, curr) => prev + curr.length) +
+                cursorPositionChar;
             setState(() {});
             debugPrint("J key: ${cursorPositionLine}");
           }
@@ -108,6 +117,7 @@ class _TextPaneState extends State<TextPane> {
             event.logicalKey == LogicalKeyboardKey.keyH) {
           if (cursorPositionChar > 0) {
             cursorPositionChar--;
+            cursorPosition--;
             setState(() {});
             debugPrint("H key: ${cursorPositionChar}");
           }
@@ -117,9 +127,17 @@ class _TextPaneState extends State<TextPane> {
             event.logicalKey == LogicalKeyboardKey.keyL) {
           if (cursorPositionChar <= listItems[cursorPositionLine].length) {
             cursorPositionChar++;
+            cursorPosition++;
             setState(() {});
             debugPrint("L key: ${cursorPositionChar}");
           }
+          return KeyEventResult.handled;
+        }
+        if (event is KeyDownEvent &&
+            event.logicalKey == LogicalKeyboardKey.keyN) {
+          masterSubject.add(RequestToAddLyricTiming(cursorPosition));
+          debugPrint(
+              "request to add a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
           return KeyEventResult.handled;
         }
         return KeyEventResult.ignored;
