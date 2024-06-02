@@ -32,7 +32,7 @@ dependencies:
     sdk: flutter
   audioplayers: 6.0.0
   rxdart: ^0.27.0
-  xterm: ^4.0.0
+  xml: ^6.5.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -63,7 +63,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/01 鬼願抄.mp3
+    - assets/09 ウェルカムティーフレンド.mp3
+    - assets/ウェルカムティーフレンド.lrc
     
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

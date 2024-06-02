@@ -44,3 +44,13 @@ class NotifyVideoPaneWidthLimit {
   double widthLimit;
   NotifyVideoPaneWidthLimit(this.widthLimit);
 }
+
+class NotifyLyricLoaded {
+  String rawLyricText;
+  NotifyLyricLoaded(this.rawLyricText);
+}
+
+class NotifyLyricParsed {
+  String sentenceList;
+  NotifyLyricParsed(this.sentenceList);
+}
