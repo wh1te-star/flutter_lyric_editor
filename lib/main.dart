@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lyric_editor/lyric_service.dart';
 import 'package:lyric_editor/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
 import 'appbar_menu.dart';
@@ -38,11 +39,12 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
 
   double horizontalBorderWidth = 10;
   double verticalBorderHeight = 10;
-  double leftPaneWidth = 100;
-  double bottomPaneHeight = 100;
+  double VideoPaneWidth = 100;
+  double VideoPaneHeight = 100;
 
   final masterSubject = PublishSubject<dynamic>();
   late MusicPlayerService musicPlayerService;
+  late LyricService lyricService;
   late FocusNode videoPaneFocusNode;
   late FocusNode textPaneFocusNode;
   late FocusNode timelinePaneFocusNode;
@@ -59,6 +61,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     super.initState();
 
     musicPlayerService = MusicPlayerService(masterSubject: masterSubject);
+    lyricService = LyricService(masterSubject: masterSubject);
     videoPaneFocusNode = FocusNode();
     textPaneFocusNode = FocusNode();
     timelinePaneFocusNode = FocusNode();
@@ -82,12 +85,12 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
         onHorizontalDragUpdate: (details) {
           setState(() {
             if (details.delta.dx > 0) {
-              leftPaneWidth += details.delta.dx;
+              VideoPaneWidth += details.delta.dx;
             } else {
-              if (leftPaneWidth > videoPaneWidthlimit) {
-                leftPaneWidth += details.delta.dx;
+              if (VideoPaneWidth > videoPaneWidthlimit) {
+                VideoPaneWidth += details.delta.dx;
               } else {
-                leftPaneWidth = videoPaneWidthlimit;
+                VideoPaneWidth = videoPaneWidthlimit;
               }
             }
           });
@@ -101,7 +104,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
         onHorizontalDragUpdate: (details) {},
         onVerticalDragUpdate: (details) {
           setState(() {
-            bottomPaneHeight += details.delta.dy;
+            VideoPaneHeight += details.delta.dy;
           });
         });
 
@@ -111,19 +114,21 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
       }
     });
 
-    musicPlayerService.initAudio('01 鬼願抄.mp3');
+    musicPlayerService.initAudio('09 ウェルカムティーフレンド.mp3');
     musicPlayerService.play();
+
+    lyricService.printLyric();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    screenWidth = 1000.0; //MediaQuery.of(context).size.width;
-    screenHeight = 1000.0; //MediaQuery.of(context).size.height;
+    screenWidth = MediaQuery.of(context).size.width;
+    screenHeight = MediaQuery.of(context).size.height;
     exactWidth = screenWidth * MediaQuery.of(context).devicePixelRatio;
     exactHeight = screenHeight * MediaQuery.of(context).devicePixelRatio;
-    leftPaneWidth = screenWidth;
-    bottomPaneHeight = screenHeight / 2.0;
+    VideoPaneWidth = screenWidth * 2.0 / 3.0;
+    VideoPaneHeight = screenHeight * 2.0 / 3.0;
   }
 
   @override
@@ -181,10 +186,10 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
             return Column(
               children: <Widget>[
                 Container(
-                  height: bottomPaneHeight,
+                  height: VideoPaneHeight,
                   child: Row(
                     children: <Widget>[
-                      Container(width: leftPaneWidth, child: videoPane),
+                      Container(width: VideoPaneWidth, child: videoPane),
                       videoTextBorder,
                       Expanded(child: textPane),
                     ],
