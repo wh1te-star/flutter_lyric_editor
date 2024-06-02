@@ -30,6 +30,11 @@ class RequestSpeedDown {
   RequestSpeedDown(this.rate);
 }
 
+class RequestToAddLyricTiming {
+  int characterPosition;
+  RequestToAddLyricTiming(this.characterPosition);
+}
+
 class NotifyIsPlaying {
   bool isPlaying;
   NotifyIsPlaying(this.isPlaying);
@@ -51,6 +56,6 @@ class NotifyLyricLoaded {
 }
 
 class NotifyLyricParsed {
-  String sentenceList;
-  NotifyLyricParsed(this.sentenceList);
+  String entireLyricString;
+  NotifyLyricParsed(this.entireLyricString);
 }

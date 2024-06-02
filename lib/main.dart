@@ -71,7 +71,6 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     );
     textPane = TextPane(
       masterSubject: masterSubject,
-      focusNode: textPaneFocusNode,
     );
     timelinePane = TimelinePane(
       masterSubject: masterSubject,
