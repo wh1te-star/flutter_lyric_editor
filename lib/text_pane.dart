@@ -24,6 +24,7 @@ class _TextPaneState extends State<TextPane> {
   String entireLyricString = "";
   int cursorPosition = 0;
 
+  List<String> sentenceList = [];
   List<String> listItems = [];
   int cursorPositionChar = 0;
   int cursorPositionLine = 0;
@@ -59,7 +60,8 @@ class _TextPaneState extends State<TextPane> {
         combinedLineMap.addAll(linefeedPointMap);
         //combinedMap.addAll(sectionPointMap);
         entireLyricString = InsertChars(entireLyricString, combinedLineMap);
-        listItems = entireLyricString.split("\n");
+        sentenceList = entireLyricString.split("\n");
+        listItems = List.filled(sentenceList.length, '');
 
         timingPointsForEachLine = divideLists(timingPoints, linefeedPoints);
         for (int i = 0; i < timingPointsForEachLine.length; i++) {
@@ -67,7 +69,7 @@ class _TextPaneState extends State<TextPane> {
               timingPointsForEachLine[i]
                   .asMap()
                   .map((key, value) => MapEntry(value, timingPointChar));
-          listItems[i] = InsertChars(listItems[i], timingPointsForEachLineMap);
+          listItems[i] = InsertChars(sentenceList[i], timingPointsForEachLineMap);
         }
         setState(() {});
       }
@@ -93,7 +95,7 @@ class _TextPaneState extends State<TextPane> {
             event.logicalKey == LogicalKeyboardKey.keyK) {
           if (cursorPositionLine > 0) {
             cursorPositionLine--;
-            cursorPosition = listItems
+            cursorPosition = sentenceList
                     .take(cursorPositionLine)
                     .fold(0, (prev, curr) => prev + curr.length) +
                 cursorPositionChar;
@@ -104,9 +106,9 @@ class _TextPaneState extends State<TextPane> {
         }
         if (event is KeyDownEvent &&
             event.logicalKey == LogicalKeyboardKey.keyJ) {
-          if (cursorPositionLine < listItems.length - 1) {
+          if (cursorPositionLine < sentenceList.length - 1) {
             cursorPositionLine++;
-            cursorPosition = listItems
+            cursorPosition = sentenceList
                     .take(cursorPositionLine)
                     .fold(0, (prev, curr) => prev + curr.length) +
                 cursorPositionChar;
@@ -127,7 +129,7 @@ class _TextPaneState extends State<TextPane> {
         }
         if (event is KeyDownEvent &&
             event.logicalKey == LogicalKeyboardKey.keyL) {
-          if (cursorPositionChar <= listItems[cursorPositionLine].length) {
+          if (cursorPositionChar <= sentenceList[cursorPositionLine].length) {
             cursorPositionChar++;
             cursorPosition++;
             setState(() {});
@@ -159,7 +161,7 @@ class _TextPaneState extends State<TextPane> {
   Widget lyricListWidget() {
     return ListView.builder(
       shrinkWrap: true,
-      itemCount: listItems.length,
+      itemCount: sentenceList.length,
       itemBuilder: (context, index) {
         Color backgroundColor = Colors.transparent;
         double fontSize = 16;
