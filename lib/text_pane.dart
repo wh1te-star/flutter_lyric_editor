@@ -65,8 +65,14 @@ class _TextPaneState extends State<TextPane> {
         setState(() {});
       }
 
-      if (signal is NotifyAddedTimingPoint) {
-        timingPointMap[signal.addedTimingPoint] = timingPointChar;
+      if (signal is NotifyTimingPointAdded) {
+        timingPointMap[signal.characterPosition] = timingPointChar;
+        updateIndicators();
+        setState(() {});
+      }
+
+      if (signal is NotifyTimingPointDeletion) {
+        timingPointMap.remove(signal.characterPosition);
         updateIndicators();
         setState(() {});
       }
@@ -154,6 +160,13 @@ class _TextPaneState extends State<TextPane> {
           masterSubject.add(RequestToAddLyricTiming(cursorPosition));
           debugPrint(
               "request to add a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
+          return KeyEventResult.handled;
+        }
+        if (event is KeyDownEvent &&
+            event.logicalKey == LogicalKeyboardKey.keyM) {
+          masterSubject.add(RequestToDeleteLyricTiming(cursorPosition));
+          debugPrint(
+              "request to delete a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
           return KeyEventResult.handled;
         }
         return KeyEventResult.ignored;

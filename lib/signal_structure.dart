@@ -37,9 +37,19 @@ class RequestToAddLyricTiming {
   RequestToAddLyricTiming(this.characterPosition);
 }
 
-class NotifyAddedTimingPoint {
-  int addedTimingPoint;
-  NotifyAddedTimingPoint(this.addedTimingPoint);
+class NotifyTimingPointAdded {
+  int characterPosition;
+  NotifyTimingPointAdded(this.characterPosition);
+}
+
+class RequestToDeleteLyricTiming {
+  int characterPosition;
+  RequestToDeleteLyricTiming(this.characterPosition);
+}
+
+class NotifyTimingPointDeletion {
+  int characterPosition;
+  NotifyTimingPointDeletion(this.characterPosition);
 }
 
 class NotifyIsPlaying {
@@ -67,5 +77,6 @@ class NotifyLyricParsed {
   SortedList<int> timingPoints;
   SortedList<int> linefeedPoints;
   //SortedList<int> sectionPoints;
-  NotifyLyricParsed(this.entireLyricString, this.timingPoints, this.linefeedPoints);
+  NotifyLyricParsed(
+      this.entireLyricString, this.timingPoints, this.linefeedPoints);
 }

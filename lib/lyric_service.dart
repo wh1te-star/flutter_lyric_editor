@@ -20,7 +20,11 @@ class LyricService {
     masterSubject.stream.listen((signal) {
       if (signal is RequestToAddLyricTiming) {
         timingPoints.add(signal.characterPosition);
-        masterSubject.add(NotifyAddedTimingPoint(signal.characterPosition));
+        masterSubject.add(NotifyTimingPointAdded(signal.characterPosition));
+      }
+      if (signal is RequestToDeleteLyricTiming) {
+        timingPoints.remove(signal.characterPosition);
+        masterSubject.add(NotifyTimingPointDeletion(signal.characterPosition));
       }
     });
     _loadLyricsFuture = loadLyrics();
