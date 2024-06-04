@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lyric_editor/sorted_list.dart';
 import 'package:xml/xml.dart' as xml;
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
@@ -10,8 +11,18 @@ class LyricService {
   late final String parsedLyricList;
   Future<void>? _loadLyricsFuture;
 
+  SortedList<int> timingPoints =
+      SortedList<int>([1, 4, 5, 16, 24, 36, 46, 50, 67, 90]);
+  SortedList<int> linefeedPoints = SortedList<int>([19, 38, 57, 70, 98, 100]);
+  //List<int> sectionPoints = [82];
+
   LyricService({required this.masterSubject}) {
-    masterSubject.stream.listen((signal) {});
+    masterSubject.stream.listen((signal) {
+      if (signal is RequestToAddLyricTiming) {
+        timingPoints.add(signal.characterPosition);
+        masterSubject.add(NotifyAddedTimingPoint(signal.characterPosition));
+      }
+    });
     _loadLyricsFuture = loadLyrics();
   }
 
@@ -21,7 +32,8 @@ class LyricService {
       masterSubject.add(NotifyLyricLoaded(rawLyricText));
 
       parsedLyricList = parseLyric(rawLyricText);
-      masterSubject.add(NotifyLyricParsed(parsedLyricList));
+      masterSubject.add(
+          NotifyLyricParsed(parsedLyricList, timingPoints, linefeedPoints));
     } catch (e) {
       debugPrint("Error loading lyrics: $e");
     }
