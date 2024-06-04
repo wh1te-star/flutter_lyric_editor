@@ -21,17 +21,19 @@ class _TextPaneState extends State<TextPane> {
   static const String linefeedChar = '\n';
   //static const String sectionChar = '\n\n';
 
-  //String entireLyricString = "";
+  String entireLyricString = "";
   int cursorPosition = 0;
+
+  List<String> listItems = [];
   int cursorPositionChar = 0;
   int cursorPositionLine = 0;
+
   List<int> timingPoints = [1, 4, 5, 16, 24, 36, 46, 50, 67, 90];
   List<int> linefeedPoints = [19, 38, 57, 70, 98, 100];
   //List<int> sectionPoints = [82];
 
   List<List<int>> timingPointsForEachLine = [];
 
-  List<String> listItems = [];
   Map<int, String> timingPointMap = {};
   Map<int, String> linefeedPointMap = {};
   Map<int, String> sectionPointMap = {};
@@ -52,7 +54,7 @@ class _TextPaneState extends State<TextPane> {
 
     masterSubject.stream.listen((signal) {
       if (signal is NotifyLyricParsed) {
-        var entireLyricString = signal.entireLyricString;
+        entireLyricString = signal.entireLyricString;
         var combinedLineMap = <int, String>{};
         combinedLineMap.addAll(linefeedPointMap);
         //combinedMap.addAll(sectionPointMap);
@@ -96,7 +98,7 @@ class _TextPaneState extends State<TextPane> {
                     .fold(0, (prev, curr) => prev + curr.length) +
                 cursorPositionChar;
             setState(() {});
-            debugPrint("K key: ${cursorPositionLine}");
+            debugPrint("K key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
           }
           return KeyEventResult.handled;
         }
@@ -109,7 +111,7 @@ class _TextPaneState extends State<TextPane> {
                     .fold(0, (prev, curr) => prev + curr.length) +
                 cursorPositionChar;
             setState(() {});
-            debugPrint("J key: ${cursorPositionLine}");
+            debugPrint("J key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
           }
           return KeyEventResult.handled;
         }
@@ -119,7 +121,7 @@ class _TextPaneState extends State<TextPane> {
             cursorPositionChar--;
             cursorPosition--;
             setState(() {});
-            debugPrint("H key: ${cursorPositionChar}");
+            debugPrint("H key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
           }
           return KeyEventResult.handled;
         }
@@ -129,7 +131,7 @@ class _TextPaneState extends State<TextPane> {
             cursorPositionChar++;
             cursorPosition++;
             setState(() {});
-            debugPrint("L key: ${cursorPositionChar}");
+            debugPrint("L key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
           }
           return KeyEventResult.handled;
         }
