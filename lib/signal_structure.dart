@@ -1,3 +1,5 @@
+import 'package:lyric_editor/sorted_list.dart';
+
 class RequestPlayPause {}
 
 class RequestRewind {
@@ -35,6 +37,21 @@ class RequestToAddLyricTiming {
   RequestToAddLyricTiming(this.characterPosition);
 }
 
+class NotifyTimingPointAdded {
+  int characterPosition;
+  NotifyTimingPointAdded(this.characterPosition);
+}
+
+class RequestToDeleteLyricTiming {
+  int characterPosition;
+  RequestToDeleteLyricTiming(this.characterPosition);
+}
+
+class NotifyTimingPointDeletion {
+  int characterPosition;
+  NotifyTimingPointDeletion(this.characterPosition);
+}
+
 class NotifyIsPlaying {
   bool isPlaying;
   NotifyIsPlaying(this.isPlaying);
@@ -57,5 +74,9 @@ class NotifyLyricLoaded {
 
 class NotifyLyricParsed {
   String entireLyricString;
-  NotifyLyricParsed(this.entireLyricString);
+  SortedList<int> timingPoints;
+  SortedList<int> linefeedPoints;
+  //SortedList<int> sectionPoints;
+  NotifyLyricParsed(
+      this.entireLyricString, this.timingPoints, this.linefeedPoints);
 }

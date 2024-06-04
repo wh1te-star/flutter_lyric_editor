@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
+import 'sorted_list.dart';
 
 class TextPane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
@@ -21,20 +22,19 @@ class _TextPaneState extends State<TextPane> {
   static const String linefeedChar = '\n';
   //static const String sectionChar = '\n\n';
 
-  //String entireLyricString = "";
+  String entireLyricString = "";
   int cursorPosition = 0;
+
+  List<String> sentenceList = [];
+  List<String> listItems = [];
   int cursorPositionChar = 0;
   int cursorPositionLine = 0;
-  List<int> timingPoints = [1, 4, 5, 16, 24, 36, 46, 50, 67, 90];
-  List<int> linefeedPoints = [19, 38, 57, 70, 98, 100];
-  //List<int> sectionPoints = [82];
 
   List<List<int>> timingPointsForEachLine = [];
 
-  List<String> listItems = [];
-  Map<int, String> timingPointMap = {};
-  Map<int, String> linefeedPointMap = {};
-  Map<int, String> sectionPointMap = {};
+  SortedMap<int, String> timingPointMap = SortedMap<int, String>();
+  SortedMap<int, String> linefeedPointMap = SortedMap<int, String>();
+  SortedMap<int, String> sectionPointMap = SortedMap<int, String>();
 
   _TextPaneState(this.masterSubject);
 
@@ -42,31 +42,38 @@ class _TextPaneState extends State<TextPane> {
   void initState() {
     super.initState();
 
-    timingPointMap = timingPoints
-        .asMap()
-        .map((key, value) => MapEntry(value, timingPointChar));
-    linefeedPointMap = linefeedPoints
-        .asMap()
-        .map((key, value) => MapEntry(value, linefeedChar));
-    //sectionPointMap = sectionPoints.asMap().map((key, value) => MapEntry(value, sectionChar));
-
     masterSubject.stream.listen((signal) {
       if (signal is NotifyLyricParsed) {
-        var entireLyricString = signal.entireLyricString;
+        entireLyricString = signal.entireLyricString;
+        for (int value in signal.timingPoints.list) {
+          timingPointMap[value] = timingPointChar;
+        }
+        for (int value in signal.linefeedPoints.list) {
+          linefeedPointMap[value] = linefeedChar;
+        }
+        //sectionPointMap = sectionPoints.asMap().map((key, value) => MapEntry(value, sectionChar));
+
         var combinedLineMap = <int, String>{};
         combinedLineMap.addAll(linefeedPointMap);
         //combinedMap.addAll(sectionPointMap);
         entireLyricString = InsertChars(entireLyricString, combinedLineMap);
-        listItems = entireLyricString.split("\n");
+        sentenceList = entireLyricString.split("\n");
+        listItems = List.filled(sentenceList.length, '');
 
-        timingPointsForEachLine = divideLists(timingPoints, linefeedPoints);
-        for (int i = 0; i < timingPointsForEachLine.length; i++) {
-          Map<int, String> timingPointsForEachLineMap =
-              timingPointsForEachLine[i]
-                  .asMap()
-                  .map((key, value) => MapEntry(value, timingPointChar));
-          listItems[i] = InsertChars(listItems[i], timingPointsForEachLineMap);
-        }
+        updateIndicators();
+
+        setState(() {});
+      }
+
+      if (signal is NotifyTimingPointAdded) {
+        timingPointMap[signal.characterPosition] = timingPointChar;
+        updateIndicators();
+        setState(() {});
+      }
+
+      if (signal is NotifyTimingPointDeletion) {
+        timingPointMap.remove(signal.characterPosition);
+        updateIndicators();
         setState(() {});
       }
     });
@@ -82,6 +89,17 @@ class _TextPaneState extends State<TextPane> {
     setState(() {});
   }
 
+  void updateIndicators() {
+    timingPointsForEachLine = divideLists(
+        timingPointMap.keys.toList(), linefeedPointMap.keys.toList());
+    for (int i = 0; i < timingPointsForEachLine.length; i++) {
+      Map<int, String> timingPointsForEachLineMap = timingPointsForEachLine[i]
+          .asMap()
+          .map((key, value) => MapEntry(value, timingPointChar));
+      listItems[i] = InsertChars(sentenceList[i], timingPointsForEachLineMap);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Focus(
@@ -91,25 +109,27 @@ class _TextPaneState extends State<TextPane> {
             event.logicalKey == LogicalKeyboardKey.keyK) {
           if (cursorPositionLine > 0) {
             cursorPositionLine--;
-            cursorPosition = listItems
+            cursorPosition = sentenceList
                     .take(cursorPositionLine)
                     .fold(0, (prev, curr) => prev + curr.length) +
                 cursorPositionChar;
             setState(() {});
-            debugPrint("K key: ${cursorPositionLine}");
+            debugPrint(
+                "K key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
           }
           return KeyEventResult.handled;
         }
         if (event is KeyDownEvent &&
             event.logicalKey == LogicalKeyboardKey.keyJ) {
-          if (cursorPositionLine < listItems.length - 1) {
+          if (cursorPositionLine < sentenceList.length - 1) {
             cursorPositionLine++;
-            cursorPosition = listItems
+            cursorPosition = sentenceList
                     .take(cursorPositionLine)
                     .fold(0, (prev, curr) => prev + curr.length) +
                 cursorPositionChar;
             setState(() {});
-            debugPrint("J key: ${cursorPositionLine}");
+            debugPrint(
+                "J key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
           }
           return KeyEventResult.handled;
         }
@@ -119,17 +139,19 @@ class _TextPaneState extends State<TextPane> {
             cursorPositionChar--;
             cursorPosition--;
             setState(() {});
-            debugPrint("H key: ${cursorPositionChar}");
+            debugPrint(
+                "H key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
           }
           return KeyEventResult.handled;
         }
         if (event is KeyDownEvent &&
             event.logicalKey == LogicalKeyboardKey.keyL) {
-          if (cursorPositionChar <= listItems[cursorPositionLine].length) {
+          if (cursorPositionChar <= sentenceList[cursorPositionLine].length) {
             cursorPositionChar++;
             cursorPosition++;
             setState(() {});
-            debugPrint("L key: ${cursorPositionChar}");
+            debugPrint(
+                "L key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
           }
           return KeyEventResult.handled;
         }
@@ -138,6 +160,13 @@ class _TextPaneState extends State<TextPane> {
           masterSubject.add(RequestToAddLyricTiming(cursorPosition));
           debugPrint(
               "request to add a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
+          return KeyEventResult.handled;
+        }
+        if (event is KeyDownEvent &&
+            event.logicalKey == LogicalKeyboardKey.keyM) {
+          masterSubject.add(RequestToDeleteLyricTiming(cursorPosition));
+          debugPrint(
+              "request to delete a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
           return KeyEventResult.handled;
         }
         return KeyEventResult.ignored;
@@ -157,7 +186,7 @@ class _TextPaneState extends State<TextPane> {
   Widget lyricListWidget() {
     return ListView.builder(
       shrinkWrap: true,
-      itemCount: listItems.length,
+      itemCount: sentenceList.length,
       itemBuilder: (context, index) {
         Color backgroundColor = Colors.transparent;
         double fontSize = 16;
