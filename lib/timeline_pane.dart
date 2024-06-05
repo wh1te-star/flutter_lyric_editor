@@ -71,18 +71,55 @@ class _TimelinePaneState extends State<TimelinePane> {
     });
   }
 
+  Widget TwoDimensionalScrollWidget() {
+    return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SingleChildScrollView(
+          child: Container(
+            width: 12000,
+            height: 12000,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topRight,
+                end: Alignment.bottomLeft,
+                colors: [
+                  Colors.yellow,
+                  Colors.red,
+                  Colors.indigo,
+                  Colors.teal,
+                ],
+              ),
+            ),
+          ),
+        ));
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        masterSubject.add(RequestPlayPause());
-        focusNode.requestFocus();
-        debugPrint("The timeline pane is focused");
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return Column(
+          children: <Widget>[
+            Container(
+              height: 30,
+              child: Row(
+                children: <Widget>[
+                  Container(width: 100, color: Colors.purple),
+                  Expanded(child: Container(color: Colors.orange)),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Row(
+                children: <Widget>[
+                  Container(width: 100, color: Colors.orangeAccent),
+                  Expanded(child: TwoDimensionalScrollWidget()),
+                ],
+              ),
+            ),
+          ],
+        );
       },
-      child: Container(
-        color: Colors.red,
-        child: Center(child: Text(defaultText)),
-      ),
     );
   }
 }
