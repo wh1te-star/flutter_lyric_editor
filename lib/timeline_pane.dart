@@ -1,6 +1,10 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
+import 'package:two_dimensional_scrollables/two_dimensional_scrollables.dart';
 
 class TimelinePane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
@@ -24,74 +28,126 @@ class _TimelinePaneState extends State<TimelinePane> {
   @override
   void initState() {
     super.initState();
-    masterSubject.stream.listen((signal) {
-      if (signal is NotifyIsPlaying) {
-        isPlaying = signal.isPlaying;
-      }
-      if (signal is NotifySeekPosition) {
-        time = signal.seekPosition;
-      }
-      updateString(isPlaying, time);
-    });
+    masterSubject.stream.listen((signal) {});
   }
 
   String defaultText = "Timeline Pane";
 
-  String formatMillisec(int inMillisecFormat) {
-    int remainingMillisec = inMillisecFormat;
-
-    int hours = remainingMillisec ~/ Duration.millisecondsPerHour;
-    remainingMillisec = remainingMillisec % Duration.millisecondsPerHour;
-
-    int minutes = remainingMillisec ~/ Duration.millisecondsPerMinute;
-    remainingMillisec = remainingMillisec % Duration.millisecondsPerMinute;
-
-    int seconds = remainingMillisec ~/ Duration.millisecondsPerSecond;
-    remainingMillisec = remainingMillisec % Duration.millisecondsPerSecond;
-
-    int millisec = remainingMillisec % Duration.millisecondsPerSecond;
-
-    String formattedHours = hours.toString().padLeft(2, '0');
-    String formattedMinutes = minutes.toString().padLeft(2, '0');
-    String formattedSeconds = seconds.toString().padLeft(2, '0');
-    String formattedMillisec = millisec.toString().padLeft(3, '0');
-
-    return "$formattedHours:$formattedMinutes:$formattedSeconds.$formattedMillisec";
-  }
-
-  void updateString(bool isPlaying, int timeMillisec) {
-    String newText;
-    if (isPlaying) {
-      newText = "Playing, ${formatMillisec(timeMillisec)}";
-    } else {
-      newText = "Stopping, ${formatMillisec(timeMillisec)}";
-    }
-    setState(() {
-      defaultText = newText;
-    });
-  }
-
   Widget TwoDimensionalScrollWidget() {
-    return SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SingleChildScrollView(
-          child: Container(
-            width: 12000,
-            height: 12000,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
-                colors: [
-                  Colors.yellow,
-                  Colors.red,
-                  Colors.indigo,
-                  Colors.teal,
-                ],
-              ),
-            ),
-          ),
-        ));
+    final ScrollController _verticalController = ScrollController();
+    final ScrollController _horizontalController = ScrollController();
+
+    return Listener(
+      onPointerMove: (PointerMoveEvent event) {
+        if (event.kind == PointerDeviceKind.touch) {
+          _verticalController
+              .jumpTo(_verticalController.offset + event.delta.dy);
+          _horizontalController
+              .jumpTo(_horizontalController.offset + event.delta.dx);
+        }
+      },
+      child: TableView.builder(
+        verticalDetails: ScrollableDetails.vertical(
+          controller: _verticalController,
+        ),
+        horizontalDetails: ScrollableDetails.horizontal(
+          controller: _horizontalController,
+        ),
+        cellBuilder: _buildCell,
+        columnCount: 20,
+        columnBuilder: _buildColumnSpan,
+        rowCount: 10,
+        rowBuilder: _buildRowSpan,
+      ),
+    );
+  }
+
+  TableViewCell _buildCell(BuildContext context, TableVicinity vicinity) {
+    return TableViewCell(
+      child: Center(
+        child: Text('Tile c: ${vicinity.column}, r: ${vicinity.row}'),
+      ),
+    );
+  }
+
+  TableSpan _buildRowSpan(int index) {
+    final TableSpanDecoration decoration = TableSpanDecoration(
+      color: index.isEven ? Colors.purple[100] : null,
+      border: const TableSpanBorder(
+        trailing: BorderSide(
+          width: 3,
+        ),
+      ),
+    );
+
+    switch (index % 3) {
+      case 0:
+        return TableSpan(
+          backgroundDecoration: decoration,
+          extent: const FixedTableSpanExtent(50),
+        );
+      case 1:
+        return TableSpan(
+          backgroundDecoration: decoration,
+          extent: const FixedTableSpanExtent(65),
+          cursor: SystemMouseCursors.click,
+        );
+      case 2:
+        return TableSpan(
+          backgroundDecoration: decoration,
+          extent: const FractionalTableSpanExtent(0.15),
+        );
+    }
+    throw AssertionError(
+      'This should be unreachable, as every index is accounted for in the '
+      'switch clauses.',
+    );
+  }
+
+  TableSpan _buildColumnSpan(int index) {
+    const TableSpanDecoration decoration = TableSpanDecoration(
+      border: TableSpanBorder(
+        trailing: BorderSide(),
+      ),
+    );
+
+    switch (index % 5) {
+      case 0:
+        return TableSpan(
+          foregroundDecoration: decoration,
+          extent: const FixedTableSpanExtent(100),
+          onEnter: (_) => print('Entered column $index'),
+        );
+      case 1:
+        return TableSpan(
+          foregroundDecoration: decoration,
+          extent: const FractionalTableSpanExtent(0.5),
+          onEnter: (_) => print('Entered column $index'),
+          cursor: SystemMouseCursors.contextMenu,
+        );
+      case 2:
+        return TableSpan(
+          foregroundDecoration: decoration,
+          extent: const FixedTableSpanExtent(120),
+          onEnter: (_) => print('Entered column $index'),
+        );
+      case 3:
+        return TableSpan(
+          foregroundDecoration: decoration,
+          extent: const FixedTableSpanExtent(145),
+          onEnter: (_) => print('Entered column $index'),
+        );
+      case 4:
+        return TableSpan(
+          foregroundDecoration: decoration,
+          extent: const FixedTableSpanExtent(200),
+          onEnter: (_) => print('Entered column $index'),
+        );
+    }
+    throw AssertionError(
+      'This should be unreachable, as every index is accounted for in the '
+      'switch clauses.',
+    );
   }
 
   @override
