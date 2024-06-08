@@ -1,5 +1,5 @@
 import 'dart:ui';
-
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:rxdart/rxdart.dart';
@@ -38,13 +38,18 @@ class _TimelinePaneState extends State<TimelinePane> {
     final ScrollController _horizontalController = ScrollController();
 
     return Listener(
-      onPointerMove: (PointerMoveEvent event) {
-        if (event.kind == PointerDeviceKind.touch) {
-          _verticalController
-              .jumpTo(_verticalController.offset + event.delta.dy);
-          _horizontalController
-              .jumpTo(_horizontalController.offset + event.delta.dx);
-        }
+      onPointerPanZoomStart: (PointerPanZoomStartEvent event) {
+        debugPrint('trackpad scroll started');
+      },
+      onPointerPanZoomUpdate: (PointerPanZoomUpdateEvent event) {
+        debugPrint('trackpad scrolled ${event.panDelta}');
+        _horizontalController
+            .jumpTo(_horizontalController.offset - event.panDelta.dx);
+        _verticalController
+            .jumpTo(_verticalController.offset - event.panDelta.dy);
+      },
+      onPointerPanZoomEnd: (PointerPanZoomEndEvent event) {
+        debugPrint('trackpad scroll ended');
       },
       child: TableView.builder(
         verticalDetails: ScrollableDetails.vertical(
