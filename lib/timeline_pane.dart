@@ -68,9 +68,30 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   TableViewCell _buildCell(BuildContext context, TableVicinity vicinity) {
+    final bool showBorder = ((vicinity.row + vicinity.column) % 2 == 0);
+    final BorderSide transparentBorderSide = BorderSide(
+      color: Colors.transparent,
+      width: 3,
+    );
+    final BorderSide blackBorderSide = BorderSide(
+      color: Colors.black,
+      width: 3,
+    );
+    final Border transparentBorder = Border(
+      top: transparentBorderSide,
+      bottom: showBorder ? blackBorderSide : transparentBorderSide,
+      left: transparentBorderSide,
+      right: showBorder ? blackBorderSide : transparentBorderSide,
+    );
+
     return TableViewCell(
-      child: Center(
-        child: Text('Tile c: ${vicinity.column}, r: ${vicinity.row}'),
+      child: Container(
+        decoration: BoxDecoration(
+          border: transparentBorder,
+        ),
+        child: Center(
+          child: Text('Tile c: ${vicinity.column}, r: ${vicinity.row}'),
+        ),
       ),
     );
   }
@@ -78,11 +99,6 @@ class _TimelinePaneState extends State<TimelinePane> {
   TableSpan _buildRowSpan(int index) {
     final TableSpanDecoration decoration = TableSpanDecoration(
       color: index.isEven ? Colors.purple[100] : null,
-      border: const TableSpanBorder(
-        trailing: BorderSide(
-          width: 3,
-        ),
-      ),
     );
 
     switch (index % 3) {
@@ -110,45 +126,30 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   TableSpan _buildColumnSpan(int index) {
-    final bool showBorder = index % 2 == 0;
-    final TableSpanDecoration decoration = TableSpanDecoration(
-      border: TableSpanBorder(
-        trailing: BorderSide(
-          color: showBorder ? Colors.black : Colors.transparent,
-          width: 3,
-        ),
-      ),
-    );
-
     switch (index % 5) {
       case 0:
         return TableSpan(
-          foregroundDecoration: decoration,
           extent: const FixedTableSpanExtent(100),
           onEnter: (_) => print('Entered column $index'),
         );
       case 1:
         return TableSpan(
-          foregroundDecoration: decoration,
           extent: const FractionalTableSpanExtent(0.5),
           onEnter: (_) => print('Entered column $index'),
           cursor: SystemMouseCursors.contextMenu,
         );
       case 2:
         return TableSpan(
-          foregroundDecoration: decoration,
           extent: const FixedTableSpanExtent(120),
           onEnter: (_) => print('Entered column $index'),
         );
       case 3:
         return TableSpan(
-          foregroundDecoration: decoration,
           extent: const FixedTableSpanExtent(145),
           onEnter: (_) => print('Entered column $index'),
         );
       case 4:
         return TableSpan(
-          foregroundDecoration: decoration,
           extent: const FixedTableSpanExtent(200),
           onEnter: (_) => print('Entered column $index'),
         );
