@@ -33,145 +33,129 @@ class _TimelinePaneState extends State<TimelinePane> {
 
   String defaultText = "Timeline Pane";
 
-  Widget TwoDimensionalScrollWidget() {
+  @override
+  Widget build(BuildContext context) {
     final ScrollController _verticalController = ScrollController();
     final ScrollController _horizontalController = ScrollController();
 
     return TableView.builder(
       diagonalDragBehavior: DiagonalDragBehavior.free,
-      verticalDetails: ScrollableDetails.vertical(
-        controller: _verticalController,
-      ),
-      horizontalDetails: ScrollableDetails.horizontal(
-        controller: _horizontalController,
-      ),
       cellBuilder: _buildCell,
-      columnCount: 20,
+      columnCount: 40,
+      pinnedColumnCount: 1,
       columnBuilder: _buildColumnSpan,
-      rowCount: 10,
+      rowCount: 51, // 17 primary colors * 3 rows each
       rowBuilder: _buildRowSpan,
     );
   }
 
   TableViewCell _buildCell(BuildContext context, TableVicinity vicinity) {
-    final bool showBorder = ((vicinity.row + vicinity.column) % 2 == 0);
-    final BorderSide transparentBorderSide = BorderSide(
-      color: Colors.transparent,
-      width: 3,
+    final int colorIndex = (vicinity.row / 3).floor();
+    final ({String name, Color color}) cell = _getColorForVicinity(vicinity);
+    final Color textColor =
+        ThemeData.estimateBrightnessForColor(cell.color) == Brightness.light
+            ? Colors.black
+            : Colors.white;
+    final TextStyle style = TextStyle(
+      color: textColor,
+      fontSize: 18.0,
+      fontWeight: vicinity.column == 0 ? FontWeight.bold : null,
     );
-    final BorderSide blackBorderSide = BorderSide(
-      color: Colors.black,
-      width: 3,
-    );
-    final Border transparentBorder = Border(
-      top: transparentBorderSide,
-      bottom: showBorder ? blackBorderSide : transparentBorderSide,
-      left: transparentBorderSide,
-      right: showBorder ? blackBorderSide : transparentBorderSide,
-    );
-
     return TableViewCell(
-      child: Container(
-        decoration: BoxDecoration(
-          border: transparentBorder,
-        ),
+      rowMergeStart: vicinity.column == 0 ? colorIndex * 3 : null,
+      rowMergeSpan: vicinity.column == 0 ? 3 : null,
+      child: ColoredBox(
+        color: cell.color,
         child: Center(
-          child: Text('Tile c: ${vicinity.column}, r: ${vicinity.row}'),
+          child: Text(cell.name, style: style),
         ),
       ),
     );
   }
 
-  TableSpan _buildRowSpan(int index) {
-    final TableSpanDecoration decoration = TableSpanDecoration(
-      color: index.isEven ? Colors.purple[100] : null,
-    );
-
-    switch (index % 3) {
-      case 0:
-        return TableSpan(
-          backgroundDecoration: decoration,
-          extent: const FixedTableSpanExtent(50),
-        );
-      case 1:
-        return TableSpan(
-          backgroundDecoration: decoration,
-          extent: const FixedTableSpanExtent(65),
-          cursor: SystemMouseCursors.click,
-        );
-      case 2:
-        return TableSpan(
-          backgroundDecoration: decoration,
-          extent: const FractionalTableSpanExtent(0.15),
-        );
-    }
-    throw AssertionError(
-      'This should be unreachable, as every index is accounted for in the '
-      'switch clauses.',
-    );
-  }
-
   TableSpan _buildColumnSpan(int index) {
-    switch (index % 5) {
-      case 0:
-        return TableSpan(
-          extent: const FixedTableSpanExtent(100),
-          onEnter: (_) => print('Entered column $index'),
-        );
-      case 1:
-        return TableSpan(
-          extent: const FractionalTableSpanExtent(0.5),
-          onEnter: (_) => print('Entered column $index'),
-          cursor: SystemMouseCursors.contextMenu,
-        );
-      case 2:
-        return TableSpan(
-          extent: const FixedTableSpanExtent(120),
-          onEnter: (_) => print('Entered column $index'),
-        );
-      case 3:
-        return TableSpan(
-          extent: const FixedTableSpanExtent(145),
-          onEnter: (_) => print('Entered column $index'),
-        );
-      case 4:
-        return TableSpan(
-          extent: const FixedTableSpanExtent(200),
-          onEnter: (_) => print('Entered column $index'),
-        );
-    }
-    throw AssertionError(
-      'This should be unreachable, as every index is accounted for in the '
-      'switch clauses.',
+    return TableSpan(
+      extent: FixedTableSpanExtent(index == 0 ? 220 : 180),
+      foregroundDecoration: index == 0
+          ? const TableSpanDecoration(
+              border: TableSpanBorder(
+                trailing: BorderSide(
+                  width: 5,
+                  color: Colors.white,
+                ),
+              ),
+            )
+          : null,
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        return Column(
-          children: <Widget>[
-            Container(
-              height: 30,
-              child: Row(
-                children: <Widget>[
-                  Container(width: 100, color: Colors.purple),
-                  Expanded(child: Container(color: Colors.orange)),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Row(
-                children: <Widget>[
-                  Container(width: 100, color: Colors.orangeAccent),
-                  Expanded(child: TwoDimensionalScrollWidget()),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
+  TableSpan _buildRowSpan(int index) {
+    return TableSpan(
+      extent: const FixedTableSpanExtent(120),
+      padding: index % 3 == 0 ? const TableSpanPadding(leading: 5.0) : null,
     );
+  }
+
+  ({String name, Color color}) _getColorForVicinity(TableVicinity vicinity) {
+    final int colorIndex = (vicinity.row / 3).floor();
+    final MaterialColor primary = Colors.primaries[colorIndex];
+    if (vicinity.column == 0) {
+      // Leading primary color
+      return (
+        color: primary[500]!,
+        name: '${_getPrimaryNameFor(colorIndex)}, 500',
+      );
+    }
+    final int leadingRow = colorIndex * 3;
+    final int middleRow = leadingRow + 1;
+    int? colorValue;
+    if (vicinity.row == leadingRow) {
+      colorValue = switch ((vicinity.column - 1) % 3) {
+        0 => 50,
+        1 => 100,
+        2 => 200,
+        _ => throw AssertionError('This should be unreachable.'),
+      };
+    } else if (vicinity.row == middleRow) {
+      colorValue = switch ((vicinity.column - 1) % 3) {
+        0 => 300,
+        1 => 400,
+        2 => 600,
+        _ => throw AssertionError('This should be unreachable.'),
+      };
+    } else {
+      // last row
+      colorValue = switch ((vicinity.column - 1) % 3) {
+        0 => 700,
+        1 => 800,
+        2 => 900,
+        _ => throw AssertionError('This should be unreachable.'),
+      };
+    }
+    return (color: primary[colorValue]!, name: colorValue.toString());
+  }
+
+  String _getPrimaryNameFor(int index) {
+    return switch (index) {
+      0 => 'Red',
+      1 => 'Pink',
+      2 => 'Purple',
+      3 => 'DeepPurple',
+      4 => 'Indigo',
+      5 => 'Blue',
+      6 => 'LightBlue',
+      7 => 'Cyan',
+      8 => 'Teal',
+      9 => 'Green',
+      10 => 'LightGreen',
+      11 => 'Lime',
+      12 => 'Yellow',
+      13 => 'Amber',
+      14 => 'Orange',
+      15 => 'DeepOrange',
+      16 => 'Brown',
+      17 => 'BlueGrey',
+      _ => throw AssertionError('This should be unreachable.'),
+    };
   }
 }
