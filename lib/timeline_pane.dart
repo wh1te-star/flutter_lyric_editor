@@ -22,8 +22,6 @@ class _TimelinePaneState extends State<TimelinePane> {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
   _TimelinePaneState(this.masterSubject, this.focusNode);
-  bool isPlaying = true;
-  int time = 0;
 
   @override
   void initState() {
@@ -44,13 +42,23 @@ class _TimelinePaneState extends State<TimelinePane> {
       columnCount: 40,
       pinnedColumnCount: 1,
       columnBuilder: _buildColumnSpan,
-      rowCount: 51, // 17 primary colors * 3 rows each
+      rowCount: 52,
+      pinnedRowCount: 1,
       rowBuilder: _buildRowSpan,
     );
   }
 
   TableViewCell _buildCell(BuildContext context, TableVicinity vicinity) {
-    final int colorIndex = (vicinity.row / 3).floor();
+    if (vicinity.row == 0) {
+      return TableViewCell(
+        child: Container(
+          child: Center(
+            child: Text("pinned"),
+          ),
+        ),
+      );
+    }
+    final int colorIndex = ((vicinity.row - 1) / 3).floor();
     final ({String name, Color color}) cell = _getColorForVicinity(vicinity);
     final Color textColor =
         ThemeData.estimateBrightnessForColor(cell.color) == Brightness.light
@@ -62,7 +70,7 @@ class _TimelinePaneState extends State<TimelinePane> {
       fontWeight: vicinity.column == 0 ? FontWeight.bold : null,
     );
     return TableViewCell(
-      rowMergeStart: vicinity.column == 0 ? colorIndex * 3 : null,
+      rowMergeStart: vicinity.column == 0 ? (colorIndex * 3) + 1 : null,
       rowMergeSpan: vicinity.column == 0 ? 3 : null,
       child: ColoredBox(
         color: cell.color,
@@ -90,14 +98,20 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   TableSpan _buildRowSpan(int index) {
+    if (index == 0) {
+      return TableSpan(
+        extent: FixedTableSpanExtent(120),
+      );
+    }
     return TableSpan(
       extent: const FixedTableSpanExtent(120),
-      padding: index % 3 == 0 ? const TableSpanPadding(leading: 5.0) : null,
+      padding:
+          (index - 1) % 3 == 0 ? const TableSpanPadding(leading: 5.0) : null,
     );
   }
 
   ({String name, Color color}) _getColorForVicinity(TableVicinity vicinity) {
-    final int colorIndex = (vicinity.row / 3).floor();
+    final int colorIndex = ((vicinity.row - 1) / 3).floor();
     final MaterialColor primary = Colors.primaries[colorIndex];
     if (vicinity.column == 0) {
       // Leading primary color
@@ -106,7 +120,7 @@ class _TimelinePaneState extends State<TimelinePane> {
         name: '${_getPrimaryNameFor(colorIndex)}, 500',
       );
     }
-    final int leadingRow = colorIndex * 3;
+    final int leadingRow = (colorIndex * 3) + 1;
     final int middleRow = leadingRow + 1;
     int? colorValue;
     if (vicinity.row == leadingRow) {
