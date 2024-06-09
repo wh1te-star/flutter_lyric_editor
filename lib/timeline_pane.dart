@@ -37,33 +37,19 @@ class _TimelinePaneState extends State<TimelinePane> {
     final ScrollController _verticalController = ScrollController();
     final ScrollController _horizontalController = ScrollController();
 
-    return Listener(
-      onPointerPanZoomStart: (PointerPanZoomStartEvent event) {
-        debugPrint('trackpad scroll started');
-      },
-      onPointerPanZoomUpdate: (PointerPanZoomUpdateEvent event) {
-        debugPrint('trackpad scrolled ${event.panDelta}');
-        _horizontalController
-            .jumpTo(_horizontalController.offset - event.panDelta.dx);
-        _verticalController
-            .jumpTo(_verticalController.offset - event.panDelta.dy);
-      },
-      onPointerPanZoomEnd: (PointerPanZoomEndEvent event) {
-        debugPrint('trackpad scroll ended');
-      },
-      child: TableView.builder(
-        verticalDetails: ScrollableDetails.vertical(
-          controller: _verticalController,
-        ),
-        horizontalDetails: ScrollableDetails.horizontal(
-          controller: _horizontalController,
-        ),
-        cellBuilder: _buildCell,
-        columnCount: 20,
-        columnBuilder: _buildColumnSpan,
-        rowCount: 10,
-        rowBuilder: _buildRowSpan,
+    return TableView.builder(
+      diagonalDragBehavior: DiagonalDragBehavior.free,
+      verticalDetails: ScrollableDetails.vertical(
+        controller: _verticalController,
       ),
+      horizontalDetails: ScrollableDetails.horizontal(
+        controller: _horizontalController,
+      ),
+      cellBuilder: _buildCell,
+      columnCount: 20,
+      columnBuilder: _buildColumnSpan,
+      rowCount: 10,
+      rowBuilder: _buildRowSpan,
     );
   }
 
