@@ -110,9 +110,13 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   TableSpan _buildColumnSpan(int index) {
-    const TableSpanDecoration decoration = TableSpanDecoration(
+    final bool showBorder = index % 2 == 0;
+    final TableSpanDecoration decoration = TableSpanDecoration(
       border: TableSpanBorder(
-        trailing: BorderSide(),
+        trailing: BorderSide(
+          color: showBorder ? Colors.black : Colors.transparent,
+          width: 3,
+        ),
       ),
     );
 
