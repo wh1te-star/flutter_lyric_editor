@@ -79,8 +79,11 @@ class _TimelinePaneState extends State<TimelinePane> {
         columnMergeSpan: 39,
         child: Container(
           child: CustomPaint(
-            size: Size(200, 50), // Specify the size of the CustomPaint area
-            painter: ScaleMark(interval: 10.0),
+            painter: ScaleMark(
+                interval: 10.0,
+                majorMarkLength: 15.0,
+                midiumMarkLength: 11.0,
+                minorMarkLength: 8.0),
           ),
         ),
       );
