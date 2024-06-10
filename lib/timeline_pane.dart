@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:ui';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -7,13 +8,10 @@ import 'signal_structure.dart';
 import 'scale_mark.dart';
 import 'package:two_dimensional_scrollables/two_dimensional_scrollables.dart';
 
-class MergeArea {
-  int left;
-  int top;
-  int right;
-  int bottom;
-
-  MergeArea(this.left, this.top, this.right, this.bottom);
+class Sentence {
+  int startTiming;
+  int endTiming;
+  Sentence(this.startTiming, this.endTiming);
 }
 
 class TimelinePane extends StatefulWidget {
@@ -33,9 +31,12 @@ class _TimelinePaneState extends State<TimelinePane> {
   final FocusNode focusNode;
   _TimelinePaneState(this.masterSubject, this.focusNode);
 
-  List<MergeArea> merged = [
-    MergeArea(1, 1, 2, 3),
-    MergeArea(4, 4, 10, 4),
+  List<int> timingPoints = [1000, 2000, 3000];
+  List<Sentence> sentences = [
+    Sentence(0, 2),
+    Sentence(1, 3),
+    Sentence(2, 4),
+    Sentence(0, 3),
   ];
 
   @override
@@ -54,10 +55,10 @@ class _TimelinePaneState extends State<TimelinePane> {
     return TableView.builder(
       diagonalDragBehavior: DiagonalDragBehavior.free,
       cellBuilder: _buildCell,
-      columnCount: 40,
+      columnCount: timingPoints.length + 2,
       pinnedColumnCount: 1,
       columnBuilder: _buildColumnSpan,
-      rowCount: 52,
+      rowCount: 6,
       pinnedRowCount: 1,
       rowBuilder: _buildRowSpan,
     );
@@ -76,24 +77,20 @@ class _TimelinePaneState extends State<TimelinePane> {
     if (vicinity.row == 0) {
       return TableViewCell(
         columnMergeStart: 1,
-        columnMergeSpan: 39,
-        child: Container(
-          child: CustomPaint(
-            painter: ScaleMark(
-                interval: 10.0,
-                majorMarkLength: 15.0,
-                midiumMarkLength: 11.0,
-                minorMarkLength: 8.0),
-          ),
+        columnMergeSpan: timingPoints.length + 1,
+        child: CustomPaint(
+          painter: ScaleMark(
+              interval: 10.0,
+              majorMarkLength: 15.0,
+              midiumMarkLength: 11.0,
+              minorMarkLength: 8.0),
         ),
       );
     }
     if (vicinity.column == 0) {
       return TableViewCell(
-        child: Container(
-          child: Center(
-            child: Text("artist name ${vicinity.row}"),
-          ),
+        child: Center(
+          child: Text("artist name ${vicinity.row}"),
         ),
       );
     }
@@ -108,6 +105,7 @@ class _TimelinePaneState extends State<TimelinePane> {
       fontSize: 18.0,
       fontWeight: vicinity.column == 0 ? FontWeight.bold : null,
     );
+    /*
     for (int i = 0; i < merged.length; i++) {
       if (merged[i].top <= vicinity.row &&
           vicinity.row <= merged[i].bottom &&
@@ -127,9 +125,8 @@ class _TimelinePaneState extends State<TimelinePane> {
         );
       }
     }
+    */
     return TableViewCell(
-      //rowMergeStart: vicinity.column == 0 ? (colorIndex * 3) + 1 : null,
-      //rowMergeSpan: vicinity.column == 0 ? 3 : null,
       child: ColoredBox(
         color: cell.color,
         child: Center(
@@ -140,8 +137,18 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   TableSpan _buildColumnSpan(int index) {
+    double extent = 0;
+    if (index == 0) {
+      extent = 160;
+    } else if (index == 1) {
+      extent = timingPoints[index - 1].toDouble();
+    } else if (index < timingPoints.length + 1) {
+      extent = (timingPoints[index - 1] - timingPoints[index - 2]).toDouble();
+    } else if (index == timingPoints.length + 1) {
+      extent = (10000 - timingPoints[index - 2]).toDouble();
+    }
     return TableSpan(
-      extent: FixedTableSpanExtent(index == 0 ? 160 : 180),
+      extent: FixedTableSpanExtent(extent),
       foregroundDecoration: index == 0
           ? const TableSpanDecoration(
               border: TableSpanBorder(
