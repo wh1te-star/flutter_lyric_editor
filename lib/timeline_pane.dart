@@ -63,11 +63,31 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   TableViewCell _buildCell(BuildContext context, TableVicinity vicinity) {
-    if (vicinity.row == 0) {
+    if (vicinity.row == 0 && vicinity.column == 0) {
       return TableViewCell(
         child: Container(
           child: Center(
-            child: Text("pinned"),
+            child: Text("function buttons"),
+          ),
+        ),
+      );
+    }
+    if (vicinity.row == 0) {
+      return TableViewCell(
+        columnMergeStart: 1,
+        columnMergeSpan: 39,
+        child: Container(
+          child: Center(
+            child: Text("seek position mark"),
+          ),
+        ),
+      );
+    }
+    if (vicinity.column == 0) {
+      return TableViewCell(
+        child: Container(
+          child: Center(
+            child: Text("artist name ${vicinity.row}"),
           ),
         ),
       );
@@ -116,13 +136,13 @@ class _TimelinePaneState extends State<TimelinePane> {
 
   TableSpan _buildColumnSpan(int index) {
     return TableSpan(
-      extent: FixedTableSpanExtent(index == 0 ? 220 : 180),
+      extent: FixedTableSpanExtent(index == 0 ? 160 : 180),
       foregroundDecoration: index == 0
           ? const TableSpanDecoration(
               border: TableSpanBorder(
                 trailing: BorderSide(
                   width: 5,
-                  color: Colors.white,
+                  color: Colors.black,
                 ),
               ),
             )
@@ -132,12 +152,20 @@ class _TimelinePaneState extends State<TimelinePane> {
 
   TableSpan _buildRowSpan(int index) {
     if (index == 0) {
-      return TableSpan(
-        extent: FixedTableSpanExtent(120),
+      return const TableSpan(
+        extent: FixedTableSpanExtent(20),
+        foregroundDecoration: TableSpanDecoration(
+          border: TableSpanBorder(
+            trailing: BorderSide(
+              width: 3,
+              color: Colors.black,
+            ),
+          ),
+        ),
       );
     }
     return TableSpan(
-      extent: const FixedTableSpanExtent(120),
+      extent: const FixedTableSpanExtent(60),
       padding:
           (index - 1) % 3 == 0 ? const TableSpanPadding(leading: 5.0) : null,
     );
