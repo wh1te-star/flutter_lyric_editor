@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
+import 'scale_mark.dart';
 import 'package:two_dimensional_scrollables/two_dimensional_scrollables.dart';
 
 class MergeArea {
@@ -77,8 +78,9 @@ class _TimelinePaneState extends State<TimelinePane> {
         columnMergeStart: 1,
         columnMergeSpan: 39,
         child: Container(
-          child: Center(
-            child: Text("seek position mark"),
+          child: CustomPaint(
+            size: Size(200, 50), // Specify the size of the CustomPaint area
+            painter: ScaleMark(interval: 10.0),
           ),
         ),
       );
@@ -154,20 +156,12 @@ class _TimelinePaneState extends State<TimelinePane> {
     if (index == 0) {
       return const TableSpan(
         extent: FixedTableSpanExtent(20),
-        foregroundDecoration: TableSpanDecoration(
-          border: TableSpanBorder(
-            trailing: BorderSide(
-              width: 3,
-              color: Colors.black,
-            ),
-          ),
-        ),
       );
     }
     return TableSpan(
       extent: const FixedTableSpanExtent(60),
       padding:
-          (index - 1) % 3 == 0 ? const TableSpanPadding(leading: 5.0) : null,
+          (index - 1) % 3 == 0 ? const TableSpanPadding(trailing: 5.0) : null,
     );
   }
 
