@@ -65,6 +65,17 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   TableViewCell _buildCell(BuildContext context, TableVicinity vicinity) {
+    final ({String name, Color color}) cell =
+        (name: "empty", color: indexColor(vicinity.row - 1));
+    final Color textColor =
+        ThemeData.estimateBrightnessForColor(cell.color) == Brightness.light
+            ? Colors.black
+            : Colors.white;
+    final TextStyle style = TextStyle(
+      color: textColor,
+      fontSize: 18.0,
+      fontWeight: vicinity.column == 0 ? FontWeight.bold : null,
+    );
     if (vicinity.row == 0 && vicinity.column == 0) {
       return TableViewCell(
         child: Container(
@@ -89,22 +100,14 @@ class _TimelinePaneState extends State<TimelinePane> {
     }
     if (vicinity.column == 0) {
       return TableViewCell(
-        child: Center(
-          child: Text("artist name ${vicinity.row}"),
+        child: ColoredBox(
+          color: cell.color,
+          child: Center(
+            child: Text(cell.name, style: style),
+          ),
         ),
       );
     }
-    final int colorIndex = ((vicinity.row - 1) / 3).floor();
-    final ({String name, Color color}) cell = _getColorForVicinity(vicinity);
-    final Color textColor =
-        ThemeData.estimateBrightnessForColor(cell.color) == Brightness.light
-            ? Colors.black
-            : Colors.white;
-    final TextStyle style = TextStyle(
-      color: textColor,
-      fontSize: 18.0,
-      fontWeight: vicinity.column == 0 ? FontWeight.bold : null,
-    );
     /*
     for (int i = 0; i < merged.length; i++) {
       if (merged[i].top <= vicinity.row &&
@@ -148,93 +151,47 @@ class _TimelinePaneState extends State<TimelinePane> {
       extent = (10000 - timingPoints[index - 2]).toDouble();
     }
     return TableSpan(
-      extent: FixedTableSpanExtent(extent),
-      foregroundDecoration: index == 0
-          ? const TableSpanDecoration(
-              border: TableSpanBorder(
-                trailing: BorderSide(
-                  width: 5,
-                  color: Colors.black,
-                ),
-              ),
-            )
-          : null,
-    );
+        extent: FixedTableSpanExtent(extent),
+        foregroundDecoration: TableSpanDecoration(
+          border: TableSpanBorder(
+            trailing: BorderSide(
+              width: (index == 0) ? 5 : 1,
+              color: Colors.black,
+            ),
+          ),
+        ));
   }
 
   TableSpan _buildRowSpan(int index) {
-    if (index == 0) {
-      return const TableSpan(
-        extent: FixedTableSpanExtent(20),
-      );
-    }
     return TableSpan(
-      extent: const FixedTableSpanExtent(60),
-      padding:
-          (index - 1) % 3 == 0 ? const TableSpanPadding(trailing: 5.0) : null,
+      extent: FixedTableSpanExtent(index == 0 ? 20 : 60),
+      padding: const TableSpanPadding(leading: 10.0),
+      foregroundDecoration: const TableSpanDecoration(
+        border: TableSpanBorder(
+          trailing: BorderSide(
+            width: 1,
+            color: Colors.black,
+          ),
+        ),
+      ),
     );
   }
 
-  ({String name, Color color}) _getColorForVicinity(TableVicinity vicinity) {
-    final int colorIndex = ((vicinity.row - 1) / 3).floor();
-    final MaterialColor primary = Colors.primaries[colorIndex];
-    if (vicinity.column == 0) {
-      // Leading primary color
-      return (
-        color: primary[500]!,
-        name: '${_getPrimaryNameFor(colorIndex)}, 500',
-      );
+  Color indexColor(int index) {
+    switch (index) {
+      case 0:
+        return Colors.greenAccent;
+      case 1:
+        return Colors.blueAccent;
+      case 2:
+        return Colors.cyanAccent;
+      case 3:
+        return Colors.purpleAccent;
+      case 4:
+        return Colors.yellowAccent;
+      case 5:
+        return Colors.redAccent;
     }
-    final int leadingRow = (colorIndex * 3) + 1;
-    final int middleRow = leadingRow + 1;
-    int? colorValue;
-    if (vicinity.row == leadingRow) {
-      colorValue = switch ((vicinity.column - 1) % 3) {
-        0 => 50,
-        1 => 100,
-        2 => 200,
-        _ => throw AssertionError('This should be unreachable.'),
-      };
-    } else if (vicinity.row == middleRow) {
-      colorValue = switch ((vicinity.column - 1) % 3) {
-        0 => 300,
-        1 => 400,
-        2 => 600,
-        _ => throw AssertionError('This should be unreachable.'),
-      };
-    } else {
-      // last row
-      colorValue = switch ((vicinity.column - 1) % 3) {
-        0 => 700,
-        1 => 800,
-        2 => 900,
-        _ => throw AssertionError('This should be unreachable.'),
-      };
-    }
-    return (color: primary[colorValue]!, name: colorValue.toString());
-  }
-
-  String _getPrimaryNameFor(int index) {
-    return switch (index) {
-      0 => 'Red',
-      1 => 'Pink',
-      2 => 'Purple',
-      3 => 'DeepPurple',
-      4 => 'Indigo',
-      5 => 'Blue',
-      6 => 'LightBlue',
-      7 => 'Cyan',
-      8 => 'Teal',
-      9 => 'Green',
-      10 => 'LightGreen',
-      11 => 'Lime',
-      12 => 'Yellow',
-      13 => 'Amber',
-      14 => 'Orange',
-      15 => 'DeepOrange',
-      16 => 'Brown',
-      17 => 'BlueGrey',
-      _ => throw AssertionError('This should be unreachable.'),
-    };
+    return Colors.black;
   }
 }
