@@ -6,6 +6,15 @@ import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
 import 'package:two_dimensional_scrollables/two_dimensional_scrollables.dart';
 
+class MergeArea {
+  int left;
+  int top;
+  int right;
+  int bottom;
+
+  MergeArea(this.left, this.top, this.right, this.bottom);
+}
+
 class TimelinePane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
@@ -22,6 +31,11 @@ class _TimelinePaneState extends State<TimelinePane> {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
   _TimelinePaneState(this.masterSubject, this.focusNode);
+
+  List<MergeArea> merged = [
+    MergeArea(1, 1, 2, 3),
+    MergeArea(4, 4, 10, 4),
+  ];
 
   @override
   void initState() {
@@ -69,9 +83,28 @@ class _TimelinePaneState extends State<TimelinePane> {
       fontSize: 18.0,
       fontWeight: vicinity.column == 0 ? FontWeight.bold : null,
     );
+    for (int i = 0; i < merged.length; i++) {
+      if (merged[i].top <= vicinity.row &&
+          vicinity.row <= merged[i].bottom &&
+          merged[i].left <= vicinity.column &&
+          vicinity.column <= merged[i].right) {
+        return TableViewCell(
+          rowMergeStart: merged[i].top,
+          rowMergeSpan: merged[i].bottom - merged[i].top + 1,
+          columnMergeStart: merged[i].left,
+          columnMergeSpan: merged[i].right - merged[i].left + 1,
+          child: ColoredBox(
+            color: Colors.white,
+            child: Center(
+              child: Text("merged"),
+            ),
+          ),
+        );
+      }
+    }
     return TableViewCell(
-      rowMergeStart: vicinity.column == 0 ? (colorIndex * 3) + 1 : null,
-      rowMergeSpan: vicinity.column == 0 ? 3 : null,
+      //rowMergeStart: vicinity.column == 0 ? (colorIndex * 3) + 1 : null,
+      //rowMergeSpan: vicinity.column == 0 ? 3 : null,
       child: ColoredBox(
         color: cell.color,
         child: Center(
