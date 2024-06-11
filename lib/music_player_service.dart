@@ -20,6 +20,9 @@ class MusicPlayerService {
         masterSubject.add(NotifyIsPlaying(false));
       }
     });
+    player.onDurationChanged.listen((duration) {
+      masterSubject.add(NotifyAudioFileLoaded(duration.inMilliseconds));
+    });
     masterSubject.stream.listen((signal) {
       if (signal is RequestPlayPause) {
         playPause();

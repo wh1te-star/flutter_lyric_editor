@@ -16,8 +16,9 @@ class Sentence {
 
 class TimingPoints {
   final List<int> _points;
+  int audioDuration;
 
-  TimingPoints(this._points);
+  TimingPoints(this._points, this.audioDuration);
 
   int operator [](int index) {
     if (index < 0 || index > _points.length + 2) {
@@ -27,10 +28,16 @@ class TimingPoints {
       return 0;
     }
     if (index == _points.length + 1) {
-      return 10000;
+      return audioDuration;
     }
     return _points[index - 1];
   }
+
+  void updateAudioDuration(int newDuration) {
+    audioDuration = newDuration;
+  }
+
+  List<int> get points => _points;
 }
 
 class TimelinePane extends StatefulWidget {
@@ -50,7 +57,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   final FocusNode focusNode;
   _TimelinePaneState(this.masterSubject, this.focusNode);
 
-  TimingPoints timingPoints = TimingPoints([1000, 2000, 3000]);
+  late TimingPoints timingPoints;
   List<Sentence> sentences = [
     Sentence(0, 2),
     Sentence(1, 3),
@@ -58,11 +65,20 @@ class _TimelinePaneState extends State<TimelinePane> {
     Sentence(0, 3),
     Sentence(1, 4),
   ];
+  int audioDuration = 60000;
 
   @override
   void initState() {
     super.initState();
-    masterSubject.stream.listen((signal) {});
+    timingPoints = TimingPoints([1000, 2000, 3000], audioDuration);
+    masterSubject.stream.listen((signal) {
+      if (signal is NotifyAudioFileLoaded) {
+        setState(() {
+          audioDuration = signal.millisec;
+          timingPoints.updateAudioDuration(audioDuration);
+        });
+      }
+    });
   }
 
   String defaultText = "Timeline Pane";
@@ -75,7 +91,7 @@ class _TimelinePaneState extends State<TimelinePane> {
     return TableView.builder(
       diagonalDragBehavior: DiagonalDragBehavior.free,
       cellBuilder: _buildCell,
-      columnCount: timingPoints._points.length + 2,
+      columnCount: timingPoints.points.length + 2,
       pinnedColumnCount: 1,
       columnBuilder: _buildColumnSpan,
       rowCount: 6,
@@ -108,7 +124,7 @@ class _TimelinePaneState extends State<TimelinePane> {
     if (vicinity.row == 0) {
       return TableViewCell(
         columnMergeStart: 1,
-        columnMergeSpan: timingPoints._points.length + 1,
+        columnMergeSpan: timingPoints.points.length + 1,
         child: CustomPaint(
           painter: ScaleMark(
               interval: 10.0,

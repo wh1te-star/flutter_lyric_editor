@@ -2,6 +2,11 @@ import 'package:lyric_editor/sorted_list.dart';
 
 class RequestPlayPause {}
 
+class NotifyAudioFileLoaded {
+  int millisec;
+  NotifyAudioFileLoaded(this.millisec);
+}
+
 class RequestRewind {
   int millisec;
   RequestRewind(this.millisec);
