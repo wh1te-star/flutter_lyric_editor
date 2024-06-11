@@ -127,10 +127,11 @@ class _TimelinePaneState extends State<TimelinePane> {
         columnMergeSpan: timingPoints.points.length + 1,
         child: CustomPaint(
           painter: ScaleMark(
-              interval: 10.0,
+              intervalLength: 10.0,
               majorMarkLength: 15.0,
               midiumMarkLength: 11.0,
-              minorMarkLength: 8.0),
+              minorMarkLength: 8.0,
+              intervalDuration: 1),
         ),
       );
     }
