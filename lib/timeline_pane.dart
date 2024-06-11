@@ -180,7 +180,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   TableSpan _buildRowSpan(int index) {
     return TableSpan(
       extent: FixedTableSpanExtent(index == 0 ? 20 : 60),
-      padding: const TableSpanPadding(leading: 10.0),
+      padding: const TableSpanPadding(leading: 10.0, trailing: 5.0),
       foregroundDecoration: const TableSpanDecoration(
         border: TableSpanBorder(
           trailing: BorderSide(
