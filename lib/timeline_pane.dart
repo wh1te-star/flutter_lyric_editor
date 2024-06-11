@@ -56,6 +56,7 @@ class _TimelinePaneState extends State<TimelinePane> {
     Sentence(1, 3),
     Sentence(2, 4),
     Sentence(0, 3),
+    Sentence(1, 4),
   ];
 
   @override
@@ -127,33 +128,25 @@ class _TimelinePaneState extends State<TimelinePane> {
         ),
       );
     }
-    /*
-    for (int i = 0; i < merged.length; i++) {
-      if (merged[i].top <= vicinity.row &&
-          vicinity.row <= merged[i].bottom &&
-          merged[i].left <= vicinity.column &&
-          vicinity.column <= merged[i].right) {
+
+    int row = vicinity.row - 1;
+    int column = vicinity.column - 1;
+    if (sentences[row].startTiming <= column &&
+        column < sentences[row].endTiming) {
       return TableViewCell(
-          rowMergeStart: merged[i].top,
-          rowMergeSpan: merged[i].bottom - merged[i].top + 1,
-          columnMergeStart: merged[i].left,
-          columnMergeSpan: merged[i].right - merged[i].left + 1,
-          child: ColoredBox(
-            color: Colors.white,
-            child: Center(
-              child: Text("merged"),
-            ),
+        columnMergeStart: sentences[row].startTiming + 1,
+        columnMergeSpan: sentences[row].endTiming - sentences[row].startTiming,
+        child: ColoredBox(
+          color: indexColor(row),
+          child: Center(
+            child: Text("merged"),
           ),
-        );
-      }
-    }
-    */
-    return TableViewCell(
-      child: ColoredBox(
-        color: cell.color,
-        child: Center(
-          child: Text(cell.name, style: style),
         ),
+      );
+    }
+    return const TableViewCell(
+      child: ColoredBox(
+        color: Colors.white,
       ),
     );
   }
