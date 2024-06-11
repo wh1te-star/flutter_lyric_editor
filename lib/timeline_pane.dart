@@ -14,6 +14,25 @@ class Sentence {
   Sentence(this.startTiming, this.endTiming);
 }
 
+class TimingPoints {
+  final List<int> _points;
+
+  TimingPoints(this._points);
+
+  int operator [](int index) {
+    if (index < 0 || index > _points.length + 2) {
+      throw RangeError.index(index, _points, 'Index out of range');
+    }
+    if (index == 0) {
+      return 0;
+    }
+    if (index == _points.length + 1) {
+      return 10000;
+    }
+    return _points[index - 1];
+  }
+}
+
 class TimelinePane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
@@ -31,7 +50,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   final FocusNode focusNode;
   _TimelinePaneState(this.masterSubject, this.focusNode);
 
-  List<int> timingPoints = [1000, 2000, 3000];
+  TimingPoints timingPoints = TimingPoints([1000, 2000, 3000]);
   List<Sentence> sentences = [
     Sentence(0, 2),
     Sentence(1, 3),
@@ -55,7 +74,7 @@ class _TimelinePaneState extends State<TimelinePane> {
     return TableView.builder(
       diagonalDragBehavior: DiagonalDragBehavior.free,
       cellBuilder: _buildCell,
-      columnCount: timingPoints.length + 2,
+      columnCount: timingPoints._points.length + 2,
       pinnedColumnCount: 1,
       columnBuilder: _buildColumnSpan,
       rowCount: 6,
@@ -88,7 +107,7 @@ class _TimelinePaneState extends State<TimelinePane> {
     if (vicinity.row == 0) {
       return TableViewCell(
         columnMergeStart: 1,
-        columnMergeSpan: timingPoints.length + 1,
+        columnMergeSpan: timingPoints._points.length + 1,
         child: CustomPaint(
           painter: ScaleMark(
               interval: 10.0,
@@ -114,7 +133,7 @@ class _TimelinePaneState extends State<TimelinePane> {
           vicinity.row <= merged[i].bottom &&
           merged[i].left <= vicinity.column &&
           vicinity.column <= merged[i].right) {
-        return TableViewCell(
+      return TableViewCell(
           rowMergeStart: merged[i].top,
           rowMergeSpan: merged[i].bottom - merged[i].top + 1,
           columnMergeStart: merged[i].left,
@@ -143,12 +162,8 @@ class _TimelinePaneState extends State<TimelinePane> {
     double extent = 0;
     if (index == 0) {
       extent = 160;
-    } else if (index == 1) {
-      extent = timingPoints[index - 1].toDouble();
-    } else if (index < timingPoints.length + 1) {
-      extent = (timingPoints[index - 1] - timingPoints[index - 2]).toDouble();
-    } else if (index == timingPoints.length + 1) {
-      extent = (10000 - timingPoints[index - 2]).toDouble();
+    } else {
+      extent = (timingPoints[index] - timingPoints[index - 1]).toDouble();
     }
     return TableSpan(
         extent: FixedTableSpanExtent(extent),
