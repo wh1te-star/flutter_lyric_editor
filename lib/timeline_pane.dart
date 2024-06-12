@@ -5,6 +5,70 @@ import 'scale_mark.dart';
 import 'lyric_snippet.dart';
 import 'package:two_dimensional_scrollables/two_dimensional_scrollables.dart';
 
+class RectanglePainter extends CustomPainter {
+  final LyricSnippet snippet;
+  final double intervalLength;
+  final int intervalDuration;
+  final double topMargin;
+  final double bottomMargin;
+  final Color indexColor;
+
+  RectanglePainter({
+    required this.snippet,
+    required this.intervalLength,
+    required this.intervalDuration,
+    required this.topMargin,
+    required this.bottomMargin,
+    required this.indexColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint();
+
+    final left = snippet.startTimestamp * intervalLength / intervalDuration;
+    final right = snippet.endTimestamp * intervalLength / intervalDuration;
+    final top = topMargin;
+    final bottom = size.height - bottomMargin;
+
+    paint.color = indexColor;
+
+    final rect = Rect.fromLTRB(left, top, right, bottom);
+    canvas.drawRect(rect, paint);
+
+    final textSpan = TextSpan(
+      text: snippet.sentence,
+      style: TextStyle(
+          color: ThemeData.estimateBrightnessForColor(indexColor) ==
+                  Brightness.light
+              ? Colors.black
+              : Colors.white,
+          fontSize: 16),
+    );
+    final textPainter = TextPainter(
+      text: textSpan,
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout(
+      minWidth: 0,
+      maxWidth: rect.width,
+    );
+
+    final offset = Offset(
+      rect.left + (rect.width - textPainter.width) / 2,
+      rect.top + (rect.height - textPainter.height) / 2,
+    );
+
+    textPainter.paint(canvas, offset);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
+}
+
 class TimelinePane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
@@ -113,10 +177,18 @@ class _TimelinePaneState extends State<TimelinePane> {
 
     int row = vicinity.row - 1;
     int column = vicinity.column - 1;
-
-    return const TableViewCell(
-      child: ColoredBox(
-        color: Colors.white,
+    double topMargin = 0;
+    double bottomMargin = 0;
+    return TableViewCell(
+      child: CustomPaint(
+        painter: RectanglePainter(
+          snippet: snippets[row],
+          intervalLength: intervalLength,
+          intervalDuration: intervalDuration,
+          topMargin: topMargin,
+          bottomMargin: bottomMargin,
+          indexColor: indexColor(row),
+        ),
       ),
     );
   }
