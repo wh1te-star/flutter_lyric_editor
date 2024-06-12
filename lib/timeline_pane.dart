@@ -66,11 +66,16 @@ class _TimelinePaneState extends State<TimelinePane> {
     Sentence(1, 4),
   ];
   int audioDuration = 60000;
+  final double intervalLength = 10.0;
+  final double majorMarkLength = 15.0;
+  final double midiumMarkLength = 11.0;
+  final double minorMarkLength = 8.0;
+  final int intervalDuration = 1000;
 
   @override
   void initState() {
     super.initState();
-    timingPoints = TimingPoints([1000, 2000, 3000], audioDuration);
+    timingPoints = TimingPoints([10000, 30000, 60000], audioDuration);
     masterSubject.stream.listen((signal) {
       if (signal is NotifyAudioFileLoaded) {
         setState(() {
@@ -127,11 +132,11 @@ class _TimelinePaneState extends State<TimelinePane> {
         columnMergeSpan: timingPoints.points.length + 1,
         child: CustomPaint(
           painter: ScaleMark(
-              intervalLength: 10.0,
-              majorMarkLength: 15.0,
-              midiumMarkLength: 11.0,
-              minorMarkLength: 8.0,
-              intervalDuration: 1),
+              intervalLength: intervalLength,
+              majorMarkLength: majorMarkLength,
+              midiumMarkLength: midiumMarkLength,
+              minorMarkLength: minorMarkLength,
+              intervalDuration: intervalDuration),
         ),
       );
     }
@@ -173,7 +178,10 @@ class _TimelinePaneState extends State<TimelinePane> {
     if (index == 0) {
       extent = 160;
     } else {
-      extent = (timingPoints[index] - timingPoints[index - 1]).toDouble();
+      extent = ((timingPoints[index] - timingPoints[index - 1]) *
+              intervalLength /
+              intervalDuration)
+          .toDouble();
     }
     return TableSpan(
         extent: FixedTableSpanExtent(extent),
