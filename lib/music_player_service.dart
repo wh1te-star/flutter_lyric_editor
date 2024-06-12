@@ -21,8 +21,7 @@ class MusicPlayerService {
       }
     });
     player.onDurationChanged.listen((duration) {
-      //masterSubject.add(NotifyAudioFileLoaded(duration.inMilliseconds));
-      masterSubject.add(NotifyAudioFileLoaded(120500));
+      masterSubject.add(NotifyAudioFileLoaded(duration.inMilliseconds));
     });
     masterSubject.stream.listen((signal) {
       if (signal is RequestPlayPause) {

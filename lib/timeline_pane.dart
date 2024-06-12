@@ -1,44 +1,9 @@
-import 'dart:ffi';
-import 'dart:ui';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
 import 'scale_mark.dart';
+import 'lyric_snippet.dart';
 import 'package:two_dimensional_scrollables/two_dimensional_scrollables.dart';
-
-class Sentence {
-  int startTiming;
-  int endTiming;
-  Sentence(this.startTiming, this.endTiming);
-}
-
-class TimingPoints {
-  final List<int> _points;
-  int audioDuration;
-
-  TimingPoints(this._points, this.audioDuration);
-
-  int operator [](int index) {
-    if (index < 0 || index > _points.length + 2) {
-      throw RangeError.index(index, _points, 'Index out of range');
-    }
-    if (index == 0) {
-      return 0;
-    }
-    if (index == _points.length + 1) {
-      return audioDuration;
-    }
-    return _points[index - 1];
-  }
-
-  void updateAudioDuration(int newDuration) {
-    audioDuration = newDuration;
-  }
-
-  List<int> get points => _points;
-}
 
 class TimelinePane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
@@ -57,13 +22,12 @@ class _TimelinePaneState extends State<TimelinePane> {
   final FocusNode focusNode;
   _TimelinePaneState(this.masterSubject, this.focusNode);
 
-  late TimingPoints timingPoints;
-  List<Sentence> sentences = [
-    Sentence(0, 2),
-    Sentence(1, 3),
-    Sentence(2, 4),
-    Sentence(0, 3),
-    Sentence(1, 4),
+  List<LyricSnippet> snippets = [
+    LyricSnippet(sentence: "abc", startTimestamp: 15000, endTimestamp: 45000),
+    LyricSnippet(sentence: "def", startTimestamp: 30000, endTimestamp: 60000),
+    LyricSnippet(sentence: "xyz", startTimestamp: 4500, endTimestamp: 60000),
+    LyricSnippet(sentence: "あいう", startTimestamp: 60000, endTimestamp: 100000),
+    LyricSnippet(sentence: "〇✕△☐", startTimestamp: 80000, endTimestamp: 100000),
   ];
   int audioDuration = 60000;
   final double intervalLength = 10.0;
@@ -75,12 +39,10 @@ class _TimelinePaneState extends State<TimelinePane> {
   @override
   void initState() {
     super.initState();
-    timingPoints = TimingPoints([10000, 30000, 60000], audioDuration);
     masterSubject.stream.listen((signal) {
       if (signal is NotifyAudioFileLoaded) {
         setState(() {
           audioDuration = signal.millisec;
-          timingPoints.updateAudioDuration(audioDuration);
         });
       }
     });
@@ -96,7 +58,7 @@ class _TimelinePaneState extends State<TimelinePane> {
     return TableView.builder(
       diagonalDragBehavior: DiagonalDragBehavior.free,
       cellBuilder: _buildCell,
-      columnCount: timingPoints.points.length + 2,
+      columnCount: 2,
       pinnedColumnCount: 1,
       columnBuilder: _buildColumnSpan,
       rowCount: 6,
@@ -128,8 +90,6 @@ class _TimelinePaneState extends State<TimelinePane> {
     }
     if (vicinity.row == 0) {
       return TableViewCell(
-        columnMergeStart: 1,
-        columnMergeSpan: timingPoints.points.length + 1,
         child: CustomPaint(
           painter: ScaleMark(
               intervalLength: intervalLength,
@@ -153,19 +113,7 @@ class _TimelinePaneState extends State<TimelinePane> {
 
     int row = vicinity.row - 1;
     int column = vicinity.column - 1;
-    if (sentences[row].startTiming <= column &&
-        column < sentences[row].endTiming) {
-      return TableViewCell(
-        columnMergeStart: sentences[row].startTiming + 1,
-        columnMergeSpan: sentences[row].endTiming - sentences[row].startTiming,
-        child: ColoredBox(
-          color: indexColor(row),
-          child: Center(
-            child: Text("merged"),
-          ),
-        ),
-      );
-    }
+
     return const TableViewCell(
       child: ColoredBox(
         color: Colors.white,
@@ -178,10 +126,7 @@ class _TimelinePaneState extends State<TimelinePane> {
     if (index == 0) {
       extent = 160;
     } else {
-      extent = ((timingPoints[index] - timingPoints[index - 1]) *
-              intervalLength /
-              intervalDuration)
-          .toDouble();
+      extent = audioDuration * intervalLength / intervalDuration;
     }
     return TableSpan(
         extent: FixedTableSpanExtent(extent),
