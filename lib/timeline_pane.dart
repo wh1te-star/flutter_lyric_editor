@@ -49,6 +49,8 @@ class RectanglePainter extends CustomPainter {
       text: textSpan,
       textAlign: TextAlign.center,
       textDirection: TextDirection.ltr,
+      maxLines: 1,
+      ellipsis: '...',
     );
     textPainter.layout(
       minWidth: 0,
@@ -91,7 +93,11 @@ class _TimelinePaneState extends State<TimelinePane> {
     LyricSnippet(sentence: "def", startTimestamp: 30000, endTimestamp: 60000),
     LyricSnippet(sentence: "xyz", startTimestamp: 4500, endTimestamp: 60000),
     LyricSnippet(sentence: "あいう", startTimestamp: 60000, endTimestamp: 100000),
-    LyricSnippet(sentence: "〇✕△☐", startTimestamp: 80000, endTimestamp: 100000),
+    LyricSnippet(
+        sentence:
+            "〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐",
+        startTimestamp: 80000,
+        endTimestamp: 100000),
   ];
   int audioDuration = 60000;
   final double intervalLength = 10.0;
