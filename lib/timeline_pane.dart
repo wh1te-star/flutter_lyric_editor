@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
 import 'scale_mark.dart';
@@ -126,19 +127,22 @@ class _TimelinePaneState extends State<TimelinePane> {
 
   @override
   Widget build(BuildContext context) {
-    final ScrollController _verticalController = ScrollController();
-    final ScrollController _horizontalController = ScrollController();
+    final CurrentPositionIndicatorDelegate delegate =
+        CurrentPositionIndicatorDelegate();
 
-    return TableView.builder(
-      diagonalDragBehavior: DiagonalDragBehavior.free,
-      cellBuilder: _buildCell,
-      columnCount: 2,
-      pinnedColumnCount: 1,
-      columnBuilder: _buildColumnSpan,
-      rowCount: 6,
-      pinnedRowCount: 1,
-      rowBuilder: _buildRowSpan,
-    );
+    return Stack(children: [
+      TableView.builder(
+        diagonalDragBehavior: DiagonalDragBehavior.free,
+        cellBuilder: _buildCell,
+        columnCount: 2,
+        pinnedColumnCount: 1,
+        columnBuilder: _buildColumnSpan,
+        rowCount: 6,
+        pinnedRowCount: 1,
+        rowBuilder: _buildRowSpan,
+      ),
+      CurrentPositionIndicator(x: 100, height: 100, delegate: delegate),
+    ]);
   }
 
   TableViewCell _buildCell(BuildContext context, TableVicinity vicinity) {
@@ -258,5 +262,76 @@ class _TimelinePaneState extends State<TimelinePane> {
         return Colors.redAccent;
     }
     return Colors.black;
+  }
+}
+
+class CurrentPositionIndicator extends TwoDimensionalScrollView {
+  final double x;
+  final double height;
+
+  CurrentPositionIndicator({
+    super.key,
+    required this.x,
+    required this.height,
+    required TwoDimensionalChildDelegate delegate,
+  }) : super(delegate: delegate);
+
+  @override
+  Widget buildViewport(BuildContext context, ViewportOffset verticalOffset,
+      ViewportOffset horizontalOffset) {
+    return CustomPaint(
+      painter: CurrentPositionIndicatorPainter(x: x, height: height),
+      child: Container(),
+    );
+  }
+}
+
+class CurrentPositionIndicatorPainter extends CustomPainter {
+  final double x;
+  final double height;
+
+  CurrentPositionIndicatorPainter({required this.x, required this.height});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint()
+      ..color = Colors.red
+      ..strokeWidth = 2.0;
+
+    canvas.drawLine(Offset(x, 0), Offset(x, height), paint);
+
+    Paint transparentPaint = Paint()
+      ..color = Colors.transparent
+      ..style = PaintingStyle.fill;
+
+    canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.width, size.height), transparentPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
+}
+
+class CurrentPositionIndicatorDelegate extends TwoDimensionalChildDelegate {
+  @override
+  Widget? build(BuildContext context, ChildVicinity vicinity) {
+    return Container(
+      color: Colors.blue,
+      child: Center(child: Text('Cell $vicinity.row, $vicinity.column')),
+    );
+  }
+
+  @override
+  int get rowCount => 6;
+
+  @override
+  int get columnCount => 2;
+
+  @override
+  bool shouldRebuild(covariant TwoDimensionalChildDelegate oldDelegate) {
+    // TODO: implement shouldRebuild
+    return false;
   }
 }
