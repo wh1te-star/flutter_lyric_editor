@@ -165,7 +165,7 @@ class _TimelinePaneState extends State<TimelinePane> {
             scrollDirection: Axis.horizontal,
             child: CustomPaint(
               size:
-                  Size(audioDuration * intervalLength / intervalDuration, 3000),
+                  Size(audioDuration * intervalLength / intervalDuration, 800),
               painter: CurrentPositionIndicatorPainter(
                   x: currentPosition * intervalLength / intervalDuration),
             ),
@@ -357,14 +357,7 @@ class CurrentPositionIndicatorPainter extends CustomPainter {
       ..color = Colors.red
       ..strokeWidth = 2.0;
 
-    canvas.drawLine(Offset(x, 100), Offset(x, size.height - 100), paint);
-
-    Paint transparentPaint = Paint()
-      ..color = Colors.yellow.withOpacity(0.5)
-      ..style = PaintingStyle.fill;
-
-    canvas.drawRect(
-        Rect.fromLTWH(0, 0, size.width, size.height), transparentPaint);
+    canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
   }
 
   @override
