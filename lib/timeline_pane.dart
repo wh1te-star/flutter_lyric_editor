@@ -88,17 +88,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   final FocusNode focusNode;
   _TimelinePaneState(this.masterSubject, this.focusNode);
 
-  List<LyricSnippet> snippets = [
-    LyricSnippet(sentence: "abc", startTimestamp: 15000, endTimestamp: 45000),
-    LyricSnippet(sentence: "def", startTimestamp: 30000, endTimestamp: 60000),
-    LyricSnippet(sentence: "xyz", startTimestamp: 4500, endTimestamp: 60000),
-    LyricSnippet(sentence: "あいう", startTimestamp: 60000, endTimestamp: 100000),
-    LyricSnippet(
-        sentence:
-            "〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐〇✕△☐",
-        startTimestamp: 80000,
-        endTimestamp: 100000),
-  ];
+  List<LyricSnippet> snippets = [];
   int audioDuration = 60000;
   final double intervalLength = 10.0;
   final double majorMarkLength = 15.0;
@@ -113,6 +103,20 @@ class _TimelinePaneState extends State<TimelinePane> {
       if (signal is NotifyAudioFileLoaded) {
         setState(() {
           audioDuration = signal.millisec;
+          String entireLyricString = snippets[0].sentence;
+          snippets.clear();
+          snippets.add(LyricSnippet(
+              sentence: entireLyricString,
+              startTimestamp: 0,
+              endTimestamp: audioDuration));
+        });
+      }
+      if (signal is NotifyLyricParsed) {
+        setState(() {
+          snippets.add(LyricSnippet(
+              sentence: signal.entireLyricString,
+              startTimestamp: 0,
+              endTimestamp: audioDuration));
         });
       }
     });
@@ -182,21 +186,26 @@ class _TimelinePaneState extends State<TimelinePane> {
     }
 
     int row = vicinity.row - 1;
-    int column = vicinity.column - 1;
-    double topMargin = 0;
-    double bottomMargin = 0;
-    return TableViewCell(
-      child: CustomPaint(
-        painter: RectanglePainter(
-          snippet: snippets[row],
-          intervalLength: intervalLength,
-          intervalDuration: intervalDuration,
-          topMargin: topMargin,
-          bottomMargin: bottomMargin,
-          indexColor: indexColor(row),
+    if (row < snippets.length) {
+      double topMargin = 0;
+      double bottomMargin = 0;
+      return TableViewCell(
+        child: CustomPaint(
+          painter: RectanglePainter(
+            snippet: snippets[row],
+            intervalLength: intervalLength,
+            intervalDuration: intervalDuration,
+            topMargin: topMargin,
+            bottomMargin: bottomMargin,
+            indexColor: indexColor(row),
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      return TableViewCell(
+        child: ColoredBox(color: Colors.white),
+      );
+    }
   }
 
   TableSpan _buildColumnSpan(int index) {
