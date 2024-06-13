@@ -25,8 +25,8 @@ class ScaleMark extends CustomPainter {
       Offset(size.width, size.height),
       paint,
     );
-    double x = 0.0;
-    for (int i = 0; x <= size.width; i++, x += intervalLength) {
+    double x = intervalLength - 1;
+    for (int i = 1; x <= size.width; i++, x += intervalLength) {
       if (i % 10 == 0) {
         canvas.drawLine(
           Offset(x, size.height - majorMarkLength),
