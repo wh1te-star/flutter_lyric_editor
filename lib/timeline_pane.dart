@@ -98,6 +98,8 @@ class _TimelinePaneState extends State<TimelinePane> {
 
   List<LyricSnippet> snippets = [];
   int audioDuration = 60000;
+  int currentPosition = 0;
+  final ScrollController currentPositionScroller = ScrollController();
   final double intervalLength = 10.0;
   final double majorMarkLength = 15.0;
   final double midiumMarkLength = 11.0;
@@ -119,6 +121,11 @@ class _TimelinePaneState extends State<TimelinePane> {
               endTimestamp: audioDuration));
         });
       }
+      if (signal is NotifySeekPosition) {
+        setState(() {
+          currentPosition = signal.seekPosition;
+        });
+      }
       if (signal is NotifyLyricParsed) {
         setState(() {
           snippets.add(LyricSnippet(
@@ -128,6 +135,7 @@ class _TimelinePaneState extends State<TimelinePane> {
         });
       }
     });
+    horizontalDetails.controller!.addListener(_onHorizontalScroll);
   }
 
   String defaultText = "Timeline Pane";
@@ -150,13 +158,22 @@ class _TimelinePaneState extends State<TimelinePane> {
       IgnorePointer(
         ignoring: true,
         child: SingleChildScrollView(
+          controller: currentPositionScroller,
+          scrollDirection: Axis.horizontal,
           child: CustomPaint(
             size: Size(2000, 1000), // Set the size of the CustomPaint
-            painter: CurrentPositionIndicatorPainter(x: 100.0, height: 1000.0),
+            painter: CurrentPositionIndicatorPainter(x: 1000.0, height: 1000.0),
           ),
         ),
       ),
     ]);
+  }
+
+  @override
+  void dispose() {
+    horizontalDetails.controller!.removeListener(_onHorizontalScroll);
+    horizontalDetails.controller!.dispose();
+    super.dispose();
   }
 
   TableViewCell _buildCell(BuildContext context, TableVicinity vicinity) {
@@ -276,6 +293,19 @@ class _TimelinePaneState extends State<TimelinePane> {
         return Colors.redAccent;
     }
     return Colors.black;
+  }
+
+  void _onHorizontalScroll() {
+    debugPrint("jumpto init");
+    if (horizontalDetails.controller!.hasClients &&
+        currentPositionScroller.hasClients) {
+      debugPrint("jumpto pre");
+      if (horizontalDetails.controller!.offset !=
+          currentPositionScroller.offset) {
+        debugPrint("jumpto");
+        currentPositionScroller.jumpTo(horizontalDetails.controller!.offset);
+      }
+    }
   }
 }
 
