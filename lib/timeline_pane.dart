@@ -89,6 +89,13 @@ class _TimelinePaneState extends State<TimelinePane> {
   final FocusNode focusNode;
   _TimelinePaneState(this.masterSubject, this.focusNode);
 
+  final ScrollableDetails verticalDetails = ScrollableDetails(
+      direction: AxisDirection.down, controller: ScrollController());
+  final ScrollableDetails horizontalDetails = ScrollableDetails(
+      direction: AxisDirection.right, controller: ScrollController());
+  final CurrentPositionIndicatorDelegate delegate =
+      CurrentPositionIndicatorDelegate();
+
   List<LyricSnippet> snippets = [];
   int audioDuration = 60000;
   final double intervalLength = 10.0;
@@ -127,11 +134,10 @@ class _TimelinePaneState extends State<TimelinePane> {
 
   @override
   Widget build(BuildContext context) {
-    final CurrentPositionIndicatorDelegate delegate =
-        CurrentPositionIndicatorDelegate();
-
     return Stack(children: [
       TableView.builder(
+        verticalDetails: verticalDetails,
+        horizontalDetails: horizontalDetails,
         diagonalDragBehavior: DiagonalDragBehavior.free,
         cellBuilder: _buildCell,
         columnCount: 2,
@@ -141,7 +147,15 @@ class _TimelinePaneState extends State<TimelinePane> {
         pinnedRowCount: 1,
         rowBuilder: _buildRowSpan,
       ),
-      CurrentPositionIndicator(x: 100, height: 100, delegate: delegate),
+      IgnorePointer(
+        ignoring: true,
+        child: SingleChildScrollView(
+          child: CustomPaint(
+            size: Size(2000, 1000), // Set the size of the CustomPaint
+            painter: CurrentPositionIndicatorPainter(x: 100.0, height: 1000.0),
+          ),
+        ),
+      ),
     ]);
   }
 
@@ -274,15 +288,26 @@ class CurrentPositionIndicator extends TwoDimensionalScrollView {
     required this.x,
     required this.height,
     required TwoDimensionalChildDelegate delegate,
-  }) : super(delegate: delegate);
+    required verticalDetails,
+    required horizontalDetails,
+  }) : super(
+          delegate: delegate,
+          verticalDetails: verticalDetails,
+          horizontalDetails: horizontalDetails,
+        );
 
   @override
   Widget buildViewport(BuildContext context, ViewportOffset verticalOffset,
       ViewportOffset horizontalOffset) {
+    return Container(
+      color: Colors.transparent,
+    );
+    /*
     return CustomPaint(
       painter: CurrentPositionIndicatorPainter(x: x, height: height),
       child: Container(),
     );
+    */
   }
 }
 
@@ -298,7 +323,7 @@ class CurrentPositionIndicatorPainter extends CustomPainter {
       ..color = Colors.red
       ..strokeWidth = 2.0;
 
-    canvas.drawLine(Offset(x, 0), Offset(x, height), paint);
+    canvas.drawLine(Offset(x, 100), Offset(x, height - 100), paint);
 
     Paint transparentPaint = Paint()
       ..color = Colors.transparent
