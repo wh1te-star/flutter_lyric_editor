@@ -136,6 +136,7 @@ class _TimelinePaneState extends State<TimelinePane> {
       }
     });
     horizontalDetails.controller!.addListener(_onHorizontalScroll);
+    currentPositionScroller.addListener(_onHorizontalScroll);
   }
 
   String defaultText = "Timeline Pane";
@@ -157,12 +158,17 @@ class _TimelinePaneState extends State<TimelinePane> {
       ),
       IgnorePointer(
         ignoring: true,
-        child: SingleChildScrollView(
-          controller: currentPositionScroller,
-          scrollDirection: Axis.horizontal,
-          child: CustomPaint(
-            size: Size(2000, 1000), // Set the size of the CustomPaint
-            painter: CurrentPositionIndicatorPainter(x: 1000.0, height: 1000.0),
+        child: Padding(
+          padding: const EdgeInsets.only(left: 160.0),
+          child: SingleChildScrollView(
+            controller: currentPositionScroller,
+            scrollDirection: Axis.horizontal,
+            child: CustomPaint(
+              size:
+                  Size(audioDuration * intervalLength / intervalDuration, 3000),
+              painter: CurrentPositionIndicatorPainter(
+                  x: currentPosition * intervalLength / intervalDuration),
+            ),
           ),
         ),
       ),
@@ -172,7 +178,9 @@ class _TimelinePaneState extends State<TimelinePane> {
   @override
   void dispose() {
     horizontalDetails.controller!.removeListener(_onHorizontalScroll);
+    currentPositionScroller.removeListener(_onHorizontalScroll);
     horizontalDetails.controller!.dispose();
+    currentPositionScroller.dispose();
     super.dispose();
   }
 
@@ -296,13 +304,10 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   void _onHorizontalScroll() {
-    debugPrint("jumpto init");
     if (horizontalDetails.controller!.hasClients &&
         currentPositionScroller.hasClients) {
-      debugPrint("jumpto pre");
       if (horizontalDetails.controller!.offset !=
           currentPositionScroller.offset) {
-        debugPrint("jumpto");
         currentPositionScroller.jumpTo(horizontalDetails.controller!.offset);
       }
     }
@@ -343,9 +348,8 @@ class CurrentPositionIndicator extends TwoDimensionalScrollView {
 
 class CurrentPositionIndicatorPainter extends CustomPainter {
   final double x;
-  final double height;
 
-  CurrentPositionIndicatorPainter({required this.x, required this.height});
+  CurrentPositionIndicatorPainter({required this.x});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -353,10 +357,10 @@ class CurrentPositionIndicatorPainter extends CustomPainter {
       ..color = Colors.red
       ..strokeWidth = 2.0;
 
-    canvas.drawLine(Offset(x, 100), Offset(x, height - 100), paint);
+    canvas.drawLine(Offset(x, 100), Offset(x, size.height - 100), paint);
 
     Paint transparentPaint = Paint()
-      ..color = Colors.transparent
+      ..color = Colors.yellow.withOpacity(0.5)
       ..style = PaintingStyle.fill;
 
     canvas.drawRect(
@@ -365,7 +369,7 @@ class CurrentPositionIndicatorPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
+    return true;
   }
 }
 
