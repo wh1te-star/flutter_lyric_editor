@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lyric_editor/lyric_service.dart';
+import 'package:lyric_editor/timing_service.dart';
 import 'package:lyric_editor/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
 import 'appbar_menu.dart';
@@ -44,7 +44,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
 
   final masterSubject = PublishSubject<dynamic>();
   late MusicPlayerService musicPlayerService;
-  late LyricService lyricService;
+  late TimingService lyricService;
   late FocusNode videoPaneFocusNode;
   late FocusNode textPaneFocusNode;
   late FocusNode timelinePaneFocusNode;
@@ -61,7 +61,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     super.initState();
 
     musicPlayerService = MusicPlayerService(masterSubject: masterSubject);
-    lyricService = LyricService(masterSubject: masterSubject);
+    lyricService = TimingService(masterSubject: masterSubject);
     videoPaneFocusNode = FocusNode();
     textPaneFocusNode = FocusNode();
     timelinePaneFocusNode = FocusNode();

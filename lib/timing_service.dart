@@ -5,7 +5,7 @@ import 'package:xml/xml.dart' as xml;
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
 
-class LyricService {
+class TimingService {
   final PublishSubject<dynamic> masterSubject;
   var rawLyricText = "";
   late final String parsedLyricList;
@@ -16,7 +16,7 @@ class LyricService {
   SortedList<int> linefeedPoints = SortedList<int>([19, 38, 57, 70, 98, 100]);
   //List<int> sectionPoints = [82];
 
-  LyricService({required this.masterSubject}) {
+  TimingService({required this.masterSubject}) {
     masterSubject.stream.listen((signal) {
       if (signal is RequestToAddLyricTiming) {
         timingPoints.add(signal.characterPosition);
