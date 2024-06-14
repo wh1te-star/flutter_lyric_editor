@@ -7,8 +7,8 @@ import 'signal_structure.dart';
 
 class TimingService {
   final PublishSubject<dynamic> masterSubject;
-  var rawLyricText = "";
-  late final String parsedLyricList;
+  String rawLyricText = "";
+  late final List<String> lyricSnippetList;
   Future<void>? _loadLyricsFuture;
 
   SortedList<int> timingPoints =
@@ -35,15 +35,15 @@ class TimingService {
       rawLyricText = await rootBundle.loadString('assets/ウェルカムティーフレンド.lrc');
       masterSubject.add(NotifyLyricLoaded(rawLyricText));
 
-      parsedLyricList = parseLyric(rawLyricText);
+      lyricSnippetList = parseLyric(rawLyricText);
       masterSubject.add(
-          NotifyLyricParsed(parsedLyricList, timingPoints, linefeedPoints));
+          NotifyLyricParsed(lyricSnippetList, timingPoints, linefeedPoints));
     } catch (e) {
       debugPrint("Error loading lyrics: $e");
     }
   }
 
-  String parseLyric(String rawLyricText) {
+  List<String> parseLyric(String rawLyricText) {
     xml.XmlDocument parsedXmlText = xml.XmlDocument.parse(rawLyricText);
     final lineTimestamps = parsedXmlText.findAllElements('LineTimestamp');
     String sentences = "";
@@ -61,7 +61,7 @@ class TimingService {
       }
     }
 
-    return sentences;
+    return [sentences];
   }
 
   Future<void> printLyric() async {

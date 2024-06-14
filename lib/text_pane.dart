@@ -24,6 +24,7 @@ class _TextPaneState extends State<TextPane> {
 
   String entireLyricString = "";
   int cursorPosition = 0;
+  int seekPosition = 0;
 
   List<String> sentenceList = [];
   List<String> listItems = [];
@@ -44,7 +45,7 @@ class _TextPaneState extends State<TextPane> {
 
     masterSubject.stream.listen((signal) {
       if (signal is NotifyLyricParsed) {
-        entireLyricString = signal.entireLyricString;
+        entireLyricString = signal.entireLyricString[0];
         for (int value in signal.timingPoints.list) {
           timingPointMap[value] = timingPointChar;
         }
@@ -75,6 +76,10 @@ class _TextPaneState extends State<TextPane> {
         timingPointMap.remove(signal.characterPosition);
         updateIndicators();
         setState(() {});
+      }
+
+      if (signal is NotifySeekPosition) {
+        seekPosition = signal.seekPosition;
       }
     });
     focusNode = FocusNode();
@@ -157,7 +162,8 @@ class _TextPaneState extends State<TextPane> {
         }
         if (event is KeyDownEvent &&
             event.logicalKey == LogicalKeyboardKey.keyN) {
-          masterSubject.add(RequestToAddLyricTiming(cursorPosition));
+          masterSubject
+              .add(RequestToAddLyricTiming(cursorPosition, seekPosition));
           debugPrint(
               "request to add a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
           return KeyEventResult.handled;

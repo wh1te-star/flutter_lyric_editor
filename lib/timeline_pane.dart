@@ -129,7 +129,7 @@ class _TimelinePaneState extends State<TimelinePane> {
       if (signal is NotifyLyricParsed) {
         setState(() {
           snippets.add(LyricSnippet(
-              sentence: signal.entireLyricString,
+              sentence: signal.entireLyricString[0],
               startTimestamp: 0,
               endTimestamp: audioDuration));
         });

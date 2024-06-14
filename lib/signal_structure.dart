@@ -39,7 +39,8 @@ class RequestSpeedDown {
 
 class RequestToAddLyricTiming {
   int characterPosition;
-  RequestToAddLyricTiming(this.characterPosition);
+  int seekPosition;
+  RequestToAddLyricTiming(this.characterPosition, this.seekPosition);
 }
 
 class NotifyTimingPointAdded {
@@ -78,7 +79,7 @@ class NotifyLyricLoaded {
 }
 
 class NotifyLyricParsed {
-  String entireLyricString;
+  List<String> entireLyricString;
   SortedList<int> timingPoints;
   SortedList<int> linefeedPoints;
   //SortedList<int> sectionPoints;
