@@ -48,13 +48,6 @@ class _TextPaneState extends State<TextPane> {
         lyricSnippets = signal.lyricSnippetList;
         lyricAppearance = List.filled(lyricSnippets.length, '');
 
-        /*
-        var combinedLineMap = <int, String>{};
-        //combinedMap.addAll(sectionPointMap);
-        entireLyricString = InsertChars(entireLyricString, combinedLineMap);
-        lyricSnippets = entireLyricString.split("\n");
-        */
-
         updateIndicators();
 
         setState(() {});
@@ -88,22 +81,13 @@ class _TextPaneState extends State<TextPane> {
     setState(() {});
   }
 
-  List<String> resizeList(List<String> list, int newLength) {
-    if (newLength < list.length) {
-      // Truncate the list if newLength is less than the current length
-      return list.sublist(0, newLength);
-    } else {
-      // Extend the list with empty strings if newLength is greater than the current length
-      return List<String>.generate(
-          newLength, (index) => index < list.length ? list[index] : '');
-    }
-  }
-
   void updateIndicators() {
     timingPointsForEachLine = lyricSnippets
         .map((snippet) => snippet.timingPoints
-            .map((timingPoint) => timingPoint.characterPosition)
-            .toList())
+            .take(snippet.timingPoints.length - 1)
+            .map((timingPoint) => timingPoint.characterLength)
+            .fold<List<int>>(
+                [], (acc, pos) => acc..add((acc.isEmpty ? 0 : acc.last) + pos)))
         .toList();
     for (int i = 0; i < timingPointsForEachLine.length; i++) {
       Map<int, String> timingPointsForEachLineMap = timingPointsForEachLine[i]

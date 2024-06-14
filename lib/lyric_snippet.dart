@@ -1,7 +1,7 @@
 class TimingPoint {
-  int characterPosition;
+  int characterLength;
   int seekPosition;
-  TimingPoint(this.characterPosition, this.seekPosition);
+  TimingPoint(this.characterLength, this.seekPosition);
 }
 
 class LyricSnippet {

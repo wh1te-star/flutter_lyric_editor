@@ -63,7 +63,7 @@ class TimingService {
         for (var wordTimestamp in wordTimestamps) {
           final time = parseTimestamp(wordTimestamp.getAttribute('time')!);
           final word = wordTimestamp.innerText;
-          timingPoints.add(TimingPoint(sentence.length, time));
+          timingPoints.add(TimingPoint(word.length, time));
           sentence += word;
         }
 
