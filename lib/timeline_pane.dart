@@ -113,12 +113,6 @@ class _TimelinePaneState extends State<TimelinePane> {
       if (signal is NotifyAudioFileLoaded) {
         setState(() {
           audioDuration = signal.millisec;
-          String entireLyricString = snippets[0].sentence;
-          snippets.clear();
-          snippets.add(LyricSnippet(
-              sentence: entireLyricString,
-              startTimestamp: 0,
-              endTimestamp: audioDuration));
         });
       }
       if (signal is NotifySeekPosition) {
@@ -128,10 +122,7 @@ class _TimelinePaneState extends State<TimelinePane> {
       }
       if (signal is NotifyLyricParsed) {
         setState(() {
-          snippets.add(LyricSnippet(
-              sentence: signal.entireLyricString[0],
-              startTimestamp: 0,
-              endTimestamp: audioDuration));
+          snippets = signal.lyricSnippetList;
         });
       }
     });

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lyric_editor/lyric_snippet.dart';
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
 import 'sorted_list.dart';
@@ -26,15 +27,14 @@ class _TextPaneState extends State<TextPane> {
   int cursorPosition = 0;
   int seekPosition = 0;
 
-  List<String> sentenceList = [];
-  List<String> listItems = [];
+  List<LyricSnippet> lyricSnippets = [];
+  List<String> lyricAppearance = [];
   int cursorPositionChar = 0;
   int cursorPositionLine = 0;
 
   List<List<int>> timingPointsForEachLine = [];
 
   SortedMap<int, String> timingPointMap = SortedMap<int, String>();
-  SortedMap<int, String> linefeedPointMap = SortedMap<int, String>();
   SortedMap<int, String> sectionPointMap = SortedMap<int, String>();
 
   _TextPaneState(this.masterSubject);
@@ -45,21 +45,15 @@ class _TextPaneState extends State<TextPane> {
 
     masterSubject.stream.listen((signal) {
       if (signal is NotifyLyricParsed) {
-        entireLyricString = signal.entireLyricString[0];
-        for (int value in signal.timingPoints.list) {
-          timingPointMap[value] = timingPointChar;
-        }
-        for (int value in signal.linefeedPoints.list) {
-          linefeedPointMap[value] = linefeedChar;
-        }
-        //sectionPointMap = sectionPoints.asMap().map((key, value) => MapEntry(value, sectionChar));
+        lyricSnippets = signal.lyricSnippetList;
+        lyricAppearance = List.filled(lyricSnippets.length, '');
 
+        /*
         var combinedLineMap = <int, String>{};
-        combinedLineMap.addAll(linefeedPointMap);
         //combinedMap.addAll(sectionPointMap);
         entireLyricString = InsertChars(entireLyricString, combinedLineMap);
-        sentenceList = entireLyricString.split("\n");
-        listItems = List.filled(sentenceList.length, '');
+        lyricSnippets = entireLyricString.split("\n");
+        */
 
         updateIndicators();
 
@@ -94,14 +88,29 @@ class _TextPaneState extends State<TextPane> {
     setState(() {});
   }
 
+  List<String> resizeList(List<String> list, int newLength) {
+    if (newLength < list.length) {
+      // Truncate the list if newLength is less than the current length
+      return list.sublist(0, newLength);
+    } else {
+      // Extend the list with empty strings if newLength is greater than the current length
+      return List<String>.generate(
+          newLength, (index) => index < list.length ? list[index] : '');
+    }
+  }
+
   void updateIndicators() {
-    timingPointsForEachLine = divideLists(
-        timingPointMap.keys.toList(), linefeedPointMap.keys.toList());
+    timingPointsForEachLine = lyricSnippets
+        .map((snippet) => snippet.timingPoints
+            .map((timingPoint) => timingPoint.characterPosition)
+            .toList())
+        .toList();
     for (int i = 0; i < timingPointsForEachLine.length; i++) {
       Map<int, String> timingPointsForEachLineMap = timingPointsForEachLine[i]
           .asMap()
           .map((key, value) => MapEntry(value, timingPointChar));
-      listItems[i] = InsertChars(sentenceList[i], timingPointsForEachLineMap);
+      lyricAppearance[i] =
+          InsertChars(lyricSnippets[i].sentence, timingPointsForEachLineMap);
     }
   }
 
@@ -114,9 +123,9 @@ class _TextPaneState extends State<TextPane> {
             event.logicalKey == LogicalKeyboardKey.keyK) {
           if (cursorPositionLine > 0) {
             cursorPositionLine--;
-            cursorPosition = sentenceList
+            cursorPosition = lyricSnippets
                     .take(cursorPositionLine)
-                    .fold(0, (prev, curr) => prev + curr.length) +
+                    .fold(0, (prev, curr) => prev + curr.sentence.length) +
                 cursorPositionChar;
             setState(() {});
             debugPrint(
@@ -126,11 +135,11 @@ class _TextPaneState extends State<TextPane> {
         }
         if (event is KeyDownEvent &&
             event.logicalKey == LogicalKeyboardKey.keyJ) {
-          if (cursorPositionLine < sentenceList.length - 1) {
+          if (cursorPositionLine < lyricSnippets.length - 1) {
             cursorPositionLine++;
-            cursorPosition = sentenceList
+            cursorPosition = lyricSnippets
                     .take(cursorPositionLine)
-                    .fold(0, (prev, curr) => prev + curr.length) +
+                    .fold(0, (prev, curr) => prev + curr.sentence.length) +
                 cursorPositionChar;
             setState(() {});
             debugPrint(
@@ -151,7 +160,8 @@ class _TextPaneState extends State<TextPane> {
         }
         if (event is KeyDownEvent &&
             event.logicalKey == LogicalKeyboardKey.keyL) {
-          if (cursorPositionChar <= sentenceList[cursorPositionLine].length) {
+          if (cursorPositionChar <=
+              lyricSnippets[cursorPositionLine].sentence.length) {
             cursorPositionChar++;
             cursorPosition++;
             setState(() {});
@@ -192,7 +202,7 @@ class _TextPaneState extends State<TextPane> {
   Widget lyricListWidget() {
     return ListView.builder(
       shrinkWrap: true,
-      itemCount: sentenceList.length,
+      itemCount: lyricSnippets.length,
       itemBuilder: (context, index) {
         Color backgroundColor = Colors.transparent;
         double fontSize = 16;
@@ -209,8 +219,8 @@ class _TextPaneState extends State<TextPane> {
             padding: padding,
             child: Container(
               color: backgroundColor,
-              child: highlightedLyricItemWidget(
-                  listItems[index], cursorPositionLine, cursorPositionChar),
+              child: highlightedLyricItemWidget(lyricAppearance[index],
+                  cursorPositionLine, cursorPositionChar),
             ),
           );
         } else {
@@ -219,7 +229,7 @@ class _TextPaneState extends State<TextPane> {
             child: Container(
               color: backgroundColor,
               child: Text(
-                listItems[index],
+                lyricAppearance[index],
                 style: TextStyle(fontSize: fontSize, color: Colors.black),
               ),
             ),
@@ -303,26 +313,6 @@ class _TextPaneState extends State<TextPane> {
     resultString += originalString.substring(previousPosition);
 
     return resultString;
-  }
-
-  List<List<int>> divideLists(
-      List<int> timingPoints, List<int> linefeedPoints) {
-    List<List<int>> result = [];
-    int start = 0;
-
-    for (int i = 0; i < linefeedPoints.length; i++) {
-      int end = linefeedPoints[i];
-      List<int> segment =
-          timingPoints.where((point) => point > start && point <= end).toList();
-      result.add(segment.map((point) => point - start).toList());
-      start = end;
-    }
-
-    List<int> lastSegment =
-        timingPoints.where((point) => point > start).toList();
-    result.add(lastSegment.map((point) => point - start).toList());
-
-    return result;
   }
 
   @override

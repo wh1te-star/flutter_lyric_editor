@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lyric_editor/lyric_snippet.dart';
 import 'package:lyric_editor/sorted_list.dart';
 import 'package:xml/xml.dart' as xml;
 import 'package:rxdart/rxdart.dart';
@@ -8,12 +9,11 @@ import 'signal_structure.dart';
 class TimingService {
   final PublishSubject<dynamic> masterSubject;
   String rawLyricText = "";
-  late final List<String> lyricSnippetList;
+  late final List<LyricSnippet> lyricSnippetList;
   Future<void>? _loadLyricsFuture;
 
   SortedList<int> timingPoints =
       SortedList<int>([1, 4, 5, 16, 24, 36, 46, 50, 67, 90]);
-  SortedList<int> linefeedPoints = SortedList<int>([19, 38, 57, 70, 98, 100]);
   //List<int> sectionPoints = [82];
 
   TimingService({required this.masterSubject}) {
@@ -36,32 +36,57 @@ class TimingService {
       masterSubject.add(NotifyLyricLoaded(rawLyricText));
 
       lyricSnippetList = parseLyric(rawLyricText);
-      masterSubject.add(
-          NotifyLyricParsed(lyricSnippetList, timingPoints, linefeedPoints));
+      masterSubject.add(NotifyLyricParsed(lyricSnippetList));
     } catch (e) {
       debugPrint("Error loading lyrics: $e");
     }
   }
 
-  List<String> parseLyric(String rawLyricText) {
-    xml.XmlDocument parsedXmlText = xml.XmlDocument.parse(rawLyricText);
-    final lineTimestamps = parsedXmlText.findAllElements('LineTimestamp');
-    String sentences = "";
+  List<LyricSnippet> parseLyric(String rawLyricText) {
+    final document = xml.XmlDocument.parse(rawLyricText);
+    final vocalists = document.findAllElements('Vocalist');
+    List<LyricSnippet> snippets = [];
 
-    for (var timestamp in lineTimestamps) {
-      String sentence = '';
-      final wordTimestamps = timestamp.findElements('WordTimestamp');
+    for (var vocalist in vocalists) {
+      final vocalistName = vocalist.getAttribute('name')!;
+      final lineTimestamps = vocalist.findElements('LineTimestamp');
 
-      for (var wordTimestamp in wordTimestamps) {
-        sentence += wordTimestamp.innerText;
-      }
+      for (var lineTimestamp in lineTimestamps) {
+        final startTime =
+            parseTimestamp(lineTimestamp.getAttribute('startTime')!);
+        final endTime = parseTimestamp(lineTimestamp.getAttribute('endTime')!);
+        final wordTimestamps = lineTimestamp.findElements('WordTimestamp');
 
-      if (sentence.isNotEmpty) {
-        sentences += sentence;
+        String sentence = '';
+        List<TimingPoint> timingPoints = [];
+
+        for (var wordTimestamp in wordTimestamps) {
+          final time = parseTimestamp(wordTimestamp.getAttribute('time')!);
+          final word = wordTimestamp.innerText;
+          timingPoints.add(TimingPoint(sentence.length, time));
+          sentence += word;
+        }
+
+        snippets.add(LyricSnippet(
+          vocalist: vocalistName,
+          sentence: sentence,
+          startTimestamp: startTime,
+          endTimestamp: endTime,
+          timingPoints: timingPoints,
+        ));
       }
     }
 
-    return [sentences];
+    return snippets;
+  }
+
+  int parseTimestamp(String timestamp) {
+    final parts = timestamp.split(':');
+    final minutes = int.parse(parts[0]);
+    final secondsParts = parts[1].split('.');
+    final seconds = int.parse(secondsParts[0]);
+    final milliseconds = int.parse(secondsParts[1]);
+    return (minutes * 60 + seconds) * 1000 + milliseconds;
   }
 
   Future<void> printLyric() async {

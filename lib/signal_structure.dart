@@ -1,3 +1,4 @@
+import 'package:lyric_editor/lyric_snippet.dart';
 import 'package:lyric_editor/sorted_list.dart';
 
 class RequestPlayPause {}
@@ -79,10 +80,7 @@ class NotifyLyricLoaded {
 }
 
 class NotifyLyricParsed {
-  List<String> entireLyricString;
-  SortedList<int> timingPoints;
-  SortedList<int> linefeedPoints;
+  List<LyricSnippet> lyricSnippetList;
   //SortedList<int> sectionPoints;
-  NotifyLyricParsed(
-      this.entireLyricString, this.timingPoints, this.linefeedPoints);
+  NotifyLyricParsed(this.lyricSnippetList);
 }
