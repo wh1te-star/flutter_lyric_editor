@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lyric_editor/lyric_snippet.dart';
 import 'package:lyric_editor/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
 import 'playback_control_pane.dart';
@@ -20,7 +21,7 @@ class _VideoPaneState extends State<VideoPane> {
   _VideoPaneState(this.masterSubject, this.focusNode);
   bool isPlaying = true;
   int time = 0;
-  String text = "outlined text";
+  List<LyricSnippet> lyricSnippets = [];
 
   @override
   void initState() {
@@ -31,6 +32,9 @@ class _VideoPaneState extends State<VideoPane> {
       }
       if (signal is NotifySeekPosition) {
         time = signal.seekPosition;
+      }
+      if (signal is NotifyLyricParsed) {
+        lyricSnippets = signal.lyricSnippetList;
       }
       updateString(isPlaying, time);
     });
@@ -72,12 +76,26 @@ class _VideoPaneState extends State<VideoPane> {
     });
   }
 
-  Widget outlinedText(String text, String fontFamily) {
+  Widget outlinedText(LyricSnippet snippet, String fontFamily) {
+    return SizedBox(
+      height: 60,
+      child: CustomPaint(
+        painter: PartialTextPainter(
+          text: snippet.sentence,
+          start: 5,
+          end: 9,
+          percent: 0.8,
+          fontFamily: fontFamily,
+        ),
+        size: Size(double.infinity, 60),
+      ),
+    );
+/*
     return Center(
       child: Stack(
         children: [
           Text(
-            text,
+            snippet.sentence,
             style: TextStyle(
               fontFamily: fontFamily,
               fontSize: 40,
@@ -95,7 +113,7 @@ class _VideoPaneState extends State<VideoPane> {
             ),
           ),
           Text(
-            text,
+            snippet.sentence,
             style: TextStyle(
               fontFamily: fontFamily,
               fontSize: 40,
@@ -106,7 +124,7 @@ class _VideoPaneState extends State<VideoPane> {
             ),
           ),
           Text(
-            text,
+            snippet.sentence,
             style: TextStyle(
               fontFamily: fontFamily,
               fontSize: 40,
@@ -116,6 +134,7 @@ class _VideoPaneState extends State<VideoPane> {
         ],
       ),
     );
+    */
   }
 
   @override
@@ -132,6 +151,7 @@ class _VideoPaneState extends State<VideoPane> {
       '.SF UI Text',
       'Helvetica',
     ];
+    if (lyricSnippets.length == 0) return Container(color: Colors.white);
     return Column(children: [
       Expanded(
         child: SingleChildScrollView(
@@ -140,7 +160,7 @@ class _VideoPaneState extends State<VideoPane> {
             children: fontFamilies.map((fontFamily) {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: outlinedText("Outlined Text", fontFamily),
+                child: outlinedText(lyricSnippets[0], fontFamily),
               );
             }).toList(),
           ),
@@ -148,5 +168,119 @@ class _VideoPaneState extends State<VideoPane> {
       ),
       PlaybackControlPane(masterSubject: masterSubject),
     ]);
+  }
+}
+
+class PartialTextPainter extends CustomPainter {
+  final String text;
+  final int start;
+  final int end;
+  final double percent;
+  final String fontFamily;
+
+  PartialTextPainter({
+    required this.text,
+    required this.start,
+    required this.end,
+    required this.percent,
+    required this.fontFamily,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final textStyleGreen = TextStyle(
+      fontFamily: fontFamily,
+      fontSize: 40,
+      color: Colors.green,
+    );
+
+    final textStyleWhiteOutline = TextStyle(
+      fontFamily: fontFamily,
+      fontSize: 40,
+      foreground: Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..color = Colors.white,
+    );
+
+    final textStyleBlackOutline = TextStyle(
+      fontFamily: fontFamily,
+      fontSize: 40,
+      foreground: Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 6
+        ..color = Colors.black,
+      shadows: [
+        Shadow(
+          color: Colors.green,
+          blurRadius: 30.0,
+          offset: Offset(0.0, 0.0),
+        ),
+      ],
+    );
+
+    final textSpanGreen = TextSpan(
+      text: text,
+      style: textStyleGreen,
+    );
+
+    final textSpanWhiteOutline = TextSpan(
+      text: text,
+      style: textStyleWhiteOutline,
+    );
+
+    final textSpanBlackOutline = TextSpan(
+      text: text,
+      style: textStyleBlackOutline,
+    );
+
+    final textPainterGreen = TextPainter(
+      text: textSpanGreen,
+      textDirection: TextDirection.ltr,
+    );
+
+    final textPainterWhiteOutline = TextPainter(
+      text: textSpanWhiteOutline,
+      textDirection: TextDirection.ltr,
+    );
+
+    final textPainterBlackOutline = TextPainter(
+      text: textSpanBlackOutline,
+      textDirection: TextDirection.ltr,
+    );
+
+    textPainterGreen.layout(maxWidth: size.width);
+    textPainterWhiteOutline.layout(maxWidth: size.width);
+    textPainterBlackOutline.layout(maxWidth: size.width);
+
+    final startOffset = textPainterGreen
+        .getOffsetForCaret(
+          TextPosition(offset: start),
+          Rect.zero,
+        )
+        .dx;
+
+    final endOffset = textPainterGreen
+        .getOffsetForCaret(
+          TextPosition(offset: end),
+          Rect.zero,
+        )
+        .dx;
+
+    final sliceWidth = startOffset + (endOffset - startOffset) * percent;
+
+    canvas.save();
+    canvas.clipRect(Rect.fromLTWH(0, 0, sliceWidth, size.height));
+
+    textPainterBlackOutline.paint(canvas, Offset.zero);
+    textPainterWhiteOutline.paint(canvas, Offset.zero);
+    textPainterGreen.paint(canvas, Offset.zero);
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
   }
 }
