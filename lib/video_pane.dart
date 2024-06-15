@@ -86,6 +86,9 @@ class _VideoPaneState extends State<VideoPane> {
           end: snippet.sentence.length,
           percent: time / 10000,
           fontFamily: fontFamily,
+          fontSize: 40,
+          firstOutlineWidth: 2,
+          secondOutlineWidth: 4,
         ),
         size: Size(double.infinity, 60),
       ),
@@ -132,6 +135,9 @@ class PartialTextPainter extends CustomPainter {
   final int end;
   final double percent;
   final String fontFamily;
+  final double fontSize;
+  final double firstOutlineWidth;
+  final double secondOutlineWidth;
   late final TextStyle textStyleBeforeInner;
   late final TextStyle textStyleBeforeMiddle;
   late final TextStyle textStyleBeforeOuter;
@@ -157,6 +163,9 @@ class PartialTextPainter extends CustomPainter {
     required this.end,
     required this.percent,
     required this.fontFamily,
+    required this.fontSize,
+    required this.firstOutlineWidth,
+    required this.secondOutlineWidth,
   });
 
   @override
@@ -168,62 +177,55 @@ class PartialTextPainter extends CustomPainter {
   }
 
   void setupTextStyle() {
-    textStyleAfterInner = TextStyle(
-      fontFamily: fontFamily,
-      fontSize: 40,
+    Shadow shadow = Shadow(
       color: Colors.green,
+      blurRadius: 30.0,
+      offset: Offset(0.0, 0.0),
     );
-    textStyleAfterMiddle = TextStyle(
-      fontFamily: fontFamily,
-      fontSize: 40,
-      foreground: Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
-        ..color = Colors.white,
-    );
-    textStyleAfterOuter = TextStyle(
-      fontFamily: fontFamily,
-      fontSize: 40,
-      foreground: Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 6
-        ..color = Colors.black,
-      shadows: [
-        Shadow(
-          color: Colors.green,
-          blurRadius: 30.0,
-          offset: Offset(0.0, 0.0),
-        ),
-      ],
-    );
-
     textStyleBeforeInner = TextStyle(
       fontFamily: fontFamily,
-      fontSize: 40,
+      fontSize: fontSize,
       color: Colors.white,
     );
     textStyleBeforeMiddle = TextStyle(
       fontFamily: fontFamily,
-      fontSize: 40,
+      fontSize: fontSize,
       foreground: Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
-        ..color = Colors.green,
+        ..strokeWidth = firstOutlineWidth
+        ..color = Colors.black,
     );
     textStyleBeforeOuter = TextStyle(
       fontFamily: fontFamily,
-      fontSize: 40,
+      fontSize: fontSize,
       foreground: Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 6
+        ..strokeWidth = firstOutlineWidth + secondOutlineWidth
+        ..color = Colors.green,
+      shadows: [shadow],
+    );
+
+    textStyleAfterInner = TextStyle(
+      fontFamily: fontFamily,
+      fontSize: fontSize,
+      color: Colors.green,
+    );
+    textStyleAfterMiddle = TextStyle(
+      fontFamily: fontFamily,
+      fontSize: fontSize,
+      foreground: Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = firstOutlineWidth
+        ..color = Colors.white,
+    );
+    textStyleAfterOuter = TextStyle(
+      fontFamily: fontFamily,
+      fontSize: fontSize,
+      foreground: Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = firstOutlineWidth + secondOutlineWidth
         ..color = Colors.black,
-      shadows: [
-        Shadow(
-          color: Colors.green,
-          blurRadius: 30.0,
-          offset: Offset(0.0, 0.0),
-        ),
-      ],
+      shadows: [shadow],
     );
   }
 
