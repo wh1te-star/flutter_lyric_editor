@@ -18,10 +18,41 @@ class _PlaybackControlPaneState extends State<PlaybackControlPane> {
   final PublishSubject<dynamic> masterSubject;
   _PlaybackControlPaneState(this.masterSubject);
 
+  String seekPositionText = 'Seek Position: 01:23:45.678';
+
   @override
   void initState() {
     super.initState();
-    masterSubject.stream.listen((signal) {});
+    masterSubject.stream.listen((signal) {
+      if (signal is NotifySeekPosition) {
+        setState(() {
+          seekPositionText =
+              'Seek Position: ${formatMillisec(signal.seekPosition)}';
+        });
+      }
+    });
+  }
+
+  String formatMillisec(int inMillisecFormat) {
+    int remainingMillisec = inMillisecFormat;
+
+    int hours = remainingMillisec ~/ Duration.millisecondsPerHour;
+    remainingMillisec = remainingMillisec % Duration.millisecondsPerHour;
+
+    int minutes = remainingMillisec ~/ Duration.millisecondsPerMinute;
+    remainingMillisec = remainingMillisec % Duration.millisecondsPerMinute;
+
+    int seconds = remainingMillisec ~/ Duration.millisecondsPerSecond;
+    remainingMillisec = remainingMillisec % Duration.millisecondsPerSecond;
+
+    int millisec = remainingMillisec % Duration.millisecondsPerSecond;
+
+    String formattedHours = hours.toString().padLeft(2, '0');
+    String formattedMinutes = minutes.toString().padLeft(2, '0');
+    String formattedSeconds = seconds.toString().padLeft(2, '0');
+    String formattedMillisec = millisec.toString().padLeft(3, '0');
+
+    return "$formattedHours:$formattedMinutes:$formattedSeconds.$formattedMillisec";
   }
 
   GlobalKey volumeControlKey = GlobalKey();
@@ -117,7 +148,7 @@ class _PlaybackControlPaneState extends State<PlaybackControlPane> {
         ]);
 
         Widget seekPositionWidget = Row(key: seekbarKey, children: [
-          const Text('Seek Position: 01:23:45.678'),
+          Text(seekPositionText),
           Slider(
             value: 50,
             min: 0,

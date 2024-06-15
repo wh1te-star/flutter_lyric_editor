@@ -36,45 +36,11 @@ class _VideoPaneState extends State<VideoPane> {
       if (signal is NotifyLyricParsed) {
         lyricSnippets = signal.lyricSnippetList;
       }
-      updateString(isPlaying, time);
+      setState(() {});
     });
   }
 
   String defaultText = "Video Pane";
-
-  String formatMillisec(int inMillisecFormat) {
-    int remainingMillisec = inMillisecFormat;
-
-    int hours = remainingMillisec ~/ Duration.millisecondsPerHour;
-    remainingMillisec = remainingMillisec % Duration.millisecondsPerHour;
-
-    int minutes = remainingMillisec ~/ Duration.millisecondsPerMinute;
-    remainingMillisec = remainingMillisec % Duration.millisecondsPerMinute;
-
-    int seconds = remainingMillisec ~/ Duration.millisecondsPerSecond;
-    remainingMillisec = remainingMillisec % Duration.millisecondsPerSecond;
-
-    int millisec = remainingMillisec % Duration.millisecondsPerSecond;
-
-    String formattedHours = hours.toString().padLeft(2, '0');
-    String formattedMinutes = minutes.toString().padLeft(2, '0');
-    String formattedSeconds = seconds.toString().padLeft(2, '0');
-    String formattedMillisec = millisec.toString().padLeft(3, '0');
-
-    return "$formattedHours:$formattedMinutes:$formattedSeconds.$formattedMillisec";
-  }
-
-  void updateString(bool isPlaying, int timeMillisec) {
-    String newText;
-    if (isPlaying) {
-      newText = "Playing, ${formatMillisec(timeMillisec)}";
-    } else {
-      newText = "Stopping, ${formatMillisec(timeMillisec)}";
-    }
-    setState(() {
-      defaultText = newText;
-    });
-  }
 
   Widget outlinedText(LyricSnippet snippet, String fontFamily) {
     return CustomPaint(
