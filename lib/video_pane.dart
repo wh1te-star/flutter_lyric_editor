@@ -132,16 +132,21 @@ class _VideoPaneState extends State<VideoPane> {
       '.SF UI Text',
       'Helvetica',
     ];
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: fontFamilies.map((fontFamily) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: outlinedText("Outlined Text", fontFamily),
-          );
-        }).toList(),
+    return Column(children: [
+      Expanded(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: fontFamilies.map((fontFamily) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: outlinedText("Outlined Text", fontFamily),
+              );
+            }).toList(),
+          ),
+        ),
       ),
-    );
+      PlaybackControlPane(masterSubject: masterSubject),
+    ]);
   }
 }
