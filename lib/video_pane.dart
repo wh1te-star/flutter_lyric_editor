@@ -108,9 +108,7 @@ class _VideoPaneState extends State<VideoPane> {
     if (currentSnippet.isEmpty) {
       return Column(children: [
         Expanded(
-          child: Container(
-            color: Colors.white,
-          ),
+          child: Container(),
         ),
         PlaybackControlPane(masterSubject: masterSubject),
       ]);
