@@ -82,59 +82,14 @@ class _VideoPaneState extends State<VideoPane> {
       child: CustomPaint(
         painter: PartialTextPainter(
           text: snippet.sentence,
-          start: 5,
-          end: 9,
-          percent: 0.8,
+          start: 0,
+          end: snippet.sentence.length,
+          percent: time / 10000,
           fontFamily: fontFamily,
         ),
         size: Size(double.infinity, 60),
       ),
     );
-/*
-    return Center(
-      child: Stack(
-        children: [
-          Text(
-            snippet.sentence,
-            style: TextStyle(
-              fontFamily: fontFamily,
-              fontSize: 40,
-              foreground: Paint()
-                ..style = PaintingStyle.stroke
-                ..strokeWidth = 6
-                ..color = Colors.black,
-              shadows: [
-                Shadow(
-                  color: Colors.green,
-                  blurRadius: 30.0,
-                  offset: Offset(0.0, 0.0),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            snippet.sentence,
-            style: TextStyle(
-              fontFamily: fontFamily,
-              fontSize: 40,
-              foreground: Paint()
-                ..style = PaintingStyle.stroke
-                ..strokeWidth = 2
-                ..color = Colors.white,
-            ),
-          ),
-          Text(
-            snippet.sentence,
-            style: TextStyle(
-              fontFamily: fontFamily,
-              fontSize: 40,
-              color: Colors.green,
-            ),
-          ),
-        ],
-      ),
-    );
-    */
   }
 
   @override
@@ -219,57 +174,87 @@ class PartialTextPainter extends CustomPainter {
       ],
     );
 
-    final textSpanGreen = TextSpan(
-      text: text,
-      style: textStyleGreen,
+    final textStyleBeforeInner = TextStyle(
+      fontFamily: fontFamily,
+      fontSize: 40,
+      color: Colors.white,
     );
 
-    final textSpanWhiteOutline = TextSpan(
-      text: text,
-      style: textStyleWhiteOutline,
+    final textStyleBeforeMiddle = TextStyle(
+      fontFamily: fontFamily,
+      fontSize: 40,
+      foreground: Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..color = Colors.green,
     );
 
-    final textSpanBlackOutline = TextSpan(
-      text: text,
-      style: textStyleBlackOutline,
+    final textStyleBeforeOuter = TextStyle(
+      fontFamily: fontFamily,
+      fontSize: 40,
+      foreground: Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 6
+        ..color = Colors.black,
+      shadows: [
+        Shadow(
+          color: Colors.green,
+          blurRadius: 30.0,
+          offset: Offset(0.0, 0.0),
+        ),
+      ],
     );
 
-    final textPainterGreen = TextPainter(
-      text: textSpanGreen,
-      textDirection: TextDirection.ltr,
-    );
+    final textSpanGreen = TextSpan(text: text, style: textStyleGreen);
+    final textSpanWhiteOutline =
+        TextSpan(text: text, style: textStyleWhiteOutline);
+    final textSpanBlackOutline =
+        TextSpan(text: text, style: textStyleBlackOutline);
 
+    final textPainterGreen =
+        TextPainter(text: textSpanGreen, textDirection: TextDirection.ltr);
     final textPainterWhiteOutline = TextPainter(
-      text: textSpanWhiteOutline,
-      textDirection: TextDirection.ltr,
-    );
-
+        text: textSpanWhiteOutline, textDirection: TextDirection.ltr);
     final textPainterBlackOutline = TextPainter(
-      text: textSpanBlackOutline,
-      textDirection: TextDirection.ltr,
-    );
+        text: textSpanBlackOutline, textDirection: TextDirection.ltr);
 
     textPainterGreen.layout(maxWidth: size.width);
     textPainterWhiteOutline.layout(maxWidth: size.width);
     textPainterBlackOutline.layout(maxWidth: size.width);
 
     final startOffset = textPainterGreen
-        .getOffsetForCaret(
-          TextPosition(offset: start),
-          Rect.zero,
-        )
+        .getOffsetForCaret(TextPosition(offset: start), Rect.zero)
         .dx;
-
     final endOffset = textPainterGreen
-        .getOffsetForCaret(
-          TextPosition(offset: end),
-          Rect.zero,
-        )
+        .getOffsetForCaret(TextPosition(offset: end), Rect.zero)
         .dx;
 
     final sliceWidth = startOffset + (endOffset - startOffset) * percent;
 
     canvas.save();
+
+    // Paint the text before the clipped text
+    final textSpanBeforeInner =
+        TextSpan(text: text, style: textStyleBeforeInner);
+    final textPainterBeforeInner = TextPainter(
+        text: textSpanBeforeInner, textDirection: TextDirection.ltr);
+    textPainterBeforeInner.layout(maxWidth: size.width);
+    textPainterBeforeInner.paint(canvas, Offset.zero);
+
+    final textSpanBeforeMiddle =
+        TextSpan(text: text, style: textStyleBeforeMiddle);
+    final textPainterBeforeMiddle = TextPainter(
+        text: textSpanBeforeMiddle, textDirection: TextDirection.ltr);
+    textPainterBeforeMiddle.layout(maxWidth: size.width);
+    textPainterBeforeMiddle.paint(canvas, Offset.zero);
+
+    final textSpanBeforeOuter =
+        TextSpan(text: text, style: textStyleBeforeOuter);
+    final textPainterBeforeOuter = TextPainter(
+        text: textSpanBeforeOuter, textDirection: TextDirection.ltr);
+    textPainterBeforeOuter.layout(maxWidth: size.width);
+    textPainterBeforeOuter.paint(canvas, Offset.zero);
+
     canvas.clipRect(Rect.fromLTWH(0, 0, sliceWidth, size.height));
 
     textPainterBlackOutline.paint(canvas, Offset.zero);
