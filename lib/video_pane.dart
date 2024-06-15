@@ -72,39 +72,75 @@ class _VideoPaneState extends State<VideoPane> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget outlinedText(String text, String fontFamily) {
     return Center(
       child: Stack(
         children: [
           Text(
             text,
             style: TextStyle(
+              fontFamily: fontFamily,
               fontSize: 40,
               foreground: Paint()
                 ..style = PaintingStyle.stroke
                 ..strokeWidth = 6
                 ..color = Colors.black,
+              shadows: [
+                Shadow(
+                  color: Colors.green,
+                  blurRadius: 30.0,
+                  offset: Offset(0.0, 0.0),
+                ),
+              ],
             ),
           ),
           Text(
             text,
             style: TextStyle(
+              fontFamily: fontFamily,
               fontSize: 40,
               foreground: Paint()
                 ..style = PaintingStyle.stroke
-                ..strokeWidth = 4
+                ..strokeWidth = 2
                 ..color = Colors.white,
             ),
           ),
           Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
+              fontFamily: fontFamily,
               fontSize: 40,
               color: Colors.green,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<String> fontFamilies = [
+      'Roboto',
+      'Arial',
+      'Courier',
+      'Times New Roman',
+      'Verdana',
+      'Georgia',
+      'Trebuchet MS',
+      '.SF UI Display',
+      '.SF UI Text',
+      'Helvetica',
+    ];
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: fontFamilies.map((fontFamily) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: outlinedText("Outlined Text", fontFamily),
+          );
+        }).toList(),
       ),
     );
   }
