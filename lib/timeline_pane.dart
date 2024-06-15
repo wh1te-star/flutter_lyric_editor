@@ -35,8 +35,12 @@ class RectanglePainter extends CustomPainter {
     paint.color = indexColor;
 
     snippets.forEach((LyricSnippet snippet) {
+      final endtime = snippet.startTimestamp +
+          snippet.timingPoints
+              .map((point) => point.seekPosition)
+              .reduce((a, b) => a + b);
       final left = snippet.startTimestamp * intervalLength / intervalDuration;
-      final right = snippet.endTimestamp * intervalLength / intervalDuration;
+      final right = endtime * intervalLength / intervalDuration;
       final rect = Rect.fromLTRB(left, top, right, bottom);
       canvas.drawRect(rect, paint);
 

@@ -44,13 +44,15 @@ class _VideoPaneState extends State<VideoPane> {
 
   Widget outlinedText(LyricSnippet snippet, String fontFamily) {
     int currentCharIndex = snippet.timingPoints.length - 1;
+    List<TimingPoint> accumulatedTimingPoints = getAccumulatedTimingPoints(
+        snippet.startTimestamp, snippet.timingPoints);
     for (int currentIndex = 0;
         currentIndex < snippet.timingPoints.length - 1;
         currentIndex++) {
-      if (snippet.timingPoints[currentIndex].seekPosition <
+      if (accumulatedTimingPoints[currentIndex].seekPosition <=
               currentSeekPosition &&
-          currentSeekPosition <
-              snippet.timingPoints[currentIndex + 1].seekPosition) {
+          currentSeekPosition <=
+              accumulatedTimingPoints[currentIndex + 1].seekPosition) {
         currentCharIndex = currentIndex;
       }
     }
@@ -62,16 +64,19 @@ class _VideoPaneState extends State<VideoPane> {
     }
     double percent;
     if (currentCharIndex == snippet.timingPoints.length - 1) {
-      percent = (snippet.timingPoints[currentCharIndex].seekPosition -
+      final endtime = snippet.startTimestamp +
+          snippet.timingPoints
+              .map((point) => point.seekPosition)
+              .reduce((a, b) => a + b);
+      percent = (accumulatedTimingPoints[currentCharIndex].seekPosition -
               currentSeekPosition) /
-          (snippet.timingPoints[currentCharIndex].seekPosition -
-              snippet.endTimestamp);
+          (accumulatedTimingPoints[currentCharIndex].seekPosition - endtime);
     } else {
       {
         percent = (currentSeekPosition -
-                snippet.timingPoints[currentCharIndex].seekPosition) /
-            (snippet.timingPoints[currentCharIndex + 1].seekPosition -
-                snippet.timingPoints[currentCharIndex].seekPosition);
+                accumulatedTimingPoints[currentCharIndex].seekPosition) /
+            (accumulatedTimingPoints[currentCharIndex + 1].seekPosition -
+                accumulatedTimingPoints[currentCharIndex].seekPosition);
       }
     }
     return CustomPaint(
@@ -93,8 +98,12 @@ class _VideoPaneState extends State<VideoPane> {
   Widget build(BuildContext context) {
     String fontFamily = "Times New Roman";
     List<LyricSnippet> currentSnippet = lyricSnippets.where((snippet) {
+      final endtime = snippet.startTimestamp +
+          snippet.timingPoints
+              .map((point) => point.seekPosition)
+              .reduce((a, b) => a + b);
       return snippet.startTimestamp < currentSeekPosition &&
-          currentSeekPosition < snippet.endTimestamp;
+          currentSeekPosition < endtime;
     }).toList();
     if (currentSnippet.isEmpty) {
       return Column(children: [
@@ -113,6 +122,20 @@ class _VideoPaneState extends State<VideoPane> {
       ),
       PlaybackControlPane(masterSubject: masterSubject),
     ]);
+  }
+
+  List<TimingPoint> getAccumulatedTimingPoints(
+      int startTime, List<TimingPoint> timingPoints) {
+    List<TimingPoint> accumulatedList = [];
+
+    accumulatedList.add(TimingPoint(0, startTime));
+    for (int i = 0; i < timingPoints.length - 1; i++) {
+      accumulatedList.add(TimingPoint(
+          accumulatedList.last.characterLength +
+              timingPoints[i].characterLength,
+          accumulatedList.last.seekPosition + timingPoints[i].seekPosition));
+    }
+    return accumulatedList;
   }
 }
 
