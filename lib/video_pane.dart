@@ -132,6 +132,24 @@ class PartialTextPainter extends CustomPainter {
   final int end;
   final double percent;
   final String fontFamily;
+  late final TextStyle textStyleBeforeInner;
+  late final TextStyle textStyleBeforeMiddle;
+  late final TextStyle textStyleBeforeOuter;
+  late final TextSpan textSpanBeforeInner;
+  late final TextSpan textSpanBeforeMiddle;
+  late final TextSpan textSpanBeforeOuter;
+  late final TextPainter textPainterBeforeInner;
+  late final TextPainter textPainterBeforeMiddle;
+  late final TextPainter textPainterBeforeOuter;
+  late final TextStyle textStyleAfterInner;
+  late final TextStyle textStyleAfterMiddle;
+  late final TextStyle textStyleAfterOuter;
+  late final TextSpan textSpanAfterInner;
+  late final TextSpan textSpanAfterMiddle;
+  late final TextSpan textSpanAfterOuter;
+  late final TextPainter textPainterAfterInner;
+  late final TextPainter textPainterAfterMiddle;
+  late final TextPainter textPainterAfterOuter;
 
   PartialTextPainter({
     required this.text,
@@ -143,12 +161,19 @@ class PartialTextPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final textStyleAfterInner = TextStyle(
+    setupTextStyle();
+    setupTextSpan();
+    setupTextPainter(size);
+    paintText(canvas, size);
+  }
+
+  void setupTextStyle() {
+    textStyleAfterInner = TextStyle(
       fontFamily: fontFamily,
       fontSize: 40,
       color: Colors.green,
     );
-    final textStyleAfterMiddle = TextStyle(
+    textStyleAfterMiddle = TextStyle(
       fontFamily: fontFamily,
       fontSize: 40,
       foreground: Paint()
@@ -156,7 +181,7 @@ class PartialTextPainter extends CustomPainter {
         ..strokeWidth = 2
         ..color = Colors.white,
     );
-    final textStyleAfterOuter = TextStyle(
+    textStyleAfterOuter = TextStyle(
       fontFamily: fontFamily,
       fontSize: 40,
       foreground: Paint()
@@ -172,12 +197,12 @@ class PartialTextPainter extends CustomPainter {
       ],
     );
 
-    final textStyleBeforeInner = TextStyle(
+    textStyleBeforeInner = TextStyle(
       fontFamily: fontFamily,
       fontSize: 40,
       color: Colors.white,
     );
-    final textStyleBeforeMiddle = TextStyle(
+    textStyleBeforeMiddle = TextStyle(
       fontFamily: fontFamily,
       fontSize: 40,
       foreground: Paint()
@@ -185,7 +210,7 @@ class PartialTextPainter extends CustomPainter {
         ..strokeWidth = 2
         ..color = Colors.green,
     );
-    final textStyleBeforeOuter = TextStyle(
+    textStyleBeforeOuter = TextStyle(
       fontFamily: fontFamily,
       fontSize: 40,
       foreground: Paint()
@@ -200,22 +225,47 @@ class PartialTextPainter extends CustomPainter {
         ),
       ],
     );
+  }
 
-    final textSpanAfterInner = TextSpan(text: text, style: textStyleAfterInner);
-    final textSpanAfterMiddle =
-        TextSpan(text: text, style: textStyleAfterMiddle);
-    final textSpanAfterOuter = TextSpan(text: text, style: textStyleAfterOuter);
+  void setupTextSpan() {
+    textSpanBeforeInner = TextSpan(text: text, style: textStyleBeforeInner);
+    textSpanBeforeMiddle = TextSpan(text: text, style: textStyleBeforeMiddle);
+    textSpanBeforeOuter = TextSpan(text: text, style: textStyleBeforeOuter);
+    textSpanAfterInner = TextSpan(text: text, style: textStyleAfterInner);
+    textSpanAfterMiddle = TextSpan(text: text, style: textStyleAfterMiddle);
+    textSpanAfterOuter = TextSpan(text: text, style: textStyleAfterOuter);
+  }
 
-    final textPainterAfterInner =
+  void setupTextPainter(Size size) {
+    textPainterAfterInner =
         TextPainter(text: textSpanAfterInner, textDirection: TextDirection.ltr);
-    final textPainterAfterMiddle = TextPainter(
+    textPainterAfterMiddle = TextPainter(
         text: textSpanAfterMiddle, textDirection: TextDirection.ltr);
-    final textPainterAfterOuter =
+    textPainterAfterOuter =
         TextPainter(text: textSpanAfterOuter, textDirection: TextDirection.ltr);
 
     textPainterAfterInner.layout(maxWidth: size.width);
     textPainterAfterMiddle.layout(maxWidth: size.width);
     textPainterAfterOuter.layout(maxWidth: size.width);
+
+    textPainterBeforeInner = TextPainter(
+        text: textSpanBeforeInner, textDirection: TextDirection.ltr);
+
+    textPainterBeforeMiddle = TextPainter(
+        text: textSpanBeforeMiddle, textDirection: TextDirection.ltr);
+
+    textPainterBeforeOuter = TextPainter(
+        text: textSpanBeforeOuter, textDirection: TextDirection.ltr);
+
+    textPainterBeforeInner.layout(maxWidth: size.width);
+    textPainterBeforeMiddle.layout(maxWidth: size.width);
+    textPainterBeforeOuter.layout(maxWidth: size.width);
+  }
+
+  void paintText(Canvas canvas, Size size) {
+    textPainterBeforeOuter.paint(canvas, Offset.zero);
+    textPainterBeforeMiddle.paint(canvas, Offset.zero);
+    textPainterBeforeInner.paint(canvas, Offset.zero);
 
     final startOffset = textPainterAfterInner
         .getOffsetForCaret(TextPosition(offset: start), Rect.zero)
@@ -223,40 +273,12 @@ class PartialTextPainter extends CustomPainter {
     final endOffset = textPainterAfterInner
         .getOffsetForCaret(TextPosition(offset: end), Rect.zero)
         .dx;
-
     final sliceWidth = startOffset + (endOffset - startOffset) * percent;
-
-    //canvas.save();
-
-    final textSpanBeforeInner =
-        TextSpan(text: text, style: textStyleBeforeInner);
-    final textPainterBeforeInner = TextPainter(
-        text: textSpanBeforeInner, textDirection: TextDirection.ltr);
-    textPainterBeforeInner.layout(maxWidth: size.width);
-
-    final textSpanBeforeMiddle =
-        TextSpan(text: text, style: textStyleBeforeMiddle);
-    final textPainterBeforeMiddle = TextPainter(
-        text: textSpanBeforeMiddle, textDirection: TextDirection.ltr);
-    textPainterBeforeMiddle.layout(maxWidth: size.width);
-
-    final textSpanBeforeOuter =
-        TextSpan(text: text, style: textStyleBeforeOuter);
-    final textPainterBeforeOuter = TextPainter(
-        text: textSpanBeforeOuter, textDirection: TextDirection.ltr);
-    textPainterBeforeOuter.layout(maxWidth: size.width);
-
-    textPainterBeforeOuter.paint(canvas, Offset.zero);
-    textPainterBeforeMiddle.paint(canvas, Offset.zero);
-    textPainterBeforeInner.paint(canvas, Offset.zero);
-
     canvas.clipRect(Rect.fromLTWH(0, 0, sliceWidth, size.height));
 
     textPainterAfterOuter.paint(canvas, Offset.zero);
     textPainterAfterMiddle.paint(canvas, Offset.zero);
     textPainterAfterInner.paint(canvas, Offset.zero);
-
-    //canvas.restore();
   }
 
   @override
