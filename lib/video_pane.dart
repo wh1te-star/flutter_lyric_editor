@@ -77,21 +77,18 @@ class _VideoPaneState extends State<VideoPane> {
   }
 
   Widget outlinedText(LyricSnippet snippet, String fontFamily) {
-    return SizedBox(
-      height: 60,
-      child: CustomPaint(
-        painter: PartialTextPainter(
-          text: snippet.sentence,
-          start: 0,
-          end: snippet.sentence.length,
-          percent: time / 10000,
-          fontFamily: fontFamily,
-          fontSize: 40,
-          firstOutlineWidth: 2,
-          secondOutlineWidth: 4,
-        ),
-        size: Size(double.infinity, 60),
+    return CustomPaint(
+      painter: PartialTextPainter(
+        text: snippet.sentence,
+        start: 0,
+        end: snippet.sentence.length,
+        percent: time / 10000,
+        fontFamily: fontFamily,
+        fontSize: 40,
+        firstOutlineWidth: 2,
+        secondOutlineWidth: 4,
       ),
+      size: const Size(double.infinity, 60),
     );
   }
 
