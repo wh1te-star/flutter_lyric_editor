@@ -20,7 +20,7 @@ class _VideoPaneState extends State<VideoPane> {
   final FocusNode focusNode;
   _VideoPaneState(this.masterSubject, this.focusNode);
   bool isPlaying = true;
-  int time = 0;
+  int currentSeekPosition = 0;
   List<LyricSnippet> lyricSnippets = [];
 
   @override
@@ -31,7 +31,7 @@ class _VideoPaneState extends State<VideoPane> {
         isPlaying = signal.isPlaying;
       }
       if (signal is NotifySeekPosition) {
-        time = signal.seekPosition;
+        currentSeekPosition = signal.seekPosition;
       }
       if (signal is NotifyLyricParsed) {
         lyricSnippets = signal.lyricSnippetList;
@@ -48,7 +48,8 @@ class _VideoPaneState extends State<VideoPane> {
         text: snippet.sentence,
         start: 0,
         end: snippet.sentence.length,
-        percent: time / 10000,
+        percent: (currentSeekPosition - snippet.startTimestamp) /
+            (snippet.endTimestamp - snippet.startTimestamp),
         fontFamily: fontFamily,
         fontSize: 40,
         firstOutlineWidth: 2,
@@ -61,10 +62,24 @@ class _VideoPaneState extends State<VideoPane> {
   @override
   Widget build(BuildContext context) {
     String fontFamily = "Times New Roman";
-    if (lyricSnippets.isEmpty) return Container(color: Colors.white);
+    List<LyricSnippet> currentSnippet = lyricSnippets.where((snippet) {
+      return snippet.startTimestamp < currentSeekPosition &&
+          currentSeekPosition < snippet.endTimestamp;
+    }).toList();
+    if (currentSnippet.isEmpty) {
+      return Column(children: [
+        Expanded(
+          child: Container(
+            color: Colors.white,
+          ),
+        ),
+        PlaybackControlPane(masterSubject: masterSubject),
+      ]);
+    }
+
     return Column(children: [
       Expanded(
-        child: outlinedText(lyricSnippets[0], fontFamily),
+        child: outlinedText(currentSnippet[0], fontFamily),
       ),
       PlaybackControlPane(masterSubject: masterSubject),
     ]);
