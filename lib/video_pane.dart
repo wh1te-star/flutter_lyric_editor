@@ -94,32 +94,11 @@ class _VideoPaneState extends State<VideoPane> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> fontFamilies = [
-      'Roboto',
-      'Arial',
-      'Courier',
-      'Times New Roman',
-      'Verdana',
-      'Georgia',
-      'Trebuchet MS',
-      '.SF UI Display',
-      '.SF UI Text',
-      'Helvetica',
-    ];
-    if (lyricSnippets.length == 0) return Container(color: Colors.white);
+    String fontFamily = "Times New Roman";
+    if (lyricSnippets.isEmpty) return Container(color: Colors.white);
     return Column(children: [
       Expanded(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: fontFamilies.map((fontFamily) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: outlinedText(lyricSnippets[0], fontFamily),
-              );
-            }).toList(),
-          ),
-        ),
+        child: outlinedText(lyricSnippets[0], fontFamily),
       ),
       PlaybackControlPane(masterSubject: masterSubject),
     ]);
@@ -236,25 +215,37 @@ class PartialTextPainter extends CustomPainter {
   }
 
   void setupTextPainter(Size size) {
-    textPainterAfterInner =
-        TextPainter(text: textSpanAfterInner, textDirection: TextDirection.ltr);
+    textPainterAfterInner = TextPainter(
+        text: textSpanAfterInner,
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr);
     textPainterAfterMiddle = TextPainter(
-        text: textSpanAfterMiddle, textDirection: TextDirection.ltr);
-    textPainterAfterOuter =
-        TextPainter(text: textSpanAfterOuter, textDirection: TextDirection.ltr);
+        text: textSpanAfterMiddle,
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr);
+    textPainterAfterOuter = TextPainter(
+        text: textSpanAfterOuter,
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr);
 
     textPainterAfterInner.layout(maxWidth: size.width);
     textPainterAfterMiddle.layout(maxWidth: size.width);
     textPainterAfterOuter.layout(maxWidth: size.width);
 
     textPainterBeforeInner = TextPainter(
-        text: textSpanBeforeInner, textDirection: TextDirection.ltr);
+        text: textSpanBeforeInner,
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr);
 
     textPainterBeforeMiddle = TextPainter(
-        text: textSpanBeforeMiddle, textDirection: TextDirection.ltr);
+        text: textSpanBeforeMiddle,
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr);
 
     textPainterBeforeOuter = TextPainter(
-        text: textSpanBeforeOuter, textDirection: TextDirection.ltr);
+        text: textSpanBeforeOuter,
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr);
 
     textPainterBeforeInner.layout(maxWidth: size.width);
     textPainterBeforeMiddle.layout(maxWidth: size.width);
@@ -262,9 +253,13 @@ class PartialTextPainter extends CustomPainter {
   }
 
   void paintText(Canvas canvas, Size size) {
-    textPainterBeforeOuter.paint(canvas, Offset.zero);
-    textPainterBeforeMiddle.paint(canvas, Offset.zero);
-    textPainterBeforeInner.paint(canvas, Offset.zero);
+    final actualX = (size.width - textPainterBeforeInner.width) / 2;
+    final actualY = (size.height - textPainterBeforeInner.height) / 2;
+    final centerOffset = Offset(actualX, actualY);
+
+    textPainterBeforeOuter.paint(canvas, centerOffset);
+    textPainterBeforeMiddle.paint(canvas, centerOffset);
+    textPainterBeforeInner.paint(canvas, centerOffset);
 
     final startOffset = textPainterAfterInner
         .getOffsetForCaret(TextPosition(offset: start), Rect.zero)
@@ -272,12 +267,13 @@ class PartialTextPainter extends CustomPainter {
     final endOffset = textPainterAfterInner
         .getOffsetForCaret(TextPosition(offset: end), Rect.zero)
         .dx;
-    final sliceWidth = startOffset + (endOffset - startOffset) * percent;
+    final sliceWidth =
+        actualX + startOffset + (endOffset - startOffset) * percent;
     canvas.clipRect(Rect.fromLTWH(0, 0, sliceWidth, size.height));
 
-    textPainterAfterOuter.paint(canvas, Offset.zero);
-    textPainterAfterMiddle.paint(canvas, Offset.zero);
-    textPainterAfterInner.paint(canvas, Offset.zero);
+    textPainterAfterOuter.paint(canvas, centerOffset);
+    textPainterAfterMiddle.paint(canvas, centerOffset);
+    textPainterAfterInner.paint(canvas, centerOffset);
   }
 
   @override
