@@ -5,9 +5,10 @@ import 'signal_structure.dart';
 import 'scale_mark.dart';
 import 'lyric_snippet.dart';
 import 'package:two_dimensional_scrollables/two_dimensional_scrollables.dart';
+import 'package:collection/collection.dart';
 
 class RectanglePainter extends CustomPainter {
-  final LyricSnippet snippet;
+  final List<LyricSnippet> snippets;
   final double intervalLength;
   final int intervalDuration;
   final double topMargin;
@@ -15,7 +16,7 @@ class RectanglePainter extends CustomPainter {
   final Color indexColor;
 
   RectanglePainter({
-    required this.snippet,
+    required this.snippets,
     required this.intervalLength,
     required this.intervalDuration,
     required this.topMargin,
@@ -27,43 +28,45 @@ class RectanglePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint();
 
-    final left = snippet.startTimestamp * intervalLength / intervalDuration;
-    final right = snippet.endTimestamp * intervalLength / intervalDuration;
     final top = topMargin;
     final bottom = size.height - bottomMargin;
 
     paint.color = indexColor;
 
-    final rect = Rect.fromLTRB(left, top, right, bottom);
-    canvas.drawRect(rect, paint);
+    snippets.forEach((LyricSnippet snippet) {
+      final left = snippet.startTimestamp * intervalLength / intervalDuration;
+      final right = snippet.endTimestamp * intervalLength / intervalDuration;
+      final rect = Rect.fromLTRB(left, top, right, bottom);
+      canvas.drawRect(rect, paint);
 
-    final textSpan = TextSpan(
-      text: snippet.sentence,
-      style: TextStyle(
-          color: ThemeData.estimateBrightnessForColor(indexColor) ==
-                  Brightness.light
-              ? Colors.black
-              : Colors.white,
-          fontSize: 16),
-    );
-    final textPainter = TextPainter(
-      text: textSpan,
-      textAlign: TextAlign.center,
-      textDirection: TextDirection.ltr,
-      maxLines: 1,
-      ellipsis: '...',
-    );
-    textPainter.layout(
-      minWidth: 0,
-      maxWidth: rect.width,
-    );
+      final textSpan = TextSpan(
+        text: snippet.sentence,
+        style: TextStyle(
+            color: ThemeData.estimateBrightnessForColor(indexColor) ==
+                    Brightness.light
+                ? Colors.black
+                : Colors.white,
+            fontSize: 16),
+      );
+      final textPainter = TextPainter(
+        text: textSpan,
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+        maxLines: 1,
+        ellipsis: '...',
+      );
+      textPainter.layout(
+        minWidth: 0,
+        maxWidth: rect.width,
+      );
 
-    final offset = Offset(
-      rect.left + (rect.width - textPainter.width) / 2,
-      rect.top + (rect.height - textPainter.height) / 2,
-    );
+      final offset = Offset(
+        rect.left + (rect.width - textPainter.width) / 2,
+        rect.top + (rect.height - textPainter.height) / 2,
+      );
 
-    textPainter.paint(canvas, offset);
+      textPainter.paint(canvas, offset);
+    });
   }
 
   @override
@@ -96,7 +99,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   final CurrentPositionIndicatorDelegate delegate =
       CurrentPositionIndicatorDelegate();
 
-  List<LyricSnippet> snippets = [];
+  Map<String, List<LyricSnippet>> snippetsForeachVocalist = {};
   int audioDuration = 60000;
   int currentPosition = 0;
   final ScrollController currentPositionScroller = ScrollController();
@@ -122,7 +125,8 @@ class _TimelinePaneState extends State<TimelinePane> {
       }
       if (signal is NotifyLyricParsed) {
         setState(() {
-          snippets = signal.lyricSnippetList;
+          snippetsForeachVocalist = groupBy(signal.lyricSnippetList,
+              (LyricSnippet snippet) => snippet.vocalist);
         });
       }
     });
@@ -143,7 +147,7 @@ class _TimelinePaneState extends State<TimelinePane> {
         columnCount: 2,
         pinnedColumnCount: 1,
         columnBuilder: _buildColumnSpan,
-        rowCount: 6,
+        rowCount: snippetsForeachVocalist.length + 1,
         pinnedRowCount: 1,
         rowBuilder: _buildRowSpan,
       ),
@@ -213,20 +217,24 @@ class _TimelinePaneState extends State<TimelinePane> {
         child: ColoredBox(
           color: cell.color,
           child: Center(
-            child: Text(cell.name, style: style),
+            child: Text(
+                snippetsForeachVocalist.entries.toList()[vicinity.row - 1].key,
+                style: style),
           ),
         ),
       );
     }
 
     int row = vicinity.row - 1;
-    if (row < snippets.length) {
+    if (row < snippetsForeachVocalist.length) {
       double topMargin = 0;
       double bottomMargin = 0;
       return TableViewCell(
         child: CustomPaint(
           painter: RectanglePainter(
-            snippet: snippets[row],
+            snippets: snippetsForeachVocalist.entries
+                .toList()[vicinity.row - 1]
+                .value,
             intervalLength: intervalLength,
             intervalDuration: intervalDuration,
             topMargin: topMargin,
