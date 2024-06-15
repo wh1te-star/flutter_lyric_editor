@@ -143,13 +143,12 @@ class PartialTextPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final textStyleGreen = TextStyle(
+    final textStyleAfterInner = TextStyle(
       fontFamily: fontFamily,
       fontSize: 40,
       color: Colors.green,
     );
-
-    final textStyleWhiteOutline = TextStyle(
+    final textStyleAfterMiddle = TextStyle(
       fontFamily: fontFamily,
       fontSize: 40,
       foreground: Paint()
@@ -157,8 +156,7 @@ class PartialTextPainter extends CustomPainter {
         ..strokeWidth = 2
         ..color = Colors.white,
     );
-
-    final textStyleBlackOutline = TextStyle(
+    final textStyleAfterOuter = TextStyle(
       fontFamily: fontFamily,
       fontSize: 40,
       foreground: Paint()
@@ -179,7 +177,6 @@ class PartialTextPainter extends CustomPainter {
       fontSize: 40,
       color: Colors.white,
     );
-
     final textStyleBeforeMiddle = TextStyle(
       fontFamily: fontFamily,
       fontSize: 40,
@@ -188,7 +185,6 @@ class PartialTextPainter extends CustomPainter {
         ..strokeWidth = 2
         ..color = Colors.green,
     );
-
     final textStyleBeforeOuter = TextStyle(
       fontFamily: fontFamily,
       fontSize: 40,
@@ -205,63 +201,62 @@ class PartialTextPainter extends CustomPainter {
       ],
     );
 
-    final textSpanGreen = TextSpan(text: text, style: textStyleGreen);
-    final textSpanWhiteOutline =
-        TextSpan(text: text, style: textStyleWhiteOutline);
-    final textSpanBlackOutline =
-        TextSpan(text: text, style: textStyleBlackOutline);
+    final textSpanAfterInner = TextSpan(text: text, style: textStyleAfterInner);
+    final textSpanAfterMiddle =
+        TextSpan(text: text, style: textStyleAfterMiddle);
+    final textSpanAfterOuter = TextSpan(text: text, style: textStyleAfterOuter);
 
-    final textPainterGreen =
-        TextPainter(text: textSpanGreen, textDirection: TextDirection.ltr);
-    final textPainterWhiteOutline = TextPainter(
-        text: textSpanWhiteOutline, textDirection: TextDirection.ltr);
-    final textPainterBlackOutline = TextPainter(
-        text: textSpanBlackOutline, textDirection: TextDirection.ltr);
+    final textPainterAfterInner =
+        TextPainter(text: textSpanAfterInner, textDirection: TextDirection.ltr);
+    final textPainterAfterMiddle = TextPainter(
+        text: textSpanAfterMiddle, textDirection: TextDirection.ltr);
+    final textPainterAfterOuter =
+        TextPainter(text: textSpanAfterOuter, textDirection: TextDirection.ltr);
 
-    textPainterGreen.layout(maxWidth: size.width);
-    textPainterWhiteOutline.layout(maxWidth: size.width);
-    textPainterBlackOutline.layout(maxWidth: size.width);
+    textPainterAfterInner.layout(maxWidth: size.width);
+    textPainterAfterMiddle.layout(maxWidth: size.width);
+    textPainterAfterOuter.layout(maxWidth: size.width);
 
-    final startOffset = textPainterGreen
+    final startOffset = textPainterAfterInner
         .getOffsetForCaret(TextPosition(offset: start), Rect.zero)
         .dx;
-    final endOffset = textPainterGreen
+    final endOffset = textPainterAfterInner
         .getOffsetForCaret(TextPosition(offset: end), Rect.zero)
         .dx;
 
     final sliceWidth = startOffset + (endOffset - startOffset) * percent;
 
-    canvas.save();
+    //canvas.save();
 
-    // Paint the text before the clipped text
     final textSpanBeforeInner =
         TextSpan(text: text, style: textStyleBeforeInner);
     final textPainterBeforeInner = TextPainter(
         text: textSpanBeforeInner, textDirection: TextDirection.ltr);
     textPainterBeforeInner.layout(maxWidth: size.width);
-    textPainterBeforeInner.paint(canvas, Offset.zero);
 
     final textSpanBeforeMiddle =
         TextSpan(text: text, style: textStyleBeforeMiddle);
     final textPainterBeforeMiddle = TextPainter(
         text: textSpanBeforeMiddle, textDirection: TextDirection.ltr);
     textPainterBeforeMiddle.layout(maxWidth: size.width);
-    textPainterBeforeMiddle.paint(canvas, Offset.zero);
 
     final textSpanBeforeOuter =
         TextSpan(text: text, style: textStyleBeforeOuter);
     final textPainterBeforeOuter = TextPainter(
         text: textSpanBeforeOuter, textDirection: TextDirection.ltr);
     textPainterBeforeOuter.layout(maxWidth: size.width);
+
     textPainterBeforeOuter.paint(canvas, Offset.zero);
+    textPainterBeforeMiddle.paint(canvas, Offset.zero);
+    textPainterBeforeInner.paint(canvas, Offset.zero);
 
     canvas.clipRect(Rect.fromLTWH(0, 0, sliceWidth, size.height));
 
-    textPainterBlackOutline.paint(canvas, Offset.zero);
-    textPainterWhiteOutline.paint(canvas, Offset.zero);
-    textPainterGreen.paint(canvas, Offset.zero);
+    textPainterAfterOuter.paint(canvas, Offset.zero);
+    textPainterAfterMiddle.paint(canvas, Offset.zero);
+    textPainterAfterInner.paint(canvas, Offset.zero);
 
-    canvas.restore();
+    //canvas.restore();
   }
 
   @override
