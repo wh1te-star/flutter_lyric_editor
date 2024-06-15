@@ -20,6 +20,7 @@ class _VideoPaneState extends State<VideoPane> {
   _VideoPaneState(this.masterSubject, this.focusNode);
   bool isPlaying = true;
   int time = 0;
+  String text = "outlined text";
 
   @override
   void initState() {
@@ -73,24 +74,36 @@ class _VideoPaneState extends State<VideoPane> {
 
   @override
   Widget build(BuildContext context) {
-    return Focus(
-      focusNode: focusNode,
-      child: Column(
-        children: <Widget>[
-          Flexible(
-            child: GestureDetector(
-              onTap: () {
-                masterSubject.add(RequestPlayPause());
-                focusNode.requestFocus();
-                debugPrint("The video pane is focused");
-              },
-              child: Container(
-                color: Colors.green,
-                child: Center(child: Text(defaultText)),
-              ),
+    return Center(
+      child: Stack(
+        children: [
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 40,
+              foreground: Paint()
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 6
+                ..color = Colors.black,
             ),
           ),
-          PlaybackControlPane(masterSubject: masterSubject),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 40,
+              foreground: Paint()
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 4
+                ..color = Colors.white,
+            ),
+          ),
+          Text(
+            text,
+            style: const TextStyle(
+              fontSize: 40,
+              color: Colors.green,
+            ),
+          ),
         ],
       ),
     );
