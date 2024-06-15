@@ -25,14 +25,9 @@ class RectanglePainter extends CustomPainter {
     required this.indexColor,
   });
 
-  @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint();
-
     final top = topMargin;
     final bottom = size.height - bottomMargin;
-
-    paint.color = indexColor;
 
     snippets.forEach((LyricSnippet snippet) {
       final endtime = snippet.startTimestamp +
@@ -42,7 +37,9 @@ class RectanglePainter extends CustomPainter {
       final left = snippet.startTimestamp * intervalLength / intervalDuration;
       final right = endtime * intervalLength / intervalDuration;
       final rect = Rect.fromLTRB(left, top, right, bottom);
-      canvas.drawRect(rect, paint);
+
+      final mainPaint = Paint()..color = indexColor;
+      canvas.drawRect(rect, mainPaint);
 
       final textSpan = TextSpan(
         text: snippet.sentence,
@@ -71,7 +68,53 @@ class RectanglePainter extends CustomPainter {
       );
 
       textPainter.paint(canvas, offset);
+
+      final double edgeWidth = 0.5;
+      final lighterColor = _adjustColorBrightness(indexColor, 0.1);
+      final darkerColor = _adjustColorBrightness(indexColor, -0.3);
+      final borderRadius = 1.0;
+      final leftInner = left + borderRadius;
+      final topInner = top + borderRadius;
+      final rightInner = right - borderRadius;
+      final bottomInner = bottom - borderRadius;
+
+      final lighterPath = Path()
+        ..moveTo(left, top)
+        ..lineTo(left, bottom)
+        ..lineTo(leftInner, bottomInner)
+        ..lineTo(leftInner, topInner)
+        ..lineTo(rightInner, topInner)
+        ..lineTo(right, top)
+        ..lineTo(left, top);
+
+      final lighterPaint = Paint()
+        ..color = lighterColor
+        ..strokeWidth = edgeWidth
+        ..style = PaintingStyle.stroke;
+      canvas.drawPath(lighterPath, lighterPaint);
+
+      final darkerPath = Path()
+        ..moveTo(right, bottom)
+        ..lineTo(right, top)
+        ..lineTo(rightInner, topInner)
+        ..lineTo(rightInner, bottomInner)
+        ..lineTo(leftInner, bottomInner)
+        ..lineTo(left, bottom)
+        ..lineTo(right, bottom);
+
+      final darkerPaint = Paint()
+        ..color = darkerColor
+        ..strokeWidth = edgeWidth
+        ..style = PaintingStyle.stroke;
+      canvas.drawPath(darkerPath, darkerPaint);
     });
+  }
+
+  Color _adjustColorBrightness(Color color, double factor) {
+    final hsl = HSLColor.fromColor(color);
+    final adjustedLightness = (hsl.lightness + factor).clamp(0.0, 1.0);
+    final hslAdjusted = hsl.withLightness(adjustedLightness);
+    return hslAdjusted.toColor();
   }
 
   @override
