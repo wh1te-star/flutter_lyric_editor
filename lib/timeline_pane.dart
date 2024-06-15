@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
 import 'scale_mark.dart';
@@ -103,11 +104,11 @@ class _TimelinePaneState extends State<TimelinePane> {
   int audioDuration = 60000;
   int currentPosition = 0;
   final ScrollController currentPositionScroller = ScrollController();
-  final double intervalLength = 10.0;
-  final double majorMarkLength = 15.0;
-  final double midiumMarkLength = 11.0;
-  final double minorMarkLength = 8.0;
-  final int intervalDuration = 1000;
+  double intervalLength = 10.0;
+  double majorMarkLength = 15.0;
+  double midiumMarkLength = 11.0;
+  double minorMarkLength = 8.0;
+  int intervalDuration = 1000;
 
   @override
   void initState() {
@@ -138,36 +139,71 @@ class _TimelinePaneState extends State<TimelinePane> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(children: [
-      TableView.builder(
-        verticalDetails: verticalDetails,
-        horizontalDetails: horizontalDetails,
-        diagonalDragBehavior: DiagonalDragBehavior.free,
-        cellBuilder: _buildCell,
-        columnCount: 2,
-        pinnedColumnCount: 1,
-        columnBuilder: _buildColumnSpan,
-        rowCount: snippetsForeachVocalist.length + 1,
-        pinnedRowCount: 1,
-        rowBuilder: _buildRowSpan,
-      ),
-      IgnorePointer(
-        ignoring: true,
-        child: Padding(
-          padding: const EdgeInsets.only(left: 160.0),
-          child: SingleChildScrollView(
-            controller: currentPositionScroller,
-            scrollDirection: Axis.horizontal,
-            child: CustomPaint(
-              size:
-                  Size(audioDuration * intervalLength / intervalDuration, 800),
-              painter: CurrentPositionIndicatorPainter(
-                  x: currentPosition * intervalLength / intervalDuration),
-            ),
-          ),
-        ),
-      ),
-    ]);
+    return Focus(
+        focusNode: focusNode,
+        onKeyEvent: (FocusNode node, KeyEvent event) {
+          if (event is KeyDownEvent &&
+              event.logicalKey == LogicalKeyboardKey.keyK &&
+              HardwareKeyboard.instance.logicalKeysPressed
+                  .contains(LogicalKeyboardKey.controlLeft)) {
+            debugPrint("timeline pane: zoom out");
+            setState(() {
+              intervalDuration = intervalDuration * 2;
+            });
+            return KeyEventResult.handled;
+          }
+          if (event is KeyDownEvent &&
+              event.logicalKey == LogicalKeyboardKey.keyJ &&
+              HardwareKeyboard.instance.logicalKeysPressed
+                  .contains(LogicalKeyboardKey.controlLeft)) {
+            debugPrint("timeline pane: zoom in");
+            setState(() {
+              intervalDuration = intervalDuration ~/ 2;
+            });
+            return KeyEventResult.handled;
+          }
+          return KeyEventResult.ignored;
+        },
+        child: GestureDetector(
+            onTap: () {
+              widget.masterSubject.add(RequestPlayPause());
+              focusNode.requestFocus();
+              debugPrint("The timeline pane is focused");
+              setState(() {});
+            },
+            child: Stack(children: [
+              TableView.builder(
+                verticalDetails: verticalDetails,
+                horizontalDetails: horizontalDetails,
+                diagonalDragBehavior: DiagonalDragBehavior.free,
+                cellBuilder: _buildCell,
+                columnCount: 2,
+                pinnedColumnCount: 1,
+                columnBuilder: _buildColumnSpan,
+                rowCount: snippetsForeachVocalist.length + 1,
+                pinnedRowCount: 1,
+                rowBuilder: _buildRowSpan,
+              ),
+              IgnorePointer(
+                ignoring: true,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 160.0),
+                  child: SingleChildScrollView(
+                    controller: currentPositionScroller,
+                    scrollDirection: Axis.horizontal,
+                    child: CustomPaint(
+                      size: Size(
+                          audioDuration * intervalLength / intervalDuration,
+                          800),
+                      painter: CurrentPositionIndicatorPainter(
+                          x: currentPosition *
+                              intervalLength /
+                              intervalDuration),
+                    ),
+                  ),
+                ),
+              ),
+            ])));
   }
 
   @override
