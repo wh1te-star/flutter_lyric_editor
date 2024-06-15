@@ -60,11 +60,15 @@ class TimingService {
         String sentence = '';
         List<TimingPoint> timingPoints = [];
 
+        bool isFirstWord = true;
         for (var wordTimestamp in wordTimestamps) {
-          final time = parseTimestamp(wordTimestamp.getAttribute('time')!);
+          final time = isFirstWord
+              ? startTime
+              : parseTimestamp(wordTimestamp.getAttribute('time')!);
           final word = wordTimestamp.innerText;
           timingPoints.add(TimingPoint(word.length, time));
           sentence += word;
+          isFirstWord = false;
         }
 
         snippets.add(LyricSnippet(

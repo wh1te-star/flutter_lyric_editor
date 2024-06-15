@@ -43,13 +43,43 @@ class _VideoPaneState extends State<VideoPane> {
   String defaultText = "Video Pane";
 
   Widget outlinedText(LyricSnippet snippet, String fontFamily) {
+    int currentCharIndex = snippet.timingPoints.length - 1;
+    for (int currentIndex = 0;
+        currentIndex < snippet.timingPoints.length - 1;
+        currentIndex++) {
+      if (snippet.timingPoints[currentIndex].seekPosition <
+              currentSeekPosition &&
+          currentSeekPosition <
+              snippet.timingPoints[currentIndex + 1].seekPosition) {
+        currentCharIndex = currentIndex;
+      }
+    }
+    int startChar = 0;
+    for (int currentIndex = 0;
+        currentIndex < currentCharIndex;
+        currentIndex++) {
+      startChar += snippet.timingPoints[currentIndex].characterLength;
+    }
+    double percent;
+    if (currentCharIndex == snippet.timingPoints.length - 1) {
+      percent = (snippet.timingPoints[currentCharIndex].seekPosition -
+              currentSeekPosition) /
+          (snippet.timingPoints[currentCharIndex].seekPosition -
+              snippet.endTimestamp);
+    } else {
+      {
+        percent = (currentSeekPosition -
+                snippet.timingPoints[currentCharIndex].seekPosition) /
+            (snippet.timingPoints[currentCharIndex + 1].seekPosition -
+                snippet.timingPoints[currentCharIndex].seekPosition);
+      }
+    }
     return CustomPaint(
       painter: PartialTextPainter(
         text: snippet.sentence,
-        start: 0,
-        end: snippet.sentence.length,
-        percent: (currentSeekPosition - snippet.startTimestamp) /
-            (snippet.endTimestamp - snippet.startTimestamp),
+        start: startChar,
+        end: startChar + snippet.timingPoints[currentCharIndex].characterLength,
+        percent: percent,
         fontFamily: fontFamily,
         fontSize: 40,
         firstOutlineWidth: 2,
