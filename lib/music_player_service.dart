@@ -7,7 +7,7 @@ import 'package:rxdart/rxdart.dart';
 class MusicPlayerService {
   final PublishSubject<dynamic> masterSubject;
   AudioPlayer player = AudioPlayer();
-  late AssetSource audioFile;
+  late DeviceFileSource audioFile;
 
   MusicPlayerService({required this.masterSubject}) {
     player.onPositionChanged.listen((event) {
@@ -24,6 +24,9 @@ class MusicPlayerService {
       masterSubject.add(NotifyAudioFileLoaded(duration.inMilliseconds));
     });
     masterSubject.stream.listen((signal) {
+      if (signal is RequestInitAudio) {
+        initAudio(signal.path);
+      }
       if (signal is RequestPlayPause) {
         playPause();
       }
@@ -96,7 +99,8 @@ class MusicPlayerService {
   }
 
   void initAudio(String audioPath) {
-    audioFile = AssetSource(audioPath);
+    audioFile = DeviceFileSource(audioPath);
+    player.setSourceDeviceFile(audioPath);
   }
 
   void play() {

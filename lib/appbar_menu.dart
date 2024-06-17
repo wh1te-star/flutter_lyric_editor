@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:lyric_editor/signal_structure.dart';
+import 'package:rxdart/rxdart.dart';
 import 'string_resource.dart';
 import 'package:file_picker/file_picker.dart';
 
-AppBar buildAppBarWithMenu(BuildContext context) {
+AppBar buildAppBarWithMenu(
+    BuildContext context, PublishSubject<dynamic> masterSubject) {
   return AppBar(
     title: Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -31,6 +34,7 @@ AppBar buildAppBarWithMenu(BuildContext context) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Selected file: ${file.name}')),
                 );
+                masterSubject.add(RequestInitAudio(file.path!));
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('No file selected')),

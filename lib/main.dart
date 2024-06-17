@@ -9,35 +9,44 @@ import 'video_pane.dart';
 import 'text_pane.dart';
 import 'timeline_pane.dart';
 import 'adjustable_pane_border.dart';
-import 'string_resource.dart';
-import 'package:file_picker/file_picker.dart';
 
 void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  final masterSubject = PublishSubject<dynamic>();
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
           title: Builder(
-            builder: (BuildContext context) => buildAppBarWithMenu(context),
+            builder: (BuildContext context) =>
+                buildAppBarWithMenu(context, masterSubject),
           ),
         ),
-        body: AdjustablePaneLayout(),
+        body: AdjustablePaneLayout(masterSubject: masterSubject),
       ),
     );
   }
 }
 
 class AdjustablePaneLayout extends StatefulWidget {
+  final PublishSubject<dynamic> masterSubject;
+
+  AdjustablePaneLayout({required this.masterSubject}) : super(key: Key('Main'));
+
   @override
-  _AdjustablePaneLayoutState createState() => _AdjustablePaneLayoutState();
+  _AdjustablePaneLayoutState createState() =>
+      _AdjustablePaneLayoutState(masterSubject);
 }
 
 class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
+  final PublishSubject<dynamic> masterSubject;
+  _AdjustablePaneLayoutState(this.masterSubject);
+
   double screenWidth = 0.0;
   double screenHeight = 0.0;
   double exactWidth = 0.0;
@@ -48,7 +57,6 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   double VideoPaneWidth = 100;
   double VideoPaneHeight = 100;
 
-  final masterSubject = PublishSubject<dynamic>();
   late MusicPlayerService musicPlayerService;
   late TimingService lyricService;
   late FocusNode videoPaneFocusNode;
@@ -119,7 +127,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
       }
     });
 
-    musicPlayerService.initAudio('09 ウェルカムティーフレンド.mp3');
+    musicPlayerService.initAudio('assets/09 ウェルカムティーフレンド.mp3');
     musicPlayerService.play();
 
     lyricService.printLyric();

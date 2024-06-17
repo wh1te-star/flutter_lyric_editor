@@ -1,6 +1,11 @@
 import 'package:lyric_editor/lyric_snippet.dart';
 import 'package:lyric_editor/sorted_list.dart';
 
+class RequestInitAudio {
+  String path;
+  RequestInitAudio(this.path);
+}
+
 class RequestPlayPause {}
 
 class NotifyAudioFileLoaded {
