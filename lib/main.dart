@@ -9,22 +9,28 @@ import 'video_pane.dart';
 import 'text_pane.dart';
 import 'timeline_pane.dart';
 import 'adjustable_pane_border.dart';
+import 'string_resource.dart';
+import 'package:file_picker/file_picker.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: buildAppBarWithMenu(context),
+        appBar: AppBar(
+          title: Builder(
+            builder: (BuildContext context) => buildAppBarWithMenu(context),
+          ),
+        ),
         body: AdjustablePaneLayout(),
       ),
     );
   }
 }
-
-class ActivateIntent extends Intent {}
 
 class AdjustablePaneLayout extends StatefulWidget {
   @override

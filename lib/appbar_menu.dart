@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'string_resource.dart';
+import 'package:file_picker/file_picker.dart';
 
 AppBar buildAppBarWithMenu(BuildContext context) {
   return AppBar(
@@ -21,8 +22,23 @@ AppBar buildAppBarWithMenu(BuildContext context) {
         ),
         DropdownButton<String>(
           hint: const Text(StringResource.fileMenu),
-          onChanged: (String? newValue) {
-            debugPrint('Selected Item: $newValue');
+          onChanged: (String? newValue) async {
+            if (newValue == StringResource.fileMenuOpenAudio) {
+              FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+              if (result != null) {
+                PlatformFile file = result.files.first;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Selected file: ${file.name}')),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('No file selected')),
+                );
+              }
+            } else {
+              debugPrint('Selected Item: $newValue');
+            }
           },
           items: <String>[
             StringResource.fileMenuOpenAudio,

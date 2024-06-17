@@ -64,7 +64,6 @@ class TimingService {
 
       final wordTimestamps = lineTimestamp.findElements('WordTimestamp');
       String sentence = '';
-      int seekPosition = startTime;
       List<TimingPoint> timingPoints = [];
 
       for (var wordTimestamp in wordTimestamps) {
@@ -72,7 +71,6 @@ class TimingService {
         final word = wordTimestamp.innerText;
         timingPoints.add(TimingPoint(word.length, time));
         sentence += word;
-        seekPosition += time;
       }
 
       snippets.add(LyricSnippet(
