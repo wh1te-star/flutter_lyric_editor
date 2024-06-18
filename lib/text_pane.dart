@@ -16,7 +16,6 @@ class TextPane extends StatefulWidget {
 
 class _TextPaneState extends State<TextPane> {
   final PublishSubject<dynamic> masterSubject;
-  late final FocusNode focusNode;
 
   static const String cursorChar = '●';
   static const String timingPointChar = '|';
@@ -53,6 +52,22 @@ class _TextPaneState extends State<TextPane> {
         setState(() {});
       }
 
+      if (signal is RequestMoveDownCharCursor) {
+        moveDownCursor();
+      }
+
+      if (signal is RequestMoveUpCharCursor) {
+        moveUpCursor();
+      }
+
+      if (signal is RequestMoveLeftCharCursor) {
+        moveLeftCursor();
+      }
+
+      if (signal is RequestMoveRightCharCursor) {
+        moveRightCursor();
+      }
+
       if (signal is NotifyTimingPointAdded) {
         timingPointMap[signal.characterPosition] = timingPointChar;
         updateIndicators();
@@ -69,16 +84,6 @@ class _TextPaneState extends State<TextPane> {
         seekPosition = signal.seekPosition;
       }
     });
-    focusNode = FocusNode();
-    focusNode.addListener(_onFocusChange);
-  }
-
-  void _onFocusChange() {
-    if (focusNode.hasFocus)
-      debugPrint("focus enabled");
-    else
-      debugPrint("focus released");
-    setState(() {});
   }
 
   void updateIndicators() {
@@ -98,89 +103,68 @@ class _TextPaneState extends State<TextPane> {
     }
   }
 
+  void moveUpCursor() {
+    if (cursorPositionLine > 0) {
+      cursorPositionLine--;
+      cursorPosition = lyricSnippets
+              .take(cursorPositionLine)
+              .fold(0, (prev, curr) => prev + curr.sentence.length) +
+          cursorPositionChar;
+      setState(() {});
+      debugPrint(
+          "K key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
+    }
+  }
+
+  void moveDownCursor() {
+    if (cursorPositionLine < lyricSnippets.length - 1) {
+      cursorPositionLine++;
+      cursorPosition = lyricSnippets
+              .take(cursorPositionLine)
+              .fold(0, (prev, curr) => prev + curr.sentence.length) +
+          cursorPositionChar;
+      setState(() {});
+      debugPrint(
+          "J key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
+    }
+  }
+
+  void moveLeftCursor() {
+    if (cursorPositionChar > 0) {
+      cursorPositionChar--;
+      cursorPosition--;
+      setState(() {});
+      debugPrint(
+          "H key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
+    }
+  }
+
+  void moveRightCursor() {
+    if (cursorPositionChar <=
+        lyricSnippets[cursorPositionLine].sentence.length) {
+      cursorPositionChar++;
+      cursorPosition++;
+      setState(() {});
+      debugPrint(
+          "L key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
+    }
+  }
+
+  void addTimingPoint(int charPosition, int seekPosition) {
+    masterSubject.add(RequestToAddLyricTiming(cursorPosition, seekPosition));
+    debugPrint(
+        "request to add a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
+  }
+
+  void deleteTimingPoint(int charPosition) {
+    masterSubject.add(RequestToDeleteLyricTiming(cursorPosition));
+    debugPrint(
+        "request to delete a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Focus(
-      focusNode: focusNode,
-      onKeyEvent: (FocusNode node, KeyEvent event) {
-        if (event is KeyDownEvent &&
-            event.logicalKey == LogicalKeyboardKey.keyK) {
-          if (cursorPositionLine > 0) {
-            cursorPositionLine--;
-            cursorPosition = lyricSnippets
-                    .take(cursorPositionLine)
-                    .fold(0, (prev, curr) => prev + curr.sentence.length) +
-                cursorPositionChar;
-            setState(() {});
-            debugPrint(
-                "K key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
-          }
-          return KeyEventResult.handled;
-        }
-        if (event is KeyDownEvent &&
-            event.logicalKey == LogicalKeyboardKey.keyJ) {
-          if (cursorPositionLine < lyricSnippets.length - 1) {
-            cursorPositionLine++;
-            cursorPosition = lyricSnippets
-                    .take(cursorPositionLine)
-                    .fold(0, (prev, curr) => prev + curr.sentence.length) +
-                cursorPositionChar;
-            setState(() {});
-            debugPrint(
-                "J key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
-          }
-          return KeyEventResult.handled;
-        }
-        if (event is KeyDownEvent &&
-            event.logicalKey == LogicalKeyboardKey.keyH) {
-          if (cursorPositionChar > 0) {
-            cursorPositionChar--;
-            cursorPosition--;
-            setState(() {});
-            debugPrint(
-                "H key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
-          }
-          return KeyEventResult.handled;
-        }
-        if (event is KeyDownEvent &&
-            event.logicalKey == LogicalKeyboardKey.keyL) {
-          if (cursorPositionChar <=
-              lyricSnippets[cursorPositionLine].sentence.length) {
-            cursorPositionChar++;
-            cursorPosition++;
-            setState(() {});
-            debugPrint(
-                "L key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
-          }
-          return KeyEventResult.handled;
-        }
-        if (event is KeyDownEvent &&
-            event.logicalKey == LogicalKeyboardKey.keyN) {
-          masterSubject
-              .add(RequestToAddLyricTiming(cursorPosition, seekPosition));
-          debugPrint(
-              "request to add a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
-          return KeyEventResult.handled;
-        }
-        if (event is KeyDownEvent &&
-            event.logicalKey == LogicalKeyboardKey.keyM) {
-          masterSubject.add(RequestToDeleteLyricTiming(cursorPosition));
-          debugPrint(
-              "request to delete a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
-          return KeyEventResult.handled;
-        }
-        return KeyEventResult.ignored;
-      },
-      child: GestureDetector(
-        onTap: () {
-          widget.masterSubject.add(RequestPlayPause());
-          focusNode.requestFocus();
-          debugPrint("The text pane is focused");
-          setState(() {});
-        },
-        child: lyricListWidget(),
-      ),
-    );
+    return lyricListWidget();
   }
 
   Widget lyricListWidget() {
@@ -298,13 +282,4 @@ class _TextPaneState extends State<TextPane> {
 
     return resultString;
   }
-
-  @override
-  void dispose() {
-    focusNode.removeListener(_onFocusChange);
-    focusNode.dispose();
-    super.dispose();
-  }
 }
-
-class TogglePlayPauseShortcut extends Intent {}

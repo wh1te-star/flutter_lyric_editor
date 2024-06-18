@@ -43,6 +43,14 @@ class RequestSpeedDown {
   RequestSpeedDown(this.rate);
 }
 
+class RequestMoveUpCharCursor {}
+
+class RequestMoveDownCharCursor {}
+
+class RequestMoveLeftCharCursor {}
+
+class RequestMoveRightCharCursor {}
+
 class RequestToAddLyricTiming {
   int characterPosition;
   int seekPosition;

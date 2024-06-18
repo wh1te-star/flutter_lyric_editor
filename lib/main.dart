@@ -149,12 +149,16 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     return Shortcuts(
       shortcuts: {
         LogicalKeySet(LogicalKeyboardKey.space): ActivatePlayPauseIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyH): ActivateRewindIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyL): ActivateForwardIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyD): ActivateRewindIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyF): ActivateForwardIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowLeft): ActivateSpeedDownIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowRight): ActivateSpeedUpIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowUp): ActivateVolumeUpIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowDown): ActivateVolumeDownIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyH): ActivateMoveLeftCursor(),
+        LogicalKeySet(LogicalKeyboardKey.keyJ): ActivateMoveDownCursor(),
+        LogicalKeySet(LogicalKeyboardKey.keyK): ActivateMoveUpCursor(),
+        LogicalKeySet(LogicalKeyboardKey.keyL): ActivateMoveRightCursor(),
       },
       child: Actions(
         actions: {
@@ -191,6 +195,26 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
           ActivateSpeedDownIntent: CallbackAction<ActivateSpeedDownIntent>(
             onInvoke: (ActivateSpeedDownIntent intent) => () {
               masterSubject.add(RequestSpeedDown(0.1));
+            }(),
+          ),
+          ActivateMoveLeftCursor: CallbackAction<ActivateMoveLeftCursor>(
+            onInvoke: (ActivateMoveLeftCursor intent) => () {
+              masterSubject.add(RequestMoveLeftCharCursor());
+            }(),
+          ),
+          ActivateMoveDownCursor: CallbackAction<ActivateMoveDownCursor>(
+            onInvoke: (ActivateMoveDownCursor intent) => () {
+              masterSubject.add(RequestMoveDownCharCursor());
+            }(),
+          ),
+          ActivateMoveUpCursor: CallbackAction<ActivateMoveUpCursor>(
+            onInvoke: (ActivateMoveUpCursor intent) => () {
+              masterSubject.add(RequestMoveUpCharCursor());
+            }(),
+          ),
+          ActivateMoveRightCursor: CallbackAction<ActivateMoveRightCursor>(
+            onInvoke: (ActivateMoveRightCursor intent) => () {
+              masterSubject.add(RequestMoveRightCharCursor());
             }(),
           ),
         },
@@ -234,3 +258,11 @@ class ActivateVolumeDownIntent extends Intent {}
 class ActivateSpeedUpIntent extends Intent {}
 
 class ActivateSpeedDownIntent extends Intent {}
+
+class ActivateMoveDownCursor extends Intent {}
+
+class ActivateMoveUpCursor extends Intent {}
+
+class ActivateMoveLeftCursor extends Intent {}
+
+class ActivateMoveRightCursor extends Intent {}
