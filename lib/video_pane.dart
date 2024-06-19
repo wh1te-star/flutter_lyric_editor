@@ -106,20 +106,38 @@ class _VideoPaneState extends State<VideoPane> {
           currentSeekPosition < endtime;
     }).toList();
     if (currentSnippet.isEmpty) {
-      return Column(children: [
-        Expanded(
-          child: Container(),
+      return Focus(
+        focusNode: focusNode,
+        child: GestureDetector(
+          onTap: () {
+            widget.masterSubject.add(RequestPlayPause());
+            focusNode.requestFocus();
+            debugPrint("The video pane is focused");
+          },
+          child: Column(children: [
+            Expanded(
+              child: Container(),
+            ),
+            PlaybackControlPane(masterSubject: masterSubject),
+          ]),
         ),
-        PlaybackControlPane(masterSubject: masterSubject),
-      ]);
+      );
     }
 
-    return Column(children: [
-      Expanded(
-        child: outlinedText(currentSnippet[0], fontFamily),
-      ),
-      PlaybackControlPane(masterSubject: masterSubject),
-    ]);
+    return Focus(
+        focusNode: focusNode,
+        child: GestureDetector(
+            onTap: () {
+              widget.masterSubject.add(RequestPlayPause());
+              focusNode.requestFocus();
+              debugPrint("The video pane is focused");
+            },
+            child: Column(children: [
+              Expanded(
+                child: outlinedText(currentSnippet[0], fontFamily),
+              ),
+              PlaybackControlPane(masterSubject: masterSubject),
+            ])));
   }
 
   List<TimingPoint> getAccumulatedTimingPoints(

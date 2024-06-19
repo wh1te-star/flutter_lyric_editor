@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:lyric_editor/lyric_snippet.dart';
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
@@ -7,15 +8,18 @@ import 'sorted_list.dart';
 
 class TextPane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
+  final FocusNode focusNode;
 
-  TextPane({required this.masterSubject}) : super(key: Key('TextPane'));
+  TextPane({required this.masterSubject, required this.focusNode})
+      : super(key: Key('TextPane'));
 
   @override
-  _TextPaneState createState() => _TextPaneState(masterSubject);
+  _TextPaneState createState() => _TextPaneState(masterSubject, focusNode);
 }
 
 class _TextPaneState extends State<TextPane> {
   final PublishSubject<dynamic> masterSubject;
+  final FocusNode focusNode;
 
   static const String cursorChar = '●';
   static const String timingPointChar = '|';
@@ -36,7 +40,7 @@ class _TextPaneState extends State<TextPane> {
   SortedMap<int, String> timingPointMap = SortedMap<int, String>();
   SortedMap<int, String> sectionPointMap = SortedMap<int, String>();
 
-  _TextPaneState(this.masterSubject);
+  _TextPaneState(this.masterSubject, this.focusNode);
 
   @override
   void initState() {
@@ -164,7 +168,18 @@ class _TextPaneState extends State<TextPane> {
 
   @override
   Widget build(BuildContext context) {
-    return lyricListWidget();
+    return Focus(
+      focusNode: focusNode,
+      child: GestureDetector(
+        onTap: () {
+          widget.masterSubject.add(RequestPlayPause());
+          focusNode.requestFocus();
+          debugPrint("The text pane is focused");
+          setState(() {});
+        },
+        child: lyricListWidget(),
+      ),
+    );
   }
 
   Widget lyricListWidget() {
