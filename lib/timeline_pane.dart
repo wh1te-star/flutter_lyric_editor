@@ -177,80 +177,74 @@ class _TimelinePaneState extends State<TimelinePane> {
               (LyricSnippet snippet) => snippet.vocalist);
         });
       }
+      if (signal is RequestTimelineZoomIn) {
+        zoomIn();
+      }
+      if (signal is RequestTimelineZoomOut) {
+        zoomOut();
+      }
     });
     horizontalDetails.controller!.addListener(_onHorizontalScroll);
     currentPositionScroller.addListener(_onHorizontalScroll);
   }
 
-  String defaultText = "Timeline Pane";
+  void zoomIn() {
+    debugPrint("timeline pane: zoom In");
+    setState(() {
+      intervalDuration = intervalDuration * 2;
+    });
+  }
+
+  void zoomOut() {
+    debugPrint("timeline pane: zoom Out");
+    setState(() {
+      intervalDuration = intervalDuration ~/ 2;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Focus(
-        focusNode: focusNode,
-        onKeyEvent: (FocusNode node, KeyEvent event) {
-          if (event is KeyDownEvent &&
-              event.logicalKey == LogicalKeyboardKey.keyK &&
-              HardwareKeyboard.instance.logicalKeysPressed
-                  .contains(LogicalKeyboardKey.controlLeft)) {
-            debugPrint("timeline pane: zoom out");
-            setState(() {
-              intervalDuration = intervalDuration * 2;
-            });
-            return KeyEventResult.handled;
-          }
-          if (event is KeyDownEvent &&
-              event.logicalKey == LogicalKeyboardKey.keyJ &&
-              HardwareKeyboard.instance.logicalKeysPressed
-                  .contains(LogicalKeyboardKey.controlLeft)) {
-            debugPrint("timeline pane: zoom in");
-            setState(() {
-              intervalDuration = intervalDuration ~/ 2;
-            });
-            return KeyEventResult.handled;
-          }
-          return KeyEventResult.ignored;
+      focusNode: focusNode,
+      child: GestureDetector(
+        onTap: () {
+          widget.masterSubject.add(RequestPlayPause());
+          focusNode.requestFocus();
+          debugPrint("The timeline pane is focused");
+          setState(() {});
         },
-        child: GestureDetector(
-            onTap: () {
-              widget.masterSubject.add(RequestPlayPause());
-              focusNode.requestFocus();
-              debugPrint("The timeline pane is focused");
-              setState(() {});
-            },
-            child: Stack(children: [
-              TableView.builder(
-                verticalDetails: verticalDetails,
-                horizontalDetails: horizontalDetails,
-                diagonalDragBehavior: DiagonalDragBehavior.free,
-                cellBuilder: _buildCell,
-                columnCount: 2,
-                pinnedColumnCount: 1,
-                columnBuilder: _buildColumnSpan,
-                rowCount: snippetsForeachVocalist.length + 1,
-                pinnedRowCount: 1,
-                rowBuilder: _buildRowSpan,
-              ),
-              IgnorePointer(
-                ignoring: true,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 160.0),
-                  child: SingleChildScrollView(
-                    controller: currentPositionScroller,
-                    scrollDirection: Axis.horizontal,
-                    child: CustomPaint(
-                      size: Size(
-                          audioDuration * intervalLength / intervalDuration,
-                          800),
-                      painter: CurrentPositionIndicatorPainter(
-                          x: currentPosition *
-                              intervalLength /
-                              intervalDuration),
-                    ),
-                  ),
+        child: Stack(children: [
+          TableView.builder(
+            verticalDetails: verticalDetails,
+            horizontalDetails: horizontalDetails,
+            diagonalDragBehavior: DiagonalDragBehavior.free,
+            cellBuilder: _buildCell,
+            columnCount: 2,
+            pinnedColumnCount: 1,
+            columnBuilder: _buildColumnSpan,
+            rowCount: snippetsForeachVocalist.length + 1,
+            pinnedRowCount: 1,
+            rowBuilder: _buildRowSpan,
+          ),
+          IgnorePointer(
+            ignoring: true,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 160.0),
+              child: SingleChildScrollView(
+                controller: currentPositionScroller,
+                scrollDirection: Axis.horizontal,
+                child: CustomPaint(
+                  size: Size(
+                      audioDuration * intervalLength / intervalDuration, 800),
+                  painter: CurrentPositionIndicatorPainter(
+                      x: currentPosition * intervalLength / intervalDuration),
                 ),
               ),
-            ])));
+            ),
+          ),
+        ]),
+      ),
+    );
   }
 
   @override

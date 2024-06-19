@@ -159,6 +159,11 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
         LogicalKeySet(LogicalKeyboardKey.keyJ): ActivateMoveDownCursor(),
         LogicalKeySet(LogicalKeyboardKey.keyK): ActivateMoveUpCursor(),
         LogicalKeySet(LogicalKeyboardKey.keyL): ActivateMoveRightCursor(),
+        LogicalKeySet(LogicalKeyboardKey.controlLeft, LogicalKeyboardKey.keyK):
+            ActivateTimelineZoomIn(),
+        LogicalKeySet(LogicalKeyboardKey.controlLeft, LogicalKeyboardKey.keyJ):
+            ActivateTimelineZoomOut(),
+        LogicalKeySet(LogicalKeyboardKey.keyL): ActivateMoveRightCursor(),
       },
       child: Actions(
         actions: {
@@ -217,6 +222,16 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
               masterSubject.add(RequestMoveRightCharCursor());
             }(),
           ),
+          ActivateTimelineZoomIn: CallbackAction<ActivateTimelineZoomIn>(
+            onInvoke: (ActivateTimelineZoomIn intent) => () {
+              masterSubject.add(RequestTimelineZoomIn());
+            }(),
+          ),
+          ActivateTimelineZoomOut: CallbackAction<ActivateTimelineZoomOut>(
+            onInvoke: (ActivateTimelineZoomOut intent) => () {
+              masterSubject.add(RequestTimelineZoomOut());
+            }(),
+          ),
         },
         child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
@@ -266,3 +281,7 @@ class ActivateMoveUpCursor extends Intent {}
 class ActivateMoveLeftCursor extends Intent {}
 
 class ActivateMoveRightCursor extends Intent {}
+
+class ActivateTimelineZoomIn extends Intent {}
+
+class ActivateTimelineZoomOut extends Intent {}

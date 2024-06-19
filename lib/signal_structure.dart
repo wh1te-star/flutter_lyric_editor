@@ -51,6 +51,10 @@ class RequestMoveLeftCharCursor {}
 
 class RequestMoveRightCharCursor {}
 
+class RequestTimelineZoomIn {}
+
+class RequestTimelineZoomOut {}
+
 class RequestToAddLyricTiming {
   int characterPosition;
   int seekPosition;
