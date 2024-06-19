@@ -19,61 +19,71 @@ class KeyboardShortcuts extends StatelessWidget {
   });
 
   Map<LogicalKeySet, Intent> get shortcuts => {
-        LogicalKeySet(LogicalKeyboardKey.space): ActivatePlayPauseIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyD): ActivateRewindIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyF): ActivateForwardIntent(),
-        LogicalKeySet(LogicalKeyboardKey.arrowLeft): ActivateSpeedDownIntent(),
-        LogicalKeySet(LogicalKeyboardKey.arrowRight): ActivateSpeedUpIntent(),
-        LogicalKeySet(LogicalKeyboardKey.arrowUp): ActivateVolumeUpIntent(),
-        LogicalKeySet(LogicalKeyboardKey.arrowDown): ActivateVolumeDownIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyH): ActivateMoveLeftCursor(),
-        LogicalKeySet(LogicalKeyboardKey.keyJ): ActivateMoveDownCursor(),
-        LogicalKeySet(LogicalKeyboardKey.keyK): ActivateMoveUpCursor(),
-        LogicalKeySet(LogicalKeyboardKey.keyL): ActivateMoveRightCursor(),
+        LogicalKeySet(LogicalKeyboardKey.space):
+            ActivateSpaceKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyD): ActivateDKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyF): ActivateFKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.arrowLeft):
+            ActivateLeftArrowKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.arrowRight):
+            ActivateRightArrowKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.arrowUp):
+            ActivateUpArrowKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.arrowDown):
+            ActivateDownArrowKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyH): ActivateHKeyShortcutCursor(),
+        LogicalKeySet(LogicalKeyboardKey.keyJ): ActivateJKeyShortcutCursor(),
+        LogicalKeySet(LogicalKeyboardKey.keyK): ActivateKKeyShortcutCursor(),
+        LogicalKeySet(LogicalKeyboardKey.keyL): ActivateLKeyShortcutCursor(),
         LogicalKeySet(LogicalKeyboardKey.controlLeft, LogicalKeyboardKey.keyK):
-            ActivateTimelineZoomIn(),
+            ActivateCtrlKKeyShortcutCursor(),
         LogicalKeySet(LogicalKeyboardKey.controlLeft, LogicalKeyboardKey.keyJ):
-            ActivateTimelineZoomOut(),
+            ActivateCtrlJKeyShortcutCursor(),
       };
 
   Map<Type, Action<Intent>> get actions => {
-        ActivatePlayPauseIntent: CallbackAction<ActivatePlayPauseIntent>(
-          onInvoke: (ActivatePlayPauseIntent intent) => () {
+        ActivateSpaceKeyShortcutIntent:
+            CallbackAction<ActivateSpaceKeyShortcutIntent>(
+          onInvoke: (ActivateSpaceKeyShortcutIntent intent) => () {
             masterSubject.add(RequestPlayPause());
           }(),
         ),
-        ActivateRewindIntent: CallbackAction<ActivateRewindIntent>(
-          onInvoke: (ActivateRewindIntent intent) => () {
+        ActivateDKeyShortcutIntent: CallbackAction<ActivateDKeyShortcutIntent>(
+          onInvoke: (ActivateDKeyShortcutIntent intent) => () {
             masterSubject.add(RequestRewind(1000));
           }(),
         ),
-        ActivateForwardIntent: CallbackAction<ActivateForwardIntent>(
-          onInvoke: (ActivateForwardIntent intent) => () {
+        ActivateFKeyShortcutIntent: CallbackAction<ActivateFKeyShortcutIntent>(
+          onInvoke: (ActivateFKeyShortcutIntent intent) => () {
             masterSubject.add(RequestForward(1000));
           }(),
         ),
-        ActivateVolumeUpIntent: CallbackAction<ActivateVolumeUpIntent>(
-          onInvoke: (ActivateVolumeUpIntent intent) => () {
+        ActivateUpArrowKeyShortcutIntent:
+            CallbackAction<ActivateUpArrowKeyShortcutIntent>(
+          onInvoke: (ActivateUpArrowKeyShortcutIntent intent) => () {
             masterSubject.add(RequestVolumeUp(0.1));
           }(),
         ),
-        ActivateVolumeDownIntent: CallbackAction<ActivateVolumeDownIntent>(
-          onInvoke: (ActivateVolumeDownIntent intent) => () {
+        ActivateDownArrowKeyShortcutIntent:
+            CallbackAction<ActivateDownArrowKeyShortcutIntent>(
+          onInvoke: (ActivateDownArrowKeyShortcutIntent intent) => () {
             masterSubject.add(RequestVolumeDown(0.1));
           }(),
         ),
-        ActivateSpeedUpIntent: CallbackAction<ActivateSpeedUpIntent>(
-          onInvoke: (ActivateSpeedUpIntent intent) => () {
+        ActivateRightArrowKeyShortcutIntent:
+            CallbackAction<ActivateRightArrowKeyShortcutIntent>(
+          onInvoke: (ActivateRightArrowKeyShortcutIntent intent) => () {
             masterSubject.add(RequestSpeedUp(0.1));
           }(),
         ),
-        ActivateSpeedDownIntent: CallbackAction<ActivateSpeedDownIntent>(
-          onInvoke: (ActivateSpeedDownIntent intent) => () {
+        ActivateLeftArrowKeyShortcutIntent:
+            CallbackAction<ActivateLeftArrowKeyShortcutIntent>(
+          onInvoke: (ActivateLeftArrowKeyShortcutIntent intent) => () {
             masterSubject.add(RequestSpeedDown(0.1));
           }(),
         ),
-        ActivateMoveLeftCursor: CallbackAction<ActivateMoveLeftCursor>(
-          onInvoke: (ActivateMoveLeftCursor intent) => () {
+        ActivateHKeyShortcutCursor: CallbackAction<ActivateHKeyShortcutCursor>(
+          onInvoke: (ActivateHKeyShortcutCursor intent) => () {
             if (textPaneFocusNode.hasFocus) {
               masterSubject.add(RequestMoveLeftCharCursor());
             }
@@ -82,18 +92,18 @@ class KeyboardShortcuts extends StatelessWidget {
             }
           }(),
         ),
-        ActivateMoveDownCursor: CallbackAction<ActivateMoveDownCursor>(
-          onInvoke: (ActivateMoveDownCursor intent) => () {
+        ActivateJKeyShortcutCursor: CallbackAction<ActivateJKeyShortcutCursor>(
+          onInvoke: (ActivateJKeyShortcutCursor intent) => () {
             masterSubject.add(RequestMoveDownCharCursor());
           }(),
         ),
-        ActivateMoveUpCursor: CallbackAction<ActivateMoveUpCursor>(
-          onInvoke: (ActivateMoveUpCursor intent) => () {
+        ActivateKKeyShortcutCursor: CallbackAction<ActivateKKeyShortcutCursor>(
+          onInvoke: (ActivateKKeyShortcutCursor intent) => () {
             masterSubject.add(RequestMoveUpCharCursor());
           }(),
         ),
-        ActivateMoveRightCursor: CallbackAction<ActivateMoveRightCursor>(
-          onInvoke: (ActivateMoveRightCursor intent) => () {
+        ActivateLKeyShortcutCursor: CallbackAction<ActivateLKeyShortcutCursor>(
+          onInvoke: (ActivateLKeyShortcutCursor intent) => () {
             if (textPaneFocusNode.hasFocus) {
               masterSubject.add(RequestMoveRightCharCursor());
             }
@@ -102,13 +112,15 @@ class KeyboardShortcuts extends StatelessWidget {
             }
           }(),
         ),
-        ActivateTimelineZoomIn: CallbackAction<ActivateTimelineZoomIn>(
-          onInvoke: (ActivateTimelineZoomIn intent) => () {
+        ActivateCtrlKKeyShortcutCursor:
+            CallbackAction<ActivateCtrlKKeyShortcutCursor>(
+          onInvoke: (ActivateCtrlKKeyShortcutCursor intent) => () {
             masterSubject.add(RequestTimelineZoomIn());
           }(),
         ),
-        ActivateTimelineZoomOut: CallbackAction<ActivateTimelineZoomOut>(
-          onInvoke: (ActivateTimelineZoomOut intent) => () {
+        ActivateCtrlJKeyShortcutCursor:
+            CallbackAction<ActivateCtrlJKeyShortcutCursor>(
+          onInvoke: (ActivateCtrlJKeyShortcutCursor intent) => () {
             masterSubject.add(RequestTimelineZoomOut());
           }(),
         ),
@@ -126,28 +138,28 @@ class KeyboardShortcuts extends StatelessWidget {
   }
 }
 
-class ActivatePlayPauseIntent extends Intent {}
+class ActivateSpaceKeyShortcutIntent extends Intent {}
 
-class ActivateForwardIntent extends Intent {}
+class ActivateFKeyShortcutIntent extends Intent {}
 
-class ActivateRewindIntent extends Intent {}
+class ActivateDKeyShortcutIntent extends Intent {}
 
-class ActivateVolumeUpIntent extends Intent {}
+class ActivateUpArrowKeyShortcutIntent extends Intent {}
 
-class ActivateVolumeDownIntent extends Intent {}
+class ActivateDownArrowKeyShortcutIntent extends Intent {}
 
-class ActivateSpeedUpIntent extends Intent {}
+class ActivateRightArrowKeyShortcutIntent extends Intent {}
 
-class ActivateSpeedDownIntent extends Intent {}
+class ActivateLeftArrowKeyShortcutIntent extends Intent {}
 
-class ActivateMoveDownCursor extends Intent {}
+class ActivateJKeyShortcutCursor extends Intent {}
 
-class ActivateMoveUpCursor extends Intent {}
+class ActivateKKeyShortcutCursor extends Intent {}
 
-class ActivateMoveLeftCursor extends Intent {}
+class ActivateHKeyShortcutCursor extends Intent {}
 
-class ActivateMoveRightCursor extends Intent {}
+class ActivateLKeyShortcutCursor extends Intent {}
 
-class ActivateTimelineZoomIn extends Intent {}
+class ActivateCtrlKKeyShortcutCursor extends Intent {}
 
-class ActivateTimelineZoomOut extends Intent {}
+class ActivateCtrlJKeyShortcutCursor extends Intent {}
