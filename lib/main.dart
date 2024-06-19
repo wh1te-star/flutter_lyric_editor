@@ -86,7 +86,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     );
     textPane = TextPane(
       masterSubject: masterSubject,
-      focusNode: videoPaneFocusNode,
+      focusNode: textPaneFocusNode,
     );
     timelinePane = TimelinePane(
       masterSubject: masterSubject,
@@ -150,6 +150,9 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   Widget build(BuildContext context) {
     return KeyboardShortcuts(
       masterSubject: masterSubject,
+      videoPaneFocusNode: videoPaneFocusNode,
+      textPaneFocusNode: textPaneFocusNode,
+      timelinePaneFocusNode: timelinePaneFocusNode,
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           return Column(

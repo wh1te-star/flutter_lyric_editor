@@ -6,8 +6,17 @@ import 'signal_structure.dart';
 class KeyboardShortcuts extends StatelessWidget {
   final PublishSubject<dynamic> masterSubject;
   final Widget child;
+  final FocusNode videoPaneFocusNode;
+  final FocusNode textPaneFocusNode;
+  final FocusNode timelinePaneFocusNode;
 
-  KeyboardShortcuts({required this.masterSubject, required this.child});
+  KeyboardShortcuts({
+    required this.masterSubject,
+    required this.child,
+    required this.videoPaneFocusNode,
+    required this.textPaneFocusNode,
+    required this.timelinePaneFocusNode,
+  });
 
   Map<LogicalKeySet, Intent> get shortcuts => {
         LogicalKeySet(LogicalKeyboardKey.space): ActivatePlayPauseIntent(),
@@ -65,7 +74,12 @@ class KeyboardShortcuts extends StatelessWidget {
         ),
         ActivateMoveLeftCursor: CallbackAction<ActivateMoveLeftCursor>(
           onInvoke: (ActivateMoveLeftCursor intent) => () {
-            masterSubject.add(RequestMoveLeftCharCursor());
+            if (textPaneFocusNode.hasFocus) {
+              masterSubject.add(RequestMoveLeftCharCursor());
+            }
+            if (timelinePaneFocusNode.hasFocus) {
+              masterSubject.add(RequestRewind(1000));
+            }
           }(),
         ),
         ActivateMoveDownCursor: CallbackAction<ActivateMoveDownCursor>(
@@ -80,7 +94,12 @@ class KeyboardShortcuts extends StatelessWidget {
         ),
         ActivateMoveRightCursor: CallbackAction<ActivateMoveRightCursor>(
           onInvoke: (ActivateMoveRightCursor intent) => () {
-            masterSubject.add(RequestMoveRightCharCursor());
+            if (textPaneFocusNode.hasFocus) {
+              masterSubject.add(RequestMoveRightCharCursor());
+            }
+            if (timelinePaneFocusNode.hasFocus) {
+              masterSubject.add(RequestForward(1000));
+            }
           }(),
         ),
         ActivateTimelineZoomIn: CallbackAction<ActivateTimelineZoomIn>(
@@ -101,10 +120,7 @@ class KeyboardShortcuts extends StatelessWidget {
       shortcuts: shortcuts,
       child: Actions(
         actions: actions,
-        child: Focus(
-          autofocus: true,
-          child: child,
-        ),
+        child: child,
       ),
     );
   }
