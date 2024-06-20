@@ -11,6 +11,111 @@ import 'package:two_dimensional_scrollables/two_dimensional_scrollables.dart';
 import 'package:collection/collection.dart';
 
 class RectanglePainter extends CustomPainter {
+  final Rect rect;
+  final String sentence;
+  final Color indexColor;
+  final bool isSelected;
+
+  RectanglePainter({
+    required this.rect,
+    required this.sentence,
+    required this.indexColor,
+    required this.isSelected,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final mainPaint = Paint()..color = indexColor;
+    canvas.drawRect(rect, mainPaint);
+
+    final textSpan = TextSpan(
+      text: sentence,
+      style: TextStyle(
+          color: ThemeData.estimateBrightnessForColor(indexColor) ==
+                  Brightness.light
+              ? Colors.black
+              : Colors.white,
+          fontSize: 16),
+    );
+    final textPainter = TextPainter(
+      text: textSpan,
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+      ellipsis: '...',
+    );
+    textPainter.layout(
+      minWidth: 0,
+      maxWidth: rect.width,
+    );
+
+    final offset = Offset(
+      rect.left + (rect.width - textPainter.width) / 2,
+      rect.top + (rect.height - textPainter.height) / 2,
+    );
+
+    textPainter.paint(canvas, offset);
+
+    final double edgeWidth = 1.5;
+    final lighterColor = _adjustColorBrightness(indexColor, 0.1);
+    final darkerColor = _adjustColorBrightness(indexColor, -0.3);
+    final borderRadius = 1.0;
+    final leftInner = rect.left + borderRadius;
+    final topInner = rect.top + borderRadius;
+    final rightInner = rect.right - borderRadius;
+    final bottomInner = rect.bottom - borderRadius;
+
+    final lighterPath = Path()
+      ..moveTo(rect.left, rect.top)
+      ..lineTo(rect.left, rect.bottom)
+      ..lineTo(leftInner, bottomInner)
+      ..lineTo(leftInner, topInner)
+      ..lineTo(rightInner, topInner)
+      ..lineTo(rect.right, rect.top)
+      ..lineTo(rect.left, rect.top);
+
+    final lighterPaint = Paint()
+      ..color = lighterColor
+      ..strokeWidth = edgeWidth
+      ..style = PaintingStyle.stroke;
+
+    final darkerPath = Path()
+      ..moveTo(rect.right, rect.bottom)
+      ..lineTo(rect.right, rect.top)
+      ..lineTo(rightInner, topInner)
+      ..lineTo(rightInner, bottomInner)
+      ..lineTo(leftInner, bottomInner)
+      ..lineTo(rect.left, rect.bottom)
+      ..lineTo(rect.right, rect.bottom);
+
+    final darkerPaint = Paint()
+      ..color = darkerColor
+      ..strokeWidth = edgeWidth
+      ..style = PaintingStyle.stroke;
+
+    if (isSelected) {
+      canvas.drawPath(lighterPath, darkerPaint);
+      canvas.drawPath(darkerPath, lighterPaint);
+    } else {
+      canvas.drawPath(lighterPath, lighterPaint);
+      canvas.drawPath(darkerPath, darkerPaint);
+    }
+  }
+
+  Color _adjustColorBrightness(Color color, double factor) {
+    final hsl = HSLColor.fromColor(color);
+    final adjustedLightness = (hsl.lightness + factor).clamp(0.0, 1.0);
+    final hslAdjusted = hsl.withLightness(adjustedLightness);
+    return hslAdjusted.toColor();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
+  }
+}
+
+class TimelinePainter extends CustomPainter {
   final List<LyricSnippet> snippets;
   final List<String> selectingId;
   final double intervalLength;
@@ -19,7 +124,7 @@ class RectanglePainter extends CustomPainter {
   final double bottomMargin;
   final Color indexColor;
 
-  RectanglePainter({
+  TimelinePainter({
     required this.snippets,
     required this.selectingId,
     required this.intervalLength,
@@ -29,6 +134,7 @@ class RectanglePainter extends CustomPainter {
     required this.indexColor,
   });
 
+  @override
   void paint(Canvas canvas, Size size) {
     final top = topMargin;
     final bottom = size.height - bottomMargin;
@@ -42,89 +148,15 @@ class RectanglePainter extends CustomPainter {
       final right = endtime * intervalLength / intervalDuration;
       final rect = Rect.fromLTRB(left, top, right, bottom);
 
-      final mainPaint = Paint()..color = indexColor;
-      canvas.drawRect(rect, mainPaint);
-
-      final textSpan = TextSpan(
-        text: snippet.sentence,
-        style: TextStyle(
-            color: ThemeData.estimateBrightnessForColor(indexColor) ==
-                    Brightness.light
-                ? Colors.black
-                : Colors.white,
-            fontSize: 16),
+      final isSelected = selectingId.contains(snippet.id);
+      final rectanglePainter = RectanglePainter(
+        rect: rect,
+        sentence: snippet.sentence,
+        indexColor: indexColor,
+        isSelected: isSelected,
       );
-      final textPainter = TextPainter(
-        text: textSpan,
-        textAlign: TextAlign.center,
-        textDirection: TextDirection.ltr,
-        maxLines: 1,
-        ellipsis: '...',
-      );
-      textPainter.layout(
-        minWidth: 0,
-        maxWidth: rect.width,
-      );
-
-      final offset = Offset(
-        rect.left + (rect.width - textPainter.width) / 2,
-        rect.top + (rect.height - textPainter.height) / 2,
-      );
-
-      textPainter.paint(canvas, offset);
-
-      final double edgeWidth = 1.5;
-      final lighterColor = _adjustColorBrightness(indexColor, 0.1);
-      final darkerColor = _adjustColorBrightness(indexColor, -0.3);
-      final borderRadius = 1.0;
-      final leftInner = left + borderRadius;
-      final topInner = top + borderRadius;
-      final rightInner = right - borderRadius;
-      final bottomInner = bottom - borderRadius;
-
-      final lighterPath = Path()
-        ..moveTo(left, top)
-        ..lineTo(left, bottom)
-        ..lineTo(leftInner, bottomInner)
-        ..lineTo(leftInner, topInner)
-        ..lineTo(rightInner, topInner)
-        ..lineTo(right, top)
-        ..lineTo(left, top);
-
-      final lighterPaint = Paint()
-        ..color = lighterColor
-        ..strokeWidth = edgeWidth
-        ..style = PaintingStyle.stroke;
-
-      final darkerPath = Path()
-        ..moveTo(right, bottom)
-        ..lineTo(right, top)
-        ..lineTo(rightInner, topInner)
-        ..lineTo(rightInner, bottomInner)
-        ..lineTo(leftInner, bottomInner)
-        ..lineTo(left, bottom)
-        ..lineTo(right, bottom);
-
-      final darkerPaint = Paint()
-        ..color = darkerColor
-        ..strokeWidth = edgeWidth
-        ..style = PaintingStyle.stroke;
-
-      if (selectingId.contains(snippet.id)) {
-        canvas.drawPath(lighterPath, darkerPaint);
-        canvas.drawPath(darkerPath, lighterPaint);
-      } else {
-        canvas.drawPath(lighterPath, lighterPaint);
-        canvas.drawPath(darkerPath, darkerPaint);
-      }
+      rectanglePainter.paint(canvas, size);
     });
-  }
-
-  Color _adjustColorBrightness(Color color, double factor) {
-    final hsl = HSLColor.fromColor(color);
-    final adjustedLightness = (hsl.lightness + factor).clamp(0.0, 1.0);
-    final hslAdjusted = hsl.withLightness(adjustedLightness);
-    return hslAdjusted.toColor();
   }
 
   @override
@@ -319,13 +351,43 @@ class _TimelinePaneState extends State<TimelinePane> {
       );
     }
     if (vicinity.column == 0) {
+      int row = vicinity.row - 1;
       return TableViewCell(
-        child: ColoredBox(
-          color: cell.color,
-          child: Center(
-            child: Text(
-                snippetsForeachVocalist.entries.toList()[vicinity.row - 1].key,
-                style: style),
+        child: GestureDetector(
+          /*
+          onTapDown: (TapDownDetails details) {
+            Offset localPosition = details.localPosition;
+            final snippets =
+                snippetsForeachVocalist.entries.toList()[row].value;
+            for (var snippet in snippets) {
+              final endtime = snippet.startTimestamp +
+                  snippet.timingPoints
+                      .map((point) => point.seekPosition)
+                      .reduce((a, b) => a + b);
+              final touchedSeekPosition =
+                  localPosition.dx * intervalDuration / intervalLength;
+              if (snippet.startTimestamp <= touchedSeekPosition &&
+                  touchedSeekPosition <= endtime) {
+                if (selectingSnippet.contains(snippet.id)) {
+                  selectingSnippet.remove(snippet.id);
+                } else {
+                  selectingSnippet.add(snippet.id);
+                }
+              }
+            }
+            setState(() {});
+          },
+          */
+          child: CustomPaint(
+            painter: RectanglePainter(
+              rect: Rect.fromLTRB(0.0, 0.0, 155, 60),
+              sentence: snippetsForeachVocalist.entries
+                  .toList()[row]
+                  .value[row]
+                  .vocalist,
+              indexColor: indexColor(row),
+              isSelected: false,
+            ),
           ),
         ),
       );
@@ -360,7 +422,7 @@ class _TimelinePaneState extends State<TimelinePane> {
             setState(() {});
           },
           child: CustomPaint(
-            painter: RectanglePainter(
+            painter: TimelinePainter(
               snippets: snippetsForeachVocalist.entries.toList()[row].value,
               selectingId: selectingSnippet,
               intervalLength: intervalLength,
