@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +12,7 @@ import 'package:collection/collection.dart';
 
 class RectanglePainter extends CustomPainter {
   final List<LyricSnippet> snippets;
+  final List<String> selectingId;
   final double intervalLength;
   final int intervalDuration;
   final double topMargin;
@@ -18,6 +21,7 @@ class RectanglePainter extends CustomPainter {
 
   RectanglePainter({
     required this.snippets,
+    required this.selectingId,
     required this.intervalLength,
     required this.intervalDuration,
     required this.topMargin,
@@ -69,7 +73,7 @@ class RectanglePainter extends CustomPainter {
 
       textPainter.paint(canvas, offset);
 
-      final double edgeWidth = 0.5;
+      final double edgeWidth = 1.5;
       final lighterColor = _adjustColorBrightness(indexColor, 0.1);
       final darkerColor = _adjustColorBrightness(indexColor, -0.3);
       final borderRadius = 1.0;
@@ -91,7 +95,6 @@ class RectanglePainter extends CustomPainter {
         ..color = lighterColor
         ..strokeWidth = edgeWidth
         ..style = PaintingStyle.stroke;
-      canvas.drawPath(lighterPath, lighterPaint);
 
       final darkerPath = Path()
         ..moveTo(right, bottom)
@@ -106,7 +109,14 @@ class RectanglePainter extends CustomPainter {
         ..color = darkerColor
         ..strokeWidth = edgeWidth
         ..style = PaintingStyle.stroke;
-      canvas.drawPath(darkerPath, darkerPaint);
+
+      if (selectingId.contains(snippet.id)) {
+        canvas.drawPath(lighterPath, darkerPaint);
+        canvas.drawPath(darkerPath, lighterPaint);
+      } else {
+        canvas.drawPath(lighterPath, lighterPaint);
+        canvas.drawPath(darkerPath, darkerPaint);
+      }
     });
   }
 
@@ -119,7 +129,7 @@ class RectanglePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
+    return true;
   }
 }
 
@@ -256,6 +266,23 @@ class _TimelinePaneState extends State<TimelinePane> {
     super.dispose();
   }
 
+  List<String> getSnippetsAtCurrentSeekPosition() {
+    List<String> selectingId = [];
+    snippetsForeachVocalist.forEach((vocalist, snippets) {
+      for (var snippet in snippets) {
+        final endtime = snippet.startTimestamp +
+            snippet.timingPoints
+                .map((point) => point.seekPosition)
+                .reduce((a, b) => a + b);
+        if (snippet.startTimestamp <= currentPosition &&
+            currentPosition <= endtime) {
+          selectingId.add(snippet.id);
+        }
+      }
+    });
+    return selectingId;
+  }
+
   TableViewCell _buildCell(BuildContext context, TableVicinity vicinity) {
     final ({String name, Color color}) cell =
         (name: "empty", color: indexColor(vicinity.row - 1));
@@ -309,9 +336,8 @@ class _TimelinePaneState extends State<TimelinePane> {
       return TableViewCell(
         child: CustomPaint(
           painter: RectanglePainter(
-            snippets: snippetsForeachVocalist.entries
-                .toList()[vicinity.row - 1]
-                .value,
+            snippets: snippetsForeachVocalist.entries.toList()[row].value,
+            selectingId: getSnippetsAtCurrentSeekPosition(),
             intervalLength: intervalLength,
             intervalDuration: intervalDuration,
             topMargin: topMargin,
