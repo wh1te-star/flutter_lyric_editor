@@ -160,6 +160,8 @@ class _TimelinePaneState extends State<TimelinePane> {
   Map<String, List<LyricSnippet>> snippetsForeachVocalist = {};
   List<String> selectingSnippet = [];
   List<String> vocalistList = [];
+  List<String> selectingSnippet = [];
+  List<String> vocalistList = [];
   int audioDuration = 60000;
   int currentPosition = 0;
   final ScrollController currentPositionScroller = ScrollController();
@@ -219,6 +221,7 @@ class _TimelinePaneState extends State<TimelinePane> {
     return Focus(
       focusNode: focusNode,
       child: GestureDetector(
+        onTapDown: (TapDownDetails details) {
         onTapDown: (TapDownDetails details) {
           widget.masterSubject.add(RequestPlayPause());
           focusNode.requestFocus();
