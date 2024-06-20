@@ -158,6 +158,8 @@ class _TimelinePaneState extends State<TimelinePane> {
       CurrentPositionIndicatorDelegate();
 
   Map<String, List<LyricSnippet>> snippetsForeachVocalist = {};
+  List<String> selectingSnippet = [];
+  List<String> vocalistList = [];
   int audioDuration = 60000;
   int currentPosition = 0;
   final ScrollController currentPositionScroller = ScrollController();
@@ -217,7 +219,7 @@ class _TimelinePaneState extends State<TimelinePane> {
     return Focus(
       focusNode: focusNode,
       child: GestureDetector(
-        onTap: () {
+        onTapDown: (TapDownDetails details) {
           widget.masterSubject.add(RequestPlayPause());
           focusNode.requestFocus();
           debugPrint("The timeline pane is focused");
@@ -334,15 +336,36 @@ class _TimelinePaneState extends State<TimelinePane> {
       double topMargin = 0;
       double bottomMargin = 0;
       return TableViewCell(
-        child: CustomPaint(
-          painter: RectanglePainter(
-            snippets: snippetsForeachVocalist.entries.toList()[row].value,
-            selectingId: getSnippetsAtCurrentSeekPosition(),
-            intervalLength: intervalLength,
-            intervalDuration: intervalDuration,
-            topMargin: topMargin,
-            bottomMargin: bottomMargin,
-            indexColor: indexColor(row),
+        child: GestureDetector(
+          onTapDown: (TapDownDetails details) {
+            Offset localPosition = details.localPosition;
+            final snippets =
+                snippetsForeachVocalist.entries.toList()[row].value;
+            for (var snippet in snippets) {
+              final endtime = snippet.startTimestamp +
+                  snippet.timingPoints
+                      .map((point) => point.seekPosition)
+                      .reduce((a, b) => a + b);
+              final touchedSeekPosition =
+                  localPosition.dx * intervalDuration / intervalLength;
+              if (snippet.startTimestamp <= touchedSeekPosition &&
+                  touchedSeekPosition <= endtime) {
+                selectingSnippet.add(snippet.id);
+              }
+            }
+            debugPrint("${localPosition.dy}");
+            setState(() {});
+          },
+          child: CustomPaint(
+            painter: RectanglePainter(
+              snippets: snippetsForeachVocalist.entries.toList()[row].value,
+              selectingId: selectingSnippet,
+              intervalLength: intervalLength,
+              intervalDuration: intervalDuration,
+              topMargin: topMargin,
+              bottomMargin: bottomMargin,
+              indexColor: indexColor(row),
+            ),
           ),
         ),
       );
