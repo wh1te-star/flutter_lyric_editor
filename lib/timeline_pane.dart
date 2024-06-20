@@ -192,6 +192,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   Map<String, List<LyricSnippet>> snippetsForeachVocalist = {};
   List<String> selectingSnippet = [];
   List<String> vocalistList = [];
+  List<String> selectingVocalist = [];
   int audioDuration = 60000;
   int currentPosition = 0;
   final ScrollController currentPositionScroller = ScrollController();
@@ -352,32 +353,17 @@ class _TimelinePaneState extends State<TimelinePane> {
     }
     if (vicinity.column == 0) {
       int row = vicinity.row - 1;
+      final vocalistName = snippetsForeachVocalist.entries.toList()[row].key;
       return TableViewCell(
         child: GestureDetector(
-          /*
           onTapDown: (TapDownDetails details) {
-            Offset localPosition = details.localPosition;
-            final snippets =
-                snippetsForeachVocalist.entries.toList()[row].value;
-            for (var snippet in snippets) {
-              final endtime = snippet.startTimestamp +
-                  snippet.timingPoints
-                      .map((point) => point.seekPosition)
-                      .reduce((a, b) => a + b);
-              final touchedSeekPosition =
-                  localPosition.dx * intervalDuration / intervalLength;
-              if (snippet.startTimestamp <= touchedSeekPosition &&
-                  touchedSeekPosition <= endtime) {
-                if (selectingSnippet.contains(snippet.id)) {
-                  selectingSnippet.remove(snippet.id);
-                } else {
-                  selectingSnippet.add(snippet.id);
-                }
-              }
+            if (selectingVocalist.contains(vocalistName)) {
+              selectingVocalist.remove(vocalistName);
+            } else {
+              selectingVocalist.add(vocalistName);
             }
             setState(() {});
           },
-          */
           child: CustomPaint(
             painter: RectanglePainter(
               rect: Rect.fromLTRB(0.0, 0.0, 155, 60),
@@ -386,7 +372,7 @@ class _TimelinePaneState extends State<TimelinePane> {
                   .value[row]
                   .vocalist,
               indexColor: indexColor(row),
-              isSelected: false,
+              isSelected: selectingVocalist.contains(vocalistName),
             ),
           ),
         ),
