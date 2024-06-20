@@ -57,6 +57,7 @@ class TimingService {
     final lineTimestamps = document.findAllElements('LineTimestamp');
     List<LyricSnippet> snippets = [];
 
+    Map<String, int> idMap = {};
     for (var lineTimestamp in lineTimestamps) {
       final startTime =
           parseTimestamp(lineTimestamp.getAttribute('startTime')!);
@@ -73,7 +74,15 @@ class TimingService {
         sentence += word;
       }
 
+      if (!idMap.containsKey(vocalistName)) {
+        idMap[vocalistName] = 1;
+      } else {
+        idMap[vocalistName] = idMap[vocalistName]! + 1;
+      }
+      final id = '${vocalistName}__${idMap[vocalistName]}';
+
       snippets.add(LyricSnippet(
+        id: id,
         vocalist: vocalistName,
         sentence: sentence,
         startTimestamp: startTime,

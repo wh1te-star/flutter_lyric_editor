@@ -94,10 +94,8 @@ class _VideoPaneState extends State<VideoPane> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    String fontFamily = "Times New Roman";
-    List<LyricSnippet> currentSnippet = lyricSnippets.where((snippet) {
+  List<LyricSnippet> getSnippetsAtCurrentSeekPosition() {
+    return lyricSnippets.where((snippet) {
       final endtime = snippet.startTimestamp +
           snippet.timingPoints
               .map((point) => point.seekPosition)
@@ -105,6 +103,12 @@ class _VideoPaneState extends State<VideoPane> {
       return snippet.startTimestamp < currentSeekPosition &&
           currentSeekPosition < endtime;
     }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String fontFamily = "Times New Roman";
+    List<LyricSnippet> currentSnippet = getSnippetsAtCurrentSeekPosition();
     if (currentSnippet.isEmpty) {
       return Focus(
         focusNode: focusNode,
