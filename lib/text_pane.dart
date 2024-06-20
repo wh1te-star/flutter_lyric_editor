@@ -26,6 +26,7 @@ class _TextPaneState extends State<TextPane> {
   static const String linefeedChar = '\n';
   //static const String sectionChar = '\n\n';
 
+  int snippetID = 0;
   String entireLyricString = "";
   int cursorPosition = 0;
   int seekPosition = 0;
@@ -155,13 +156,14 @@ class _TextPaneState extends State<TextPane> {
   }
 
   void addTimingPoint(int charPosition, int seekPosition) {
-    masterSubject.add(RequestToAddLyricTiming(cursorPosition, seekPosition));
+    masterSubject
+        .add(RequestToAddLyricTiming(snippetID, cursorPosition, seekPosition));
     debugPrint(
         "request to add a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
   }
 
   void deleteTimingPoint(int charPosition) {
-    masterSubject.add(RequestToDeleteLyricTiming(cursorPosition));
+    masterSubject.add(RequestToDeleteLyricTiming(snippetID, cursorPosition));
     debugPrint(
         "request to delete a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
   }

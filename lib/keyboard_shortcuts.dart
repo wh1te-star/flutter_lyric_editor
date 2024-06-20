@@ -10,13 +10,29 @@ class KeyboardShortcuts extends StatelessWidget {
   final FocusNode textPaneFocusNode;
   final FocusNode timelinePaneFocusNode;
 
+  int snippetID = 0;
+  int seekPosition = 0;
+  int charCursorPosition = 0;
+
   KeyboardShortcuts({
     required this.masterSubject,
     required this.child,
     required this.videoPaneFocusNode,
     required this.textPaneFocusNode,
     required this.timelinePaneFocusNode,
-  });
+  }) {
+    masterSubject.stream.listen((signal) {
+      if (signal is NotifySelectingSnippet) {
+        snippetID = signal.snippetID;
+      }
+      if (signal is NotifySeekPosition) {
+        seekPosition = signal.seekPosition;
+      }
+      if (signal is NotifyCharCursorPosition) {
+        charCursorPosition = signal.cursorPosition;
+      }
+    });
+  }
 
   Map<LogicalKeySet, Intent> get shortcuts => {
         LogicalKeySet(LogicalKeyboardKey.space):
@@ -31,14 +47,16 @@ class KeyboardShortcuts extends StatelessWidget {
             ActivateUpArrowKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowDown):
             ActivateDownArrowKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyH): ActivateHKeyShortcutCursor(),
-        LogicalKeySet(LogicalKeyboardKey.keyJ): ActivateJKeyShortcutCursor(),
-        LogicalKeySet(LogicalKeyboardKey.keyK): ActivateKKeyShortcutCursor(),
-        LogicalKeySet(LogicalKeyboardKey.keyL): ActivateLKeyShortcutCursor(),
+        LogicalKeySet(LogicalKeyboardKey.keyH): ActivateHKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyJ): ActivateJKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyK): ActivateKKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyL): ActivateLKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.controlLeft, LogicalKeyboardKey.keyK):
-            ActivateCtrlKKeyShortcutCursor(),
+            ActivateCtrlKKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.controlLeft, LogicalKeyboardKey.keyJ):
-            ActivateCtrlJKeyShortcutCursor(),
+            ActivateCtrlJKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyN): ActivateNKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyM): ActivateMKeyShortcutIntent(),
       };
 
   Map<Type, Action<Intent>> get actions => {
@@ -82,8 +100,8 @@ class KeyboardShortcuts extends StatelessWidget {
             masterSubject.add(RequestSpeedDown(0.1));
           }(),
         ),
-        ActivateHKeyShortcutCursor: CallbackAction<ActivateHKeyShortcutCursor>(
-          onInvoke: (ActivateHKeyShortcutCursor intent) => () {
+        ActivateHKeyShortcutIntent: CallbackAction<ActivateHKeyShortcutIntent>(
+          onInvoke: (ActivateHKeyShortcutIntent intent) => () {
             if (textPaneFocusNode.hasFocus) {
               masterSubject.add(RequestMoveLeftCharCursor());
             }
@@ -92,18 +110,18 @@ class KeyboardShortcuts extends StatelessWidget {
             }
           }(),
         ),
-        ActivateJKeyShortcutCursor: CallbackAction<ActivateJKeyShortcutCursor>(
-          onInvoke: (ActivateJKeyShortcutCursor intent) => () {
+        ActivateJKeyShortcutIntent: CallbackAction<ActivateJKeyShortcutIntent>(
+          onInvoke: (ActivateJKeyShortcutIntent intent) => () {
             masterSubject.add(RequestMoveDownCharCursor());
           }(),
         ),
-        ActivateKKeyShortcutCursor: CallbackAction<ActivateKKeyShortcutCursor>(
-          onInvoke: (ActivateKKeyShortcutCursor intent) => () {
+        ActivateKKeyShortcutIntent: CallbackAction<ActivateKKeyShortcutIntent>(
+          onInvoke: (ActivateKKeyShortcutIntent intent) => () {
             masterSubject.add(RequestMoveUpCharCursor());
           }(),
         ),
-        ActivateLKeyShortcutCursor: CallbackAction<ActivateLKeyShortcutCursor>(
-          onInvoke: (ActivateLKeyShortcutCursor intent) => () {
+        ActivateLKeyShortcutIntent: CallbackAction<ActivateLKeyShortcutIntent>(
+          onInvoke: (ActivateLKeyShortcutIntent intent) => () {
             if (textPaneFocusNode.hasFocus) {
               masterSubject.add(RequestMoveRightCharCursor());
             }
@@ -112,16 +130,28 @@ class KeyboardShortcuts extends StatelessWidget {
             }
           }(),
         ),
-        ActivateCtrlKKeyShortcutCursor:
-            CallbackAction<ActivateCtrlKKeyShortcutCursor>(
-          onInvoke: (ActivateCtrlKKeyShortcutCursor intent) => () {
+        ActivateCtrlKKeyShortcutIntent:
+            CallbackAction<ActivateCtrlKKeyShortcutIntent>(
+          onInvoke: (ActivateCtrlKKeyShortcutIntent intent) => () {
             masterSubject.add(RequestTimelineZoomIn());
           }(),
         ),
-        ActivateCtrlJKeyShortcutCursor:
-            CallbackAction<ActivateCtrlJKeyShortcutCursor>(
-          onInvoke: (ActivateCtrlJKeyShortcutCursor intent) => () {
+        ActivateCtrlJKeyShortcutIntent:
+            CallbackAction<ActivateCtrlJKeyShortcutIntent>(
+          onInvoke: (ActivateCtrlJKeyShortcutIntent intent) => () {
             masterSubject.add(RequestTimelineZoomOut());
+          }(),
+        ),
+        ActivateNKeyShortcutIntent: CallbackAction<ActivateNKeyShortcutIntent>(
+          onInvoke: (ActivateNKeyShortcutIntent intent) => () {
+            masterSubject.add(RequestToAddLyricTiming(
+                snippetID, charCursorPosition, seekPosition));
+          }(),
+        ),
+        ActivateMKeyShortcutIntent: CallbackAction<ActivateMKeyShortcutIntent>(
+          onInvoke: (ActivateMKeyShortcutIntent intent) => () {
+            masterSubject
+                .add(RequestToDeleteLyricTiming(snippetID, charCursorPosition));
           }(),
         ),
       };
@@ -152,14 +182,18 @@ class ActivateRightArrowKeyShortcutIntent extends Intent {}
 
 class ActivateLeftArrowKeyShortcutIntent extends Intent {}
 
-class ActivateJKeyShortcutCursor extends Intent {}
+class ActivateJKeyShortcutIntent extends Intent {}
 
-class ActivateKKeyShortcutCursor extends Intent {}
+class ActivateKKeyShortcutIntent extends Intent {}
 
-class ActivateHKeyShortcutCursor extends Intent {}
+class ActivateHKeyShortcutIntent extends Intent {}
 
-class ActivateLKeyShortcutCursor extends Intent {}
+class ActivateLKeyShortcutIntent extends Intent {}
 
-class ActivateCtrlKKeyShortcutCursor extends Intent {}
+class ActivateCtrlKKeyShortcutIntent extends Intent {}
 
-class ActivateCtrlJKeyShortcutCursor extends Intent {}
+class ActivateCtrlJKeyShortcutIntent extends Intent {}
+
+class ActivateNKeyShortcutIntent extends Intent {}
+
+class ActivateMKeyShortcutIntent extends Intent {}

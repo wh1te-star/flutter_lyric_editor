@@ -56,9 +56,11 @@ class RequestTimelineZoomIn {}
 class RequestTimelineZoomOut {}
 
 class RequestToAddLyricTiming {
+  int snippetID;
   int characterPosition;
   int seekPosition;
-  RequestToAddLyricTiming(this.characterPosition, this.seekPosition);
+  RequestToAddLyricTiming(
+      this.snippetID, this.characterPosition, this.seekPosition);
 }
 
 class NotifyTimingPointAdded {
@@ -67,13 +69,19 @@ class NotifyTimingPointAdded {
 }
 
 class RequestToDeleteLyricTiming {
+  int snippetID;
   int characterPosition;
-  RequestToDeleteLyricTiming(this.characterPosition);
+  RequestToDeleteLyricTiming(this.snippetID, this.characterPosition);
 }
 
 class NotifyTimingPointDeletion {
   int characterPosition;
   NotifyTimingPointDeletion(this.characterPosition);
+}
+
+class NotifySelectingSnippet {
+  int snippetID;
+  NotifySelectingSnippet(this.snippetID);
 }
 
 class NotifyIsPlaying {
@@ -84,6 +92,11 @@ class NotifyIsPlaying {
 class NotifySeekPosition {
   int seekPosition;
   NotifySeekPosition(this.seekPosition);
+}
+
+class NotifyCharCursorPosition {
+  int cursorPosition;
+  NotifyCharCursorPosition(this.cursorPosition);
 }
 
 class NotifyVideoPaneWidthLimit {
