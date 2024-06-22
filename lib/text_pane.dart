@@ -26,7 +26,7 @@ class _TextPaneState extends State<TextPane> {
   static const String linefeedChar = '\n';
   //static const String sectionChar = '\n\n';
 
-  int snippetID = 0;
+  String snippetID = "";
   String entireLyricString = "";
   int cursorPosition = 0;
   int seekPosition = 0;
@@ -59,28 +59,35 @@ class _TextPaneState extends State<TextPane> {
 
       if (signal is RequestMoveDownCharCursor) {
         moveDownCursor();
+        masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
       }
 
       if (signal is RequestMoveUpCharCursor) {
         moveUpCursor();
+        masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
       }
 
       if (signal is RequestMoveLeftCharCursor) {
         moveLeftCursor();
+        masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
       }
 
       if (signal is RequestMoveRightCharCursor) {
         moveRightCursor();
+        masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
       }
 
       if (signal is NotifyTimingPointAdded) {
-        timingPointMap[signal.characterPosition] = timingPointChar;
+        lyricSnippets
+            .where((snippet) => snippet.id == signal.snippetID)
+            .forEach((LyricSnippet snippet) {
+          snippet.timingPoints = signal.timingPoints;
+        });
         updateIndicators();
         setState(() {});
       }
 
       if (signal is NotifyTimingPointDeletion) {
-        timingPointMap.remove(signal.characterPosition);
         updateIndicators();
         setState(() {});
       }
@@ -174,7 +181,6 @@ class _TextPaneState extends State<TextPane> {
       focusNode: focusNode,
       child: GestureDetector(
         onTap: () {
-          widget.masterSubject.add(RequestPlayPause());
           focusNode.requestFocus();
           debugPrint("The text pane is focused");
           setState(() {});

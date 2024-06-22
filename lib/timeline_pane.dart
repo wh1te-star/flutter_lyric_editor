@@ -50,8 +50,8 @@ class RectanglePainter extends CustomPainter {
     );
 
     final offset = Offset(
-      rect.left + (rect.width - textPainter.width) / 2,
-      rect.top + (rect.height - textPainter.height) / 2,
+      rect.left + (rect.width - textPainter.width) / 2 - 1,
+      rect.top + (rect.height - textPainter.height) / 2 - 1,
     );
 
     textPainter.paint(canvas, offset);
@@ -212,6 +212,8 @@ class _TimelinePaneState extends State<TimelinePane> {
         });
       }
       if (signal is NotifySeekPosition) {
+        masterSubject
+            .add(NotifyCurrentSnippets(getSnippetsAtCurrentSeekPosition()));
         setState(() {
           currentPosition = signal.seekPosition;
         });
@@ -253,7 +255,6 @@ class _TimelinePaneState extends State<TimelinePane> {
       focusNode: focusNode,
       child: GestureDetector(
         onTapDown: (TapDownDetails details) {
-          widget.masterSubject.add(RequestPlayPause());
           focusNode.requestFocus();
           debugPrint("The timeline pane is focused");
           setState(() {});
@@ -301,8 +302,8 @@ class _TimelinePaneState extends State<TimelinePane> {
     super.dispose();
   }
 
-  List<String> getSnippetsAtCurrentSeekPosition() {
-    List<String> selectingId = [];
+  List<LyricSnippet> getSnippetsAtCurrentSeekPosition() {
+    List<LyricSnippet> currentSnippet = [];
     snippetsForeachVocalist.forEach((vocalist, snippets) {
       for (var snippet in snippets) {
         final endtime = snippet.startTimestamp +
@@ -311,11 +312,11 @@ class _TimelinePaneState extends State<TimelinePane> {
                 .reduce((a, b) => a + b);
         if (snippet.startTimestamp <= currentPosition &&
             currentPosition <= endtime) {
-          selectingId.add(snippet.id);
+          currentSnippet.add(snippet);
         }
       }
     });
-    return selectingId;
+    return currentSnippet;
   }
 
   TableViewCell _buildCell(BuildContext context, TableVicinity vicinity) {
@@ -359,8 +360,10 @@ class _TimelinePaneState extends State<TimelinePane> {
           onTapDown: (TapDownDetails details) {
             if (selectingVocalist.contains(vocalistName)) {
               selectingVocalist.remove(vocalistName);
+              masterSubject.add(NotifyDeselectingVocalist(vocalistName));
             } else {
               selectingVocalist.add(vocalistName);
+              masterSubject.add(NotifySelectingVocalist(vocalistName));
             }
             setState(() {});
           },

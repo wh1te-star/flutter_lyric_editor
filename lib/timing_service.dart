@@ -5,6 +5,7 @@ import 'package:lyric_editor/sorted_list.dart';
 import 'package:xml/xml.dart' as xml;
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
+import 'lyric_snippet.dart';
 
 class TimingService {
   final PublishSubject<dynamic> masterSubject;
@@ -12,18 +13,20 @@ class TimingService {
   late final List<LyricSnippet> lyricSnippetList;
   Future<void>? _loadLyricsFuture;
 
-  SortedList<int> timingPoints =
-      SortedList<int>([1, 4, 5, 16, 24, 36, 46, 50, 67, 90]);
-  //List<int> sectionPoints = [82];
-
   TimingService({required this.masterSubject}) {
     masterSubject.stream.listen((signal) {
       if (signal is RequestToAddLyricTiming) {
-        timingPoints.add(signal.characterPosition);
-        masterSubject.add(NotifyTimingPointAdded(signal.characterPosition));
+        List<LyricSnippet> filteredList = lyricSnippetList
+            .where((snippet) => snippet.id == signal.snippetID)
+            .toList();
+        filteredList.forEach((LyricSnippet snippet) {
+          snippet.timingPoints
+              .add(TimingPoint(signal.characterPosition, signal.seekPosition));
+        });
+        masterSubject.add(NotifyTimingPointAdded(
+            signal.snippetID, filteredList[0].timingPoints));
       }
       if (signal is RequestToDeleteLyricTiming) {
-        timingPoints.remove(signal.characterPosition);
         masterSubject.add(NotifyTimingPointDeletion(signal.characterPosition));
       }
     });

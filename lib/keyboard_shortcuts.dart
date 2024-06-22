@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lyric_editor/lyric_snippet.dart';
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
 
@@ -10,7 +11,8 @@ class KeyboardShortcuts extends StatelessWidget {
   final FocusNode textPaneFocusNode;
   final FocusNode timelinePaneFocusNode;
 
-  int snippetID = 0;
+  List<LyricSnippet> currentSnippets = [];
+  List<String> selectingVocalist = [];
   int seekPosition = 0;
   int charCursorPosition = 0;
 
@@ -22,8 +24,14 @@ class KeyboardShortcuts extends StatelessWidget {
     required this.timelinePaneFocusNode,
   }) {
     masterSubject.stream.listen((signal) {
-      if (signal is NotifySelectingSnippet) {
-        snippetID = signal.snippetID;
+      if (signal is NotifyCurrentSnippets) {
+        currentSnippets = signal.currentSnippets;
+      }
+      if (signal is NotifySelectingVocalist) {
+        selectingVocalist.add(signal.vocalistName);
+      }
+      if (signal is NotifyDeselectingVocalist) {
+        selectingVocalist.remove(signal.vocalistName);
       }
       if (signal is NotifySeekPosition) {
         seekPosition = signal.seekPosition;
@@ -144,14 +152,22 @@ class KeyboardShortcuts extends StatelessWidget {
         ),
         ActivateNKeyShortcutIntent: CallbackAction<ActivateNKeyShortcutIntent>(
           onInvoke: (ActivateNKeyShortcutIntent intent) => () {
-            masterSubject.add(RequestToAddLyricTiming(
-                snippetID, charCursorPosition, seekPosition));
+            currentSnippets.forEach((LyricSnippet snippet) {
+              if (selectingVocalist.contains(snippet.vocalist)) {
+                masterSubject.add(RequestToAddLyricTiming(
+                    snippet.id, charCursorPosition, seekPosition));
+              }
+            });
           }(),
         ),
         ActivateMKeyShortcutIntent: CallbackAction<ActivateMKeyShortcutIntent>(
           onInvoke: (ActivateMKeyShortcutIntent intent) => () {
-            masterSubject
-                .add(RequestToDeleteLyricTiming(snippetID, charCursorPosition));
+            currentSnippets.forEach((LyricSnippet snippet) {
+              if (selectingVocalist.contains(snippet.vocalist)) {
+                masterSubject.add(
+                    RequestToDeleteLyricTiming(snippet.id, charCursorPosition));
+              }
+            });
           }(),
         ),
       };

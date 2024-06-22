@@ -114,7 +114,6 @@ class _VideoPaneState extends State<VideoPane> {
         focusNode: focusNode,
         child: GestureDetector(
           onTap: () {
-            widget.masterSubject.add(RequestPlayPause());
             focusNode.requestFocus();
             debugPrint("The video pane is focused");
           },

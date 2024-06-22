@@ -56,7 +56,7 @@ class RequestTimelineZoomIn {}
 class RequestTimelineZoomOut {}
 
 class RequestToAddLyricTiming {
-  int snippetID;
+  String snippetID;
   int characterPosition;
   int seekPosition;
   RequestToAddLyricTiming(
@@ -64,12 +64,13 @@ class RequestToAddLyricTiming {
 }
 
 class NotifyTimingPointAdded {
-  int characterPosition;
-  NotifyTimingPointAdded(this.characterPosition);
+  String snippetID;
+  List<TimingPoint> timingPoints;
+  NotifyTimingPointAdded(this.snippetID, this.timingPoints);
 }
 
 class RequestToDeleteLyricTiming {
-  int snippetID;
+  String snippetID;
   int characterPosition;
   RequestToDeleteLyricTiming(this.snippetID, this.characterPosition);
 }
@@ -80,8 +81,28 @@ class NotifyTimingPointDeletion {
 }
 
 class NotifySelectingSnippet {
-  int snippetID;
+  String snippetID;
   NotifySelectingSnippet(this.snippetID);
+}
+
+class NotifyDeselectingSnippet {
+  String snippetID;
+  NotifyDeselectingSnippet(this.snippetID);
+}
+
+class NotifySelectingVocalist {
+  String vocalistName;
+  NotifySelectingVocalist(this.vocalistName);
+}
+
+class NotifyDeselectingVocalist {
+  String vocalistName;
+  NotifyDeselectingVocalist(this.vocalistName);
+}
+
+class NotifyCurrentSnippets {
+  List<LyricSnippet> currentSnippets;
+  NotifyCurrentSnippets(this.currentSnippets);
 }
 
 class NotifyIsPlaying {
