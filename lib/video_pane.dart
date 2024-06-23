@@ -109,38 +109,32 @@ class _VideoPaneState extends State<VideoPane> {
   Widget build(BuildContext context) {
     String fontFamily = "Times New Roman";
     List<LyricSnippet> currentSnippet = getSnippetsAtCurrentSeekPosition();
+
+    Widget content;
     if (currentSnippet.isEmpty) {
-      return Focus(
-        focusNode: focusNode,
-        child: GestureDetector(
-          onTap: () {
-            focusNode.requestFocus();
-            debugPrint("The video pane is focused");
-          },
-          child: Column(children: [
-            Expanded(
-              child: Container(),
-            ),
-            PlaybackControlPane(masterSubject: masterSubject),
-          ]),
-        ),
-      );
+      content = Container();
+    } else {
+      content = outlinedText(currentSnippet[0], fontFamily);
     }
 
     return Focus(
-        focusNode: focusNode,
-        child: GestureDetector(
-            onTap: () {
-              widget.masterSubject.add(RequestPlayPause());
-              focusNode.requestFocus();
-              debugPrint("The video pane is focused");
-            },
-            child: Column(children: [
-              Expanded(
-                child: outlinedText(currentSnippet[0], fontFamily),
-              ),
-              PlaybackControlPane(masterSubject: masterSubject),
-            ])));
+      focusNode: focusNode,
+      child: GestureDetector(
+        onTap: () {
+          widget.masterSubject.add(RequestPlayPause());
+          focusNode.requestFocus();
+          debugPrint("The video pane is focused");
+        },
+        child: Column(
+          children: [
+            Expanded(
+              child: content,
+            ),
+            PlaybackControlPane(masterSubject: masterSubject),
+          ],
+        ),
+      ),
+    );
   }
 
   List<TimingPoint> getAccumulatedTimingPoints(
@@ -306,9 +300,14 @@ class PartialTextPainter extends CustomPainter {
   }
 
   void paintText(Canvas canvas, Size size) {
-    final actualX = (size.width - textPainterBeforeInner.width) / 2;
-    final actualY = (size.height - textPainterBeforeInner.height) / 2;
+    final textWidth = textPainterBeforeInner.width;
+    final textHeight = textPainterBeforeInner.height;
+
+    final actualX = (size.width - textWidth) / 2;
+    final actualY = (size.height - textHeight) / 2;
     final centerOffset = Offset(actualX, actualY);
+
+    canvas.clipRect(Rect.fromLTWH(0, 0, size.width, size.height));
 
     textPainterBeforeOuter.paint(canvas, centerOffset);
     textPainterBeforeMiddle.paint(canvas, centerOffset);
@@ -322,6 +321,7 @@ class PartialTextPainter extends CustomPainter {
         .dx;
     final sliceWidth =
         actualX + startOffset + (endOffset - startOffset) * percent;
+
     canvas.clipRect(Rect.fromLTWH(0, 0, sliceWidth, size.height));
 
     textPainterAfterOuter.paint(canvas, centerOffset);
