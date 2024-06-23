@@ -15,6 +15,18 @@ class TimingService {
 
   TimingService({required this.masterSubject}) {
     masterSubject.stream.listen((signal) {
+      if (signal is RequestInitLyric) {
+        String singlelineText =
+            signal.rawText.replaceAll("\n", "").replaceAll("\r", "");
+        lyricSnippetList.clear();
+        lyricSnippetList.add(LyricSnippet(
+          id: "vocalist 1__1",
+          vocalist: "vocalist__1",
+          sentence: singlelineText,
+          startTimestamp: 0,
+          timingPoints: [TimingPoint(singlelineText.length, 5000)],
+        ));
+      }
       if (signal is RequestToAddLyricTiming) {
         List<LyricSnippet> filteredList = lyricSnippetList
             .where((snippet) => snippet.id == signal.snippetID)

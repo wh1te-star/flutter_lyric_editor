@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
@@ -40,6 +42,22 @@ AppBar buildAppBarWithMenu(
                   SnackBar(content: Text('No file selected')),
                 );
               }
+            } else if (newValue == StringResource.fileMenuCreateNewLyric) {
+              FilePickerResult? result = await FilePicker.platform.pickFiles(
+                type: FileType.custom,
+                allowedExtensions: ['txt'],
+              );
+
+              if (result != null) {
+                PlatformFile file = result.files.first;
+                String rawText = await File(file.path!).readAsString();
+                masterSubject.add(RequestInitLyric(rawText));
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('No file selected')),
+                );
+              }
+            } else if (newValue == StringResource.fileMenuOpenLyric) {
             } else {
               debugPrint('Selected Item: $newValue');
             }

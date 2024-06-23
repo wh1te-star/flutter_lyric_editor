@@ -55,6 +55,11 @@ class RequestTimelineZoomIn {}
 
 class RequestTimelineZoomOut {}
 
+class RequestInitLyric {
+  String rawText;
+  RequestInitLyric(this.rawText);
+}
+
 class RequestToAddLyricTiming {
   String snippetID;
   int characterPosition;
