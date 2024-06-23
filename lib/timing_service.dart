@@ -12,6 +12,7 @@ class TimingService {
   String rawLyricText = "";
   late final List<LyricSnippet> lyricSnippetList;
   Future<void>? _loadLyricsFuture;
+  int audioDuration = 180000;
 
   TimingService({required this.masterSubject}) {
     masterSubject.stream.listen((signal) {
@@ -24,8 +25,9 @@ class TimingService {
           vocalist: "vocalist__1",
           sentence: singlelineText,
           startTimestamp: 0,
-          timingPoints: [TimingPoint(singlelineText.length, 5000)],
+          timingPoints: [TimingPoint(singlelineText.length, audioDuration)],
         ));
+        masterSubject.add(NotifyLyricParsed(lyricSnippetList));
       }
       if (signal is RequestToAddLyricTiming) {
         List<LyricSnippet> filteredList = lyricSnippetList
@@ -40,6 +42,9 @@ class TimingService {
       }
       if (signal is RequestToDeleteLyricTiming) {
         masterSubject.add(NotifyTimingPointDeletion(signal.characterPosition));
+      }
+      if (signal is NotifyAudioFileLoaded) {
+        audioDuration = signal.millisec;
       }
     });
     _loadLyricsFuture = loadLyrics();
