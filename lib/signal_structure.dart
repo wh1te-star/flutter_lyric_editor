@@ -156,3 +156,8 @@ class RequestToMakeSnippet {
   int endCharPos;
   RequestToMakeSnippet(this.snippetID, this.startCharPos, this.endCharPos);
 }
+
+class NotifySnippetMade {
+  List<LyricSnippet> lyricSnippetList;
+  NotifySnippetMade(this.lyricSnippetList);
+}

@@ -218,7 +218,7 @@ class _TimelinePaneState extends State<TimelinePane> {
           currentPosition = signal.seekPosition;
         });
       }
-      if (signal is NotifyLyricParsed) {
+      if (signal is NotifyLyricParsed || signal is NotifySnippetMade) {
         setState(() {
           snippetsForeachVocalist = groupBy(signal.lyricSnippetList,
               (LyricSnippet snippet) => snippet.vocalist);

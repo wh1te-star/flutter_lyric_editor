@@ -84,6 +84,7 @@ class TimingService {
           lyricSnippetList.removeAt(index);
           lyricSnippetList.insertAll(index, newSnippets);
         }
+        masterSubject.add(NotifySnippetMade(lyricSnippetList));
       }
     });
     _loadLyricsFuture = loadLyrics();
