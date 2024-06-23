@@ -46,6 +46,45 @@ class TimingService {
       if (signal is NotifyAudioFileLoaded) {
         audioDuration = signal.millisec;
       }
+
+      if (signal is RequestToMakeSnippet) {
+        int index = lyricSnippetList
+            .indexWhere((snippet) => snippet.id == signal.snippetID);
+        String beforeString =
+            lyricSnippetList[index].sentence.substring(0, signal.startCharPos);
+        String middleString = lyricSnippetList[index]
+            .sentence
+            .substring(signal.startCharPos, signal.endCharPos);
+        String afterString =
+            lyricSnippetList[index].sentence.substring(signal.endCharPos);
+        List<LyricSnippet> newSnippets = [
+          LyricSnippet(
+            id: signal.snippetID,
+            vocalist: 'Vocalist 1',
+            sentence: beforeString,
+            startTimestamp: lyricSnippetList[index].startTimestamp,
+            timingPoints: [TimingPoint(beforeString.length, 1000)],
+          ),
+          LyricSnippet(
+            id: signal.snippetID,
+            vocalist: 'Vocalist 1',
+            sentence: middleString,
+            startTimestamp: lyricSnippetList[index].startTimestamp + 2000,
+            timingPoints: [TimingPoint(middleString.length, 1000)],
+          ),
+          LyricSnippet(
+            id: signal.snippetID,
+            vocalist: 'Vocalist 1',
+            sentence: afterString,
+            startTimestamp: lyricSnippetList[index].startTimestamp + 4000,
+            timingPoints: [TimingPoint(afterString.length, 1000)],
+          ),
+        ];
+        if (index != -1) {
+          lyricSnippetList.removeAt(index);
+          lyricSnippetList.insertAll(index, newSnippets);
+        }
+      }
     });
     _loadLyricsFuture = loadLyrics();
   }

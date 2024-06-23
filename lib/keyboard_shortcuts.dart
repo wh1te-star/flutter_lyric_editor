@@ -16,6 +16,10 @@ class KeyboardShortcuts extends StatelessWidget {
   int seekPosition = 0;
   int charCursorPosition = 0;
 
+  bool textSelectMode = false;
+  int selectedPosition = 0;
+  String selectedSnippetID = "";
+
   KeyboardShortcuts({
     required this.masterSubject,
     required this.child,
@@ -38,6 +42,9 @@ class KeyboardShortcuts extends StatelessWidget {
       }
       if (signal is NotifyCharCursorPosition) {
         charCursorPosition = signal.cursorPosition;
+      }
+      if (signal is NotifyLineCursorPosition) {
+        selectedSnippetID = signal.cursorSnippetID;
       }
     });
   }
@@ -63,6 +70,9 @@ class KeyboardShortcuts extends StatelessWidget {
             ActivateCtrlKKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.controlLeft, LogicalKeyboardKey.keyJ):
             ActivateCtrlJKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyV): ActivateVKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.enter):
+            ActivateEnterKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyN): ActivateNKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyM): ActivateMKeyShortcutIntent(),
       };
@@ -110,12 +120,7 @@ class KeyboardShortcuts extends StatelessWidget {
         ),
         ActivateHKeyShortcutIntent: CallbackAction<ActivateHKeyShortcutIntent>(
           onInvoke: (ActivateHKeyShortcutIntent intent) => () {
-            if (textPaneFocusNode.hasFocus) {
-              masterSubject.add(RequestMoveLeftCharCursor());
-            }
-            if (timelinePaneFocusNode.hasFocus) {
-              masterSubject.add(RequestRewind(1000));
-            }
+            masterSubject.add(RequestMoveLeftCharCursor());
           }(),
         ),
         ActivateJKeyShortcutIntent: CallbackAction<ActivateJKeyShortcutIntent>(
@@ -130,12 +135,7 @@ class KeyboardShortcuts extends StatelessWidget {
         ),
         ActivateLKeyShortcutIntent: CallbackAction<ActivateLKeyShortcutIntent>(
           onInvoke: (ActivateLKeyShortcutIntent intent) => () {
-            if (textPaneFocusNode.hasFocus) {
-              masterSubject.add(RequestMoveRightCharCursor());
-            }
-            if (timelinePaneFocusNode.hasFocus) {
-              masterSubject.add(RequestForward(1000));
-            }
+            masterSubject.add(RequestMoveRightCharCursor());
           }(),
         ),
         ActivateCtrlKKeyShortcutIntent:
@@ -168,6 +168,27 @@ class KeyboardShortcuts extends StatelessWidget {
                     RequestToDeleteLyricTiming(snippet.id, charCursorPosition));
               }
             });
+          }(),
+        ),
+        ActivateVKeyShortcutIntent: CallbackAction<ActivateVKeyShortcutIntent>(
+          onInvoke: (ActivateVKeyShortcutIntent intent) => () {
+            if (!textSelectMode) {
+              textSelectMode = true;
+              selectedPosition = charCursorPosition;
+              masterSubject.add(RequestToEnterTextSelectMode());
+            } else {
+              textSelectMode = false;
+              masterSubject.add(RequestToExitTextSelectMode());
+            }
+          }(),
+        ),
+        ActivateEnterKeyShortcutIntent:
+            CallbackAction<ActivateEnterKeyShortcutIntent>(
+          onInvoke: (ActivateEnterKeyShortcutIntent intent) => () {
+            masterSubject.add(RequestToMakeSnippet(
+                selectedSnippetID, selectedPosition, charCursorPosition));
+            textSelectMode = false;
+            masterSubject.add(RequestToExitTextSelectMode());
           }(),
         ),
       };
@@ -209,6 +230,10 @@ class ActivateLKeyShortcutIntent extends Intent {}
 class ActivateCtrlKKeyShortcutIntent extends Intent {}
 
 class ActivateCtrlJKeyShortcutIntent extends Intent {}
+
+class ActivateVKeyShortcutIntent extends Intent {}
+
+class ActivateEnterKeyShortcutIntent extends Intent {}
 
 class ActivateNKeyShortcutIntent extends Intent {}
 

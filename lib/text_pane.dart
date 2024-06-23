@@ -41,6 +41,9 @@ class _TextPaneState extends State<TextPane> {
   SortedMap<int, String> timingPointMap = SortedMap<int, String>();
   SortedMap<int, String> sectionPointMap = SortedMap<int, String>();
 
+  bool TextSelectMode = false;
+  int selectionBasePosition = 0;
+
   _TextPaneState(this.masterSubject, this.focusNode);
 
   @override
@@ -59,12 +62,14 @@ class _TextPaneState extends State<TextPane> {
 
       if (signal is RequestMoveDownCharCursor) {
         moveDownCursor();
-        masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
+        String selectingSnippetID = lyricSnippets[cursorPositionLine].id;
+        masterSubject.add(NotifyLineCursorPosition(selectingSnippetID));
       }
 
       if (signal is RequestMoveUpCharCursor) {
         moveUpCursor();
-        masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
+        String selectingSnippetID = lyricSnippets[cursorPositionLine].id;
+        masterSubject.add(NotifyLineCursorPosition(selectingSnippetID));
       }
 
       if (signal is RequestMoveLeftCharCursor) {
@@ -94,6 +99,20 @@ class _TextPaneState extends State<TextPane> {
 
       if (signal is NotifySeekPosition) {
         seekPosition = signal.seekPosition;
+      }
+
+      if (signal is RequestToEnterTextSelectMode) {
+        TextSelectMode = true;
+        selectionBasePosition = cursorPositionChar;
+        setState(() {});
+      }
+
+      if (signal is RequestToExitTextSelectMode) {
+        TextSelectMode = false;
+        lyricAppearance = List.filled(lyricSnippets.length, '');
+        updateIndicators();
+        cursorPositionChar = lyricSnippets[cursorPositionLine].sentence.length;
+        setState(() {});
       }
     });
   }
@@ -210,8 +229,11 @@ class _TextPaneState extends State<TextPane> {
             padding: padding,
             child: Container(
               color: backgroundColor,
-              child: highlightedLyricItemWidget(lyricAppearance[index],
-                  cursorPositionLine, cursorPositionChar),
+              child: TextSelectMode
+                  ? highlightedLyricItemSelectionMode(lyricAppearance[index],
+                      cursorPositionLine, cursorPositionChar)
+                  : highlightedLyricItem(lyricAppearance[index],
+                      cursorPositionLine, cursorPositionChar),
             ),
           );
         } else {
@@ -230,8 +252,7 @@ class _TextPaneState extends State<TextPane> {
     );
   }
 
-  Widget highlightedLyricItemWidget(
-      String lyrics, int lineIndex, int charIndex) {
+  Widget highlightedLyricItem(String lyrics, int lineIndex, int charIndex) {
     int timingPointsBeforeCursor = 0;
     List<int> currentLineTimingPoint = timingPointsForEachLine[lineIndex];
     while (timingPointsBeforeCursor < currentLineTimingPoint.length &&
@@ -263,6 +284,36 @@ class _TextPaneState extends State<TextPane> {
           TextSpan(
               text: afterN,
               style: const TextStyle(fontSize: 20, color: Colors.black)),
+        ],
+      ),
+    );
+  }
+
+  Widget highlightedLyricItemSelectionMode(
+      String lyrics, int lineIndex, int charIndex) {
+    String beforeSelect = lyrics.substring(0, selectionBasePosition);
+    String selecting =
+        lyrics.substring(selectionBasePosition, cursorPositionChar);
+    String afterSelect = lyrics.substring(cursorPositionChar);
+
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: beforeSelect,
+            style: const TextStyle(fontSize: 20, color: Colors.black),
+          ),
+          TextSpan(
+            text: selecting,
+            style: const TextStyle(
+                fontSize: 20,
+                color: Colors.black,
+                backgroundColor: Colors.blue),
+          ),
+          TextSpan(
+            text: afterSelect,
+            style: const TextStyle(fontSize: 20, color: Colors.black),
+          ),
         ],
       ),
     );

@@ -43,18 +43,6 @@ class RequestSpeedDown {
   RequestSpeedDown(this.rate);
 }
 
-class RequestMoveUpCharCursor {}
-
-class RequestMoveDownCharCursor {}
-
-class RequestMoveLeftCharCursor {}
-
-class RequestMoveRightCharCursor {}
-
-class RequestTimelineZoomIn {}
-
-class RequestTimelineZoomOut {}
-
 class RequestInitLyric {
   String rawText;
   RequestInitLyric(this.rawText);
@@ -125,6 +113,11 @@ class NotifyCharCursorPosition {
   NotifyCharCursorPosition(this.cursorPosition);
 }
 
+class NotifyLineCursorPosition {
+  String cursorSnippetID;
+  NotifyLineCursorPosition(this.cursorSnippetID);
+}
+
 class NotifyVideoPaneWidthLimit {
   double widthLimit;
   NotifyVideoPaneWidthLimit(this.widthLimit);
@@ -139,4 +132,27 @@ class NotifyLyricParsed {
   List<LyricSnippet> lyricSnippetList;
   //SortedList<int> sectionPoints;
   NotifyLyricParsed(this.lyricSnippetList);
+}
+
+class RequestMoveUpCharCursor {}
+
+class RequestMoveDownCharCursor {}
+
+class RequestMoveLeftCharCursor {}
+
+class RequestMoveRightCharCursor {}
+
+class RequestTimelineZoomIn {}
+
+class RequestTimelineZoomOut {}
+
+class RequestToEnterTextSelectMode {}
+
+class RequestToExitTextSelectMode {}
+
+class RequestToMakeSnippet {
+  String snippetID;
+  int startCharPos;
+  int endCharPos;
+  RequestToMakeSnippet(this.snippetID, this.startCharPos, this.endCharPos);
 }
