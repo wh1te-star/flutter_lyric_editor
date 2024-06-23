@@ -57,29 +57,41 @@ class TimingService {
             .substring(signal.startCharPos, signal.endCharPos);
         String afterString =
             lyricSnippetList[index].sentence.substring(signal.endCharPos);
-        List<LyricSnippet> newSnippets = [
-          LyricSnippet(
-            vocalist: 'Vocalist 1',
-            index: 1,
-            sentence: beforeString,
-            startTimestamp: lyricSnippetList[index].startTimestamp,
-            timingPoints: [TimingPoint(beforeString.length, 1000)],
-          ),
-          LyricSnippet(
-            vocalist: 'Vocalist 1',
-            index: 2,
-            sentence: middleString,
-            startTimestamp: lyricSnippetList[index].startTimestamp + 2000,
-            timingPoints: [TimingPoint(middleString.length, 1000)],
-          ),
-          LyricSnippet(
-            vocalist: 'Vocalist 1',
-            index: 3,
-            sentence: afterString,
-            startTimestamp: lyricSnippetList[index].startTimestamp + 4000,
-            timingPoints: [TimingPoint(afterString.length, 1000)],
-          ),
-        ];
+        String vocalist = lyricSnippetList[index].vocalist;
+        List<LyricSnippet> newSnippets = [];
+        if (beforeString.isNotEmpty) {
+          newSnippets.add(
+            LyricSnippet(
+              vocalist: vocalist,
+              index: 1,
+              sentence: beforeString,
+              startTimestamp: lyricSnippetList[index].startTimestamp,
+              timingPoints: [TimingPoint(beforeString.length, 2000)],
+            ),
+          );
+        }
+        if (middleString.isNotEmpty) {
+          newSnippets.add(
+            LyricSnippet(
+              vocalist: vocalist,
+              index: 2,
+              sentence: middleString,
+              startTimestamp: lyricSnippetList[index].startTimestamp + 2000,
+              timingPoints: [TimingPoint(middleString.length, 2000)],
+            ),
+          );
+        }
+        if (afterString.isNotEmpty) {
+          newSnippets.add(
+            LyricSnippet(
+              vocalist: vocalist,
+              index: 3,
+              sentence: afterString,
+              startTimestamp: lyricSnippetList[index].startTimestamp + 4000,
+              timingPoints: [TimingPoint(afterString.length, 2000)],
+            ),
+          );
+        }
         if (index != -1) {
           lyricSnippetList.removeAt(index);
           lyricSnippetList.insertAll(index, newSnippets);
