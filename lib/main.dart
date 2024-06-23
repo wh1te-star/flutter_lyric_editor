@@ -133,6 +133,14 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     musicPlayerService.play();
 
     lyricService.printLyric();
+
+    loadText();
+  }
+
+  void loadText() async {
+    String filePath = 'assets/ウェルカムティーフレンド.txt';
+    String rawText = await rootBundle.loadString(filePath);
+    masterSubject.add(RequestInitLyric(rawText));
   }
 
   @override
