@@ -62,26 +62,30 @@ class _TextPaneState extends State<TextPane> {
 
       if (signal is RequestMoveDownCharCursor) {
         moveDownCursor();
-        LyricSnippetID selectingSnippetID =
-            lyricSnippets[cursorPositionLine].id;
-        masterSubject.add(NotifyLineCursorPosition(selectingSnippetID));
+        masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
+        masterSubject.add(
+            NotifyLineCursorPosition(lyricSnippets[cursorPositionLine].id));
       }
 
       if (signal is RequestMoveUpCharCursor) {
         moveUpCursor();
-        LyricSnippetID selectingSnippetID =
-            lyricSnippets[cursorPositionLine].id;
-        masterSubject.add(NotifyLineCursorPosition(selectingSnippetID));
+        masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
+        masterSubject.add(
+            NotifyLineCursorPosition(lyricSnippets[cursorPositionLine].id));
       }
 
       if (signal is RequestMoveLeftCharCursor) {
         moveLeftCursor();
         masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
+        masterSubject.add(
+            NotifyLineCursorPosition(lyricSnippets[cursorPositionLine].id));
       }
 
       if (signal is RequestMoveRightCharCursor) {
         moveRightCursor();
         masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
+        masterSubject.add(
+            NotifyLineCursorPosition(lyricSnippets[cursorPositionLine].id));
       }
 
       if (signal is NotifyTimingPointAdded) {

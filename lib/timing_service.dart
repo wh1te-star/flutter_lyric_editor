@@ -63,7 +63,7 @@ class TimingService {
           newSnippets.add(
             LyricSnippet(
               vocalist: vocalist,
-              index: 1,
+              index: 0,
               sentence: beforeString,
               startTimestamp: lyricSnippetList[index].startTimestamp,
               timingPoints: [TimingPoint(beforeString.length, 2000)],
@@ -74,7 +74,7 @@ class TimingService {
           newSnippets.add(
             LyricSnippet(
               vocalist: vocalist,
-              index: 2,
+              index: 0,
               sentence: middleString,
               startTimestamp: lyricSnippetList[index].startTimestamp + 2000,
               timingPoints: [TimingPoint(middleString.length, 2000)],
@@ -85,7 +85,7 @@ class TimingService {
           newSnippets.add(
             LyricSnippet(
               vocalist: vocalist,
-              index: 3,
+              index: 0,
               sentence: afterString,
               startTimestamp: lyricSnippetList[index].startTimestamp + 4000,
               timingPoints: [TimingPoint(afterString.length, 2000)],
@@ -96,6 +96,7 @@ class TimingService {
           lyricSnippetList.removeAt(index);
           lyricSnippetList.insertAll(index, newSnippets);
         }
+        assignIndex(lyricSnippetList);
         masterSubject.add(NotifySnippetMade(lyricSnippetList));
       }
     });
@@ -129,7 +130,6 @@ class TimingService {
     final lineTimestamps = document.findAllElements('LineTimestamp');
     List<LyricSnippet> snippets = [];
 
-    Map<String, int> idMap = {};
     for (var lineTimestamp in lineTimestamps) {
       final startTime =
           parseTimestamp(lineTimestamp.getAttribute('startTime')!);
@@ -145,23 +145,34 @@ class TimingService {
         timingPoints.add(TimingPoint(word.length, time));
         sentence += word;
       }
-
-      if (!idMap.containsKey(vocalistName)) {
-        idMap[vocalistName] = 1;
-      } else {
-        idMap[vocalistName] = idMap[vocalistName]! + 1;
-      }
-
       snippets.add(LyricSnippet(
         vocalist: vocalistName,
-        index: idMap[vocalistName]!,
+        index: 0,
         sentence: sentence,
         startTimestamp: startTime,
         timingPoints: timingPoints,
       ));
     }
 
+    assignIndex(snippets);
+
     return snippets;
+  }
+
+  void assignIndex(List<LyricSnippet> snippets) {
+    Map<String, int> idMap = {};
+
+    snippets.sort((LyricSnippet a, LyricSnippet b) =>
+        a.startTimestamp.compareTo(b.startTimestamp));
+    snippets.forEach((LyricSnippet snippet) {
+      String vocalist = snippet.vocalist;
+      if (!idMap.containsKey(vocalist)) {
+        idMap[vocalist] = 1;
+      } else {
+        idMap[vocalist] = idMap[vocalist]! + 1;
+      }
+      snippet.index = idMap[vocalist]!;
+    });
   }
 
   Future<void> writeTranslatedXmlToFile() async {
