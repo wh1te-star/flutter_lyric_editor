@@ -21,8 +21,8 @@ class TimingService {
             signal.rawText.replaceAll("\n", "").replaceAll("\r", "");
         lyricSnippetList.clear();
         lyricSnippetList.add(LyricSnippet(
-          id: "vocalist 1__1",
-          vocalist: "vocalist__1",
+          vocalist: "vocalist 1",
+          index: 1,
           sentence: singlelineText,
           startTimestamp: 0,
           timingPoints: [TimingPoint(singlelineText.length, audioDuration)],
@@ -59,22 +59,22 @@ class TimingService {
             lyricSnippetList[index].sentence.substring(signal.endCharPos);
         List<LyricSnippet> newSnippets = [
           LyricSnippet(
-            id: signal.snippetID,
             vocalist: 'Vocalist 1',
+            index: 1,
             sentence: beforeString,
             startTimestamp: lyricSnippetList[index].startTimestamp,
             timingPoints: [TimingPoint(beforeString.length, 1000)],
           ),
           LyricSnippet(
-            id: signal.snippetID,
             vocalist: 'Vocalist 1',
+            index: 2,
             sentence: middleString,
             startTimestamp: lyricSnippetList[index].startTimestamp + 2000,
             timingPoints: [TimingPoint(middleString.length, 1000)],
           ),
           LyricSnippet(
-            id: signal.snippetID,
             vocalist: 'Vocalist 1',
+            index: 3,
             sentence: afterString,
             startTimestamp: lyricSnippetList[index].startTimestamp + 4000,
             timingPoints: [TimingPoint(afterString.length, 1000)],
@@ -139,11 +139,10 @@ class TimingService {
       } else {
         idMap[vocalistName] = idMap[vocalistName]! + 1;
       }
-      final id = '${vocalistName}__${idMap[vocalistName]}';
 
       snippets.add(LyricSnippet(
-        id: id,
         vocalist: vocalistName,
+        index: idMap[vocalistName]!,
         sentence: sentence,
         startTimestamp: startTime,
         timingPoints: timingPoints,

@@ -117,7 +117,7 @@ class RectanglePainter extends CustomPainter {
 
 class TimelinePainter extends CustomPainter {
   final List<LyricSnippet> snippets;
-  final List<String> selectingId;
+  final List<LyricSnippetID> selectingId;
   final double intervalLength;
   final int intervalDuration;
   final double topMargin;
@@ -190,7 +190,7 @@ class _TimelinePaneState extends State<TimelinePane> {
       CurrentPositionIndicatorDelegate();
 
   Map<String, List<LyricSnippet>> snippetsForeachVocalist = {};
-  List<String> selectingSnippet = [];
+  List<LyricSnippetID> selectingSnippet = [];
   List<String> vocalistList = [];
   List<String> selectingVocalist = [];
   int audioDuration = 60000;

@@ -26,7 +26,7 @@ class _TextPaneState extends State<TextPane> {
   static const String linefeedChar = '\n';
   //static const String sectionChar = '\n\n';
 
-  String snippetID = "";
+  LyricSnippetID snippetID = LyricSnippetID("", 0);
   String entireLyricString = "";
   int cursorPosition = 0;
   int seekPosition = 0;
@@ -62,13 +62,15 @@ class _TextPaneState extends State<TextPane> {
 
       if (signal is RequestMoveDownCharCursor) {
         moveDownCursor();
-        String selectingSnippetID = lyricSnippets[cursorPositionLine].id;
+        LyricSnippetID selectingSnippetID =
+            lyricSnippets[cursorPositionLine].id;
         masterSubject.add(NotifyLineCursorPosition(selectingSnippetID));
       }
 
       if (signal is RequestMoveUpCharCursor) {
         moveUpCursor();
-        String selectingSnippetID = lyricSnippets[cursorPositionLine].id;
+        LyricSnippetID selectingSnippetID =
+            lyricSnippets[cursorPositionLine].id;
         masterSubject.add(NotifyLineCursorPosition(selectingSnippetID));
       }
 

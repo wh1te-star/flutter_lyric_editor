@@ -49,7 +49,7 @@ class RequestInitLyric {
 }
 
 class RequestToAddLyricTiming {
-  String snippetID;
+  LyricSnippetID snippetID;
   int characterPosition;
   int seekPosition;
   RequestToAddLyricTiming(
@@ -57,13 +57,13 @@ class RequestToAddLyricTiming {
 }
 
 class NotifyTimingPointAdded {
-  String snippetID;
+  LyricSnippetID snippetID;
   List<TimingPoint> timingPoints;
   NotifyTimingPointAdded(this.snippetID, this.timingPoints);
 }
 
 class RequestToDeleteLyricTiming {
-  String snippetID;
+  LyricSnippetID snippetID;
   int characterPosition;
   RequestToDeleteLyricTiming(this.snippetID, this.characterPosition);
 }
@@ -74,12 +74,12 @@ class NotifyTimingPointDeletion {
 }
 
 class NotifySelectingSnippet {
-  String snippetID;
+  LyricSnippetID snippetID;
   NotifySelectingSnippet(this.snippetID);
 }
 
 class NotifyDeselectingSnippet {
-  String snippetID;
+  LyricSnippetID snippetID;
   NotifyDeselectingSnippet(this.snippetID);
 }
 
@@ -114,7 +114,7 @@ class NotifyCharCursorPosition {
 }
 
 class NotifyLineCursorPosition {
-  String cursorSnippetID;
+  LyricSnippetID cursorSnippetID;
   NotifyLineCursorPosition(this.cursorSnippetID);
 }
 
@@ -151,7 +151,7 @@ class RequestToEnterTextSelectMode {}
 class RequestToExitTextSelectMode {}
 
 class RequestToMakeSnippet {
-  String snippetID;
+  LyricSnippetID snippetID;
   int startCharPos;
   int endCharPos;
   RequestToMakeSnippet(this.snippetID, this.startCharPos, this.endCharPos);

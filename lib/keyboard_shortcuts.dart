@@ -18,7 +18,7 @@ class KeyboardShortcuts extends StatelessWidget {
 
   bool textSelectMode = false;
   int selectedPosition = 0;
-  String selectedSnippetID = "";
+  LyricSnippetID selectedSnippetID = LyricSnippetID("", 0);
 
   KeyboardShortcuts({
     required this.masterSubject,
