@@ -98,29 +98,12 @@ class KeyboardShortcuts extends StatelessWidget {
         ),
         ActivateCKeyShortcutIntent: CallbackAction<ActivateCKeyShortcutIntent>(
           onInvoke: (ActivateCKeyShortcutIntent intent) => () {
-            currentSnippets.forEach((LyricSnippet snippet) {
-              if (snippet.startTimestamp < seekPosition) {
-                int index = 0;
-                for (int i = 0; i < snippet.timingPoints.length; i++) {
-                  if (snippet.seekPosition(i) > seekPosition) {
-                    index = i;
-                    break;
-                  }
-                }
-
-                snippet.startTimestamp = seekPosition;
-                snippet.timingPoints =
-                    snippet.timingPoints.skip(index).toList();
-              } else {
-                snippet.startTimestamp = seekPosition;
-                snippet.timingPoints[0].wordDuration = seekPosition;
-              }
-            });
+            masterSubject.add(RequestSnippetMove(SnippetEdge.start, false));
           }(),
         ),
         ActivateVKeyShortcutIntent: CallbackAction<ActivateVKeyShortcutIntent>(
           onInvoke: (ActivateVKeyShortcutIntent intent) => () {
-            currentSnippets[0].startTimestamp = seekPosition;
+            masterSubject.add(RequestSnippetMove(SnippetEdge.end, false));
           }(),
         ),
         ActivateUpArrowKeyShortcutIntent:

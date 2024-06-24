@@ -96,6 +96,25 @@ class TimingService {
         assignIndex(lyricSnippetList);
         masterSubject.add(NotifySnippetMade(lyricSnippetList));
       }
+      if (signal is RequestSnippetMove) {
+        getSnippetsAtCurrentSeekPosition().forEach((LyricSnippet snippet) {
+          if (snippet.startTimestamp < currentPosition) {
+            int index = 0;
+            for (int i = 0; i < snippet.timingPoints.length; i++) {
+              if (snippet.seekPosition(i) > currentPosition) {
+                index = i;
+                break;
+              }
+            }
+
+            snippet.startTimestamp = currentPosition;
+            snippet.timingPoints = snippet.timingPoints.skip(index).toList();
+          } else {
+            snippet.startTimestamp = currentPosition;
+            snippet.timingPoints[0].wordDuration = currentPosition;
+          }
+        });
+      }
     });
     _loadLyricsFuture = loadLyrics();
   }
@@ -235,5 +254,16 @@ class TimingService {
     }
     //String first30Chars = rawLyricText.substring(0, 30);
     //debugPrint(first30Chars);
+  }
+
+  List<LyricSnippet> getSnippetsAtCurrentSeekPosition() {
+    return lyricSnippetList.where((snippet) {
+      final endtime = snippet.startTimestamp +
+          snippet.timingPoints
+              .map((point) => point.wordDuration)
+              .reduce((a, b) => a + b);
+      return snippet.startTimestamp < currentPosition &&
+          currentPosition < endtime;
+    }).toList();
   }
 }

@@ -160,3 +160,19 @@ class NotifySnippetMade {
   List<LyricSnippet> lyricSnippetList;
   NotifySnippetMade(this.lyricSnippetList);
 }
+
+enum SnippetEdge {
+  start,
+  end,
+}
+
+class RequestSnippetMove {
+  SnippetEdge snippetEdge;
+  bool holdLength;
+  RequestSnippetMove(this.snippetEdge, this.holdLength);
+}
+
+class NotifySnippetMove {
+  List<LyricSnippet> lyricSnippetList;
+  NotifySnippetMove(this.lyricSnippetList);
+}
