@@ -152,9 +152,8 @@ class RequestToExitTextSelectMode {}
 
 class RequestToMakeSnippet {
   LyricSnippetID snippetID;
-  int startCharPos;
-  int endCharPos;
-  RequestToMakeSnippet(this.snippetID, this.startCharPos, this.endCharPos);
+  int charPos;
+  RequestToMakeSnippet(this.snippetID, this.charPos);
 }
 
 class NotifySnippetMade {

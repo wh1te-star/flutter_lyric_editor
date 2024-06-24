@@ -12,6 +12,7 @@ class TimingService {
   String rawLyricText = "";
   late final List<LyricSnippet> lyricSnippetList;
   Future<void>? _loadLyricsFuture;
+  int currentPosition = 0;
   int audioDuration = 180000;
 
   TimingService({required this.masterSubject}) {
@@ -43,52 +44,48 @@ class TimingService {
       if (signal is RequestToDeleteLyricTiming) {
         masterSubject.add(NotifyTimingPointDeletion(signal.characterPosition));
       }
+      if (signal is NotifySeekPosition) {
+        currentPosition = signal.seekPosition;
+      }
       if (signal is NotifyAudioFileLoaded) {
         audioDuration = signal.millisec;
       }
 
       if (signal is RequestToMakeSnippet) {
+        int snippetMargin = 100;
         int index = lyricSnippetList
             .indexWhere((snippet) => snippet.id == signal.snippetID);
         String beforeString =
-            lyricSnippetList[index].sentence.substring(0, signal.startCharPos);
-        String middleString = lyricSnippetList[index]
-            .sentence
-            .substring(signal.startCharPos, signal.endCharPos);
+            lyricSnippetList[index].sentence.substring(0, signal.charPos);
         String afterString =
-            lyricSnippetList[index].sentence.substring(signal.endCharPos);
+            lyricSnippetList[index].sentence.substring(signal.charPos);
         String vocalist = lyricSnippetList[index].vocalist;
         List<LyricSnippet> newSnippets = [];
         if (beforeString.isNotEmpty) {
+          int snippetDuration =
+              currentPosition - lyricSnippetList[index].startTimestamp;
           newSnippets.add(
             LyricSnippet(
               vocalist: vocalist,
               index: 0,
               sentence: beforeString,
               startTimestamp: lyricSnippetList[index].startTimestamp,
-              timingPoints: [TimingPoint(beforeString.length, 2000)],
-            ),
-          );
-        }
-        if (middleString.isNotEmpty) {
-          newSnippets.add(
-            LyricSnippet(
-              vocalist: vocalist,
-              index: 0,
-              sentence: middleString,
-              startTimestamp: lyricSnippetList[index].startTimestamp + 2000,
-              timingPoints: [TimingPoint(middleString.length, 2000)],
+              timingPoints: [TimingPoint(beforeString.length, snippetDuration)],
             ),
           );
         }
         if (afterString.isNotEmpty) {
+          int snippetDuration = lyricSnippetList[index].endTimestamp -
+              lyricSnippetList[index].startTimestamp -
+              currentPosition -
+              snippetMargin;
           newSnippets.add(
             LyricSnippet(
               vocalist: vocalist,
               index: 0,
               sentence: afterString,
-              startTimestamp: lyricSnippetList[index].startTimestamp + 4000,
-              timingPoints: [TimingPoint(afterString.length, 2000)],
+              startTimestamp: currentPosition + snippetMargin,
+              timingPoints: [TimingPoint(afterString.length, snippetDuration)],
             ),
           );
         }

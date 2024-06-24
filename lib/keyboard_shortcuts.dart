@@ -185,8 +185,8 @@ class KeyboardShortcuts extends StatelessWidget {
         ActivateEnterKeyShortcutIntent:
             CallbackAction<ActivateEnterKeyShortcutIntent>(
           onInvoke: (ActivateEnterKeyShortcutIntent intent) => () {
-            masterSubject.add(RequestToMakeSnippet(
-                selectedSnippetID, selectedPosition, charCursorPosition));
+            masterSubject.add(
+                RequestToMakeSnippet(selectedSnippetID, charCursorPosition));
             textSelectMode = false;
             masterSubject.add(RequestToExitTextSelectMode());
           }(),

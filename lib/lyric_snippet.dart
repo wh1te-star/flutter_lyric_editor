@@ -14,6 +14,10 @@ class LyricSnippet {
   });
 
   LyricSnippetID get id => LyricSnippetID(vocalist, index);
+  int get endTimestamp {
+    return startTimestamp +
+        timingPoints.fold(0, (sum, current) => sum + current.seekPosition);
+  }
 }
 
 class TimingPoint {
