@@ -127,7 +127,7 @@ class _TextPaneState extends State<TextPane> {
     timingPointsForEachLine = lyricSnippets
         .map((snippet) => snippet.timingPoints
             .take(snippet.timingPoints.length - 1)
-            .map((timingPoint) => timingPoint.characterLength)
+            .map((timingPoint) => timingPoint.wordLength)
             .fold<List<int>>(
                 [], (acc, pos) => acc..add((acc.isEmpty ? 0 : acc.last) + pos)))
         .toList();

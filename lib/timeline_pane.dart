@@ -142,7 +142,7 @@ class TimelinePainter extends CustomPainter {
     snippets.forEach((LyricSnippet snippet) {
       final endtime = snippet.startTimestamp +
           snippet.timingPoints
-              .map((point) => point.seekPosition)
+              .map((point) => point.wordDuration)
               .reduce((a, b) => a + b);
       final left = snippet.startTimestamp * intervalLength / intervalDuration;
       final right = endtime * intervalLength / intervalDuration;
@@ -308,7 +308,7 @@ class _TimelinePaneState extends State<TimelinePane> {
       for (var snippet in snippets) {
         final endtime = snippet.startTimestamp +
             snippet.timingPoints
-                .map((point) => point.seekPosition)
+                .map((point) => point.wordDuration)
                 .reduce((a, b) => a + b);
         if (snippet.startTimestamp <= currentPosition &&
             currentPosition <= endtime) {
@@ -395,7 +395,7 @@ class _TimelinePaneState extends State<TimelinePane> {
             for (var snippet in snippets) {
               final endtime = snippet.startTimestamp +
                   snippet.timingPoints
-                      .map((point) => point.seekPosition)
+                      .map((point) => point.wordDuration)
                       .reduce((a, b) => a + b);
               final touchedSeekPosition =
                   localPosition.dx * intervalDuration / intervalLength;

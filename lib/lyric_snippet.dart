@@ -16,14 +16,39 @@ class LyricSnippet {
   LyricSnippetID get id => LyricSnippetID(vocalist, index);
   int get endTimestamp {
     return startTimestamp +
-        timingPoints.fold(0, (sum, current) => sum + current.seekPosition);
+        timingPoints.fold(0, (sum, current) => sum + current.wordDuration);
+  }
+
+  int charPosition(int index) {
+    if (index < 0 || index >= timingPoints.length) {
+      throw RangeError(
+          'Index ${index} is out of bounds for timingPoints with length ${timingPoints.length}');
+    }
+    return timingPoints
+        .take(index + 1)
+        .fold(0, (sum, current) => sum + current.wordLength);
+  }
+
+  int seekPosition(int index) {
+    if (index < 0 || index >= timingPoints.length) {
+      throw RangeError(
+          'Index ${index} is out of bounds for timingPoints with length ${timingPoints.length}');
+    }
+    return timingPoints
+        .take(index + 1)
+        .fold(0, (sum, current) => sum + current.wordDuration);
+  }
+
+  set id(LyricSnippetID id) {
+    vocalist = id.vocalist;
+    index = id.index;
   }
 }
 
 class TimingPoint {
-  int characterLength;
-  int seekPosition;
-  TimingPoint(this.characterLength, this.seekPosition);
+  int wordLength;
+  int wordDuration;
+  TimingPoint(this.wordLength, this.wordDuration);
 }
 
 class LyricSnippetID {

@@ -189,19 +189,19 @@ class TimingService {
                 : null;
 
             final endtime = snippet.timingPoints
-                .map((point) => point.seekPosition)
+                .map((point) => point.wordDuration)
                 .reduce((a, b) => a + b);
             final duration = nextPoint != null
-                ? nextPoint.seekPosition - currentPoint.seekPosition
-                : endtime - currentPoint.seekPosition;
+                ? nextPoint.wordDuration - currentPoint.wordDuration
+                : endtime - currentPoint.wordDuration;
 
             builder.element('WordTimestamp',
                 attributes: {
                   'time': _formatDuration(Duration(milliseconds: duration)),
                 },
                 nest: snippet.sentence.substring(characterPosition,
-                    characterPosition + currentPoint.characterLength));
-            characterPosition += currentPoint.characterLength;
+                    characterPosition + currentPoint.wordLength));
+            characterPosition += currentPoint.wordLength;
           }
         });
       }

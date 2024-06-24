@@ -49,10 +49,10 @@ class _VideoPaneState extends State<VideoPane> {
     for (int currentIndex = 0;
         currentIndex < snippet.timingPoints.length - 1;
         currentIndex++) {
-      if (accumulatedTimingPoints[currentIndex].seekPosition <=
+      if (accumulatedTimingPoints[currentIndex].wordDuration <=
               currentSeekPosition &&
           currentSeekPosition <=
-              accumulatedTimingPoints[currentIndex + 1].seekPosition) {
+              accumulatedTimingPoints[currentIndex + 1].wordDuration) {
         currentCharIndex = currentIndex;
       }
     }
@@ -60,30 +60,30 @@ class _VideoPaneState extends State<VideoPane> {
     for (int currentIndex = 0;
         currentIndex < currentCharIndex;
         currentIndex++) {
-      startChar += snippet.timingPoints[currentIndex].characterLength;
+      startChar += snippet.timingPoints[currentIndex].wordLength;
     }
     double percent;
     if (currentCharIndex == snippet.timingPoints.length - 1) {
       final endtime = snippet.startTimestamp +
           snippet.timingPoints
-              .map((point) => point.seekPosition)
+              .map((point) => point.wordDuration)
               .reduce((a, b) => a + b);
-      percent = (accumulatedTimingPoints[currentCharIndex].seekPosition -
+      percent = (accumulatedTimingPoints[currentCharIndex].wordDuration -
               currentSeekPosition) /
-          (accumulatedTimingPoints[currentCharIndex].seekPosition - endtime);
+          (accumulatedTimingPoints[currentCharIndex].wordDuration - endtime);
     } else {
       {
         percent = (currentSeekPosition -
-                accumulatedTimingPoints[currentCharIndex].seekPosition) /
-            (accumulatedTimingPoints[currentCharIndex + 1].seekPosition -
-                accumulatedTimingPoints[currentCharIndex].seekPosition);
+                accumulatedTimingPoints[currentCharIndex].wordDuration) /
+            (accumulatedTimingPoints[currentCharIndex + 1].wordDuration -
+                accumulatedTimingPoints[currentCharIndex].wordDuration);
       }
     }
     return CustomPaint(
       painter: PartialTextPainter(
         text: snippet.sentence,
         start: startChar,
-        end: startChar + snippet.timingPoints[currentCharIndex].characterLength,
+        end: startChar + snippet.timingPoints[currentCharIndex].wordLength,
         percent: percent,
         fontFamily: fontFamily,
         fontSize: 40,
@@ -98,7 +98,7 @@ class _VideoPaneState extends State<VideoPane> {
     return lyricSnippets.where((snippet) {
       final endtime = snippet.startTimestamp +
           snippet.timingPoints
-              .map((point) => point.seekPosition)
+              .map((point) => point.wordDuration)
               .reduce((a, b) => a + b);
       return snippet.startTimestamp < currentSeekPosition &&
           currentSeekPosition < endtime;
@@ -144,9 +144,8 @@ class _VideoPaneState extends State<VideoPane> {
     accumulatedList.add(TimingPoint(0, startTime));
     for (int i = 0; i < timingPoints.length - 1; i++) {
       accumulatedList.add(TimingPoint(
-          accumulatedList.last.characterLength +
-              timingPoints[i].characterLength,
-          accumulatedList.last.seekPosition + timingPoints[i].seekPosition));
+          accumulatedList.last.wordLength + timingPoints[i].wordLength,
+          accumulatedList.last.wordDuration + timingPoints[i].wordDuration));
     }
     return accumulatedList;
   }
