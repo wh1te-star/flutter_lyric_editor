@@ -54,6 +54,8 @@ class KeyboardShortcuts extends StatelessWidget {
             ActivateSpaceKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyD): ActivateDKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyF): ActivateFKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyC): ActivateCKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyV): ActivateVKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowLeft):
             ActivateLeftArrowKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowRight):
@@ -70,7 +72,7 @@ class KeyboardShortcuts extends StatelessWidget {
             ActivateCtrlKKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.controlLeft, LogicalKeyboardKey.keyJ):
             ActivateCtrlJKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyV): ActivateVKeyShortcutIntent(),
+        //LogicalKeySet(LogicalKeyboardKey.keyB): ActivateBKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.enter):
             ActivateEnterKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyN): ActivateNKeyShortcutIntent(),
@@ -92,6 +94,33 @@ class KeyboardShortcuts extends StatelessWidget {
         ActivateFKeyShortcutIntent: CallbackAction<ActivateFKeyShortcutIntent>(
           onInvoke: (ActivateFKeyShortcutIntent intent) => () {
             masterSubject.add(RequestForward(1000));
+          }(),
+        ),
+        ActivateCKeyShortcutIntent: CallbackAction<ActivateCKeyShortcutIntent>(
+          onInvoke: (ActivateCKeyShortcutIntent intent) => () {
+            currentSnippets.forEach((LyricSnippet snippet) {
+              if (snippet.startTimestamp < seekPosition) {
+                int index = 0;
+                for (int i = 0; i < snippet.timingPoints.length; i++) {
+                  if (snippet.seekPosition(i) > seekPosition) {
+                    index = i;
+                    break;
+                  }
+                }
+
+                snippet.startTimestamp = seekPosition;
+                snippet.timingPoints =
+                    snippet.timingPoints.skip(index).toList();
+              } else {
+                snippet.startTimestamp = seekPosition;
+                snippet.timingPoints[0].wordDuration = seekPosition;
+              }
+            });
+          }(),
+        ),
+        ActivateVKeyShortcutIntent: CallbackAction<ActivateVKeyShortcutIntent>(
+          onInvoke: (ActivateVKeyShortcutIntent intent) => () {
+            currentSnippets[0].startTimestamp = seekPosition;
           }(),
         ),
         ActivateUpArrowKeyShortcutIntent:
@@ -170,18 +199,6 @@ class KeyboardShortcuts extends StatelessWidget {
             });
           }(),
         ),
-        ActivateVKeyShortcutIntent: CallbackAction<ActivateVKeyShortcutIntent>(
-          onInvoke: (ActivateVKeyShortcutIntent intent) => () {
-            if (!textSelectMode) {
-              textSelectMode = true;
-              selectedPosition = charCursorPosition;
-              masterSubject.add(RequestToEnterTextSelectMode());
-            } else {
-              textSelectMode = false;
-              masterSubject.add(RequestToExitTextSelectMode());
-            }
-          }(),
-        ),
         ActivateEnterKeyShortcutIntent:
             CallbackAction<ActivateEnterKeyShortcutIntent>(
           onInvoke: (ActivateEnterKeyShortcutIntent intent) => () {
@@ -211,6 +228,10 @@ class ActivateFKeyShortcutIntent extends Intent {}
 
 class ActivateDKeyShortcutIntent extends Intent {}
 
+class ActivateCKeyShortcutIntent extends Intent {}
+
+class ActivateVKeyShortcutIntent extends Intent {}
+
 class ActivateUpArrowKeyShortcutIntent extends Intent {}
 
 class ActivateDownArrowKeyShortcutIntent extends Intent {}
@@ -230,8 +251,6 @@ class ActivateLKeyShortcutIntent extends Intent {}
 class ActivateCtrlKKeyShortcutIntent extends Intent {}
 
 class ActivateCtrlJKeyShortcutIntent extends Intent {}
-
-class ActivateVKeyShortcutIntent extends Intent {}
 
 class ActivateEnterKeyShortcutIntent extends Intent {}
 
