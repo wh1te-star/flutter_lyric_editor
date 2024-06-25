@@ -101,25 +101,25 @@ class TimingService {
             lyricSnippetList.firstWhere((snippet) => snippet.id == signal.id);
         if (signal.holdLength) {
           if (signal.snippetEdge == SnippetEdge.start) {
-            moveSnippet(snippet.id, snippet.startTimestamp - currentPosition);
+            moveSnippet(snippet, snippet.startTimestamp - currentPosition);
           } else {
-            moveSnippet(snippet.id, currentPosition - snippet.endTimestamp);
+            moveSnippet(snippet, currentPosition - snippet.endTimestamp);
           }
         } else {
           if (signal.snippetEdge == SnippetEdge.start) {
             if (currentPosition < snippet.startTimestamp) {
-              extendSnippet(snippet.id, SnippetEdge.start,
+              extendSnippet(snippet, SnippetEdge.start,
                   snippet.startTimestamp - currentPosition);
             } else if (snippet.startTimestamp < currentPosition) {
-              shortenSnippet(snippet.id, SnippetEdge.start,
+              shortenSnippet(snippet, SnippetEdge.start,
                   currentPosition - snippet.startTimestamp);
             }
           } else {
             if (currentPosition < snippet.endTimestamp) {
-              shortenSnippet(snippet.id, SnippetEdge.end,
+              shortenSnippet(snippet, SnippetEdge.end,
                   snippet.endTimestamp - currentPosition);
             } else if (snippet.endTimestamp < currentPosition) {
-              extendSnippet(snippet.id, SnippetEdge.end,
+              extendSnippet(snippet, SnippetEdge.end,
                   currentPosition - snippet.endTimestamp);
             }
           }
@@ -277,17 +277,13 @@ class TimingService {
     }).toList();
   }
 
-  void moveSnippet(LyricSnippetID id, int shiftDuration) {
-    LyricSnippet snippet =
-        lyricSnippetList.firstWhere((snippet) => snippet.id == id);
+  void moveSnippet(LyricSnippet snippet, int shiftDuration) {
     snippet.startTimestamp += shiftDuration;
   }
 
   void extendSnippet(
-      LyricSnippetID id, SnippetEdge snippetEdge, int extendDuration) {
+      LyricSnippet snippet, SnippetEdge snippetEdge, int extendDuration) {
     assert(extendDuration >= 0, "Should be shorten function.");
-    LyricSnippet snippet =
-        lyricSnippetList.firstWhere((snippet) => snippet.id == id);
     if (snippetEdge == SnippetEdge.start) {
       snippet.startTimestamp -= extendDuration;
       snippet.timingPoints.first.wordDuration += extendDuration;
@@ -297,9 +293,7 @@ class TimingService {
   }
 
   void shortenSnippet(
-      LyricSnippetID id, SnippetEdge snippetEdge, int shortenDuration) {
-    LyricSnippet snippet =
-        lyricSnippetList.firstWhere((snippet) => snippet.id == id);
+      LyricSnippet snippet, SnippetEdge snippetEdge, int shortenDuration) {
     assert(shortenDuration >= 0, "Should be extend function.");
     if (snippetEdge == SnippetEdge.start) {
       int index = 0;
