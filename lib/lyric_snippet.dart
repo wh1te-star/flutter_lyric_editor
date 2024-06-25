@@ -4,6 +4,7 @@ class LyricSnippet {
   String sentence;
   int startTimestamp;
   List<TimingPoint> timingPoints;
+  late List<TimingPoint> accumulatedTimingPoints;
 
   LyricSnippet({
     required this.vocalist,

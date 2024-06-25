@@ -98,20 +98,30 @@ class TimingService {
       }
       if (signal is RequestSnippetMove) {
         getSnippetsAtCurrentSeekPosition().forEach((LyricSnippet snippet) {
-          if (snippet.startTimestamp < currentPosition) {
-            int index = 0;
-            for (int i = 0; i < snippet.timingPoints.length; i++) {
-              if (snippet.seekPosition(i) > currentPosition) {
-                index = i;
-                break;
+          if (signal.holdLength) {
+            if (signal.snippetEdge == SnippetEdge.start) {
+              moveSnippet(snippet.id, snippet.startTimestamp - currentPosition);
+            } else {
+              moveSnippet(snippet.id, currentPosition - snippet.endTimestamp);
+            }
+          } else {
+            if (signal.snippetEdge == SnippetEdge.start) {
+              if (currentPosition < snippet.startTimestamp) {
+                extendSnippet(snippet.id, SnippetEdge.start,
+                    snippet.startTimestamp - currentPosition);
+              } else if (snippet.startTimestamp < currentPosition) {
+                shortenSnippet(snippet.id, SnippetEdge.start,
+                    currentPosition - snippet.startTimestamp);
+              }
+            } else {
+              if (currentPosition < snippet.endTimestamp) {
+                shortenSnippet(snippet.id, SnippetEdge.end,
+                    snippet.endTimestamp - currentPosition);
+              } else if (snippet.endTimestamp < currentPosition) {
+                shortenSnippet(snippet.id, SnippetEdge.end,
+                    currentPosition - snippet.endTimestamp);
               }
             }
-
-            snippet.startTimestamp = currentPosition;
-            snippet.timingPoints = snippet.timingPoints.skip(index).toList();
-          } else {
-            snippet.startTimestamp = currentPosition;
-            snippet.timingPoints[0].wordDuration = currentPosition;
           }
         });
       }
@@ -265,5 +275,53 @@ class TimingService {
       return snippet.startTimestamp < currentPosition &&
           currentPosition < endtime;
     }).toList();
+  }
+
+  void moveSnippet(LyricSnippetID id, int shiftDuration) {
+    LyricSnippet snippet =
+        lyricSnippetList.firstWhere((snippet) => snippet.id == id);
+    snippet.startTimestamp += shiftDuration;
+  }
+
+  void extendSnippet(
+      LyricSnippetID id, SnippetEdge snippetEdge, int extendDuration) {
+    assert(extendDuration >= 0, "Should be shorten function.");
+    LyricSnippet snippet =
+        lyricSnippetList.firstWhere((snippet) => snippet.id == id);
+    if (snippetEdge == SnippetEdge.start) {
+      snippet.startTimestamp -= extendDuration;
+      snippet.timingPoints.first.wordDuration += extendDuration;
+    } else {
+      snippet.timingPoints.last.wordDuration += extendDuration;
+    }
+  }
+
+  void shortenSnippet(
+      LyricSnippetID id, SnippetEdge snippetEdge, int shortenDuration) {
+    LyricSnippet snippet =
+        lyricSnippetList.firstWhere((snippet) => snippet.id == id);
+    assert(shortenDuration >= 0, "Should be extend function.");
+    if (snippetEdge == SnippetEdge.start) {
+      int index = 0;
+      int rest = shortenDuration;
+      while (index < snippet.timingPoints.length &&
+          rest - snippet.timingPoints[index].wordDuration > 0) {
+        rest -= snippet.timingPoints[index].wordDuration;
+        index++;
+      }
+      snippet.startTimestamp += shortenDuration;
+      snippet.timingPoints = snippet.timingPoints.sublist(index);
+      snippet.timingPoints.first.wordDuration -= rest;
+    } else {
+      int index = 0;
+      int rest = shortenDuration;
+      while (index < snippet.timingPoints.length &&
+          rest - snippet.timingPoints[index].wordDuration > 0) {
+        rest -= snippet.timingPoints[index].wordDuration;
+        index++;
+      }
+      snippet.timingPoints = snippet.timingPoints.sublist(0, index + 1);
+      snippet.timingPoints.first.wordDuration -= rest;
+    }
   }
 }
