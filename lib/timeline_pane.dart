@@ -224,6 +224,12 @@ class _TimelinePaneState extends State<TimelinePane> {
               (LyricSnippet snippet) => snippet.vocalist);
         });
       }
+      if (signal is NotifySnippetMove) {
+        setState(() {
+          snippetsForeachVocalist = groupBy(signal.lyricSnippetList,
+              (LyricSnippet snippet) => snippet.vocalist);
+        });
+      }
       if (signal is RequestTimelineZoomIn) {
         zoomIn();
       }

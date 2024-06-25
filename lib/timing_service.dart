@@ -124,6 +124,7 @@ class TimingService {
             }
           }
         }
+        masterSubject.add(NotifySnippetMove(lyricSnippetList));
       }
     });
     _loadLyricsFuture = loadLyrics();
