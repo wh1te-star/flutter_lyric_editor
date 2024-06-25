@@ -132,12 +132,22 @@ class TimingService {
       LyricSnippet snippet, int characterPosition, int seekPosition) {
     int index = 0;
     int restWordLength = characterPosition;
-    int restWordDuration = seekPosition - snippet.startTimestamp;
     while (index < snippet.timingPoints.length &&
         restWordLength - snippet.timingPoints[index].wordLength > 0) {
       restWordLength -= snippet.timingPoints[index].wordLength;
-      restWordDuration -= snippet.timingPoints[index].wordDuration;
       index++;
+    }
+    int seekIndex = 0;
+    int restWordDuration = seekPosition - snippet.startTimestamp;
+    while (seekIndex < snippet.timingPoints.length &&
+        restWordDuration - snippet.timingPoints[seekIndex].wordDuration > 0) {
+      restWordDuration -= snippet.timingPoints[seekIndex].wordDuration;
+      seekIndex++;
+    }
+    if (index != seekIndex) {
+      debugPrint(
+          "There is the contradiction in the order between the character position and the seek position.");
+      return;
     }
     if (restWordLength != 0) {
       snippet.timingPoints[index] = TimingPoint(
