@@ -403,8 +403,10 @@ class _TimelinePaneState extends State<TimelinePane> {
                   touchedSeekPosition <= endtime) {
                 if (selectingSnippet.contains(snippet.id)) {
                   selectingSnippet.remove(snippet.id);
+                  masterSubject.add(NotifyDeselectingSnippet(snippet.id));
                 } else {
                   selectingSnippet.add(snippet.id);
+                  masterSubject.add(NotifySelectingSnippet(snippet.id));
                 }
               }
             }

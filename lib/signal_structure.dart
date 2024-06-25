@@ -167,9 +167,10 @@ enum SnippetEdge {
 }
 
 class RequestSnippetMove {
+  LyricSnippetID id;
   SnippetEdge snippetEdge;
   bool holdLength;
-  RequestSnippetMove(this.snippetEdge, this.holdLength);
+  RequestSnippetMove(this.id, this.snippetEdge, this.holdLength);
 }
 
 class NotifySnippetMove {

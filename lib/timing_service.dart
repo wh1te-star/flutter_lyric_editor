@@ -97,33 +97,33 @@ class TimingService {
         masterSubject.add(NotifySnippetMade(lyricSnippetList));
       }
       if (signal is RequestSnippetMove) {
-        getSnippetsAtCurrentSeekPosition().forEach((LyricSnippet snippet) {
-          if (signal.holdLength) {
-            if (signal.snippetEdge == SnippetEdge.start) {
-              moveSnippet(snippet.id, snippet.startTimestamp - currentPosition);
-            } else {
-              moveSnippet(snippet.id, currentPosition - snippet.endTimestamp);
+        LyricSnippet snippet =
+            lyricSnippetList.firstWhere((snippet) => snippet.id == signal.id);
+        if (signal.holdLength) {
+          if (signal.snippetEdge == SnippetEdge.start) {
+            moveSnippet(snippet.id, snippet.startTimestamp - currentPosition);
+          } else {
+            moveSnippet(snippet.id, currentPosition - snippet.endTimestamp);
+          }
+        } else {
+          if (signal.snippetEdge == SnippetEdge.start) {
+            if (currentPosition < snippet.startTimestamp) {
+              extendSnippet(snippet.id, SnippetEdge.start,
+                  snippet.startTimestamp - currentPosition);
+            } else if (snippet.startTimestamp < currentPosition) {
+              shortenSnippet(snippet.id, SnippetEdge.start,
+                  currentPosition - snippet.startTimestamp);
             }
           } else {
-            if (signal.snippetEdge == SnippetEdge.start) {
-              if (currentPosition < snippet.startTimestamp) {
-                extendSnippet(snippet.id, SnippetEdge.start,
-                    snippet.startTimestamp - currentPosition);
-              } else if (snippet.startTimestamp < currentPosition) {
-                shortenSnippet(snippet.id, SnippetEdge.start,
-                    currentPosition - snippet.startTimestamp);
-              }
-            } else {
-              if (currentPosition < snippet.endTimestamp) {
-                shortenSnippet(snippet.id, SnippetEdge.end,
-                    snippet.endTimestamp - currentPosition);
-              } else if (snippet.endTimestamp < currentPosition) {
-                shortenSnippet(snippet.id, SnippetEdge.end,
-                    currentPosition - snippet.endTimestamp);
-              }
+            if (currentPosition < snippet.endTimestamp) {
+              shortenSnippet(snippet.id, SnippetEdge.end,
+                  snippet.endTimestamp - currentPosition);
+            } else if (snippet.endTimestamp < currentPosition) {
+              extendSnippet(snippet.id, SnippetEdge.end,
+                  currentPosition - snippet.endTimestamp);
             }
           }
-        });
+        }
       }
     });
     _loadLyricsFuture = loadLyrics();

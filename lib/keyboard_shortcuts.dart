@@ -11,7 +11,7 @@ class KeyboardShortcuts extends StatelessWidget {
   final FocusNode textPaneFocusNode;
   final FocusNode timelinePaneFocusNode;
 
-  List<LyricSnippet> currentSnippets = [];
+  List<LyricSnippetID> selectingSnippetIDs = [];
   List<String> selectingVocalist = [];
   int seekPosition = 0;
   int charCursorPosition = 0;
@@ -28,8 +28,11 @@ class KeyboardShortcuts extends StatelessWidget {
     required this.timelinePaneFocusNode,
   }) {
     masterSubject.stream.listen((signal) {
-      if (signal is NotifyCurrentSnippets) {
-        currentSnippets = signal.currentSnippets;
+      if (signal is NotifySelectingSnippet) {
+        selectingSnippetIDs.add(signal.snippetID);
+      }
+      if (signal is NotifyDeselectingSnippet) {
+        selectingSnippetIDs.remove(signal.snippetID);
       }
       if (signal is NotifySelectingVocalist) {
         selectingVocalist.add(signal.vocalistName);
@@ -98,12 +101,17 @@ class KeyboardShortcuts extends StatelessWidget {
         ),
         ActivateCKeyShortcutIntent: CallbackAction<ActivateCKeyShortcutIntent>(
           onInvoke: (ActivateCKeyShortcutIntent intent) => () {
-            masterSubject.add(RequestSnippetMove(SnippetEdge.start, false));
+            selectingSnippetIDs.forEach((LyricSnippetID id) {
+              masterSubject
+                  .add(RequestSnippetMove(id, SnippetEdge.start, false));
+            });
           }(),
         ),
         ActivateVKeyShortcutIntent: CallbackAction<ActivateVKeyShortcutIntent>(
           onInvoke: (ActivateVKeyShortcutIntent intent) => () {
-            masterSubject.add(RequestSnippetMove(SnippetEdge.end, false));
+            selectingSnippetIDs.forEach((LyricSnippetID id) {
+              masterSubject.add(RequestSnippetMove(id, SnippetEdge.end, false));
+            });
           }(),
         ),
         ActivateUpArrowKeyShortcutIntent:
@@ -164,22 +172,26 @@ class KeyboardShortcuts extends StatelessWidget {
         ),
         ActivateNKeyShortcutIntent: CallbackAction<ActivateNKeyShortcutIntent>(
           onInvoke: (ActivateNKeyShortcutIntent intent) => () {
+            /*
             currentSnippets.forEach((LyricSnippet snippet) {
               if (selectingVocalist.contains(snippet.vocalist)) {
                 masterSubject.add(RequestToAddLyricTiming(
                     snippet.id, charCursorPosition, seekPosition));
               }
             });
+            */
           }(),
         ),
         ActivateMKeyShortcutIntent: CallbackAction<ActivateMKeyShortcutIntent>(
           onInvoke: (ActivateMKeyShortcutIntent intent) => () {
+            /*
             currentSnippets.forEach((LyricSnippet snippet) {
               if (selectingVocalist.contains(snippet.vocalist)) {
                 masterSubject.add(
                     RequestToDeleteLyricTiming(snippet.id, charCursorPosition));
               }
             });
+            */
           }(),
         ),
         ActivateEnterKeyShortcutIntent:
