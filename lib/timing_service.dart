@@ -31,15 +31,10 @@ class TimingService {
         masterSubject.add(NotifyLyricParsed(lyricSnippetList));
       }
       if (signal is RequestToAddLyricTiming) {
-        List<LyricSnippet> filteredList = lyricSnippetList
-            .where((snippet) => snippet.id == signal.snippetID)
-            .toList();
-        filteredList.forEach((LyricSnippet snippet) {
-          snippet.timingPoints
-              .add(TimingPoint(signal.characterPosition, signal.seekPosition));
-        });
-        masterSubject.add(NotifyTimingPointAdded(
-            signal.snippetID, filteredList[0].timingPoints));
+        LyricSnippet snippet = getLyricSnippetWithID(signal.snippetID);
+        addTimingPoint(snippet, signal.characterPosition, signal.seekPosition);
+        masterSubject.add(
+            NotifyTimingPointAdded(signal.snippetID, snippet.timingPoints));
       }
       if (signal is RequestToDeleteLyricTiming) {
         masterSubject.add(NotifyTimingPointDeletion(signal.characterPosition));
@@ -97,8 +92,7 @@ class TimingService {
         masterSubject.add(NotifySnippetMade(lyricSnippetList));
       }
       if (signal is RequestSnippetMove) {
-        LyricSnippet snippet =
-            lyricSnippetList.firstWhere((snippet) => snippet.id == signal.id);
+        LyricSnippet snippet = getLyricSnippetWithID(signal.id);
         if (signal.holdLength) {
           if (signal.snippetEdge == SnippetEdge.start) {
             moveSnippet(snippet, snippet.startTimestamp - currentPosition);
@@ -128,6 +122,30 @@ class TimingService {
       }
     });
     _loadLyricsFuture = loadLyrics();
+  }
+
+  LyricSnippet getLyricSnippetWithID(LyricSnippetID id) {
+    return lyricSnippetList.firstWhere((snippet) => snippet.id == id);
+  }
+
+  void addTimingPoint(
+      LyricSnippet snippet, int characterPosition, int seekPosition) {
+    int index = 0;
+    int restWordLength = characterPosition;
+    int restWordDuration = seekPosition - snippet.startTimestamp;
+    while (index < snippet.timingPoints.length &&
+        restWordLength - snippet.timingPoints[index].wordLength > 0) {
+      restWordLength -= snippet.timingPoints[index].wordLength;
+      restWordDuration -= snippet.timingPoints[index].wordDuration;
+      index++;
+    }
+    if (restWordLength != 0) {
+      snippet.timingPoints[index] = TimingPoint(
+          snippet.timingPoints[index].wordLength - restWordLength,
+          snippet.timingPoints[index].wordDuration - restWordDuration);
+      snippet.timingPoints
+          .insert(index, TimingPoint(restWordLength, restWordDuration));
+    }
   }
 
   Future<void> loadLyrics() async {

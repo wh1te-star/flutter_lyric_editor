@@ -172,26 +172,18 @@ class KeyboardShortcuts extends StatelessWidget {
         ),
         ActivateNKeyShortcutIntent: CallbackAction<ActivateNKeyShortcutIntent>(
           onInvoke: (ActivateNKeyShortcutIntent intent) => () {
-            /*
-            currentSnippets.forEach((LyricSnippet snippet) {
-              if (selectingVocalist.contains(snippet.vocalist)) {
-                masterSubject.add(RequestToAddLyricTiming(
-                    snippet.id, charCursorPosition, seekPosition));
-              }
+            selectingSnippetIDs.forEach((LyricSnippetID id) {
+              masterSubject.add(RequestToAddLyricTiming(
+                  id, charCursorPosition, seekPosition));
             });
-            */
           }(),
         ),
         ActivateMKeyShortcutIntent: CallbackAction<ActivateMKeyShortcutIntent>(
           onInvoke: (ActivateMKeyShortcutIntent intent) => () {
-            /*
-            currentSnippets.forEach((LyricSnippet snippet) {
-              if (selectingVocalist.contains(snippet.vocalist)) {
-                masterSubject.add(
-                    RequestToDeleteLyricTiming(snippet.id, charCursorPosition));
-              }
+            selectingSnippetIDs.forEach((LyricSnippetID id) {
+              masterSubject
+                  .add(RequestToDeleteLyricTiming(id, charCursorPosition));
             });
-            */
           }(),
         ),
         ActivateEnterKeyShortcutIntent:
