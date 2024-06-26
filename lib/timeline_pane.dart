@@ -115,6 +115,38 @@ class RectanglePainter extends CustomPainter {
   }
 }
 
+class TrianglePainter extends CustomPainter {
+  final double x;
+  final double y;
+  final double width;
+  final double height;
+
+  TrianglePainter({
+    required this.x,
+    required this.y,
+    required this.width,
+    required this.height,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.red
+      ..style = PaintingStyle.fill;
+
+    Path path = Path()
+      ..moveTo(x, y)
+      ..lineTo(x - width / 2, y - height)
+      ..lineTo(x + width / 2, y - height)
+      ..close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 class TimelinePainter extends CustomPainter {
   final List<LyricSnippet> snippets;
   final List<LyricSnippetID> selectingId;
@@ -156,6 +188,21 @@ class TimelinePainter extends CustomPainter {
         isSelected: isSelected,
       );
       rectanglePainter.paint(canvas, size);
+
+      double x =
+          (snippet.startTimestamp + snippet.timingPoints[0].wordDuration) *
+              intervalLength /
+              intervalDuration;
+      snippet.timingPoints.forEach((TimingPoint timingPoint) {
+        final trianglePainter = TrianglePainter(
+          x: x,
+          y: top,
+          width: 5.0,
+          height: 5.0,
+        );
+        trianglePainter.paint(canvas, size);
+        x += timingPoint.wordDuration * intervalLength / intervalDuration;
+      });
     });
   }
 
@@ -390,8 +437,8 @@ class _TimelinePaneState extends State<TimelinePane> {
 
     int row = vicinity.row - 1;
     if (row < snippetsForeachVocalist.length) {
-      double topMargin = 0;
-      double bottomMargin = 0;
+      double topMargin = 10;
+      double bottomMargin = 5;
       return TableViewCell(
         child: GestureDetector(
           onTapDown: (TapDownDetails details) {
@@ -460,7 +507,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   TableSpan _buildRowSpan(int index) {
     return TableSpan(
       extent: FixedTableSpanExtent(index == 0 ? 20 : 60),
-      padding: const TableSpanPadding(leading: 10.0, trailing: 5.0),
+      padding: index == 0 ? TableSpanPadding(leading: 10.0) : null,
       foregroundDecoration: const TableSpanDecoration(
         border: TableSpanBorder(
           trailing: BorderSide(
