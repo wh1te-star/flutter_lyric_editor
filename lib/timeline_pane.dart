@@ -110,8 +110,11 @@ class RectanglePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
+  bool shouldRepaint(covariant RectanglePainter oldDelegate) {
+    return oldDelegate.rect != rect ||
+        oldDelegate.sentence != sentence ||
+        oldDelegate.indexColor != indexColor ||
+        oldDelegate.isSelected != isSelected;
   }
 }
 
@@ -144,7 +147,12 @@ class TrianglePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant TrianglePainter oldDelegate) {
+    return oldDelegate.x != x ||
+        oldDelegate.y != y ||
+        oldDelegate.width != width ||
+        oldDelegate.height != height;
+  }
 }
 
 class TimelinePainter extends CustomPainter {
@@ -189,10 +197,7 @@ class TimelinePainter extends CustomPainter {
       );
       rectanglePainter.paint(canvas, size);
 
-      double x =
-          (snippet.startTimestamp + snippet.timingPoints[0].wordDuration) *
-              intervalLength /
-              intervalDuration;
+      double x = snippet.startTimestamp * intervalLength / intervalDuration;
       snippet.timingPoints.forEach((TimingPoint timingPoint) {
         final trianglePainter = TrianglePainter(
           x: x,
@@ -203,12 +208,25 @@ class TimelinePainter extends CustomPainter {
         trianglePainter.paint(canvas, size);
         x += timingPoint.wordDuration * intervalLength / intervalDuration;
       });
+      final trianglePainter = TrianglePainter(
+        x: x,
+        y: top,
+        width: 5.0,
+        height: 5.0,
+      );
+      trianglePainter.paint(canvas, size);
     });
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
+  bool shouldRepaint(covariant TimelinePainter oldDelegate) {
+    return oldDelegate.snippets != snippets ||
+        oldDelegate.selectingId != selectingId ||
+        oldDelegate.intervalLength != intervalLength ||
+        oldDelegate.intervalDuration != intervalDuration ||
+        oldDelegate.topMargin != topMargin ||
+        oldDelegate.bottomMargin != bottomMargin ||
+        oldDelegate.indexColor != indexColor;
   }
 }
 
@@ -233,8 +251,6 @@ class _TimelinePaneState extends State<TimelinePane> {
       direction: AxisDirection.down, controller: ScrollController());
   final ScrollableDetails horizontalDetails = ScrollableDetails(
       direction: AxisDirection.right, controller: ScrollController());
-  final CurrentPositionIndicatorDelegate delegate =
-      CurrentPositionIndicatorDelegate();
 
   Map<String, List<LyricSnippet>> snippetsForeachVocalist = {};
   List<LyricSnippetID> selectingSnippet = [];
@@ -595,29 +611,7 @@ class CurrentPositionIndicatorPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
-  }
-}
-
-class CurrentPositionIndicatorDelegate extends TwoDimensionalChildDelegate {
-  @override
-  Widget? build(BuildContext context, ChildVicinity vicinity) {
-    return Container(
-      color: Colors.blue,
-      child: Center(child: Text('Cell $vicinity.row, $vicinity.column')),
-    );
-  }
-
-  @override
-  int get rowCount => 6;
-
-  @override
-  int get columnCount => 2;
-
-  @override
-  bool shouldRebuild(covariant TwoDimensionalChildDelegate oldDelegate) {
-    // TODO: implement shouldRebuild
-    return false;
+  bool shouldRepaint(covariant CurrentPositionIndicatorPainter oldDelegate) {
+    return oldDelegate.x != x;
   }
 }
