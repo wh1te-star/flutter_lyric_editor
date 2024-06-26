@@ -220,13 +220,7 @@ class TimelinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant TimelinePainter oldDelegate) {
-    return oldDelegate.snippets != snippets ||
-        oldDelegate.selectingId != selectingId ||
-        oldDelegate.intervalLength != intervalLength ||
-        oldDelegate.intervalDuration != intervalDuration ||
-        oldDelegate.topMargin != topMargin ||
-        oldDelegate.bottomMargin != bottomMargin ||
-        oldDelegate.indexColor != indexColor;
+    return true;
   }
 }
 
@@ -295,9 +289,11 @@ class _TimelinePaneState extends State<TimelinePane> {
       }
       if (signal is RequestTimelineZoomIn) {
         zoomIn();
+        setState(() {});
       }
       if (signal is RequestTimelineZoomOut) {
         zoomOut();
+        setState(() {});
       }
     });
     horizontalDetails.controller!.addListener(_onHorizontalScroll);
@@ -306,16 +302,12 @@ class _TimelinePaneState extends State<TimelinePane> {
 
   void zoomIn() {
     debugPrint("timeline pane: zoom In");
-    setState(() {
-      intervalDuration = intervalDuration * 2;
-    });
+    intervalDuration = intervalDuration * 2;
   }
 
   void zoomOut() {
     debugPrint("timeline pane: zoom Out");
-    setState(() {
-      intervalDuration = intervalDuration ~/ 2;
-    });
+    intervalDuration = intervalDuration ~/ 2;
   }
 
   @override
@@ -326,7 +318,6 @@ class _TimelinePaneState extends State<TimelinePane> {
         onTapDown: (TapDownDetails details) {
           focusNode.requestFocus();
           debugPrint("The timeline pane is focused");
-          setState(() {});
         },
         child: Stack(children: [
           TableView.builder(
