@@ -128,36 +128,6 @@ class TimingService {
     return lyricSnippetList.firstWhere((snippet) => snippet.id == id);
   }
 
-  void addTimingPoint(
-      LyricSnippet snippet, int characterPosition, int seekPosition) {
-    int index = 0;
-    int restWordLength = characterPosition;
-    while (index < snippet.timingPoints.length &&
-        restWordLength - snippet.timingPoints[index].wordLength > 0) {
-      restWordLength -= snippet.timingPoints[index].wordLength;
-      index++;
-    }
-    int seekIndex = 0;
-    int restWordDuration = seekPosition - snippet.startTimestamp;
-    while (seekIndex < snippet.timingPoints.length &&
-        restWordDuration - snippet.timingPoints[seekIndex].wordDuration > 0) {
-      restWordDuration -= snippet.timingPoints[seekIndex].wordDuration;
-      seekIndex++;
-    }
-    if (index != seekIndex) {
-      debugPrint(
-          "There is the contradiction in the order between the character position and the seek position.");
-      return;
-    }
-    if (restWordLength != 0) {
-      snippet.timingPoints[index] = TimingPoint(
-          snippet.timingPoints[index].wordLength - restWordLength,
-          snippet.timingPoints[index].wordDuration - restWordDuration);
-      snippet.timingPoints
-          .insert(index, TimingPoint(restWordLength, restWordDuration));
-    }
-  }
-
   Future<void> loadLyrics() async {
     try {
       rawLyricText = await rootBundle.loadString('assets/ウェルカムティーフレンド.lrc');
@@ -336,15 +306,45 @@ class TimingService {
       snippet.timingPoints = snippet.timingPoints.sublist(index);
       snippet.timingPoints.first.wordDuration -= rest;
     } else {
-      int index = 0;
+      int index = snippet.timingPoints.length - 1;
       int rest = shortenDuration;
-      while (index < snippet.timingPoints.length &&
-          rest - snippet.timingPoints[index].wordDuration > 0) {
+      while (
+          index >= 0 && rest - snippet.timingPoints[index].wordDuration > 0) {
         rest -= snippet.timingPoints[index].wordDuration;
-        index++;
+        index--;
       }
       snippet.timingPoints = snippet.timingPoints.sublist(0, index + 1);
-      snippet.timingPoints.first.wordDuration -= rest;
+      snippet.timingPoints.last.wordDuration -= rest;
+    }
+  }
+
+  void addTimingPoint(
+      LyricSnippet snippet, int characterPosition, int seekPosition) {
+    int index = 0;
+    int restWordLength = characterPosition;
+    while (index < snippet.timingPoints.length &&
+        restWordLength - snippet.timingPoints[index].wordLength > 0) {
+      restWordLength -= snippet.timingPoints[index].wordLength;
+      index++;
+    }
+    int seekIndex = 0;
+    int restWordDuration = seekPosition - snippet.startTimestamp;
+    while (seekIndex < snippet.timingPoints.length &&
+        restWordDuration - snippet.timingPoints[seekIndex].wordDuration > 0) {
+      restWordDuration -= snippet.timingPoints[seekIndex].wordDuration;
+      seekIndex++;
+    }
+    if (index != seekIndex) {
+      debugPrint(
+          "There is the contradiction in the order between the character position and the seek position.");
+      return;
+    }
+    if (restWordLength != 0) {
+      snippet.timingPoints[index] = TimingPoint(
+          snippet.timingPoints[index].wordLength - restWordLength,
+          snippet.timingPoints[index].wordDuration - restWordDuration);
+      snippet.timingPoints
+          .insert(index, TimingPoint(restWordLength, restWordDuration));
     }
   }
 }

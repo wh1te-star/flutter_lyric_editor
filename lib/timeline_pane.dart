@@ -199,22 +199,20 @@ class TimelinePainter extends CustomPainter {
 
       double x = snippet.startTimestamp * intervalLength / intervalDuration;
       snippet.timingPoints.forEach((TimingPoint timingPoint) {
-        final trianglePainter = TrianglePainter(
+        TrianglePainter(
           x: x,
           y: top,
           width: 5.0,
           height: 5.0,
-        );
-        trianglePainter.paint(canvas, size);
+        ).paint(canvas, size);
         x += timingPoint.wordDuration * intervalLength / intervalDuration;
       });
-      final trianglePainter = TrianglePainter(
+      TrianglePainter(
         x: x,
         y: top,
         width: 5.0,
         height: 5.0,
-      );
-      trianglePainter.paint(canvas, size);
+      ).paint(canvas, size);
     });
   }
 
