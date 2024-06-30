@@ -37,6 +37,8 @@ class TimingService {
             NotifyTimingPointAdded(signal.snippetID, snippet.timingPoints));
       }
       if (signal is RequestToDeleteLyricTiming) {
+        LyricSnippet snippet = getLyricSnippetWithID(signal.snippetID);
+        deleteTimingPoint(snippet, signal.characterPosition, signal.choice);
         masterSubject.add(NotifyTimingPointDeletion(signal.characterPosition));
       }
       if (signal is NotifySeekPosition) {
@@ -346,5 +348,22 @@ class TimingService {
       snippet.timingPoints
           .insert(index, TimingPoint(restWordLength, restWordDuration));
     }
+  }
+
+  void deleteTimingPoint(
+      LyricSnippet snippet, int characterPosition, Choice choice) {
+    int index = 0;
+    int position = 0;
+    while (
+        index < snippet.timingPoints.length && position < characterPosition) {
+      position += snippet.timingPoints[index].wordLength;
+      index++;
+    }
+    if (position != characterPosition) return;
+    snippet.timingPoints[index].wordLength +=
+        snippet.timingPoints[index + 1].wordLength;
+    snippet.timingPoints[index].wordDuration +=
+        snippet.timingPoints[index + 1].wordDuration;
+    snippet.timingPoints.removeAt(index + 1);
   }
 }

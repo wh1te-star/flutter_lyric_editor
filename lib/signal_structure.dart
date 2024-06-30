@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_snippet.dart';
 import 'package:lyric_editor/sorted_list.dart';
 
@@ -65,7 +66,14 @@ class NotifyTimingPointAdded {
 class RequestToDeleteLyricTiming {
   LyricSnippetID snippetID;
   int characterPosition;
-  RequestToDeleteLyricTiming(this.snippetID, this.characterPosition);
+  Choice choice = Choice.former;
+  RequestToDeleteLyricTiming(this.snippetID, this.characterPosition,
+      {this.choice = Choice.former});
+}
+
+enum Choice {
+  former,
+  latter,
 }
 
 class NotifyTimingPointDeletion {

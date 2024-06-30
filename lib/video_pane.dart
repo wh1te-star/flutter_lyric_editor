@@ -36,11 +36,23 @@ class _VideoPaneState extends State<VideoPane> {
       if (signal is NotifyLyricParsed) {
         lyricSnippets = signal.lyricSnippetList;
       }
+      if (signal is NotifySnippetMade) {
+        lyricSnippets = signal.lyricSnippetList;
+      }
+      if (signal is NotifyTimingPointAdded ||
+          signal is NotifyTimingPointDeletion) {
+        LyricSnippet snippet = getLyricSnippetWithID(signal.snippetID);
+        snippet.timingPoints = signal.timingPoints;
+      }
       setState(() {});
     });
   }
 
   String defaultText = "Video Pane";
+
+  LyricSnippet getLyricSnippetWithID(LyricSnippetID id) {
+    return lyricSnippets.firstWhere((snippet) => snippet.id == id);
+  }
 
   Widget outlinedText(LyricSnippet snippet, String fontFamily) {
     int currentCharIndex = snippet.timingPoints.length - 1;
@@ -63,22 +75,11 @@ class _VideoPaneState extends State<VideoPane> {
       startChar += snippet.timingPoints[currentIndex].wordLength;
     }
     double percent;
-    if (currentCharIndex == snippet.timingPoints.length - 1) {
-      final endtime = snippet.startTimestamp +
-          snippet.timingPoints
-              .map((point) => point.wordDuration)
-              .reduce((a, b) => a + b);
-      percent = (accumulatedTimingPoints[currentCharIndex].wordDuration -
-              currentSeekPosition) /
-          (accumulatedTimingPoints[currentCharIndex].wordDuration - endtime);
-    } else {
-      {
-        percent = (currentSeekPosition -
-                accumulatedTimingPoints[currentCharIndex].wordDuration) /
-            (accumulatedTimingPoints[currentCharIndex + 1].wordDuration -
-                accumulatedTimingPoints[currentCharIndex].wordDuration);
-      }
-    }
+    percent = (currentSeekPosition -
+            accumulatedTimingPoints[currentCharIndex].wordDuration) /
+        snippet.timingPoints[currentCharIndex].wordDuration;
+    debugPrint(
+        "startChar: ${startChar}, endCar:${startChar + snippet.timingPoints[currentCharIndex].wordLength}, percent: ${percent}");
     return CustomPaint(
       painter: PartialTextPainter(
         text: snippet.sentence,
@@ -96,12 +97,8 @@ class _VideoPaneState extends State<VideoPane> {
 
   List<LyricSnippet> getSnippetsAtCurrentSeekPosition() {
     return lyricSnippets.where((snippet) {
-      final endtime = snippet.startTimestamp +
-          snippet.timingPoints
-              .map((point) => point.wordDuration)
-              .reduce((a, b) => a + b);
       return snippet.startTimestamp < currentSeekPosition &&
-          currentSeekPosition < endtime;
+          currentSeekPosition < snippet.endTimestamp;
     }).toList();
   }
 
