@@ -78,7 +78,8 @@ class _VideoPaneState extends State<VideoPane> {
     percent = (currentSeekPosition -
             accumulatedTimingPoints[currentCharIndex].wordDuration) /
         snippet.timingPoints[currentCharIndex].wordDuration;
-    //debugPrint("startChar: ${startChar}, endCar:${startChar + snippet.timingPoints[currentCharIndex].wordLength}, percent: ${percent}");
+    debugPrint(
+        "startChar: ${startChar}, endCar:${startChar + snippet.timingPoints[currentCharIndex].wordLength}, percent: ${percent}");
     return CustomPaint(
       painter: PartialTextPainter(
         text: snippet.sentence,
@@ -298,10 +299,9 @@ class PartialTextPainter extends CustomPainter {
     final textWidth = textPainterBeforeInner.width;
     final textHeight = textPainterBeforeInner.height;
 
-    final textboxLeft = (size.width - textWidth) / 2;
-    final textboxTop = (size.height - textHeight) / 2;
-    final textboxBottom = (size.height + textHeight) / 2;
-    final centerOffset = Offset(textboxLeft, textboxTop);
+    final actualX = (size.width - textWidth) / 2;
+    final actualY = (size.height - textHeight) / 2;
+    final centerOffset = Offset(actualX, actualY);
 
     canvas.clipRect(Rect.fromLTWH(0, 0, size.width, size.height));
 
@@ -309,83 +309,20 @@ class PartialTextPainter extends CustomPainter {
     textPainterBeforeMiddle.paint(canvas, centerOffset);
     textPainterBeforeInner.paint(canvas, centerOffset);
 
-    List<int> stringLineDistribution =
-        getStringLineDistribution(text, textStyleBeforeInner, size.width);
-    double position = start + (end - start) * percent;
-    int currentLine = 0;
-    int lineStart = 0;
+    final startOffset = textPainterAfterInner
+        .getOffsetForCaret(TextPosition(offset: start), Rect.zero)
+        .dx;
+    final endOffset = textPainterAfterInner
+        .getOffsetForCaret(TextPosition(offset: end), Rect.zero)
+        .dx;
+    final sliceWidth =
+        actualX + startOffset + (endOffset - startOffset) * percent;
 
-    while (position - stringLineDistribution[currentLine] > 0) {
-      position -= stringLineDistribution[currentLine];
-      lineStart += stringLineDistribution[currentLine];
-      currentLine++;
-    }
-
-    Size charSize = getCharSize("あ", textStyleBeforeInner);
-
-    final currentPosition = textboxLeft +
-        textPainterBeforeInner
-            .getOffsetForCaret(
-                TextPosition(offset: position.toInt()), Rect.zero)
-            .dx;
-
-    Path clipPath = Path()
-      ..moveTo(textboxLeft, textboxTop)
-      ..lineTo(textboxLeft, textboxTop + charSize.height * (currentLine + 1))
-      ..lineTo(textboxLeft + currentPosition,
-          textboxTop + charSize.height * (currentLine + 1))
-      ..lineTo(textboxLeft + currentPosition,
-          textboxTop + charSize.height * currentLine)
-      ..lineTo(
-          textboxLeft + size.width, textboxTop + charSize.height * currentLine)
-      ..lineTo(textboxLeft + size.width, textboxTop);
-
-    canvas.clipPath(clipPath);
+    canvas.clipRect(Rect.fromLTWH(0, 0, sliceWidth, size.height));
 
     textPainterAfterOuter.paint(canvas, centerOffset);
     textPainterAfterMiddle.paint(canvas, centerOffset);
     textPainterAfterInner.paint(canvas, centerOffset);
-  }
-
-  Size getCharSize(String char, TextStyle style) {
-    final textSpan = TextSpan(text: char, style: style);
-    final textPainter = TextPainter(
-      text: textSpan,
-      textDirection: TextDirection.ltr,
-    );
-
-    textPainter.layout(maxWidth: double.infinity);
-
-    return Size(textPainter.width, textPainter.height);
-  }
-
-  List<int> getStringLineDistribution(
-      String text, TextStyle style, double maxWidth) {
-    final TextPainter textPainter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      maxLines: null,
-      textDirection: TextDirection.ltr,
-    );
-
-    List<int> lineLengths = [];
-    String remainingText = text;
-
-    while (remainingText.isNotEmpty) {
-      textPainter.text = TextSpan(text: remainingText, style: style);
-      textPainter.layout(maxWidth: maxWidth);
-
-      int endIndex =
-          textPainter.getPositionForOffset(Offset(maxWidth, 0)).offset;
-      if (endIndex == 0 && textPainter.width > maxWidth) {
-        endIndex = remainingText.length;
-      }
-
-      lineLengths.add(endIndex);
-
-      remainingText = remainingText.substring(endIndex).trimLeft();
-    }
-
-    return lineLengths;
   }
 
   @override
