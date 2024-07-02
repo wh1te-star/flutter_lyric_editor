@@ -79,6 +79,7 @@ AppBar buildAppBarWithMenu(
                 break;
 
               case StringResource.fileMenuExportLyric:
+                masterSubject.add(RequestExportLyric());
                 break;
 
               default:

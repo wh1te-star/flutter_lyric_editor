@@ -6,6 +6,9 @@ import 'package:xml/xml.dart' as xml;
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
 import 'lyric_snippet.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:file_selector/file_selector.dart';
+import 'dart:io';
 
 class TimingService {
   final PublishSubject<dynamic> masterSubject;
@@ -16,7 +19,7 @@ class TimingService {
   int audioDuration = 180000;
 
   TimingService({required this.masterSubject}) {
-    masterSubject.stream.listen((signal) {
+    masterSubject.stream.listen((signal) async {
       if (signal is RequestInitLyric) {
         String singlelineText =
             signal.rawText.replaceAll("\n", "").replaceAll("\r", "");
@@ -29,6 +32,22 @@ class TimingService {
           timingPoints: [TimingPoint(singlelineText.length, audioDuration)],
         ));
         masterSubject.add(NotifyLyricParsed(lyricSnippetList));
+      }
+      if (signal is RequestExportLyric) {
+        const String fileName = 'example.txt';
+        final FileSaveLocation? result =
+            await getSaveLocation(suggestedName: fileName);
+        if (result == null) {
+          SnackBar(content: Text('No file selected'));
+          return;
+        }
+
+        final Uint8List fileData = Uint8List.fromList('Hello World!'.codeUnits);
+        const String mimeType = 'text/plain';
+        final XFile textFile =
+            XFile.fromData(fileData, mimeType: mimeType, name: fileName);
+        await textFile.saveTo(result.path);
+        //serializeLyric(file, lyricSnippetList);
       }
       if (signal is RequestToAddLyricTiming) {
         LyricSnippet snippet = getLyricSnippetWithID(signal.snippetID);
@@ -124,6 +143,10 @@ class TimingService {
       }
     });
     _loadLyricsFuture = loadLyrics();
+  }
+
+  String serializeLyric(List<LyricSnippet> lyricSnippetList) {
+    return "";
   }
 
   LyricSnippet getLyricSnippetWithID(LyricSnippetID id) {

@@ -49,6 +49,10 @@ class RequestInitLyric {
   RequestInitLyric(this.rawText);
 }
 
+class RequestExportLyric {
+  RequestExportLyric();
+}
+
 class RequestToAddLyricTiming {
   LyricSnippetID snippetID;
   int characterPosition;
