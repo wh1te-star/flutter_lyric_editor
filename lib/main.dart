@@ -76,7 +76,8 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     super.initState();
 
     musicPlayerService = MusicPlayerService(masterSubject: masterSubject);
-    lyricService = TimingService(masterSubject: masterSubject);
+    lyricService =
+        TimingService(masterSubject: masterSubject, context: context);
     videoPaneFocusNode = FocusNode();
     textPaneFocusNode = FocusNode();
     timelinePaneFocusNode = FocusNode();

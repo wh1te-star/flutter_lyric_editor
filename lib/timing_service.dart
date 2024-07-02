@@ -12,13 +12,14 @@ import 'dart:io';
 
 class TimingService {
   final PublishSubject<dynamic> masterSubject;
+  final BuildContext context;
   String rawLyricText = "";
   late final List<LyricSnippet> lyricSnippetList;
   Future<void>? _loadLyricsFuture;
   int currentPosition = 0;
   int audioDuration = 180000;
 
-  TimingService({required this.masterSubject}) {
+  TimingService({required this.masterSubject, required this.context}) {
     masterSubject.stream.listen((signal) async {
       if (signal is RequestInitLyric) {
         String singlelineText =
@@ -38,7 +39,9 @@ class TimingService {
         final FileSaveLocation? result =
             await getSaveLocation(suggestedName: fileName);
         if (result == null) {
-          SnackBar(content: Text('No file selected'));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('No file selected')),
+          );
           return;
         }
 
