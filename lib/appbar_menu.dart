@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lyric_editor/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
 import 'string_resource.dart';
@@ -15,7 +16,16 @@ AppBar buildAppBarWithMenu(
         DropdownButton<String>(
           hint: const Text(StringResource.applicationMenu),
           onChanged: (String? newValue) {
-            debugPrint('Selected Item: $newValue');
+            if (newValue == StringResource.applicationMenuExit) {
+              if (Theme.of(context).platform == TargetPlatform.iOS ||
+                  Theme.of(context).platform == TargetPlatform.android) {
+                SystemNavigator.pop();
+              } else {
+                exit(0);
+              }
+            } else {
+              debugPrint('Selected Item: $newValue');
+            }
           },
           items:
               <String>[StringResource.applicationMenuExit].map((String value) {
