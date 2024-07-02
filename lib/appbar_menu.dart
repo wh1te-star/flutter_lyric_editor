@@ -38,44 +38,59 @@ AppBar buildAppBarWithMenu(
         DropdownButton<String>(
           hint: const Text(StringResource.fileMenu),
           onChanged: (String? newValue) async {
-            if (newValue == StringResource.fileMenuOpenAudio) {
-              FilePickerResult? result = await FilePicker.platform.pickFiles();
+            switch (newValue) {
+              case StringResource.fileMenuOpenAudio:
+                FilePickerResult? result =
+                    await FilePicker.platform.pickFiles();
 
-              if (result != null) {
-                PlatformFile file = result.files.first;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Selected file: ${file.name}')),
-                );
-                masterSubject.add(RequestInitAudio(file.path!));
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('No file selected')),
-                );
-              }
-            } else if (newValue == StringResource.fileMenuCreateNewLyric) {
-              FilePickerResult? result = await FilePicker.platform.pickFiles(
-                type: FileType.custom,
-                allowedExtensions: ['txt'],
-              );
+                if (result != null) {
+                  PlatformFile file = result.files.first;
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Selected file: ${file.name}'),
+                  ));
+                  masterSubject.add(RequestInitAudio(file.path!));
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('No file selected')),
+                  );
+                }
+                break;
 
-              if (result != null) {
-                PlatformFile file = result.files.first;
-                String rawText = await File(file.path!).readAsString();
-                masterSubject.add(RequestInitLyric(rawText));
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('No file selected')),
+              case StringResource.fileMenuCreateNewLyric:
+                FilePickerResult? result = await FilePicker.platform.pickFiles(
+                  type: FileType.custom,
+                  allowedExtensions: ['txt'],
                 );
-              }
-            } else if (newValue == StringResource.fileMenuOpenLyric) {
-            } else {
-              debugPrint('Selected Item: $newValue');
+
+                if (result != null) {
+                  PlatformFile file = result.files.first;
+                  String rawText = await File(file.path!).readAsString();
+                  masterSubject.add(RequestInitLyric(rawText));
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('No file selected')),
+                  );
+                }
+                break;
+
+              case StringResource.fileMenuOpenLyric:
+                // Handle the case for opening a lyric file
+                // This is a placeholder for your logic to open a lyric file
+                break;
+
+              case StringResource.fileMenuExportLyric:
+                break;
+
+              default:
+                debugPrint('Selected Item: $newValue');
+                break;
             }
           },
           items: <String>[
             StringResource.fileMenuOpenAudio,
             StringResource.fileMenuCreateNewLyric,
             StringResource.fileMenuOpenLyric,
+            StringResource.fileMenuExportLyric,
           ].map((String value) {
             return DropdownMenuItem<String>(
               value: value,
