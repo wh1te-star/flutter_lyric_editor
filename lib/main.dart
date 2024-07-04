@@ -135,7 +135,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
 
     lyricService.printLyric();
 
-    //loadText();
+    loadText();
   }
 
   void loadText() async {

@@ -49,6 +49,11 @@ class RequestInitLyric {
   RequestInitLyric(this.rawText);
 }
 
+class RequestLoadLyric {
+  String lyricPath;
+  RequestLoadLyric(this.lyricPath);
+}
+
 class RequestExportLyric {
   RequestExportLyric();
 }

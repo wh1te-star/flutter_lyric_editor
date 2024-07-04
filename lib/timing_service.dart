@@ -13,7 +13,7 @@ class TimingService {
   final PublishSubject<dynamic> masterSubject;
   final BuildContext context;
   String rawLyricText = "";
-  late final List<LyricSnippet> lyricSnippetList;
+  List<LyricSnippet> lyricSnippetList = [];
   Future<void>? _loadLyricsFuture;
   int currentPosition = 0;
   int audioDuration = 180000;
@@ -31,6 +31,12 @@ class TimingService {
           startTimestamp: 0,
           timingPoints: [TimingPoint(singlelineText.length, audioDuration)],
         ));
+        masterSubject.add(NotifyLyricParsed(lyricSnippetList));
+      }
+      if (signal is RequestLoadLyric) {
+        final file = File(signal.lyricPath);
+        rawLyricText = await file.readAsString();
+        lyricSnippetList = parseLyric(rawLyricText);
         masterSubject.add(NotifyLyricParsed(lyricSnippetList));
       }
       if (signal is RequestExportLyric) {

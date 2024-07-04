@@ -80,6 +80,21 @@ AppBar buildAppBarWithMenu(
                 break;
 
               case StringResource.fileMenuOpenLyric:
+                final XFile? file = await openFile(acceptedTypeGroups: [
+                  XTypeGroup(
+                    label: 'lrc',
+                    extensions: ['lrc'],
+                    mimeTypes: ['application/xml'],
+                  )
+                ]);
+
+                if (file != null) {
+                  masterSubject.add(RequestLoadLyric(file.path));
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('No file selected')),
+                  );
+                }
                 break;
 
               case StringResource.fileMenuExportLyric:
