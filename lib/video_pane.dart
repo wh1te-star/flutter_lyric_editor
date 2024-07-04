@@ -78,8 +78,7 @@ class _VideoPaneState extends State<VideoPane> {
     percent = (currentSeekPosition -
             accumulatedTimingPoints[currentCharIndex].wordDuration) /
         snippet.timingPoints[currentCharIndex].wordDuration;
-    debugPrint(
-        "startChar: ${startChar}, endCar:${startChar + snippet.timingPoints[currentCharIndex].wordLength}, percent: ${percent}");
+    //debugPrint("startChar: ${startChar}, endCar:${startChar + snippet.timingPoints[currentCharIndex].wordLength}, percent: ${percent}");
     return CustomPaint(
       painter: PartialTextPainter(
         text: snippet.sentence,

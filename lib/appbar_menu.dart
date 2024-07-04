@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:lyric_editor/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
 import 'string_resource.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:file_selector/file_selector.dart';
 
 AppBar buildAppBarWithMenu(
     BuildContext context, PublishSubject<dynamic> masterSubject) {
@@ -40,15 +40,19 @@ AppBar buildAppBarWithMenu(
           onChanged: (String? newValue) async {
             switch (newValue) {
               case StringResource.fileMenuOpenAudio:
-                FilePickerResult? result =
-                    await FilePicker.platform.pickFiles();
+                final XTypeGroup typeGroup = XTypeGroup(
+                  label: 'audio',
+                  extensions: ['mp3', 'wav', 'flac'],
+                  mimeTypes: ['audio/mpeg', 'audio/x-wav', 'audio/flac'],
+                );
+                final XFile? file =
+                    await openFile(acceptedTypeGroups: [typeGroup]);
 
-                if (result != null) {
-                  PlatformFile file = result.files.first;
+                if (file != null) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text('Selected file: ${file.name}'),
                   ));
-                  masterSubject.add(RequestInitAudio(file.path!));
+                  masterSubject.add(RequestInitAudio(file.path));
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('No file selected')),
@@ -57,14 +61,16 @@ AppBar buildAppBarWithMenu(
                 break;
 
               case StringResource.fileMenuCreateNewLyric:
-                FilePickerResult? result = await FilePicker.platform.pickFiles(
-                  type: FileType.custom,
-                  allowedExtensions: ['txt'],
-                );
+                final XFile? file = await openFile(acceptedTypeGroups: [
+                  XTypeGroup(
+                    label: 'text',
+                    extensions: ['txt'],
+                    mimeTypes: ['text/plain'],
+                  )
+                ]);
 
-                if (result != null) {
-                  PlatformFile file = result.files.first;
-                  String rawText = await File(file.path!).readAsString();
+                if (file != null) {
+                  String rawText = await file.readAsString();
                   masterSubject.add(RequestInitLyric(rawText));
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -74,8 +80,6 @@ AppBar buildAppBarWithMenu(
                 break;
 
               case StringResource.fileMenuOpenLyric:
-                // Handle the case for opening a lyric file
-                // This is a placeholder for your logic to open a lyric file
                 break;
 
               case StringResource.fileMenuExportLyric:

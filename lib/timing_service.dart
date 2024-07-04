@@ -6,7 +6,6 @@ import 'package:xml/xml.dart' as xml;
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
 import 'lyric_snippet.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:file_selector/file_selector.dart';
 import 'dart:io';
 
