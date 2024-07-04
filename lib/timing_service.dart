@@ -163,7 +163,7 @@ class TimingService {
 
   Future<void> loadLyrics() async {
     try {
-      rawLyricText = await rootBundle.loadString('assets/ウェルカムティーフレンド.lrc');
+      rawLyricText = await rootBundle.loadString('assets/ウェルカムティーフレンド.xlrc');
       masterSubject.add(NotifyLyricLoaded(rawLyricText));
 
       lyricSnippetList = parseLyric(rawLyricText);

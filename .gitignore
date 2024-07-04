@@ -58,5 +58,5 @@ app.*.map.json
 *.shn
 
 # lyric file.
-*.lrc
+*.xlrc
 assets/ウェルカムティーフレンド.txt

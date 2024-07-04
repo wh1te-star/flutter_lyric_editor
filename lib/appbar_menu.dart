@@ -82,8 +82,8 @@ AppBar buildAppBarWithMenu(
               case StringResource.fileMenuOpenLyric:
                 final XFile? file = await openFile(acceptedTypeGroups: [
                   XTypeGroup(
-                    label: 'lrc',
-                    extensions: ['lrc'],
+                    label: 'xlrc',
+                    extensions: ['xlrc'],
                     mimeTypes: ['application/xml'],
                   )
                 ]);
