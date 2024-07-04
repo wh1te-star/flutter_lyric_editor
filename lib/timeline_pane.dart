@@ -256,6 +256,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   double midiumMarkLength = 11.0;
   double minorMarkLength = 8.0;
   int intervalDuration = 1000;
+  bool autoCurrentSelectMode = true;
 
   @override
   void initState() {
@@ -267,8 +268,13 @@ class _TimelinePaneState extends State<TimelinePane> {
         });
       }
       if (signal is NotifySeekPosition) {
-        masterSubject
-            .add(NotifyCurrentSnippets(getSnippetsAtCurrentSeekPosition()));
+        if (autoCurrentSelectMode) {
+          selectingSnippet = getSnippetsAtCurrentSeekPosition();
+          masterSubject.add(NotifyCurrentSnippets(selectingSnippet));
+        } else {
+          masterSubject
+              .add(NotifyCurrentSnippets(getSnippetsAtCurrentSeekPosition()));
+        }
         setState(() {
           currentPosition = signal.seekPosition;
         });
@@ -360,8 +366,8 @@ class _TimelinePaneState extends State<TimelinePane> {
     super.dispose();
   }
 
-  List<LyricSnippet> getSnippetsAtCurrentSeekPosition() {
-    List<LyricSnippet> currentSnippet = [];
+  List<LyricSnippetID> getSnippetsAtCurrentSeekPosition() {
+    List<LyricSnippetID> currentSnippet = [];
     snippetsForeachVocalist.forEach((vocalist, snippets) {
       for (var snippet in snippets) {
         final endtime = snippet.startTimestamp +
@@ -370,7 +376,7 @@ class _TimelinePaneState extends State<TimelinePane> {
                 .reduce((a, b) => a + b);
         if (snippet.startTimestamp <= currentPosition &&
             currentPosition <= endtime) {
-          currentSnippet.add(snippet);
+          currentSnippet.add(snippet.id);
         }
       }
     });
@@ -391,9 +397,18 @@ class _TimelinePaneState extends State<TimelinePane> {
     );
     if (vicinity.row == 0 && vicinity.column == 0) {
       return TableViewCell(
-        child: Container(
-          child: Center(
-            child: Text("function buttons"),
+        child: GestureDetector(
+          onTapDown: (TapDownDetails details) {
+            autoCurrentSelectMode = !autoCurrentSelectMode;
+            setState(() {});
+          },
+          child: CustomPaint(
+            painter: RectanglePainter(
+              rect: Rect.fromLTRB(1.0, -9.0, 154, 19),
+              sentence: "Auto Select Mode",
+              indexColor: Colors.purpleAccent,
+              isSelected: autoCurrentSelectMode,
+            ),
           ),
         ),
       );

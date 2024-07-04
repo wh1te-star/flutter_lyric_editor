@@ -111,7 +111,7 @@ class NotifyDeselectingVocalist {
 }
 
 class NotifyCurrentSnippets {
-  List<LyricSnippet> currentSnippets;
+  List<LyricSnippetID> currentSnippets;
   NotifyCurrentSnippets(this.currentSnippets);
 }
 
