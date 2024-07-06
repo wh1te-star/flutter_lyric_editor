@@ -1,15 +1,11 @@
-import 'dart:typed_data';
-
+import 'dart:io';
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
-import 'package:lyric_editor/utility/sorted_list.dart';
-import 'package:xml/xml.dart' as xml;
+import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
-import '../utility/signal_structure.dart';
-import '../utility/lyric_snippet.dart';
-import 'package:file_selector/file_selector.dart';
-import 'dart:io';
+import 'package:xml/xml.dart' as xml;
 
 class TimingService {
   final BuildContext context;
