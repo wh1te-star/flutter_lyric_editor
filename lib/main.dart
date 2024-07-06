@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lyric_editor/keyboard_shortcuts.dart';
-import 'package:lyric_editor/timing_service.dart';
-import 'package:lyric_editor/signal_structure.dart';
+import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
+import 'package:lyric_editor/service/timing_service.dart';
+import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
-import 'appbar_menu.dart';
-import 'music_player_service.dart';
-import 'video_pane.dart';
-import 'text_pane.dart';
-import 'timeline_pane.dart';
-import 'adjustable_pane_border.dart';
+import 'utility/appbar_menu.dart';
+import 'service/music_player_service.dart';
+import 'pane/video_pane.dart';
+import 'pane/text_pane.dart';
+import 'pane/timeline_pane.dart';
+import 'pane/adjustable_pane_border.dart';
 
 void main() {
   runApp(MyApp());

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lyric_editor/signal_structure.dart';
+import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
 import 'string_resource.dart';
 import 'package:file_selector/file_selector.dart';

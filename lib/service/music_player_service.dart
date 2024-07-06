@@ -1,7 +1,7 @@
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:lyric_editor/signal_structure.dart';
+import 'package:lyric_editor/utility/signal_structure.dart';
 import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 

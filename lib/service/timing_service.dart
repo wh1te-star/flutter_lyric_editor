@@ -2,12 +2,12 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lyric_editor/lyric_snippet.dart';
-import 'package:lyric_editor/sorted_list.dart';
+import 'package:lyric_editor/utility/lyric_snippet.dart';
+import 'package:lyric_editor/utility/sorted_list.dart';
 import 'package:xml/xml.dart' as xml;
 import 'package:rxdart/rxdart.dart';
-import 'signal_structure.dart';
-import 'lyric_snippet.dart';
+import '../utility/signal_structure.dart';
+import '../utility/lyric_snippet.dart';
 import 'package:file_selector/file_selector.dart';
 import 'dart:io';
 

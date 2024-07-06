@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
-import 'signal_structure.dart';
-import 'scale_mark.dart';
-import 'lyric_snippet.dart';
+import '../utility/signal_structure.dart';
+import '../painter/scale_mark.dart';
+import '../utility/lyric_snippet.dart';
 import 'package:two_dimensional_scrollables/two_dimensional_scrollables.dart';
 import 'package:collection/collection.dart';
 

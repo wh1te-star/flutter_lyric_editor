@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:lyric_editor/signal_structure.dart';
+import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
-import 'square_icon_button.dart';
+import '../utility/square_icon_button.dart';
 
 class PlaybackControlPane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;

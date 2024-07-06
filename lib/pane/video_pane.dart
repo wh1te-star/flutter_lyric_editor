@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lyric_editor/lyric_snippet.dart';
-import 'package:lyric_editor/signal_structure.dart';
+import 'package:lyric_editor/utility/lyric_snippet.dart';
+import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
 import 'playback_control_pane.dart';
 

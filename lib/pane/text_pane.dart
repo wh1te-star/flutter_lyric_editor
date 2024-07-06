@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:lyric_editor/lyric_snippet.dart';
+import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:rxdart/rxdart.dart';
-import 'signal_structure.dart';
-import 'sorted_list.dart';
+import '../utility/signal_structure.dart';
+import '../utility/sorted_list.dart';
 
 class TextPane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;

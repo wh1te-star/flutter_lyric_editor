@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lyric_editor/lyric_snippet.dart';
+import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
 
