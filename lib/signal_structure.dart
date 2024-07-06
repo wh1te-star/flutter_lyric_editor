@@ -4,7 +4,7 @@ import 'package:lyric_editor/sorted_list.dart';
 
 class RequestInitAudio {
   String path;
-  RequestInitAudio(this.path);
+  RequestInitAudio({this.path = ""});
 }
 
 class RequestPlayPause {}
@@ -45,17 +45,21 @@ class RequestSpeedDown {
 }
 
 class RequestInitLyric {
-  String rawText;
-  RequestInitLyric(this.rawText);
+  String path;
+  String lyric;
+  RequestInitLyric({this.path = "", this.lyric = ""});
 }
 
 class RequestLoadLyric {
-  String lyricPath;
-  RequestLoadLyric(this.lyricPath);
+  String path;
+  String lyric;
+  RequestLoadLyric({this.path = "", this.lyric = ""});
 }
 
 class RequestExportLyric {
-  RequestExportLyric();
+  String path;
+  String lyric;
+  RequestExportLyric({this.path = "", this.lyric = ""});
 }
 
 class RequestToAddLyricTiming {

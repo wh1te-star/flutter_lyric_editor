@@ -37,64 +37,18 @@ AppBar buildAppBarWithMenu(
         ),
         DropdownButton<String>(
           hint: const Text(StringResource.fileMenu),
-          onChanged: (String? newValue) async {
+          onChanged: (String? newValue) {
             switch (newValue) {
               case StringResource.fileMenuOpenAudio:
-                final XTypeGroup typeGroup = XTypeGroup(
-                  label: 'audio',
-                  extensions: ['mp3', 'wav', 'flac'],
-                  mimeTypes: ['audio/mpeg', 'audio/x-wav', 'audio/flac'],
-                );
-                final XFile? file =
-                    await openFile(acceptedTypeGroups: [typeGroup]);
-
-                if (file != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('Selected file: ${file.name}'),
-                  ));
-                  masterSubject.add(RequestInitAudio(file.path));
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('No file selected')),
-                  );
-                }
+                masterSubject.add(RequestInitAudio());
                 break;
 
               case StringResource.fileMenuCreateNewLyric:
-                final XFile? file = await openFile(acceptedTypeGroups: [
-                  XTypeGroup(
-                    label: 'text',
-                    extensions: ['txt'],
-                    mimeTypes: ['text/plain'],
-                  )
-                ]);
-
-                if (file != null) {
-                  String rawText = await file.readAsString();
-                  masterSubject.add(RequestInitLyric(rawText));
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('No file selected')),
-                  );
-                }
+                masterSubject.add(RequestInitLyric());
                 break;
 
               case StringResource.fileMenuOpenLyric:
-                final XFile? file = await openFile(acceptedTypeGroups: [
-                  XTypeGroup(
-                    label: 'xlrc',
-                    extensions: ['xlrc'],
-                    mimeTypes: ['application/xml'],
-                  )
-                ]);
-
-                if (file != null) {
-                  masterSubject.add(RequestLoadLyric(file.path));
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('No file selected')),
-                  );
-                }
+                masterSubject.add(RequestLoadLyric());
                 break;
 
               case StringResource.fileMenuExportLyric:

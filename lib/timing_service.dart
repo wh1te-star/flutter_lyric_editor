@@ -12,8 +12,8 @@ import 'package:file_selector/file_selector.dart';
 import 'dart:io';
 
 class TimingService {
-  final PublishSubject<dynamic> masterSubject;
   final BuildContext context;
+  final PublishSubject<dynamic> masterSubject;
   String rawLyricText = "";
   List<LyricSnippet> lyricSnippetList = [];
   Future<void>? _loadLyricsFuture;
@@ -23,23 +23,51 @@ class TimingService {
   TimingService({required this.masterSubject, required this.context}) {
     masterSubject.stream.listen((signal) async {
       if (signal is RequestInitLyric) {
-        String singlelineText =
-            signal.rawText.replaceAll("\n", "").replaceAll("\r", "");
-        lyricSnippetList.clear();
-        lyricSnippetList.add(LyricSnippet(
-          vocalist: "vocalist 1",
-          index: 1,
-          sentence: singlelineText,
-          startTimestamp: 0,
-          timingPoints: [TimingPoint(singlelineText.length, audioDuration)],
-        ));
-        masterSubject.add(NotifyLyricParsed(lyricSnippetList));
+        final XFile? file = await openFile(acceptedTypeGroups: [
+          XTypeGroup(
+            label: 'text',
+            extensions: ['txt'],
+            mimeTypes: ['text/plain'],
+          )
+        ]);
+
+        if (file != null) {
+          String rawText = await file.readAsString();
+          String singlelineText =
+              rawText.replaceAll("\n", "").replaceAll("\r", "");
+          lyricSnippetList.clear();
+          lyricSnippetList.add(LyricSnippet(
+            vocalist: "vocalist 1",
+            index: 1,
+            sentence: singlelineText,
+            startTimestamp: 0,
+            timingPoints: [TimingPoint(singlelineText.length, audioDuration)],
+          ));
+          masterSubject.add(NotifyLyricParsed(lyricSnippetList));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('No file selected')),
+          );
+        }
       }
       if (signal is RequestLoadLyric) {
-        final file = File(signal.lyricPath);
-        rawLyricText = await file.readAsString();
-        lyricSnippetList = parseLyric(rawLyricText);
-        masterSubject.add(NotifyLyricParsed(lyricSnippetList));
+        final XFile? file = await openFile(acceptedTypeGroups: [
+          XTypeGroup(
+            label: 'xlrc',
+            extensions: ['xlrc'],
+            mimeTypes: ['application/xml'],
+          )
+        ]);
+
+        if (file != null) {
+          rawLyricText = await file.readAsString();
+          lyricSnippetList = parseLyric(rawLyricText);
+          masterSubject.add(NotifyLyricParsed(lyricSnippetList));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('No file selected')),
+          );
+        }
       }
       if (signal is RequestExportLyric) {
         const String fileName = 'example.xlrc';

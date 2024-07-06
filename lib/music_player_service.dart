@@ -1,3 +1,4 @@
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:lyric_editor/signal_structure.dart';
@@ -8,8 +9,9 @@ class MusicPlayerService {
   final PublishSubject<dynamic> masterSubject;
   AudioPlayer player = AudioPlayer();
   late DeviceFileSource audioFile;
+  BuildContext context;
 
-  MusicPlayerService({required this.masterSubject}) {
+  MusicPlayerService({required this.context, required this.masterSubject}) {
     player.onPositionChanged.listen((event) {
       masterSubject.add(NotifySeekPosition(event.inMilliseconds));
     });
@@ -23,9 +25,25 @@ class MusicPlayerService {
     player.onDurationChanged.listen((duration) {
       masterSubject.add(NotifyAudioFileLoaded(duration.inMilliseconds));
     });
-    masterSubject.stream.listen((signal) {
+    masterSubject.stream.listen((signal) async {
       if (signal is RequestInitAudio) {
-        initAudio(signal.path);
+        final XTypeGroup typeGroup = XTypeGroup(
+          label: 'audio',
+          extensions: ['mp3', 'wav', 'flac'],
+          mimeTypes: ['audio/mpeg', 'audio/x-wav', 'audio/flac'],
+        );
+        final XFile? file = await openFile(acceptedTypeGroups: [typeGroup]);
+
+        if (file != null) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Selected file: ${file.name}'),
+          ));
+          initAudio(file.path);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('No file selected')),
+          );
+        }
       }
       if (signal is RequestPlayPause) {
         playPause();

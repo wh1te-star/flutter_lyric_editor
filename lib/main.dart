@@ -75,7 +75,8 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   void initState() {
     super.initState();
 
-    musicPlayerService = MusicPlayerService(masterSubject: masterSubject);
+    musicPlayerService =
+        MusicPlayerService(masterSubject: masterSubject, context: context);
     lyricService =
         TimingService(masterSubject: masterSubject, context: context);
     videoPaneFocusNode = FocusNode();
@@ -141,7 +142,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   void loadText() async {
     String filePath = 'assets/ウェルカムティーフレンド.txt';
     String rawText = await rootBundle.loadString(filePath);
-    masterSubject.add(RequestInitLyric(rawText));
+    masterSubject.add(RequestInitLyric(lyric: rawText));
   }
 
   @override
