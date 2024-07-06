@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lyric_editor/lyric_snippet.dart';
@@ -40,7 +42,7 @@ class TimingService {
         masterSubject.add(NotifyLyricParsed(lyricSnippetList));
       }
       if (signal is RequestExportLyric) {
-        const String fileName = 'example.txt';
+        const String fileName = 'example.xlrc';
         final FileSaveLocation? result =
             await getSaveLocation(suggestedName: fileName);
         if (result == null) {
@@ -50,12 +52,9 @@ class TimingService {
           return;
         }
 
-        final Uint8List fileData = Uint8List.fromList('Hello World!'.codeUnits);
-        const String mimeType = 'text/plain';
-        final XFile textFile =
-            XFile.fromData(fileData, mimeType: mimeType, name: fileName);
-        await textFile.saveTo(result.path);
-        //serializeLyric(file, lyricSnippetList);
+        final String rawLyricText = serializeLyric(lyricSnippetList);
+        final File file = File(result.path);
+        await file.writeAsString(rawLyricText);
       }
       if (signal is RequestToAddLyricTiming) {
         LyricSnippet snippet = getLyricSnippetWithID(signal.snippetID);
@@ -153,10 +152,6 @@ class TimingService {
     _loadLyricsFuture = loadLyrics();
   }
 
-  String serializeLyric(List<LyricSnippet> lyricSnippetList) {
-    return "";
-  }
-
   LyricSnippet getLyricSnippetWithID(LyricSnippetID id) {
     return lyricSnippetList.firstWhere((snippet) => snippet.id == id);
   }
@@ -215,6 +210,33 @@ class TimingService {
     assignIndex(snippets);
 
     return snippets;
+  }
+
+  String serializeLyric(List<LyricSnippet> lyricSnippetList) {
+    final builder = xml.XmlBuilder();
+    builder.processing('xml', 'version="1.0" encoding="UTF-8"');
+    builder.element('Lyrics', nest: () {
+      for (var snippet in lyricSnippetList) {
+        builder.element('LineTimestamp', attributes: {
+          'vocalistName': snippet.vocalist,
+          'startTime': _formatTimestamp(snippet.startTimestamp),
+        }, nest: () {
+          int characterPosition = 0;
+          for (var timingPoint in snippet.timingPoints) {
+            builder.element('WordTimestamp',
+                attributes: {
+                  'time': _formatTimestamp(timingPoint.wordDuration),
+                },
+                nest: snippet.sentence.substring(characterPosition,
+                    characterPosition + timingPoint.wordLength));
+            characterPosition += timingPoint.wordLength;
+          }
+        });
+      }
+    });
+
+    final document = builder.buildDocument();
+    return document.toXmlString(pretty: true, indent: '  ');
   }
 
   void assignIndex(List<LyricSnippet> snippets) {
