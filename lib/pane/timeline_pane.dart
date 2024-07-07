@@ -58,12 +58,13 @@ class _TimelinePaneState extends State<TimelinePane> {
         });
       }
       if (signal is NotifySeekPosition) {
+        List<LyricSnippetID> currentSelectingSnippet =
+            getSnippetsAtCurrentSeekPosition();
+        masterSubject.add(NotifyCurrentSnippets(currentSelectingSnippet));
+
         if (autoCurrentSelectMode) {
-          selectingSnippet = getSnippetsAtCurrentSeekPosition();
-          masterSubject.add(NotifyCurrentSnippets(selectingSnippet));
-        } else {
-          masterSubject
-              .add(NotifyCurrentSnippets(getSnippetsAtCurrentSeekPosition()));
+          selectingSnippet = currentSelectingSnippet;
+          masterSubject.add(NotifySelectingSnippets(selectingSnippet));
         }
         setState(() {
           currentPosition = signal.seekPosition;
@@ -263,11 +264,10 @@ class _TimelinePaneState extends State<TimelinePane> {
                   touchedSeekPosition <= endtime) {
                 if (selectingSnippet.contains(snippet.id)) {
                   selectingSnippet.remove(snippet.id);
-                  masterSubject.add(NotifyDeselectingSnippet(snippet.id));
                 } else {
                   selectingSnippet.add(snippet.id);
-                  masterSubject.add(NotifySelectingSnippet(snippet.id));
                 }
+                masterSubject.add(NotifySelectingSnippets(selectingSnippet));
               }
             }
             setState(() {});

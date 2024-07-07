@@ -94,14 +94,9 @@ class NotifyTimingPointDeletion {
   NotifyTimingPointDeletion(this.characterPosition);
 }
 
-class NotifySelectingSnippet {
-  LyricSnippetID snippetID;
-  NotifySelectingSnippet(this.snippetID);
-}
-
-class NotifyDeselectingSnippet {
-  LyricSnippetID snippetID;
-  NotifyDeselectingSnippet(this.snippetID);
+class NotifySelectingSnippets {
+  List<LyricSnippetID> snippetIDs;
+  NotifySelectingSnippets(this.snippetIDs);
 }
 
 class NotifySelectingVocalist {

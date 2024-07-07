@@ -28,11 +28,8 @@ class KeyboardShortcuts extends StatelessWidget {
     required this.timelinePaneFocusNode,
   }) {
     masterSubject.stream.listen((signal) {
-      if (signal is NotifySelectingSnippet) {
-        selectingSnippetIDs.add(signal.snippetID);
-      }
-      if (signal is NotifyDeselectingSnippet) {
-        selectingSnippetIDs.remove(signal.snippetID);
+      if (signal is NotifySelectingSnippets) {
+        selectingSnippetIDs = signal.snippetIDs;
       }
       if (signal is NotifySelectingVocalist) {
         selectingVocalist.add(signal.vocalistName);

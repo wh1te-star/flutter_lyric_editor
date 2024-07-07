@@ -51,12 +51,12 @@ class _TextPaneState extends State<TextPane> {
     super.initState();
 
     masterSubject.stream.listen((signal) {
-      if (signal is NotifyLyricParsed) {
+      if (signal is NotifyLyricParsed ||
+          signal is NotifySnippetDivided ||
+          signal is NotifySnippetConcatenated) {
         lyricSnippets = signal.lyricSnippetList;
         lyricAppearance = List.filled(lyricSnippets.length, '');
-
         updateIndicators();
-
         setState(() {});
       }
 
@@ -88,7 +88,8 @@ class _TextPaneState extends State<TextPane> {
             NotifyLineCursorPosition(lyricSnippets[cursorPositionLine].id));
       }
 
-      if (signal is NotifyTimingPointAdded) {
+      if (signal is NotifyTimingPointAdded ||
+          signal is NotifyTimingPointDeletion) {
         lyricSnippets
             .where((snippet) => snippet.id == signal.snippetID)
             .forEach((LyricSnippet snippet) {
