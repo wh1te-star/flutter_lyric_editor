@@ -36,7 +36,8 @@ class _VideoPaneState extends State<VideoPane> {
       if (signal is NotifyLyricParsed) {
         lyricSnippets = signal.lyricSnippetList;
       }
-      if (signal is NotifySnippetMade) {
+      if (signal is NotifySnippetDivided ||
+          signal is NotifySnippetConcatenated) {
         lyricSnippets = signal.lyricSnippetList;
       }
       if (signal is NotifyTimingPointAdded ||

@@ -59,6 +59,7 @@ class KeyboardShortcuts extends StatelessWidget {
         LogicalKeySet(LogicalKeyboardKey.keyF): ActivateFKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyC): ActivateCKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyV): ActivateVKeyShortcutIntent(),
+
         LogicalKeySet(LogicalKeyboardKey.arrowLeft):
             ActivateLeftArrowKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowRight):
@@ -67,19 +68,22 @@ class KeyboardShortcuts extends StatelessWidget {
             ActivateUpArrowKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowDown):
             ActivateDownArrowKeyShortcutIntent(),
+
         LogicalKeySet(LogicalKeyboardKey.keyH): ActivateHKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyJ): ActivateJKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyK): ActivateKKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyL): ActivateLKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.controlLeft, LogicalKeyboardKey.keyK):
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyK):
             ActivateCtrlKKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.controlLeft, LogicalKeyboardKey.keyJ):
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyJ):
             ActivateCtrlJKeyShortcutIntent(),
         //LogicalKeySet(LogicalKeyboardKey.keyB): ActivateBKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.enter):
-            ActivateEnterKeyShortcutIntent(),
+
         LogicalKeySet(LogicalKeyboardKey.keyN): ActivateNKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyM): ActivateMKeyShortcutIntent(),
+
+        LogicalKeySet(LogicalKeyboardKey.comma): ActivateCommaShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyX): ActivateXKeyShortcutIntent(),
       };
 
   Map<Type, Action<Intent>> get actions => {
@@ -186,13 +190,18 @@ class KeyboardShortcuts extends StatelessWidget {
             });
           }(),
         ),
-        ActivateEnterKeyShortcutIntent:
-            CallbackAction<ActivateEnterKeyShortcutIntent>(
-          onInvoke: (ActivateEnterKeyShortcutIntent intent) => () {
+        ActivateCommaShortcutIntent:
+            CallbackAction<ActivateCommaShortcutIntent>(
+          onInvoke: (ActivateCommaShortcutIntent intent) => () {
             masterSubject.add(
-                RequestToMakeSnippet(selectedSnippetID, charCursorPosition));
+                RequestDivideSnippet(selectedSnippetID, charCursorPosition));
             textSelectMode = false;
             masterSubject.add(RequestToExitTextSelectMode());
+          }(),
+        ),
+        ActivateXKeyShortcutIntent: CallbackAction<ActivateXKeyShortcutIntent>(
+          onInvoke: (ActivateXKeyShortcutIntent intent) => () {
+            masterSubject.add(RequestConcatenateSnippet(selectingSnippetIDs));
           }(),
         ),
       };
@@ -239,8 +248,10 @@ class ActivateCtrlKKeyShortcutIntent extends Intent {}
 
 class ActivateCtrlJKeyShortcutIntent extends Intent {}
 
-class ActivateEnterKeyShortcutIntent extends Intent {}
-
 class ActivateNKeyShortcutIntent extends Intent {}
 
 class ActivateMKeyShortcutIntent extends Intent {}
+
+class ActivateCommaShortcutIntent extends Intent {}
+
+class ActivateXKeyShortcutIntent extends Intent {}

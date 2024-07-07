@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:collection/collection.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -98,50 +99,13 @@ class TimingService {
         audioDuration = signal.millisec;
       }
 
-      if (signal is RequestToMakeSnippet) {
-        int snippetMargin = 100;
-        int index = lyricSnippetList
-            .indexWhere((snippet) => snippet.id == signal.snippetID);
-        String beforeString =
-            lyricSnippetList[index].sentence.substring(0, signal.charPos);
-        String afterString =
-            lyricSnippetList[index].sentence.substring(signal.charPos);
-        String vocalist = lyricSnippetList[index].vocalist;
-        List<LyricSnippet> newSnippets = [];
-        if (beforeString.isNotEmpty) {
-          int snippetDuration =
-              currentPosition - lyricSnippetList[index].startTimestamp;
-          newSnippets.add(
-            LyricSnippet(
-              vocalist: vocalist,
-              index: 0,
-              sentence: beforeString,
-              startTimestamp: lyricSnippetList[index].startTimestamp,
-              timingPoints: [TimingPoint(beforeString.length, snippetDuration)],
-            ),
-          );
-        }
-        if (afterString.isNotEmpty) {
-          int snippetDuration = lyricSnippetList[index].endTimestamp -
-              lyricSnippetList[index].startTimestamp -
-              currentPosition -
-              snippetMargin;
-          newSnippets.add(
-            LyricSnippet(
-              vocalist: vocalist,
-              index: 0,
-              sentence: afterString,
-              startTimestamp: currentPosition + snippetMargin,
-              timingPoints: [TimingPoint(afterString.length, snippetDuration)],
-            ),
-          );
-        }
-        if (index != -1) {
-          lyricSnippetList.removeAt(index);
-          lyricSnippetList.insertAll(index, newSnippets);
-        }
-        assignIndex(lyricSnippetList);
-        masterSubject.add(NotifySnippetMade(lyricSnippetList));
+      if (signal is RequestDivideSnippet) {
+        int index = getLyricSnippetIndexWithID(signal.snippetID);
+        divideSnippet(index, signal.charPos, currentPosition);
+      }
+      if (signal is RequestConcatenateSnippet) {
+        List<LyricSnippet> snippets = translateIDsToSnippets(signal.snippetIDs);
+        concatenateSnippets(snippets);
       }
       if (signal is RequestSnippetMove) {
         LyricSnippet snippet = getLyricSnippetWithID(signal.id);
@@ -176,8 +140,20 @@ class TimingService {
     _loadLyricsFuture = loadLyrics();
   }
 
+  List<LyricSnippet> translateIDsToSnippets(List<LyricSnippetID> ids) {
+    return ids.map((id) => getLyricSnippetWithID(id)).toList();
+  }
+
+  int getLyricSnippetIndexWithID(LyricSnippetID id) {
+    return lyricSnippetList.indexWhere((snippet) => snippet.id == id);
+  }
+
   LyricSnippet getLyricSnippetWithID(LyricSnippetID id) {
     return lyricSnippetList.firstWhere((snippet) => snippet.id == id);
+  }
+
+  void removeLyricSnippetWithID(LyricSnippetID id) {
+    lyricSnippetList.removeWhere((snippet) => snippet.id == id);
   }
 
   Future<void> loadLyrics() async {
@@ -353,6 +329,79 @@ class TimingService {
       return snippet.startTimestamp < currentPosition &&
           currentPosition < endtime;
     }).toList();
+  }
+
+  void divideSnippet(int index, int charPosition, int seekPosition) {
+    int snippetMargin = 100;
+    String beforeString =
+        lyricSnippetList[index].sentence.substring(0, charPosition);
+    String afterString =
+        lyricSnippetList[index].sentence.substring(charPosition);
+    String vocalist = lyricSnippetList[index].vocalist;
+    List<LyricSnippet> newSnippets = [];
+    if (beforeString.isNotEmpty) {
+      int snippetDuration =
+          currentPosition - lyricSnippetList[index].startTimestamp;
+      newSnippets.add(
+        LyricSnippet(
+          vocalist: vocalist,
+          index: 0,
+          sentence: beforeString,
+          startTimestamp: lyricSnippetList[index].startTimestamp,
+          timingPoints: [TimingPoint(beforeString.length, snippetDuration)],
+        ),
+      );
+    }
+    if (afterString.isNotEmpty) {
+      int snippetDuration = lyricSnippetList[index].endTimestamp -
+          lyricSnippetList[index].startTimestamp -
+          currentPosition -
+          snippetMargin;
+      newSnippets.add(
+        LyricSnippet(
+          vocalist: vocalist,
+          index: 0,
+          sentence: afterString,
+          startTimestamp: currentPosition + snippetMargin,
+          timingPoints: [TimingPoint(afterString.length, snippetDuration)],
+        ),
+      );
+    }
+    if (index != -1) {
+      lyricSnippetList.removeAt(index);
+      lyricSnippetList.insertAll(index, newSnippets);
+    }
+    assignIndex(lyricSnippetList);
+    masterSubject.add(NotifySnippetDivided(lyricSnippetList));
+  }
+
+  void concatenateSnippets(List<LyricSnippet> snippets) {
+    Map<String, List<LyricSnippet>> snippetsForeachVocalist = groupBy(
+      snippets,
+      (LyricSnippet snippet) => snippet.vocalist,
+    );
+    snippetsForeachVocalist.forEach((vocalist, vocalistSnippets) {
+      vocalistSnippets
+          .sort((a, b) => a.startTimestamp.compareTo(b.startTimestamp));
+      for (int index = 1; index < vocalistSnippets.length; index++) {
+        LyricSnippet leftSnippet = vocalistSnippets[0];
+        LyricSnippet rightSnippet = vocalistSnippets[index];
+        late final int extendDuration;
+        if (leftSnippet.endTimestamp <= rightSnippet.startTimestamp) {
+          extendDuration =
+              rightSnippet.startTimestamp - leftSnippet.endTimestamp;
+        } else {
+          extendDuration = 0;
+        }
+        leftSnippet.timingPoints.last.wordDuration += extendDuration;
+        leftSnippet.sentence += rightSnippet.sentence;
+        leftSnippet.timingPoints.addAll(rightSnippet.timingPoints);
+
+        removeLyricSnippetWithID(rightSnippet.id);
+      }
+    });
+    assignIndex(lyricSnippetList);
+    masterSubject.add(NotifySnippetConcatenated(lyricSnippetList));
   }
 
   void moveSnippet(LyricSnippet snippet, int shiftDuration) {

@@ -171,15 +171,25 @@ class RequestToEnterTextSelectMode {}
 
 class RequestToExitTextSelectMode {}
 
-class RequestToMakeSnippet {
+class RequestDivideSnippet {
   LyricSnippetID snippetID;
   int charPos;
-  RequestToMakeSnippet(this.snippetID, this.charPos);
+  RequestDivideSnippet(this.snippetID, this.charPos);
 }
 
-class NotifySnippetMade {
+class RequestConcatenateSnippet {
+  List<LyricSnippetID> snippetIDs;
+  RequestConcatenateSnippet(this.snippetIDs);
+}
+
+class NotifySnippetDivided {
   List<LyricSnippet> lyricSnippetList;
-  NotifySnippetMade(this.lyricSnippetList);
+  NotifySnippetDivided(this.lyricSnippetList);
+}
+
+class NotifySnippetConcatenated {
+  List<LyricSnippet> lyricSnippetList;
+  NotifySnippetConcatenated(this.lyricSnippetList);
 }
 
 enum SnippetEdge {

@@ -69,13 +69,10 @@ class _TimelinePaneState extends State<TimelinePane> {
           currentPosition = signal.seekPosition;
         });
       }
-      if (signal is NotifyLyricParsed || signal is NotifySnippetMade) {
-        setState(() {
-          snippetsForeachVocalist = groupBy(signal.lyricSnippetList,
-              (LyricSnippet snippet) => snippet.vocalist);
-        });
-      }
-      if (signal is NotifySnippetMove) {
+      if (signal is NotifyLyricParsed ||
+          signal is NotifySnippetMove ||
+          signal is NotifySnippetDivided ||
+          signal is NotifySnippetConcatenated) {
         setState(() {
           snippetsForeachVocalist = groupBy(signal.lyricSnippetList,
               (LyricSnippet snippet) => snippet.vocalist);
