@@ -59,4 +59,4 @@ app.*.map.json
 
 # lyric file.
 *.xlrc
-assets/ウェルカムティーフレンド.txt
+assets/*.txt
