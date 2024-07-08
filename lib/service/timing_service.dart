@@ -81,14 +81,21 @@ class TimingService {
         final File file = File(result.path);
         await file.writeAsString(rawLyricText);
       }
+      if (signal is RequestChangeVocalistName) {
+        getSnippetsWithVocalistName(signal.oldName)
+            .forEach((LyricSnippet snippet) {
+          snippet.vocalist = signal.newName;
+        });
+        masterSubject.add(NotifyVocalistNameChanged(lyricSnippetList));
+      }
       if (signal is RequestToAddLyricTiming) {
-        LyricSnippet snippet = getLyricSnippetWithID(signal.snippetID);
+        LyricSnippet snippet = getSnippetWithID(signal.snippetID);
         addTimingPoint(snippet, signal.characterPosition, signal.seekPosition);
         masterSubject.add(
             NotifyTimingPointAdded(signal.snippetID, snippet.timingPoints));
       }
       if (signal is RequestToDeleteLyricTiming) {
-        LyricSnippet snippet = getLyricSnippetWithID(signal.snippetID);
+        LyricSnippet snippet = getSnippetWithID(signal.snippetID);
         deleteTimingPoint(snippet, signal.characterPosition, signal.choice);
         masterSubject.add(NotifyTimingPointDeletion(signal.characterPosition));
       }
@@ -100,7 +107,7 @@ class TimingService {
       }
 
       if (signal is RequestDivideSnippet) {
-        int index = getLyricSnippetIndexWithID(signal.snippetID);
+        int index = getSnippetIndexWithID(signal.snippetID);
         divideSnippet(index, signal.charPos, currentPosition);
       }
       if (signal is RequestConcatenateSnippet) {
@@ -108,7 +115,7 @@ class TimingService {
         concatenateSnippets(snippets);
       }
       if (signal is RequestSnippetMove) {
-        LyricSnippet snippet = getLyricSnippetWithID(signal.id);
+        LyricSnippet snippet = getSnippetWithID(signal.id);
         if (signal.holdLength) {
           if (signal.snippetEdge == SnippetEdge.start) {
             moveSnippet(snippet, snippet.startTimestamp - currentPosition);
@@ -141,19 +148,25 @@ class TimingService {
   }
 
   List<LyricSnippet> translateIDsToSnippets(List<LyricSnippetID> ids) {
-    return ids.map((id) => getLyricSnippetWithID(id)).toList();
+    return ids.map((id) => getSnippetWithID(id)).toList();
   }
 
-  int getLyricSnippetIndexWithID(LyricSnippetID id) {
+  int getSnippetIndexWithID(LyricSnippetID id) {
     return lyricSnippetList.indexWhere((snippet) => snippet.id == id);
   }
 
-  LyricSnippet getLyricSnippetWithID(LyricSnippetID id) {
+  LyricSnippet getSnippetWithID(LyricSnippetID id) {
     return lyricSnippetList.firstWhere((snippet) => snippet.id == id);
   }
 
-  void removeLyricSnippetWithID(LyricSnippetID id) {
+  void removeSnippetWithID(LyricSnippetID id) {
     lyricSnippetList.removeWhere((snippet) => snippet.id == id);
+  }
+
+  List<LyricSnippet> getSnippetsWithVocalistName(String vocalistName) {
+    return lyricSnippetList
+        .where((snippet) => snippet.vocalist == vocalistName)
+        .toList();
   }
 
   Future<void> loadLyrics() async {
@@ -397,7 +410,7 @@ class TimingService {
         leftSnippet.sentence += rightSnippet.sentence;
         leftSnippet.timingPoints.addAll(rightSnippet.timingPoints);
 
-        removeLyricSnippetWithID(rightSnippet.id);
+        removeSnippetWithID(rightSnippet.id);
       }
     });
     assignIndex(lyricSnippetList);

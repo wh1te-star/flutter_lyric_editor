@@ -47,10 +47,15 @@ class _TimelinePaneState extends State<TimelinePane> {
   double minorMarkLength = 8.0;
   int intervalDuration = 1000;
   bool autoCurrentSelectMode = true;
+  int edittingVocalistIndex = -1;
+  String oldVocalistName = "";
+  late FocusNode textFieldFocusNode;
 
   @override
   void initState() {
     super.initState();
+    textFieldFocusNode = FocusNode();
+    textFieldFocusNode.addListener(_onFocusChange);
     masterSubject.stream.listen((signal) {
       if (signal is NotifyAudioFileLoaded) {
         setState(() {
@@ -71,6 +76,7 @@ class _TimelinePaneState extends State<TimelinePane> {
         });
       }
       if (signal is NotifyLyricParsed ||
+          signal is NotifyVocalistNameChanged ||
           signal is NotifySnippetMove ||
           signal is NotifySnippetDivided ||
           signal is NotifySnippetConcatenated) {
@@ -216,31 +222,60 @@ class _TimelinePaneState extends State<TimelinePane> {
     if (vicinity.column == 0) {
       int row = vicinity.row - 1;
       final vocalistName = snippetsForeachVocalist.entries.toList()[row].key;
-      return TableViewCell(
-        child: GestureDetector(
-          onTapDown: (TapDownDetails details) {
-            if (selectingVocalist.contains(vocalistName)) {
-              selectingVocalist.remove(vocalistName);
-              masterSubject.add(NotifyDeselectingVocalist(vocalistName));
-            } else {
-              selectingVocalist.add(vocalistName);
-              masterSubject.add(NotifySelectingVocalist(vocalistName));
-            }
-            setState(() {});
-          },
-          child: CustomPaint(
-            painter: RectanglePainter(
-              rect: Rect.fromLTRB(0.0, 0.0, 155, 60),
-              sentence: snippetsForeachVocalist.entries
-                  .toList()[row]
-                  .value[row]
-                  .vocalist,
-              indexColor: indexColor(row),
-              isSelected: selectingVocalist.contains(vocalistName),
+      if (edittingVocalistIndex == row) {
+        final TextEditingController controller =
+            TextEditingController(text: vocalistName);
+        oldVocalistName = vocalistName;
+        return TableViewCell(
+          child: TextField(
+            controller: controller,
+            focusNode: textFieldFocusNode,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Editable Text',
+            ),
+            onSubmitted: (value) {
+              edittingVocalistIndex = -1;
+              if (oldVocalistName != value) {
+                masterSubject
+                    .add(RequestChangeVocalistName(oldVocalistName, value));
+              }
+              setState(() {});
+            },
+          ),
+        );
+      } else {
+        return TableViewCell(
+          child: GestureDetector(
+            onTapDown: (TapDownDetails details) {
+              if (selectingVocalist.contains(vocalistName)) {
+                selectingVocalist.remove(vocalistName);
+                masterSubject.add(NotifyDeselectingVocalist(vocalistName));
+              } else {
+                selectingVocalist.add(vocalistName);
+                masterSubject.add(NotifySelectingVocalist(vocalistName));
+              }
+              setState(() {});
+            },
+            onDoubleTap: () {
+              edittingVocalistIndex = row;
+              debugPrint("${row}");
+              setState(() {});
+            },
+            child: CustomPaint(
+              painter: RectanglePainter(
+                rect: Rect.fromLTRB(0.0, 0.0, 155, 60),
+                sentence: snippetsForeachVocalist.entries
+                    .toList()[row]
+                    .value[row]
+                    .vocalist,
+                indexColor: indexColor(row),
+                isSelected: selectingVocalist.contains(vocalistName),
+              ),
             ),
           ),
-        ),
-      );
+        );
+      }
     }
 
     int row = vicinity.row - 1;
@@ -342,6 +377,12 @@ class _TimelinePaneState extends State<TimelinePane> {
         return Colors.redAccent;
     }
     return Colors.black;
+  }
+
+  void _onFocusChange() {
+    if (!textFieldFocusNode.hasFocus) {
+      edittingVocalistIndex = -1;
+    }
   }
 
   void _onHorizontalScroll() {

@@ -62,6 +62,12 @@ class RequestExportLyric {
   RequestExportLyric({this.path = "", this.lyric = ""});
 }
 
+class RequestChangeVocalistName {
+  String oldName;
+  String newName;
+  RequestChangeVocalistName(this.oldName, this.newName);
+}
+
 class RequestToAddLyricTiming {
   LyricSnippetID snippetID;
   int characterPosition;
@@ -87,6 +93,11 @@ class RequestToDeleteLyricTiming {
 enum Choice {
   former,
   latter,
+}
+
+class NotifyVocalistNameChanged {
+  List<LyricSnippet> lyricSnippetList;
+  NotifyVocalistNameChanged(this.lyricSnippetList);
 }
 
 class NotifyTimingPointDeletion {
