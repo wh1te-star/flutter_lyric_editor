@@ -36,7 +36,6 @@ class _TimelinePaneState extends State<TimelinePane> {
 
   Map<String, List<LyricSnippet>> snippetsForeachVocalist = {};
   List<LyricSnippetID> selectingSnippet = [];
-  List<String> vocalistList = [];
   List<String> selectingVocalist = [];
   int audioDuration = 60000;
   int currentPosition = 0;
@@ -50,6 +49,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   int edittingVocalistIndex = -1;
   String oldVocalistName = "";
   late FocusNode textFieldFocusNode;
+  bool isAddVocalistButtonSelected = false;
 
   @override
   void initState() {
@@ -126,7 +126,7 @@ class _TimelinePaneState extends State<TimelinePane> {
             columnCount: 2,
             pinnedColumnCount: 1,
             columnBuilder: _buildColumnSpan,
-            rowCount: snippetsForeachVocalist.length + 1,
+            rowCount: snippetsForeachVocalist.length + 2,
             pinnedRowCount: 1,
             rowBuilder: _buildRowSpan,
           ),
@@ -218,6 +218,35 @@ class _TimelinePaneState extends State<TimelinePane> {
               intervalDuration: intervalDuration),
         ),
       );
+    }
+    if (vicinity.row == snippetsForeachVocalist.length + 1) {
+      if (vicinity.column == 0) {
+        return TableViewCell(
+          child: GestureDetector(
+            onTapDown: (TapDownDetails details) {
+              isAddVocalistButtonSelected = true;
+              setState(() {});
+            },
+            onTapUp: (TapUpDetails details) {
+              isAddVocalistButtonSelected = false;
+              setState(() {});
+            },
+            child: CustomPaint(
+              painter: RectanglePainter(
+                rect: Rect.fromLTRB(0.0, 0.0, 155, 40),
+                sentence: "+",
+                indexColor: Colors.grey,
+                isSelected: isAddVocalistButtonSelected,
+              ),
+            ),
+          ),
+        );
+      } else {
+        return const TableViewCell(
+            child: ColoredBox(
+          color: Colors.blueGrey,
+        ));
+      }
     }
     if (vicinity.column == 0) {
       int row = vicinity.row - 1;
@@ -347,8 +376,16 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   TableSpan _buildRowSpan(int index) {
+    late final extent;
+    if (index == 0) {
+      extent = 20.0;
+    } else if (index == snippetsForeachVocalist.length + 1) {
+      extent = 40.0;
+    } else {
+      extent = 60.0;
+    }
     return TableSpan(
-      extent: FixedTableSpanExtent(index == 0 ? 20 : 60),
+      extent: FixedTableSpanExtent(extent),
       padding: index == 0 ? TableSpanPadding(leading: 10.0) : null,
       foregroundDecoration: const TableSpanDecoration(
         border: TableSpanBorder(
