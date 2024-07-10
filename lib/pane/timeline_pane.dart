@@ -50,6 +50,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   String oldVocalistName = "";
   late FocusNode textFieldFocusNode;
   bool isAddVocalistButtonSelected = false;
+  String isAddVocalistInput = "";
 
   @override
   void initState() {
@@ -221,26 +222,54 @@ class _TimelinePaneState extends State<TimelinePane> {
     }
     if (vicinity.row == snippetsForeachVocalist.length + 1) {
       if (vicinity.column == 0) {
-        return TableViewCell(
-          child: GestureDetector(
-            onTapDown: (TapDownDetails details) {
-              isAddVocalistButtonSelected = true;
-              setState(() {});
-            },
-            onTapUp: (TapUpDetails details) {
-              isAddVocalistButtonSelected = false;
-              setState(() {});
-            },
-            child: CustomPaint(
-              painter: RectanglePainter(
-                rect: Rect.fromLTRB(0.0, 0.0, 155, 40),
-                sentence: "+",
-                indexColor: Colors.grey,
-                isSelected: isAddVocalistButtonSelected,
+        if (isAddVocalistInput != "") {
+          final TextEditingController controller =
+              TextEditingController(text: "");
+          return TableViewCell(
+            child: TextField(
+              controller: controller,
+              focusNode: textFieldFocusNode,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                isAddVocalistInput = value;
+              },
+              onSubmitted: (value) {
+                if (value != "") {
+                  masterSubject.add(RequestAddVocalist(value));
+                  debugPrint("RequestAddVocalist ${value}");
+                }
+                isAddVocalistInput = "";
+                setState(() {});
+              },
+            ),
+          );
+        } else {
+          return TableViewCell(
+            child: GestureDetector(
+              onTapDown: (TapDownDetails details) {
+                isAddVocalistButtonSelected = true;
+                textFieldFocusNode.requestFocus();
+                masterSubject.add(RequestKeyboardShortcutEnable(false));
+                setState(() {});
+              },
+              onTapUp: (TapUpDetails details) {
+                isAddVocalistButtonSelected = false;
+                isAddVocalistInput = "input";
+                setState(() {});
+              },
+              child: CustomPaint(
+                painter: RectanglePainter(
+                  rect: Rect.fromLTRB(0.0, 0.0, 155, 40),
+                  sentence: "+",
+                  indexColor: Colors.grey,
+                  isSelected: isAddVocalistButtonSelected,
+                ),
               ),
             ),
-          ),
-        );
+          );
+        }
       } else {
         return const TableViewCell(
             child: ColoredBox(
@@ -261,7 +290,6 @@ class _TimelinePaneState extends State<TimelinePane> {
             focusNode: textFieldFocusNode,
             decoration: InputDecoration(
               border: OutlineInputBorder(),
-              labelText: 'Editable Text',
             ),
             onSubmitted: (value) {
               edittingVocalistIndex = -1;
@@ -289,6 +317,8 @@ class _TimelinePaneState extends State<TimelinePane> {
             onDoubleTap: () {
               edittingVocalistIndex = row;
               debugPrint("${row}");
+              textFieldFocusNode.requestFocus();
+              masterSubject.add(RequestKeyboardShortcutEnable(false));
               setState(() {});
             },
             child: CustomPaint(
@@ -419,6 +449,12 @@ class _TimelinePaneState extends State<TimelinePane> {
   void _onFocusChange() {
     if (!textFieldFocusNode.hasFocus) {
       edittingVocalistIndex = -1;
+      isAddVocalistInput = "";
+      masterSubject.add(RequestKeyboardShortcutEnable(true));
+      debugPrint("release the text field focus.");
+      setState(() {});
+    } else {
+      debugPrint("enable the text field focus.");
     }
   }
 

@@ -4,12 +4,38 @@ import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
 
-class KeyboardShortcuts extends StatelessWidget {
+class KeyboardShortcuts extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
   final Widget child;
   final FocusNode videoPaneFocusNode;
   final FocusNode textPaneFocusNode;
   final FocusNode timelinePaneFocusNode;
+
+  KeyboardShortcuts({
+    required this.masterSubject,
+    required this.child,
+    required this.videoPaneFocusNode,
+    required this.textPaneFocusNode,
+    required this.timelinePaneFocusNode,
+  });
+
+  @override
+  _KeyboardShortcutsState createState() => _KeyboardShortcutsState(
+      masterSubject: this.masterSubject,
+      child: this.child,
+      videoPaneFocusNode: this.videoPaneFocusNode,
+      textPaneFocusNode: this.textPaneFocusNode,
+      timelinePaneFocusNode: this.timelinePaneFocusNode);
+}
+
+class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
+  final PublishSubject<dynamic> masterSubject;
+  final Widget child;
+  final FocusNode videoPaneFocusNode;
+  final FocusNode textPaneFocusNode;
+  final FocusNode timelinePaneFocusNode;
+
+  bool enable = true;
 
   List<LyricSnippetID> selectingSnippetIDs = [];
   List<String> selectingVocalist = [];
@@ -20,14 +46,25 @@ class KeyboardShortcuts extends StatelessWidget {
   int selectedPosition = 0;
   LyricSnippetID selectedSnippetID = LyricSnippetID("", 0);
 
-  KeyboardShortcuts({
+  _KeyboardShortcutsState({
     required this.masterSubject,
     required this.child,
     required this.videoPaneFocusNode,
     required this.textPaneFocusNode,
     required this.timelinePaneFocusNode,
-  }) {
-    masterSubject.stream.listen((signal) {
+  });
+
+  @override
+  void initState() {
+    super.initState();
+
+    widget.masterSubject.stream.listen((signal) {
+      if (signal is RequestKeyboardShortcutEnable) {
+        enable = signal.enable;
+        debugPrint("enable: ${enable}");
+        setState(() {});
+        NotifyKeyboardShortcutEnable(enable);
+      }
       if (signal is NotifySelectingSnippets) {
         selectingSnippetIDs = signal.snippetIDs;
       }
@@ -205,13 +242,23 @@ class KeyboardShortcuts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Shortcuts(
-      shortcuts: shortcuts,
-      child: Actions(
-        actions: actions,
-        child: child,
-      ),
-    );
+    if (enable) {
+      return Shortcuts(
+        shortcuts: shortcuts,
+        child: Actions(
+          actions: actions,
+          child: child,
+        ),
+      );
+    } else {
+      return Shortcuts(
+        shortcuts: <LogicalKeySet, Intent>{},
+        child: Actions(
+          actions: <Type, Action<Intent>>{},
+          child: child,
+        ),
+      );
+    }
   }
 }
 

@@ -2,6 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/sorted_list.dart';
 
+class RequestKeyboardShortcutEnable {
+  bool enable;
+  RequestKeyboardShortcutEnable(this.enable);
+}
+
+class NotifyKeyboardShortcutEnable {
+  bool enable;
+  NotifyKeyboardShortcutEnable(this.enable);
+}
+
 class RequestInitAudio {
   String path;
   RequestInitAudio({this.path = ""});
