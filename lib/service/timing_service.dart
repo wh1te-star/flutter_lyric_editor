@@ -83,7 +83,11 @@ class TimingService {
       }
       if (signal is RequestAddVocalist) {
         addVocalist(signal.vocalistName);
-        masterSubject.add(NotifyVocalistNameAdded(lyricSnippetList));
+        masterSubject.add(NotifyVocalistAdded(lyricSnippetList));
+      }
+      if (signal is RequestDeleteVocalist) {
+        deleteVocalist(signal.vocalistName);
+        masterSubject.add(NotifyVocalistDeleted(lyricSnippetList));
       }
       if (signal is RequestChangeVocalistName) {
         getSnippetsWithVocalistName(signal.oldName)
@@ -180,6 +184,10 @@ class TimingService {
         sentence: "",
         startTimestamp: 0,
         timingPoints: [TimingPoint(0, 1)]));
+  }
+
+  void deleteVocalist(String vocalistName) {
+    lyricSnippetList.removeWhere((snippet) => snippet.vocalist == vocalistName);
   }
 
   Future<void> loadLyrics() async {

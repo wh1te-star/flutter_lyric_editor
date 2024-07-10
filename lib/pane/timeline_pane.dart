@@ -77,7 +77,8 @@ class _TimelinePaneState extends State<TimelinePane> {
         });
       }
       if (signal is NotifyLyricParsed ||
-          signal is NotifyVocalistNameAdded ||
+          signal is NotifyVocalistAdded ||
+          signal is NotifyVocalistDeleted ||
           signal is NotifyVocalistNameChanged ||
           signal is NotifySnippetMove ||
           signal is NotifySnippetDivided ||
@@ -294,7 +295,9 @@ class _TimelinePaneState extends State<TimelinePane> {
             ),
             onSubmitted: (value) {
               edittingVocalistIndex = -1;
-              if (oldVocalistName != value) {
+              if (value == "") {
+                masterSubject.add(RequestDeleteVocalist(oldVocalistName));
+              } else if (oldVocalistName != value) {
                 masterSubject
                     .add(RequestChangeVocalistName(oldVocalistName, value));
               }

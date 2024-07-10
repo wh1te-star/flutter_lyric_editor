@@ -115,9 +115,9 @@ enum Choice {
   latter,
 }
 
-class NotifyVocalistNameAdded {
+class NotifyVocalistAdded {
   List<LyricSnippet> lyricSnippetList;
-  NotifyVocalistNameAdded(this.lyricSnippetList);
+  NotifyVocalistAdded(this.lyricSnippetList);
 }
 
 class NotifyVocalistDeleted {
