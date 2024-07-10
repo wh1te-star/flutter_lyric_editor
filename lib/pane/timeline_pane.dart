@@ -77,6 +77,7 @@ class _TimelinePaneState extends State<TimelinePane> {
         });
       }
       if (signal is NotifyLyricParsed ||
+          signal is NotifyVocalistNameAdded ||
           signal is NotifyVocalistNameChanged ||
           signal is NotifySnippetMove ||
           signal is NotifySnippetDivided ||
@@ -326,7 +327,7 @@ class _TimelinePaneState extends State<TimelinePane> {
                 rect: Rect.fromLTRB(0.0, 0.0, 155, 60),
                 sentence: snippetsForeachVocalist.entries
                     .toList()[row]
-                    .value[row]
+                    .value[0]
                     .vocalist,
                 indexColor: indexColor(row),
                 isSelected: selectingVocalist.contains(vocalistName),

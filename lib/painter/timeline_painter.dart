@@ -28,6 +28,7 @@ class TimelinePainter extends CustomPainter {
     final bottom = size.height - bottomMargin;
 
     snippets.forEach((LyricSnippet snippet) {
+      if (snippet.sentence == "") return;
       final endtime = snippet.startTimestamp +
           snippet.timingPoints
               .map((point) => point.wordDuration)

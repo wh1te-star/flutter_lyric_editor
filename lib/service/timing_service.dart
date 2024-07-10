@@ -81,6 +81,10 @@ class TimingService {
         final File file = File(result.path);
         await file.writeAsString(rawLyricText);
       }
+      if (signal is RequestAddVocalist) {
+        addVocalist(signal.vocalistName);
+        masterSubject.add(NotifyVocalistNameAdded(lyricSnippetList));
+      }
       if (signal is RequestChangeVocalistName) {
         getSnippetsWithVocalistName(signal.oldName)
             .forEach((LyricSnippet snippet) {
@@ -167,6 +171,15 @@ class TimingService {
     return lyricSnippetList
         .where((snippet) => snippet.vocalist == vocalistName)
         .toList();
+  }
+
+  void addVocalist(String vocalistName) {
+    lyricSnippetList.add(LyricSnippet(
+        vocalist: vocalistName,
+        index: 0,
+        sentence: "",
+        startTimestamp: 0,
+        timingPoints: [TimingPoint(0, 1)]));
   }
 
   Future<void> loadLyrics() async {
