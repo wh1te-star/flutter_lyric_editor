@@ -1,5 +1,5 @@
 class LyricSnippet {
-  String vocalist;
+  Vocalist vocalist;
   int index;
   String sentence;
   int startTimestamp;
@@ -46,6 +46,12 @@ class LyricSnippet {
   }
 }
 
+class Vocalist {
+  String name;
+  int color;
+  Vocalist(this.name, this.color);
+}
+
 class TimingPoint {
   int wordLength;
   int wordDuration;
@@ -53,7 +59,7 @@ class TimingPoint {
 }
 
 class LyricSnippetID {
-  String vocalist;
+  Vocalist vocalist;
   int index;
   LyricSnippetID(this.vocalist, this.index);
 

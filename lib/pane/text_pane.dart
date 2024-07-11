@@ -26,7 +26,7 @@ class _TextPaneState extends State<TextPane> {
   static const String linefeedChar = '\n';
   //static const String sectionChar = '\n\n';
 
-  LyricSnippetID snippetID = LyricSnippetID("", 0);
+  LyricSnippetID snippetID = LyricSnippetID(Vocalist("", 0), 0);
   String entireLyricString = "";
   int cursorPosition = 0;
   int seekPosition = 0;

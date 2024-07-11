@@ -47,7 +47,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   int intervalDuration = 1000;
   bool autoCurrentSelectMode = true;
   int edittingVocalistIndex = -1;
-  String oldVocalistName = "";
+  String oldVocalistValue = "";
   late FocusNode textFieldFocusNode;
   bool isAddVocalistButtonSelected = false;
   String isAddVocalistInput = "";
@@ -85,7 +85,7 @@ class _TimelinePaneState extends State<TimelinePane> {
           signal is NotifySnippetConcatenated) {
         setState(() {
           snippetsForeachVocalist = groupBy(signal.lyricSnippetList,
-              (LyricSnippet snippet) => snippet.vocalist);
+              (LyricSnippet snippet) => snippet.vocalist.name);
         });
       }
       if (signal is RequestTimelineZoomIn) {
@@ -281,11 +281,12 @@ class _TimelinePaneState extends State<TimelinePane> {
     }
     if (vicinity.column == 0) {
       int row = vicinity.row - 1;
-      final vocalistName = snippetsForeachVocalist.entries.toList()[row].key;
+      final String vocalistName =
+          snippetsForeachVocalist.entries.toList()[row].key;
       if (edittingVocalistIndex == row) {
         final TextEditingController controller =
             TextEditingController(text: vocalistName);
-        oldVocalistName = vocalistName;
+        oldVocalistValue = vocalistName;
         return TableViewCell(
           child: TextField(
             controller: controller,
@@ -296,10 +297,10 @@ class _TimelinePaneState extends State<TimelinePane> {
             onSubmitted: (value) {
               edittingVocalistIndex = -1;
               if (value == "") {
-                masterSubject.add(RequestDeleteVocalist(oldVocalistName));
-              } else if (oldVocalistName != value) {
+                masterSubject.add(RequestDeleteVocalist(oldVocalistValue));
+              } else if (oldVocalistValue != value) {
                 masterSubject
-                    .add(RequestChangeVocalistName(oldVocalistName, value));
+                    .add(RequestChangeVocalistName(oldVocalistValue, value));
               }
               setState(() {});
             },
@@ -331,7 +332,8 @@ class _TimelinePaneState extends State<TimelinePane> {
                 sentence: snippetsForeachVocalist.entries
                     .toList()[row]
                     .value[0]
-                    .vocalist,
+                    .vocalist
+                    .name,
                 indexColor: indexColor(row),
                 isSelected: selectingVocalist.contains(vocalistName),
               ),

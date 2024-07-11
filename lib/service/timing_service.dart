@@ -34,7 +34,7 @@ class TimingService {
               rawText.replaceAll("\n", "").replaceAll("\r", "");
           lyricSnippetList.clear();
           lyricSnippetList.add(LyricSnippet(
-            vocalist: "vocalist 1",
+            vocalist: Vocalist("vocalist 1", 0),
             index: 1,
             sentence: singlelineText,
             startTimestamp: 0,
@@ -92,7 +92,7 @@ class TimingService {
       if (signal is RequestChangeVocalistName) {
         getSnippetsWithVocalistName(signal.oldName)
             .forEach((LyricSnippet snippet) {
-          snippet.vocalist = signal.newName;
+          snippet.vocalist = Vocalist(signal.newName, 0);
         });
         masterSubject.add(NotifyVocalistNameChanged(lyricSnippetList));
       }
@@ -173,13 +173,13 @@ class TimingService {
 
   List<LyricSnippet> getSnippetsWithVocalistName(String vocalistName) {
     return lyricSnippetList
-        .where((snippet) => snippet.vocalist == vocalistName)
+        .where((snippet) => snippet.vocalist.name == vocalistName)
         .toList();
   }
 
   void addVocalist(String vocalistName) {
     lyricSnippetList.add(LyricSnippet(
-        vocalist: vocalistName,
+        vocalist: Vocalist(vocalistName, 0),
         index: 0,
         sentence: "",
         startTimestamp: 0,
@@ -187,7 +187,8 @@ class TimingService {
   }
 
   void deleteVocalist(String vocalistName) {
-    lyricSnippetList.removeWhere((snippet) => snippet.vocalist == vocalistName);
+    lyricSnippetList
+        .removeWhere((snippet) => snippet.vocalist.name == vocalistName);
   }
 
   Future<void> loadLyrics() async {
@@ -233,7 +234,7 @@ class TimingService {
         sentence += word;
       }
       snippets.add(LyricSnippet(
-        vocalist: vocalistName,
+        vocalist: Vocalist(vocalistName, 123456),
         index: 0,
         sentence: sentence,
         startTimestamp: startTime,
@@ -252,7 +253,7 @@ class TimingService {
     builder.element('Lyrics', nest: () {
       for (var snippet in lyricSnippetList) {
         builder.element('LineTimestamp', attributes: {
-          'vocalistName': snippet.vocalist,
+          'vocalistName': snippet.vocalist.name,
           'startTime': _formatTimestamp(snippet.startTimestamp),
         }, nest: () {
           int characterPosition = 0;
@@ -274,12 +275,12 @@ class TimingService {
   }
 
   void assignIndex(List<LyricSnippet> snippets) {
-    Map<String, int> idMap = {};
+    Map<Vocalist, int> idMap = {};
 
     snippets.sort((LyricSnippet a, LyricSnippet b) =>
         a.startTimestamp.compareTo(b.startTimestamp));
     snippets.forEach((LyricSnippet snippet) {
-      String vocalist = snippet.vocalist;
+      Vocalist vocalist = snippet.vocalist;
       if (!idMap.containsKey(vocalist)) {
         idMap[vocalist] = 1;
       } else {
@@ -295,7 +296,7 @@ class TimingService {
     builder.element('Lyrics', nest: () {
       for (var snippet in lyricSnippetList) {
         builder.element('LineTimestamp', attributes: {
-          'vocalistName': snippet.vocalist,
+          'vocalistName': snippet.vocalist.name,
           'startTime': _formatTimestamp(snippet.startTimestamp),
         }, nest: () {
           int characterPosition = 0;
@@ -371,7 +372,7 @@ class TimingService {
         lyricSnippetList[index].sentence.substring(0, charPosition);
     String afterString =
         lyricSnippetList[index].sentence.substring(charPosition);
-    String vocalist = lyricSnippetList[index].vocalist;
+    Vocalist vocalist = lyricSnippetList[index].vocalist;
     List<LyricSnippet> newSnippets = [];
     if (beforeString.isNotEmpty) {
       int snippetDuration =
@@ -410,7 +411,7 @@ class TimingService {
   }
 
   void concatenateSnippets(List<LyricSnippet> snippets) {
-    Map<String, List<LyricSnippet>> snippetsForeachVocalist = groupBy(
+    Map<Vocalist, List<LyricSnippet>> snippetsForeachVocalist = groupBy(
       snippets,
       (LyricSnippet snippet) => snippet.vocalist,
     );

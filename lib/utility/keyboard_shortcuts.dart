@@ -44,7 +44,7 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
 
   bool textSelectMode = false;
   int selectedPosition = 0;
-  LyricSnippetID selectedSnippetID = LyricSnippetID("", 0);
+  LyricSnippetID selectedSnippetID = LyricSnippetID(Vocalist("", 0), 0);
 
   _KeyboardShortcutsState({
     required this.masterSubject,
