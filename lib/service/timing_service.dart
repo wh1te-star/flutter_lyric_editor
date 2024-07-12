@@ -1,4 +1,6 @@
+import 'dart:collection';
 import 'dart:io';
+import 'package:collection/collection.dart';
 import 'package:collection/collection.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +14,8 @@ class TimingService {
   final BuildContext context;
   final PublishSubject<dynamic> masterSubject;
   String rawLyricText = "";
+  Map<String, int> vocalistColorList = {};
+  Map<String, List<String>> vocalistCombinationCorrespondence = {};
   List<LyricSnippet> lyricSnippetList = [];
   Future<void>? _loadLyricsFuture;
   int currentPosition = 0;
@@ -215,9 +219,27 @@ class TimingService {
 
   List<LyricSnippet> parseLyric(String rawLyricText) {
     final document = xml.XmlDocument.parse(rawLyricText);
+
+    final vocalistCombination = document.findAllElements('VocalistsColor');
+    for (var vocalistName in vocalistCombination) {
+      final colorElements = vocalistName.findElements('Color');
+      for (var colorElement in colorElements) {
+        final name = colorElement.getAttribute('name')!;
+        final color = int.parse(colorElement.getAttribute('color')!, radix: 16);
+        vocalistColorList[name] = color;
+
+        final vocalistNames = colorElement
+            .findAllElements('Vocalist')
+            .map((e) => e.innerText)
+            .toList();
+        if (vocalistNames.length >= 2) {
+          vocalistCombinationCorrespondence[name] = vocalistNames;
+        }
+      }
+    }
+
     final lineTimestamps = document.findAllElements('LineTimestamp');
     List<LyricSnippet> snippets = [];
-
     for (var lineTimestamp in lineTimestamps) {
       final startTime =
           parseTimestamp(lineTimestamp.getAttribute('startTime')!);

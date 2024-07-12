@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class LyricSnippet {
   Vocalist vocalist;
   int index;
@@ -50,6 +52,23 @@ class Vocalist {
   String name;
   int color;
   Vocalist(this.name, this.color);
+}
+
+class VocalistCombination {
+  List<String> vocalistNames;
+
+  VocalistCombination(this.vocalistNames);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is VocalistCombination &&
+          runtimeType == other.runtimeType &&
+          listEquals(vocalistNames..sort(), other.vocalistNames..sort());
+
+  @override
+  int get hashCode =>
+      vocalistNames.fold(0, (prev, element) => 31 * prev + element.hashCode);
 }
 
 class TimingPoint {
