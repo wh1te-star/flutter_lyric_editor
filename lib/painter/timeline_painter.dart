@@ -10,7 +10,7 @@ class TimelinePainter extends CustomPainter {
   final int intervalDuration;
   final double topMargin;
   final double bottomMargin;
-  final Color indexColor;
+  final Color color;
 
   TimelinePainter({
     required this.snippets,
@@ -19,7 +19,7 @@ class TimelinePainter extends CustomPainter {
     required this.intervalDuration,
     required this.topMargin,
     required this.bottomMargin,
-    required this.indexColor,
+    required this.color,
   });
 
   @override
@@ -41,7 +41,7 @@ class TimelinePainter extends CustomPainter {
       final rectanglePainter = RectanglePainter(
         rect: rect,
         sentence: snippet.sentence,
-        indexColor: indexColor,
+        color: color,
         isSelected: isSelected,
       );
       rectanglePainter.paint(canvas, size);

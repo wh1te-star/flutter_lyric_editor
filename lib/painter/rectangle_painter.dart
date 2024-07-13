@@ -3,26 +3,25 @@ import 'package:flutter/material.dart';
 class RectanglePainter extends CustomPainter {
   final Rect rect;
   final String sentence;
-  final Color indexColor;
+  final Color color;
   final bool isSelected;
 
   RectanglePainter({
     required this.rect,
     required this.sentence,
-    required this.indexColor,
+    required this.color,
     required this.isSelected,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final mainPaint = Paint()..color = indexColor;
+    final mainPaint = Paint()..color = color;
     canvas.drawRect(rect, mainPaint);
 
     final textSpan = TextSpan(
       text: sentence,
       style: TextStyle(
-          color: ThemeData.estimateBrightnessForColor(indexColor) ==
-                  Brightness.light
+          color: ThemeData.estimateBrightnessForColor(color) == Brightness.light
               ? Colors.black
               : Colors.white,
           fontSize: 16),
@@ -47,8 +46,8 @@ class RectanglePainter extends CustomPainter {
     textPainter.paint(canvas, offset);
 
     final double edgeWidth = 1.5;
-    final lighterColor = _adjustColorBrightness(indexColor, 0.1);
-    final darkerColor = _adjustColorBrightness(indexColor, -0.3);
+    final lighterColor = _adjustColorBrightness(color, 0.1);
+    final darkerColor = _adjustColorBrightness(color, -0.3);
     final borderRadius = 1.0;
     final leftInner = rect.left + borderRadius;
     final topInner = rect.top + borderRadius;
@@ -103,7 +102,7 @@ class RectanglePainter extends CustomPainter {
   bool shouldRepaint(covariant RectanglePainter oldDelegate) {
     return oldDelegate.rect != rect ||
         oldDelegate.sentence != sentence ||
-        oldDelegate.indexColor != indexColor ||
+        oldDelegate.color != color ||
         oldDelegate.isSelected != isSelected;
   }
 }

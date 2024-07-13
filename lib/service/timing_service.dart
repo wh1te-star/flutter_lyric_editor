@@ -1,6 +1,4 @@
-import 'dart:collection';
 import 'dart:io';
-import 'package:collection/collection.dart';
 import 'package:collection/collection.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +42,8 @@ class TimingService {
             startTimestamp: 0,
             timingPoints: [TimingPoint(singlelineText.length, audioDuration)],
           ));
-          masterSubject.add(NotifyLyricParsed(lyricSnippetList));
+          masterSubject.add(NotifyLyricParsed(lyricSnippetList,
+              vocalistColorList, vocalistCombinationCorrespondence));
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('No file selected')),
@@ -63,7 +62,8 @@ class TimingService {
         if (file != null) {
           rawLyricText = await file.readAsString();
           lyricSnippetList = parseLyric(rawLyricText);
-          masterSubject.add(NotifyLyricParsed(lyricSnippetList));
+          masterSubject.add(NotifyLyricParsed(lyricSnippetList,
+              vocalistColorList, vocalistCombinationCorrespondence));
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('No file selected')),
@@ -87,18 +87,17 @@ class TimingService {
       }
       if (signal is RequestAddVocalist) {
         addVocalist(signal.vocalistName);
-        masterSubject.add(NotifyVocalistAdded(lyricSnippetList));
+        masterSubject.add(NotifyVocalistAdded(lyricSnippetList,
+            vocalistColorList, vocalistCombinationCorrespondence));
       }
       if (signal is RequestDeleteVocalist) {
         deleteVocalist(signal.vocalistName);
-        masterSubject.add(NotifyVocalistDeleted(lyricSnippetList));
+        masterSubject.add(NotifyVocalistDeleted(lyricSnippetList,
+            vocalistColorList, vocalistCombinationCorrespondence));
       }
       if (signal is RequestChangeVocalistName) {
-        getSnippetsWithVocalistName(signal.oldName)
-            .forEach((LyricSnippet snippet) {
-          snippet.vocalist = Vocalist(signal.newName, 0);
-        });
-        masterSubject.add(NotifyVocalistNameChanged(lyricSnippetList));
+        masterSubject.add(NotifyVocalistNameChanged(lyricSnippetList,
+            vocalistColorList, vocalistCombinationCorrespondence));
       }
       if (signal is RequestToAddLyricTiming) {
         LyricSnippet snippet = getSnippetWithID(signal.snippetID);
@@ -182,6 +181,7 @@ class TimingService {
   }
 
   void addVocalist(String vocalistName) {
+    vocalistColorList[vocalistName] = 0xFF222222;
     lyricSnippetList.add(LyricSnippet(
         vocalist: Vocalist(vocalistName, 0),
         index: 0,
@@ -191,8 +191,32 @@ class TimingService {
   }
 
   void deleteVocalist(String vocalistName) {
+    vocalistColorList.remove(vocalistName);
     lyricSnippetList
         .removeWhere((snippet) => snippet.vocalist.name == vocalistName);
+  }
+
+  void changeVocalistName(String oldName, String newName) {
+    Map<String, List<String>> updatedMap = {};
+
+    vocalistCombinationCorrespondence.forEach((String key, List<String> value) {
+      int index = value.indexOf(oldName);
+      if (index != -1) {
+        value[index] = newName;
+        updatedMap[value.join(", ")] = value;
+      } else {
+        updatedMap[key] = value;
+      }
+    });
+
+    vocalistCombinationCorrespondence = updatedMap;
+
+    vocalistColorList[newName] = vocalistColorList[oldName]!;
+    vocalistColorList.remove(oldName);
+
+    getSnippetsWithVocalistName(oldName).forEach((LyricSnippet snippet) {
+      snippet.vocalist = Vocalist(newName, 0);
+    });
   }
 
   Future<void> loadLyrics() async {
@@ -201,7 +225,8 @@ class TimingService {
       masterSubject.add(NotifyLyricLoaded(rawLyricText));
 
       lyricSnippetList = parseLyric(rawLyricText);
-      masterSubject.add(NotifyLyricParsed(lyricSnippetList));
+      masterSubject.add(NotifyLyricParsed(lyricSnippetList, vocalistColorList,
+          vocalistCombinationCorrespondence));
       //writeTranslatedXmlToFile();
     } catch (e) {
       debugPrint("Error loading lyrics: $e");
@@ -226,7 +251,7 @@ class TimingService {
       for (var colorElement in colorElements) {
         final name = colorElement.getAttribute('name')!;
         final color = int.parse(colorElement.getAttribute('color')!, radix: 16);
-        vocalistColorList[name] = color;
+        vocalistColorList[name] = color + 0xFF000000;
 
         final vocalistNames = colorElement
             .findAllElements('Vocalist')

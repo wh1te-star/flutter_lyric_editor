@@ -35,6 +35,8 @@ class _TimelinePaneState extends State<TimelinePane> {
       direction: AxisDirection.right, controller: ScrollController());
 
   Map<String, List<LyricSnippet>> snippetsForeachVocalist = {};
+  Map<String, int> vocalistColorList = {};
+  Map<String, List<String>> vocalistCombinationCorrespondence = {};
   List<LyricSnippetID> selectingSnippet = [];
   List<String> selectingVocalist = [];
   int audioDuration = 60000;
@@ -76,17 +78,23 @@ class _TimelinePaneState extends State<TimelinePane> {
           currentPosition = signal.seekPosition;
         });
       }
+      if (signal is NotifySnippetMove ||
+          signal is NotifySnippetDivided ||
+          signal is NotifySnippetConcatenated) {
+        snippetsForeachVocalist = groupBy(signal.lyricSnippetList,
+            (LyricSnippet snippet) => snippet.vocalist.name);
+        setState(() {});
+      }
       if (signal is NotifyLyricParsed ||
           signal is NotifyVocalistAdded ||
           signal is NotifyVocalistDeleted ||
-          signal is NotifyVocalistNameChanged ||
-          signal is NotifySnippetMove ||
-          signal is NotifySnippetDivided ||
-          signal is NotifySnippetConcatenated) {
-        setState(() {
-          snippetsForeachVocalist = groupBy(signal.lyricSnippetList,
-              (LyricSnippet snippet) => snippet.vocalist.name);
-        });
+          signal is NotifyVocalistNameChanged) {
+        snippetsForeachVocalist = groupBy(signal.lyricSnippetList,
+            (LyricSnippet snippet) => snippet.vocalist.name);
+        vocalistColorList = signal.vocalistColorList;
+        vocalistCombinationCorrespondence =
+            signal.vocalistCombinationCorrespondence;
+        setState(() {});
       }
       if (signal is RequestTimelineZoomIn) {
         zoomIn();
@@ -180,18 +188,16 @@ class _TimelinePaneState extends State<TimelinePane> {
     return currentSnippet;
   }
 
+  Color blendColors(Color color1, Color color2) {
+    int alpha = ((color1.alpha + color2.alpha) / 2).round();
+    int red = ((color1.red + color2.red) / 2).round();
+    int green = ((color1.green + color2.green) / 2).round();
+    int blue = ((color1.blue + color2.blue) / 2).round();
+
+    return Color.fromARGB(alpha, red, green, blue);
+  }
+
   TableViewCell _buildCell(BuildContext context, TableVicinity vicinity) {
-    final ({String name, Color color}) cell =
-        (name: "empty", color: indexColor(vicinity.row - 1));
-    final Color textColor =
-        ThemeData.estimateBrightnessForColor(cell.color) == Brightness.light
-            ? Colors.black
-            : Colors.white;
-    final TextStyle style = TextStyle(
-      color: textColor,
-      fontSize: 18.0,
-      fontWeight: vicinity.column == 0 ? FontWeight.bold : null,
-    );
     if (vicinity.row == 0 && vicinity.column == 0) {
       return TableViewCell(
         child: GestureDetector(
@@ -203,7 +209,7 @@ class _TimelinePaneState extends State<TimelinePane> {
             painter: RectanglePainter(
               rect: Rect.fromLTRB(1.0, -9.0, 154, 19),
               sentence: "Auto Select Mode",
-              indexColor: Colors.purpleAccent,
+              color: Colors.purpleAccent,
               isSelected: autoCurrentSelectMode,
             ),
           ),
@@ -265,7 +271,7 @@ class _TimelinePaneState extends State<TimelinePane> {
                 painter: RectanglePainter(
                   rect: Rect.fromLTRB(0.0, 0.0, 155, 40),
                   sentence: "+",
-                  indexColor: Colors.grey,
+                  color: Colors.grey,
                   isSelected: isAddVocalistButtonSelected,
                 ),
               ),
@@ -279,10 +285,10 @@ class _TimelinePaneState extends State<TimelinePane> {
         ));
       }
     }
+    int row = vicinity.row - 1;
+    final String vocalistName =
+        snippetsForeachVocalist.entries.toList()[row].key;
     if (vicinity.column == 0) {
-      int row = vicinity.row - 1;
-      final String vocalistName =
-          snippetsForeachVocalist.entries.toList()[row].key;
       if (edittingVocalistIndex == row) {
         final TextEditingController controller =
             TextEditingController(text: vocalistName);
@@ -334,7 +340,7 @@ class _TimelinePaneState extends State<TimelinePane> {
                     .value[0]
                     .vocalist
                     .name,
-                indexColor: indexColor(row),
+                color: Color(vocalistColorList[vocalistName]!),
                 isSelected: selectingVocalist.contains(vocalistName),
               ),
             ),
@@ -342,8 +348,6 @@ class _TimelinePaneState extends State<TimelinePane> {
         );
       }
     }
-
-    int row = vicinity.row - 1;
     if (row < snippetsForeachVocalist.length) {
       double topMargin = 10;
       double bottomMargin = 5;
@@ -374,14 +378,13 @@ class _TimelinePaneState extends State<TimelinePane> {
           },
           child: CustomPaint(
             painter: TimelinePainter(
-              snippets: snippetsForeachVocalist.entries.toList()[row].value,
-              selectingId: selectingSnippet,
-              intervalLength: intervalLength,
-              intervalDuration: intervalDuration,
-              topMargin: topMargin,
-              bottomMargin: bottomMargin,
-              indexColor: indexColor(row),
-            ),
+                snippets: snippetsForeachVocalist.entries.toList()[row].value,
+                selectingId: selectingSnippet,
+                intervalLength: intervalLength,
+                intervalDuration: intervalDuration,
+                topMargin: topMargin,
+                bottomMargin: bottomMargin,
+                color: Color(vocalistColorList[vocalistName]!)),
           ),
         ),
       );
@@ -432,24 +435,6 @@ class _TimelinePaneState extends State<TimelinePane> {
         ),
       ),
     );
-  }
-
-  Color indexColor(int index) {
-    switch (index) {
-      case 0:
-        return Colors.greenAccent;
-      case 1:
-        return Colors.blueAccent;
-      case 2:
-        return Colors.cyanAccent;
-      case 3:
-        return Colors.purpleAccent;
-      case 4:
-        return Colors.yellowAccent;
-      case 5:
-        return Colors.redAccent;
-    }
-    return Colors.black;
   }
 
   void _onFocusChange() {

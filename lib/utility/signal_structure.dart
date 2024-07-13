@@ -117,17 +117,26 @@ enum Choice {
 
 class NotifyVocalistAdded {
   List<LyricSnippet> lyricSnippetList;
-  NotifyVocalistAdded(this.lyricSnippetList);
+  Map<String, int> vocalistColorList = {};
+  Map<String, List<String>> vocalistCombinationCorrespondence = {};
+  NotifyVocalistAdded(this.lyricSnippetList, this.vocalistColorList,
+      this.vocalistCombinationCorrespondence);
 }
 
 class NotifyVocalistDeleted {
   List<LyricSnippet> lyricSnippetList;
-  NotifyVocalistDeleted(this.lyricSnippetList);
+  Map<String, int> vocalistColorList = {};
+  Map<String, List<String>> vocalistCombinationCorrespondence = {};
+  NotifyVocalistDeleted(this.lyricSnippetList, this.vocalistColorList,
+      this.vocalistCombinationCorrespondence);
 }
 
 class NotifyVocalistNameChanged {
   List<LyricSnippet> lyricSnippetList;
-  NotifyVocalistNameChanged(this.lyricSnippetList);
+  Map<String, int> vocalistColorList = {};
+  Map<String, List<String>> vocalistCombinationCorrespondence = {};
+  NotifyVocalistNameChanged(this.lyricSnippetList, this.vocalistColorList,
+      this.vocalistCombinationCorrespondence);
 }
 
 class NotifyTimingPointDeletion {
@@ -187,8 +196,10 @@ class NotifyLyricLoaded {
 
 class NotifyLyricParsed {
   List<LyricSnippet> lyricSnippetList;
-  //SortedList<int> sectionPoints;
-  NotifyLyricParsed(this.lyricSnippetList);
+  Map<String, int> vocalistColorList = {};
+  Map<String, List<String>> vocalistCombinationCorrespondence = {};
+  NotifyLyricParsed(this.lyricSnippetList, this.vocalistColorList,
+      this.vocalistCombinationCorrespondence);
 }
 
 class RequestMoveUpCharCursor {}
