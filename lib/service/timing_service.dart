@@ -96,6 +96,7 @@ class TimingService {
             vocalistColorList, vocalistCombinationCorrespondence));
       }
       if (signal is RequestChangeVocalistName) {
+        changeVocalistName(signal.oldName, signal.newName);
         masterSubject.add(NotifyVocalistNameChanged(lyricSnippetList,
             vocalistColorList, vocalistCombinationCorrespondence));
       }

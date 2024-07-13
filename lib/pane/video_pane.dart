@@ -21,9 +21,11 @@ class _VideoPaneState extends State<VideoPane> {
   _VideoPaneState(this.masterSubject, this.focusNode);
   bool isPlaying = true;
   int currentSeekPosition = 0;
-  List<LyricSnippet> lyricSnippets = [];
+  List<LyricSnippet> lyricSnippetList = [];
   Map<String, int> vocalistColorList = {};
   Map<String, List<String>> vocalistCombinationCorrespondence = {};
+
+  int maxLanes = 0;
 
   @override
   void initState() {
@@ -36,14 +38,16 @@ class _VideoPaneState extends State<VideoPane> {
         currentSeekPosition = signal.seekPosition;
       }
       if (signal is NotifyLyricParsed) {
-        lyricSnippets = signal.lyricSnippetList;
+        lyricSnippetList = signal.lyricSnippetList;
         vocalistColorList = signal.vocalistColorList;
         vocalistCombinationCorrespondence =
             signal.vocalistCombinationCorrespondence;
+        maxLanes = getMaxLanes(lyricSnippetList);
       }
       if (signal is NotifySnippetDivided ||
           signal is NotifySnippetConcatenated) {
-        lyricSnippets = signal.lyricSnippetList;
+        lyricSnippetList = signal.lyricSnippetList;
+        maxLanes = getMaxLanes(lyricSnippetList);
       }
       if (signal is NotifyTimingPointAdded ||
           signal is NotifyTimingPointDeletion) {
@@ -57,7 +61,7 @@ class _VideoPaneState extends State<VideoPane> {
   String defaultText = "Video Pane";
 
   LyricSnippet getLyricSnippetWithID(LyricSnippetID id) {
-    return lyricSnippets.firstWhere((snippet) => snippet.id == id);
+    return lyricSnippetList.firstWhere((snippet) => snippet.id == id);
   }
 
   Widget outlinedText(LyricSnippet snippet, String fontFamily) {
@@ -85,6 +89,10 @@ class _VideoPaneState extends State<VideoPane> {
             accumulatedTimingPoints[currentCharIndex].wordDuration) /
         snippet.timingPoints[currentCharIndex].wordDuration;
     //debugPrint("startChar: ${startChar}, endCar:${startChar + snippet.timingPoints[currentCharIndex].wordLength}, percent: ${percent}");
+    Color fontColor = Color(0);
+    if (vocalistColorList.containsKey(snippet.vocalist.name)) {
+      fontColor = Color(vocalistColorList[snippet.vocalist.name]!);
+    }
     return CustomPaint(
       painter: PartialTextPainter(
         text: snippet.sentence,
@@ -93,7 +101,7 @@ class _VideoPaneState extends State<VideoPane> {
         percent: percent,
         fontFamily: fontFamily,
         fontSize: 40,
-        fontBaseColor: Color(vocalistColorList[snippet.vocalist.name]!),
+        fontBaseColor: fontColor,
         firstOutlineWidth: 2,
         secondOutlineWidth: 4,
       ),
@@ -101,23 +109,25 @@ class _VideoPaneState extends State<VideoPane> {
     );
   }
 
-  List<LyricSnippet> getSnippetsAtCurrentSeekPosition() {
-    return lyricSnippets.where((snippet) {
-      return snippet.startTimestamp < currentSeekPosition &&
-          currentSeekPosition < snippet.endTimestamp;
-    }).toList();
-  }
-
   @override
   Widget build(BuildContext context) {
     String fontFamily = "Times New Roman";
-    List<LyricSnippet> currentSnippet = getSnippetsAtCurrentSeekPosition();
+    List<LyricSnippet> currentSnippets = getSnippetsAtCurrentSeekPosition();
 
-    Widget content;
-    if (currentSnippet.isEmpty) {
-      content = Container();
-    } else {
-      content = outlinedText(currentSnippet[0], fontFamily);
+    LyricSnippet emptySnippet = LyricSnippet(
+        vocalist: Vocalist("", 0),
+        index: 0,
+        sentence: "",
+        startTimestamp: currentSeekPosition,
+        timingPoints: [TimingPoint(0, 0)]);
+    List<Widget> content =
+        List<Widget>.generate(maxLanes, (index) => Container());
+    for (int i = 0; i < content.length && i < maxLanes; i++) {
+      if (i < currentSnippets.length) {
+        content[i] = outlinedText(currentSnippets[i], fontFamily);
+      } else {
+        content[i] = outlinedText(emptySnippet, fontFamily);
+      }
     }
 
     return Focus(
@@ -130,14 +140,49 @@ class _VideoPaneState extends State<VideoPane> {
         },
         child: Column(
           children: [
-            Expanded(
-              child: content,
+            Flexible(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: content,
+              ),
             ),
             PlaybackControlPane(masterSubject: masterSubject),
           ],
         ),
       ),
     );
+  }
+
+  int getMaxLanes(List<LyricSnippet> lyricSnippetList) {
+    if (lyricSnippetList.isEmpty) return 0;
+
+    lyricSnippetList
+        .sort((a, b) => a.startTimestamp.compareTo(b.startTimestamp));
+
+    int maxOverlap = 0;
+    int currentOverlap = 0;
+    int currentEndTime = lyricSnippetList[0].endTimestamp;
+
+    for (int i = 1; i < lyricSnippetList.length; ++i) {
+      if (lyricSnippetList[i].startTimestamp <= currentEndTime) {
+        ++currentOverlap;
+      } else {
+        currentOverlap = 1;
+        currentEndTime = lyricSnippetList[i].endTimestamp;
+      }
+      if (currentOverlap > maxOverlap) {
+        maxOverlap = currentOverlap;
+      }
+    }
+
+    return maxOverlap;
+  }
+
+  List<LyricSnippet> getSnippetsAtCurrentSeekPosition() {
+    return lyricSnippetList.where((snippet) {
+      return snippet.startTimestamp < currentSeekPosition &&
+          currentSeekPosition < snippet.endTimestamp;
+    }).toList();
   }
 
   List<TimingPoint> getAccumulatedTimingPoints(
