@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
-import 'playback_control_pane.dart';
 
 class VideoPane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
@@ -139,15 +138,8 @@ class _VideoPaneState extends State<VideoPane> {
           debugPrint("The video pane is focused");
         },
         child: Column(
-          children: [
-            Flexible(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: content,
-              ),
-            ),
-            PlaybackControlPane(masterSubject: masterSubject),
-          ],
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: content,
         ),
       ),
     );
@@ -242,6 +234,10 @@ class PartialTextPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    final backgroundPaint = Paint()..color = Color(0xFFEEEEEE);
+    canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.width, size.height), backgroundPaint);
+
     setupTextStyle();
     setupTextSpan();
     setupTextPainter(size);
