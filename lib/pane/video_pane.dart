@@ -22,6 +22,8 @@ class _VideoPaneState extends State<VideoPane> {
   bool isPlaying = true;
   int currentSeekPosition = 0;
   List<LyricSnippet> lyricSnippets = [];
+  Map<String, int> vocalistColorList = {};
+  Map<String, List<String>> vocalistCombinationCorrespondence = {};
 
   @override
   void initState() {
@@ -35,6 +37,9 @@ class _VideoPaneState extends State<VideoPane> {
       }
       if (signal is NotifyLyricParsed) {
         lyricSnippets = signal.lyricSnippetList;
+        vocalistColorList = signal.vocalistColorList;
+        vocalistCombinationCorrespondence =
+            signal.vocalistCombinationCorrespondence;
       }
       if (signal is NotifySnippetDivided ||
           signal is NotifySnippetConcatenated) {
@@ -88,6 +93,7 @@ class _VideoPaneState extends State<VideoPane> {
         percent: percent,
         fontFamily: fontFamily,
         fontSize: 40,
+        fontBaseColor: Color(vocalistColorList[snippet.vocalist.name]!),
         firstOutlineWidth: 2,
         secondOutlineWidth: 4,
       ),
@@ -155,6 +161,7 @@ class PartialTextPainter extends CustomPainter {
   final double percent;
   final String fontFamily;
   final double fontSize;
+  final Color fontBaseColor;
   final double firstOutlineWidth;
   final double secondOutlineWidth;
   late final TextStyle textStyleBeforeInner;
@@ -183,6 +190,7 @@ class PartialTextPainter extends CustomPainter {
     required this.percent,
     required this.fontFamily,
     required this.fontSize,
+    required this.fontBaseColor,
     required this.firstOutlineWidth,
     required this.secondOutlineWidth,
   });
@@ -197,7 +205,7 @@ class PartialTextPainter extends CustomPainter {
 
   void setupTextStyle() {
     Shadow shadow = Shadow(
-      color: Colors.green,
+      color: fontBaseColor,
       blurRadius: 30.0,
       offset: Offset(0.0, 0.0),
     );
@@ -220,14 +228,14 @@ class PartialTextPainter extends CustomPainter {
       foreground: Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = firstOutlineWidth + secondOutlineWidth
-        ..color = Colors.green,
+        ..color = fontBaseColor,
       shadows: [shadow],
     );
 
     textStyleAfterInner = TextStyle(
       fontFamily: fontFamily,
       fontSize: fontSize,
-      color: Colors.green,
+      color: fontBaseColor,
     );
     textStyleAfterMiddle = TextStyle(
       fontFamily: fontFamily,
