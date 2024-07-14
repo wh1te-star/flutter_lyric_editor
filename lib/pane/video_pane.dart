@@ -85,9 +85,13 @@ class _VideoPaneState extends State<VideoPane> {
       startChar += snippet.timingPoints[currentIndex].wordLength;
     }
     double percent;
-    percent = (currentSeekPosition -
-            accumulatedTimingPoints[currentCharIndex].wordDuration) /
-        snippet.timingPoints[currentCharIndex].wordDuration;
+    if (snippet.timingPoints[currentCharIndex].wordDuration == 0) {
+      percent = 0;
+    } else {
+      percent = (currentSeekPosition -
+              accumulatedTimingPoints[currentCharIndex].wordDuration) /
+          snippet.timingPoints[currentCharIndex].wordDuration;
+    }
     //debugPrint("startChar: ${startChar}, endCar:${startChar + snippet.timingPoints[currentCharIndex].wordLength}, percent: ${percent}");
     Color fontColor = Color(0);
     if (vocalistColorList.containsKey(snippet.vocalist.name)) {
