@@ -85,31 +85,28 @@ class _VideoPaneState extends State<VideoPane> {
       startChar += snippet.timingPoints[currentIndex].wordLength;
     }
     double percent;
-    if (snippet.timingPoints[currentCharIndex].wordDuration == 0) {
-      percent = 0;
-    } else {
-      percent = (currentSeekPosition -
-              accumulatedTimingPoints[currentCharIndex].wordDuration) /
-          snippet.timingPoints[currentCharIndex].wordDuration;
-    }
-    //debugPrint("startChar: ${startChar}, endCar:${startChar + snippet.timingPoints[currentCharIndex].wordLength}, percent: ${percent}");
+    percent = (currentSeekPosition -
+            accumulatedTimingPoints[currentCharIndex].wordDuration) /
+        snippet.timingPoints[currentCharIndex].wordDuration;
     Color fontColor = Color(0);
     if (vocalistColorList.containsKey(snippet.vocalist.name)) {
       fontColor = Color(vocalistColorList[snippet.vocalist.name]!);
     }
-    return CustomPaint(
-      painter: PartialTextPainter(
-        text: snippet.sentence,
-        start: startChar,
-        end: startChar + snippet.timingPoints[currentCharIndex].wordLength,
-        percent: percent,
-        fontFamily: fontFamily,
-        fontSize: 40,
-        fontBaseColor: fontColor,
-        firstOutlineWidth: 2,
-        secondOutlineWidth: 4,
+    return Expanded(
+      child: CustomPaint(
+        painter: PartialTextPainter(
+          text: snippet.sentence,
+          start: startChar,
+          end: startChar + snippet.timingPoints[currentCharIndex].wordLength,
+          percent: percent,
+          fontFamily: fontFamily,
+          fontSize: 40,
+          fontBaseColor: fontColor,
+          firstOutlineWidth: 2,
+          secondOutlineWidth: 4,
+        ),
+        size: Size(double.infinity, double.infinity),
       ),
-      size: const Size(double.infinity, 60),
     );
   }
 
@@ -123,7 +120,7 @@ class _VideoPaneState extends State<VideoPane> {
         index: 0,
         sentence: "",
         startTimestamp: currentSeekPosition,
-        timingPoints: [TimingPoint(0, 0)]);
+        timingPoints: [TimingPoint(1, 1)]);
     List<Widget> content =
         List<Widget>.generate(maxLanes, (index) => Container());
     for (int i = 0; i < content.length && i < maxLanes; i++) {
