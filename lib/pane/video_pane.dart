@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/painter/partial_text_painter.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
@@ -20,8 +21,10 @@ class _VideoPaneState extends State<VideoPane> {
   final FocusNode focusNode;
   _VideoPaneState(this.masterSubject, this.focusNode);
   bool isPlaying = true;
+  int startBulge = 1000;
+  int endBulge = 1000;
   int currentSeekPosition = 0;
-  List<LyricSnippet> lyricSnippetList = [];
+  List<LyricSnippetTrack> lyricSnippetTrack = [];
   Map<String, int> vocalistColorList = {};
   Map<String, List<String>> vocalistCombinationCorrespondence = {};
 
@@ -38,20 +41,19 @@ class _VideoPaneState extends State<VideoPane> {
         currentSeekPosition = signal.seekPosition;
       }
       if (signal is NotifyLyricParsed) {
-        lyricSnippetList = signal.lyricSnippetList;
+        lyricSnippetTrack = assignTrackNumber(signal.lyricSnippetList);
         vocalistColorList = signal.vocalistColorList;
         vocalistCombinationCorrespondence =
             signal.vocalistCombinationCorrespondence;
-        maxLanes = getMaxLanes(lyricSnippetList);
       }
       if (signal is NotifySnippetDivided ||
           signal is NotifySnippetConcatenated) {
-        lyricSnippetList = signal.lyricSnippetList;
-        maxLanes = getMaxLanes(lyricSnippetList);
+        lyricSnippetTrack = signal.lyricSnippetList;
       }
       if (signal is NotifyTimingPointAdded ||
           signal is NotifyTimingPointDeletion) {
-        LyricSnippet snippet = getLyricSnippetWithID(signal.snippetID);
+        LyricSnippet snippet =
+            getLyricSnippetWithID(signal.snippetID).lyricSnippet;
         snippet.timingPoints = signal.timingPoints;
       }
       setState(() {});
@@ -60,8 +62,45 @@ class _VideoPaneState extends State<VideoPane> {
 
   String defaultText = "Video Pane";
 
-  LyricSnippet getLyricSnippetWithID(LyricSnippetID id) {
-    return lyricSnippetList.firstWhere((snippet) => snippet.id == id);
+  LyricSnippetTrack getLyricSnippetWithID(LyricSnippetID id) {
+    return lyricSnippetTrack
+        .firstWhere((snippet) => snippet.lyricSnippet.id == id);
+  }
+
+  List<LyricSnippetTrack> assignTrackNumber(
+      List<LyricSnippet> lyricSnippetList) {
+    if (lyricSnippetList.isEmpty) return [];
+
+    List<LyricSnippetTrack> lyricSnippetTrack = [];
+    lyricSnippetList
+        .sort((a, b) => a.startTimestamp.compareTo(b.startTimestamp));
+
+    int maxOverlap = 0;
+    int currentOverlap = 0;
+    int currentEndTime = lyricSnippetList[0].endTimestamp;
+    lyricSnippetTrack.add(LyricSnippetTrack(lyricSnippetList[0], 0));
+
+    for (int i = 1; i < lyricSnippetList.length; ++i) {
+      int start = lyricSnippetList[i].startTimestamp - startBulge;
+      int end = lyricSnippetList[i].endTimestamp + endBulge;
+      if (start <= currentEndTime) {
+        currentOverlap++;
+      } else {
+        currentOverlap = 1;
+        currentEndTime = end;
+      }
+      if (currentOverlap > maxOverlap) {
+        maxOverlap = currentOverlap;
+      }
+
+      lyricSnippetTrack
+          .add(LyricSnippetTrack(lyricSnippetList[i], currentOverlap - 1));
+      if (currentOverlap > maxLanes) {
+        maxLanes = currentOverlap;
+      }
+    }
+
+    return lyricSnippetTrack;
   }
 
   Widget outlinedText(LyricSnippet snippet, String fontFamily) {
@@ -113,7 +152,8 @@ class _VideoPaneState extends State<VideoPane> {
   @override
   Widget build(BuildContext context) {
     String fontFamily = "Times New Roman";
-    List<LyricSnippet> currentSnippets = getSnippetsAtCurrentSeekPosition();
+    List<LyricSnippetTrack> currentSnippets =
+        getSnippetsAtCurrentSeekPosition();
 
     LyricSnippet emptySnippet = LyricSnippet(
         vocalist: Vocalist("", 0),
@@ -123,13 +163,19 @@ class _VideoPaneState extends State<VideoPane> {
         timingPoints: [TimingPoint(1, 1)]);
     List<Widget> content =
         List<Widget>.generate(maxLanes, (index) => Container());
-    for (int i = 0; i < content.length && i < maxLanes; i++) {
-      if (i < currentSnippets.length) {
-        content[i] = outlinedText(currentSnippets[i], fontFamily);
-      } else {
-        content[i] = outlinedText(emptySnippet, fontFamily);
-      }
+
+    String debug = "";
+    for (int i = 0; i < maxLanes; i++) {
+      LyricSnippet targetSnippet = currentSnippets
+          .firstWhere(
+            (LyricSnippetTrack snippet) => snippet.trackNumber == i,
+            orElse: () => LyricSnippetTrack(emptySnippet, i),
+          )
+          .lyricSnippet;
+      content[i] = outlinedText(targetSnippet, fontFamily);
+      debug = debug + "$i: ${targetSnippet.sentence} /// ";
     }
+    debugPrint("${debug}");
 
     return Focus(
       focusNode: focusNode,
@@ -147,35 +193,10 @@ class _VideoPaneState extends State<VideoPane> {
     );
   }
 
-  int getMaxLanes(List<LyricSnippet> lyricSnippetList) {
-    if (lyricSnippetList.isEmpty) return 0;
-
-    lyricSnippetList
-        .sort((a, b) => a.startTimestamp.compareTo(b.startTimestamp));
-
-    int maxOverlap = 0;
-    int currentOverlap = 0;
-    int currentEndTime = lyricSnippetList[0].endTimestamp;
-
-    for (int i = 1; i < lyricSnippetList.length; ++i) {
-      if (lyricSnippetList[i].startTimestamp <= currentEndTime) {
-        ++currentOverlap;
-      } else {
-        currentOverlap = 1;
-        currentEndTime = lyricSnippetList[i].endTimestamp;
-      }
-      if (currentOverlap > maxOverlap) {
-        maxOverlap = currentOverlap;
-      }
-    }
-
-    return maxOverlap;
-  }
-
-  List<LyricSnippet> getSnippetsAtCurrentSeekPosition() {
-    return lyricSnippetList.where((snippet) {
-      return snippet.startTimestamp < currentSeekPosition &&
-          currentSeekPosition < snippet.endTimestamp;
+  List<LyricSnippetTrack> getSnippetsAtCurrentSeekPosition() {
+    return lyricSnippetTrack.where((snippet) {
+      return snippet.lyricSnippet.startTimestamp < currentSeekPosition &&
+          currentSeekPosition < snippet.lyricSnippet.endTimestamp;
     }).toList();
   }
 
@@ -191,4 +212,10 @@ class _VideoPaneState extends State<VideoPane> {
     }
     return accumulatedList;
   }
+}
+
+class LyricSnippetTrack {
+  LyricSnippet lyricSnippet;
+  int trackNumber;
+  LyricSnippetTrack(this.lyricSnippet, this.trackNumber);
 }
