@@ -76,8 +76,8 @@ class _VideoPaneState extends State<VideoPane> {
         .sort((a, b) => a.startTimestamp.compareTo(b.startTimestamp));
 
     int maxOverlap = 0;
-    int currentOverlap = 0;
-    int currentEndTime = lyricSnippetList[0].endTimestamp;
+    int currentOverlap = 1;
+    int currentEndTime = lyricSnippetList[0].endTimestamp + endBulge;
     lyricSnippetTrack.add(LyricSnippetTrack(lyricSnippetList[0], 0));
 
     for (int i = 1; i < lyricSnippetList.length; ++i) {
@@ -195,8 +195,9 @@ class _VideoPaneState extends State<VideoPane> {
 
   List<LyricSnippetTrack> getSnippetsAtCurrentSeekPosition() {
     return lyricSnippetTrack.where((snippet) {
-      return snippet.lyricSnippet.startTimestamp < currentSeekPosition &&
-          currentSeekPosition < snippet.lyricSnippet.endTimestamp;
+      return snippet.lyricSnippet.startTimestamp - startBulge <
+              currentSeekPosition &&
+          currentSeekPosition < snippet.lyricSnippet.endTimestamp + endBulge;
     }).toList();
   }
 
