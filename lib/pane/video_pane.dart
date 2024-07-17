@@ -117,36 +117,72 @@ class _VideoPaneState extends State<VideoPane> {
         currentCharIndex = currentIndex;
       }
     }
-    int startChar = 0;
-    for (int currentIndex = 0;
-        currentIndex < currentCharIndex;
-        currentIndex++) {
-      startChar += snippet.timingPoints[currentIndex].wordLength;
-    }
-    double percent;
-    percent = (currentSeekPosition -
-            accumulatedTimingPoints[currentCharIndex].wordDuration) /
-        snippet.timingPoints[currentCharIndex].wordDuration;
     Color fontColor = Color(0);
     if (vocalistColorList.containsKey(snippet.vocalist.name)) {
       fontColor = Color(vocalistColorList[snippet.vocalist.name]!);
     }
-    return Expanded(
-      child: CustomPaint(
-        painter: PartialTextPainter(
-          text: snippet.sentence,
-          start: startChar,
-          end: startChar + snippet.timingPoints[currentCharIndex].wordLength,
-          percent: percent,
-          fontFamily: fontFamily,
-          fontSize: 40,
-          fontBaseColor: fontColor,
-          firstOutlineWidth: 2,
-          secondOutlineWidth: 4,
+    if (currentSeekPosition < snippet.startTimestamp) {
+      return Expanded(
+        child: CustomPaint(
+          painter: PartialTextPainter(
+            text: snippet.sentence,
+            start: 0,
+            end: 0,
+            percent: 0.0,
+            fontFamily: fontFamily,
+            fontSize: 40,
+            fontBaseColor: fontColor,
+            firstOutlineWidth: 2,
+            secondOutlineWidth: 4,
+          ),
+          size: Size(double.infinity, double.infinity),
         ),
-        size: Size(double.infinity, double.infinity),
-      ),
-    );
+      );
+    } else if (snippet.endTimestamp < currentSeekPosition) {
+      return Expanded(
+        child: CustomPaint(
+          painter: PartialTextPainter(
+            text: snippet.sentence,
+            start: 0,
+            end: snippet.sentence.length,
+            percent: 1.0,
+            fontFamily: fontFamily,
+            fontSize: 40,
+            fontBaseColor: fontColor,
+            firstOutlineWidth: 2,
+            secondOutlineWidth: 4,
+          ),
+          size: Size(double.infinity, double.infinity),
+        ),
+      );
+    } else {
+      int startChar = 0;
+      for (int currentIndex = 0;
+          currentIndex < currentCharIndex;
+          currentIndex++) {
+        startChar += snippet.timingPoints[currentIndex].wordLength;
+      }
+      double percent;
+      percent = (currentSeekPosition -
+              accumulatedTimingPoints[currentCharIndex].wordDuration) /
+          snippet.timingPoints[currentCharIndex].wordDuration;
+      return Expanded(
+        child: CustomPaint(
+          painter: PartialTextPainter(
+            text: snippet.sentence,
+            start: startChar,
+            end: startChar + snippet.timingPoints[currentCharIndex].wordLength,
+            percent: percent,
+            fontFamily: fontFamily,
+            fontSize: 40,
+            fontBaseColor: fontColor,
+            firstOutlineWidth: 2,
+            secondOutlineWidth: 4,
+          ),
+          size: Size(double.infinity, double.infinity),
+        ),
+      );
+    }
   }
 
   @override
@@ -175,7 +211,6 @@ class _VideoPaneState extends State<VideoPane> {
       content[i] = outlinedText(targetSnippet, fontFamily);
       debug = debug + "$i: ${targetSnippet.sentence} /// ";
     }
-    debugPrint("${debug}");
 
     return Focus(
       focusNode: focusNode,

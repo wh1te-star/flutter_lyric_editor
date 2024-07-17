@@ -176,6 +176,11 @@ class PartialTextPainter extends CustomPainter {
     final sliceWidth =
         actualX + startOffset + (endOffset - startOffset) * percent;
 
+    if (percent < 0) {
+      if (sliceWidth > 0) {
+        debugPrint("percent: ${percent}, sliceWidth: ${sliceWidth}");
+      }
+    }
     canvas.clipRect(Rect.fromLTWH(0, 0, sliceWidth, size.height));
 
     textPainterAfterOuter.paint(canvas, centerOffset);
