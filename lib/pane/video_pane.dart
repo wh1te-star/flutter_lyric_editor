@@ -28,7 +28,7 @@ class _VideoPaneState extends State<VideoPane> {
   Map<String, int> vocalistColorList = {};
   Map<String, List<String>> vocalistCombinationCorrespondence = {};
 
-  DisplayMode displayMode = DisplayMode.appearDissappear;
+  DisplayMode displayMode = DisplayMode.verticalScroll;
   ScrollController scrollController = ScrollController();
 
   int maxLanes = 0;
@@ -42,8 +42,10 @@ class _VideoPaneState extends State<VideoPane> {
       }
       if (signal is NotifySeekPosition) {
         currentSeekPosition = signal.seekPosition;
-        scrollController
-            .jumpTo(currentSeekPosition / 60 % (lyricSnippetTrack.length * 60));
+        if (displayMode == DisplayMode.verticalScroll) {
+          scrollController.jumpTo(
+              currentSeekPosition / 120 % (lyricSnippetTrack.length * 60));
+        }
       }
       if (signal is NotifyLyricParsed) {
         lyricSnippetTrack = assignTrackNumber(signal.lyricSnippetList);
@@ -138,18 +140,12 @@ class _VideoPaneState extends State<VideoPane> {
     );
   }
 
-  CustomPaint getColorHilightedText(LyricSnippet snippet, int seekPosition,
-      String fontFamily, Color fontColor) {
+  PartialTextPainter getColorHilightedText(LyricSnippet snippet,
+      int seekPosition, String fontFamily, Color fontColor) {
     if (currentSeekPosition < snippet.startTimestamp) {
-      return CustomPaint(
-        painter: getBeforeSnippetPainter(snippet, fontFamily, fontColor),
-        size: Size(double.infinity, double.infinity),
-      );
+      return getBeforeSnippetPainter(snippet, fontFamily, fontColor);
     } else if (snippet.endTimestamp < currentSeekPosition) {
-      return CustomPaint(
-        painter: getAfterSnippetPainter(snippet, fontFamily, fontColor),
-        size: Size(double.infinity, double.infinity),
-      );
+      return getAfterSnippetPainter(snippet, fontFamily, fontColor);
     } else {
       int wordIndex = 0;
       int startChar = 0;
@@ -161,19 +157,16 @@ class _VideoPaneState extends State<VideoPane> {
       }
       double percent;
       percent = restDuration / snippet.timingPoints[wordIndex].wordDuration;
-      return CustomPaint(
-        painter: PartialTextPainter(
-          text: snippet.sentence,
-          start: startChar,
-          end: startChar + snippet.timingPoints[wordIndex].wordLength,
-          percent: percent,
-          fontFamily: fontFamily,
-          fontSize: 40,
-          fontBaseColor: fontColor,
-          firstOutlineWidth: 2,
-          secondOutlineWidth: 4,
-        ),
-        size: Size(double.infinity, double.infinity),
+      return PartialTextPainter(
+        text: snippet.sentence,
+        start: startChar,
+        end: startChar + snippet.timingPoints[wordIndex].wordLength,
+        percent: percent,
+        fontFamily: fontFamily,
+        fontSize: 40,
+        fontBaseColor: fontColor,
+        firstOutlineWidth: 2,
+        secondOutlineWidth: 4,
       );
     }
   }
@@ -184,8 +177,11 @@ class _VideoPaneState extends State<VideoPane> {
       fontColor = Color(vocalistColorList[snippet.vocalist.name]!);
     }
     return Expanded(
-      child: getColorHilightedText(
-          snippet, currentSeekPosition, fontFamily, fontColor),
+      child: CustomPaint(
+        painter: getColorHilightedText(
+            snippet, currentSeekPosition, fontFamily, fontColor),
+        size: Size(double.infinity, double.infinity),
+      ),
     );
   }
 
@@ -232,20 +228,19 @@ class _VideoPaneState extends State<VideoPane> {
     } else {
       double height = 60;
       List<Widget> columnSnippets = [];
-      lyricSnippetTrack.forEach((LyricSnippetTrack snippet) {
-        columnSnippets.add(CustomPaint(
-          size: Size(double.infinity, height),
-          painter: PartialTextPainter(
-              text: snippet.lyricSnippet.sentence,
-              start: 0,
-              end: 5,
-              percent: 0.5,
-              fontFamily: fontFamily,
-              fontSize: 40,
-              fontBaseColor: Colors.purple,
-              firstOutlineWidth: 2,
-              secondOutlineWidth: 4),
-        ));
+      lyricSnippetTrack.forEach((LyricSnippetTrack trackSnippet) {
+        LyricSnippet snippet = trackSnippet.lyricSnippet;
+        Color fontColor = Color(0);
+        if (vocalistColorList.containsKey(snippet.vocalist.name)) {
+          fontColor = Color(vocalistColorList[snippet.vocalist.name]!);
+        }
+        columnSnippets.add(
+          CustomPaint(
+            painter: getColorHilightedText(
+                snippet, currentSeekPosition, fontFamily, fontColor),
+            size: Size(double.infinity, height),
+          ),
+        );
       });
       return Focus(
         focusNode: focusNode,
