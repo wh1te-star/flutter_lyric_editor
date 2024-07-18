@@ -28,7 +28,7 @@ class _VideoPaneState extends State<VideoPane> {
   Map<String, int> vocalistColorList = {};
   Map<String, List<String>> vocalistCombinationCorrespondence = {};
 
-  DisplayMode displayMode = DisplayMode.verticalScroll;
+  DisplayMode displayMode = DisplayMode.appearDissappear;
   ScrollController scrollController = ScrollController();
 
   int maxLanes = 0;
@@ -43,7 +43,7 @@ class _VideoPaneState extends State<VideoPane> {
       if (signal is NotifySeekPosition) {
         currentSeekPosition = signal.seekPosition;
         scrollController
-            .jumpTo(currentSeekPosition % (lyricSnippetTrack.length * 60));
+            .jumpTo(currentSeekPosition / 60 % (lyricSnippetTrack.length * 60));
       }
       if (signal is NotifyLyricParsed) {
         lyricSnippetTrack = assignTrackNumber(signal.lyricSnippetList);
@@ -75,10 +75,10 @@ class _VideoPaneState extends State<VideoPane> {
   List<LyricSnippetTrack> assignTrackNumber(
       List<LyricSnippet> lyricSnippetList) {
     if (lyricSnippetList.isEmpty) return [];
-
-    List<LyricSnippetTrack> lyricSnippetTrack = [];
     lyricSnippetList
         .sort((a, b) => a.startTimestamp.compareTo(b.startTimestamp));
+
+    List<LyricSnippetTrack> lyricSnippetTrack = [];
 
     int maxOverlap = 0;
     int currentOverlap = 1;
@@ -108,86 +108,85 @@ class _VideoPaneState extends State<VideoPane> {
     return lyricSnippetTrack;
   }
 
-  Widget outlinedText(LyricSnippet snippet, String fontFamily) {
-    int currentCharIndex = snippet.timingPoints.length - 1;
-    List<TimingPoint> accumulatedTimingPoints = getAccumulatedTimingPoints(
-        snippet.startTimestamp, snippet.timingPoints);
-    for (int currentIndex = 0;
-        currentIndex < snippet.timingPoints.length - 1;
-        currentIndex++) {
-      if (accumulatedTimingPoints[currentIndex].wordDuration <=
-              currentSeekPosition &&
-          currentSeekPosition <=
-              accumulatedTimingPoints[currentIndex + 1].wordDuration) {
-        currentCharIndex = currentIndex;
+  PartialTextPainter getBeforeSnippetPainter(
+      LyricSnippet snippet, fontFamily, Color fontColor) {
+    return PartialTextPainter(
+      text: snippet.sentence,
+      start: 0,
+      end: 0,
+      percent: 0.0,
+      fontFamily: fontFamily,
+      fontSize: 40,
+      fontBaseColor: fontColor,
+      firstOutlineWidth: 2,
+      secondOutlineWidth: 4,
+    );
+  }
+
+  PartialTextPainter getAfterSnippetPainter(
+      LyricSnippet snippet, fontFamily, Color fontColor) {
+    return PartialTextPainter(
+      text: snippet.sentence,
+      start: 0,
+      end: snippet.sentence.length,
+      percent: 1.0,
+      fontFamily: fontFamily,
+      fontSize: 40,
+      fontBaseColor: fontColor,
+      firstOutlineWidth: 2,
+      secondOutlineWidth: 4,
+    );
+  }
+
+  CustomPaint getColorHilightedText(LyricSnippet snippet, int seekPosition,
+      String fontFamily, Color fontColor) {
+    if (currentSeekPosition < snippet.startTimestamp) {
+      return CustomPaint(
+        painter: getBeforeSnippetPainter(snippet, fontFamily, fontColor),
+        size: Size(double.infinity, double.infinity),
+      );
+    } else if (snippet.endTimestamp < currentSeekPosition) {
+      return CustomPaint(
+        painter: getAfterSnippetPainter(snippet, fontFamily, fontColor),
+        size: Size(double.infinity, double.infinity),
+      );
+    } else {
+      int wordIndex = 0;
+      int startChar = 0;
+      int restDuration = seekPosition - snippet.startTimestamp;
+      while (restDuration - snippet.timingPoints[wordIndex].wordDuration > 0) {
+        startChar += snippet.timingPoints[wordIndex].wordLength;
+        restDuration -= snippet.timingPoints[wordIndex].wordDuration;
+        wordIndex++;
       }
+      double percent;
+      percent = restDuration / snippet.timingPoints[wordIndex].wordDuration;
+      return CustomPaint(
+        painter: PartialTextPainter(
+          text: snippet.sentence,
+          start: startChar,
+          end: startChar + snippet.timingPoints[wordIndex].wordLength,
+          percent: percent,
+          fontFamily: fontFamily,
+          fontSize: 40,
+          fontBaseColor: fontColor,
+          firstOutlineWidth: 2,
+          secondOutlineWidth: 4,
+        ),
+        size: Size(double.infinity, double.infinity),
+      );
     }
+  }
+
+  Widget outlinedText(LyricSnippet snippet, String fontFamily) {
     Color fontColor = Color(0);
     if (vocalistColorList.containsKey(snippet.vocalist.name)) {
       fontColor = Color(vocalistColorList[snippet.vocalist.name]!);
     }
-    if (currentSeekPosition < snippet.startTimestamp) {
-      return Expanded(
-        child: CustomPaint(
-          painter: PartialTextPainter(
-            text: snippet.sentence,
-            start: 0,
-            end: 0,
-            percent: 0.0,
-            fontFamily: fontFamily,
-            fontSize: 40,
-            fontBaseColor: fontColor,
-            firstOutlineWidth: 2,
-            secondOutlineWidth: 4,
-          ),
-          size: Size(double.infinity, double.infinity),
-        ),
-      );
-    } else if (snippet.endTimestamp < currentSeekPosition) {
-      return Expanded(
-        child: CustomPaint(
-          painter: PartialTextPainter(
-            text: snippet.sentence,
-            start: 0,
-            end: snippet.sentence.length,
-            percent: 1.0,
-            fontFamily: fontFamily,
-            fontSize: 40,
-            fontBaseColor: fontColor,
-            firstOutlineWidth: 2,
-            secondOutlineWidth: 4,
-          ),
-          size: Size(double.infinity, double.infinity),
-        ),
-      );
-    } else {
-      int startChar = 0;
-      for (int currentIndex = 0;
-          currentIndex < currentCharIndex;
-          currentIndex++) {
-        startChar += snippet.timingPoints[currentIndex].wordLength;
-      }
-      double percent;
-      percent = (currentSeekPosition -
-              accumulatedTimingPoints[currentCharIndex].wordDuration) /
-          snippet.timingPoints[currentCharIndex].wordDuration;
-      return Expanded(
-        child: CustomPaint(
-          painter: PartialTextPainter(
-            text: snippet.sentence,
-            start: startChar,
-            end: startChar + snippet.timingPoints[currentCharIndex].wordLength,
-            percent: percent,
-            fontFamily: fontFamily,
-            fontSize: 40,
-            fontBaseColor: fontColor,
-            firstOutlineWidth: 2,
-            secondOutlineWidth: 4,
-          ),
-          size: Size(double.infinity, double.infinity),
-        ),
-      );
-    }
+    return Expanded(
+      child: getColorHilightedText(
+          snippet, currentSeekPosition, fontFamily, fontColor),
+    );
   }
 
   @override
@@ -231,13 +230,13 @@ class _VideoPaneState extends State<VideoPane> {
         ),
       );
     } else {
-      double height = lyricSnippetTrack.length * 60;
-      return SingleChildScrollView(
-        controller: scrollController,
-        child: CustomPaint(
+      double height = 60;
+      List<Widget> columnSnippets = [];
+      lyricSnippetTrack.forEach((LyricSnippetTrack snippet) {
+        columnSnippets.add(CustomPaint(
           size: Size(double.infinity, height),
           painter: PartialTextPainter(
-              text: "abcde",
+              text: snippet.lyricSnippet.sentence,
               start: 0,
               end: 5,
               percent: 0.5,
@@ -246,6 +245,22 @@ class _VideoPaneState extends State<VideoPane> {
               fontBaseColor: Colors.purple,
               firstOutlineWidth: 2,
               secondOutlineWidth: 4),
+        ));
+      });
+      return Focus(
+        focusNode: focusNode,
+        child: GestureDetector(
+          onTap: () {
+            widget.masterSubject.add(RequestPlayPause());
+            focusNode.requestFocus();
+            debugPrint("The video pane is focused");
+          },
+          child: SingleChildScrollView(
+            controller: scrollController,
+            child: Column(
+              children: columnSnippets,
+            ),
+          ),
         ),
       );
     }
