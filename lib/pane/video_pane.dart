@@ -28,6 +28,9 @@ class _VideoPaneState extends State<VideoPane> {
   Map<String, int> vocalistColorList = {};
   Map<String, List<String>> vocalistCombinationCorrespondence = {};
 
+  DisplayMode displayMode = DisplayMode.verticalScroll;
+  ScrollController scrollController = ScrollController();
+
   int maxLanes = 0;
 
   @override
@@ -39,6 +42,8 @@ class _VideoPaneState extends State<VideoPane> {
       }
       if (signal is NotifySeekPosition) {
         currentSeekPosition = signal.seekPosition;
+        scrollController
+            .jumpTo(currentSeekPosition % (lyricSnippetTrack.length * 60));
       }
       if (signal is NotifyLyricParsed) {
         lyricSnippetTrack = assignTrackNumber(signal.lyricSnippetList);
@@ -191,41 +196,59 @@ class _VideoPaneState extends State<VideoPane> {
     List<LyricSnippetTrack> currentSnippets =
         getSnippetsAtCurrentSeekPosition();
 
-    LyricSnippet emptySnippet = LyricSnippet(
-        vocalist: Vocalist("", 0),
-        index: 0,
-        sentence: "",
-        startTimestamp: currentSeekPosition,
-        timingPoints: [TimingPoint(1, 1)]);
-    List<Widget> content =
-        List<Widget>.generate(maxLanes, (index) => Container());
+    if (displayMode == DisplayMode.appearDissappear) {
+      LyricSnippet emptySnippet = LyricSnippet(
+          vocalist: Vocalist("", 0),
+          index: 0,
+          sentence: "",
+          startTimestamp: currentSeekPosition,
+          timingPoints: [TimingPoint(1, 1)]);
+      List<Widget> content =
+          List<Widget>.generate(maxLanes, (index) => Container());
 
-    String debug = "";
-    for (int i = 0; i < maxLanes; i++) {
-      LyricSnippet targetSnippet = currentSnippets
-          .firstWhere(
-            (LyricSnippetTrack snippet) => snippet.trackNumber == i,
-            orElse: () => LyricSnippetTrack(emptySnippet, i),
-          )
-          .lyricSnippet;
-      content[i] = outlinedText(targetSnippet, fontFamily);
-      debug = debug + "$i: ${targetSnippet.sentence} /// ";
-    }
+      for (int i = 0; i < maxLanes; i++) {
+        LyricSnippet targetSnippet = currentSnippets
+            .firstWhere(
+              (LyricSnippetTrack snippet) => snippet.trackNumber == i,
+              orElse: () => LyricSnippetTrack(emptySnippet, i),
+            )
+            .lyricSnippet;
+        content[i] = outlinedText(targetSnippet, fontFamily);
+      }
 
-    return Focus(
-      focusNode: focusNode,
-      child: GestureDetector(
-        onTap: () {
-          widget.masterSubject.add(RequestPlayPause());
-          focusNode.requestFocus();
-          debugPrint("The video pane is focused");
-        },
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: content,
+      return Focus(
+        focusNode: focusNode,
+        child: GestureDetector(
+          onTap: () {
+            widget.masterSubject.add(RequestPlayPause());
+            focusNode.requestFocus();
+            debugPrint("The video pane is focused");
+          },
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: content,
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      double height = lyricSnippetTrack.length * 60;
+      return SingleChildScrollView(
+        controller: scrollController,
+        child: CustomPaint(
+          size: Size(double.infinity, height),
+          painter: PartialTextPainter(
+              text: "abcde",
+              start: 0,
+              end: 5,
+              percent: 0.5,
+              fontFamily: fontFamily,
+              fontSize: 40,
+              fontBaseColor: Colors.purple,
+              firstOutlineWidth: 2,
+              secondOutlineWidth: 4),
+        ),
+      );
+    }
   }
 
   List<LyricSnippetTrack> getSnippetsAtCurrentSeekPosition() {
@@ -254,4 +277,9 @@ class LyricSnippetTrack {
   LyricSnippet lyricSnippet;
   int trackNumber;
   LyricSnippetTrack(this.lyricSnippet, this.trackNumber);
+}
+
+enum DisplayMode {
+  appearDissappear,
+  verticalScroll,
 }
