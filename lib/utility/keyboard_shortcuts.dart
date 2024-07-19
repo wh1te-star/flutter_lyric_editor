@@ -118,6 +118,8 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
 
         LogicalKeySet(LogicalKeyboardKey.comma): ActivateCommaShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyX): ActivateXKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyD):
+            ActivateShiftDKeyShortcutIntent(),
       };
 
   Map<Type, Action<Intent>> get actions => {
@@ -238,6 +240,12 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
             masterSubject.add(RequestConcatenateSnippet(selectingSnippetIDs));
           }(),
         ),
+        ActivateShiftDKeyShortcutIntent:
+            CallbackAction<ActivateShiftDKeyShortcutIntent>(
+          onInvoke: (ActivateShiftDKeyShortcutIntent intent) => () {
+            masterSubject.add(RequestSwitchDisplayMode());
+          }(),
+        ),
       };
 
   @override
@@ -299,3 +307,5 @@ class ActivateMKeyShortcutIntent extends Intent {}
 class ActivateCommaShortcutIntent extends Intent {}
 
 class ActivateXKeyShortcutIntent extends Intent {}
+
+class ActivateShiftDKeyShortcutIntent extends Intent {}

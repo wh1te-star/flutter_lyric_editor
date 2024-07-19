@@ -39,6 +39,13 @@ class _VideoPaneState extends State<VideoPane> {
   void initState() {
     super.initState();
     masterSubject.stream.listen((signal) {
+      if (signal is RequestSwitchDisplayMode) {
+        if (displayMode == DisplayMode.appearDissappear) {
+          displayMode = DisplayMode.verticalScroll;
+        } else {
+          displayMode = DisplayMode.appearDissappear;
+        }
+      }
       if (signal is NotifyIsPlaying) {
         isPlaying = signal.isPlaying;
       }

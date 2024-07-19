@@ -218,6 +218,8 @@ class RequestToEnterTextSelectMode {}
 
 class RequestToExitTextSelectMode {}
 
+class RequestSwitchDisplayMode {}
+
 class RequestDivideSnippet {
   LyricSnippetID snippetID;
   int charPos;
