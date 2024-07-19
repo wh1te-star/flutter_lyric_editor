@@ -33,6 +33,8 @@ class _VideoPaneState extends State<VideoPane> {
 
   int maxLanes = 0;
 
+  final GlobalKey _videoPaneKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -43,8 +45,7 @@ class _VideoPaneState extends State<VideoPane> {
       if (signal is NotifySeekPosition) {
         currentSeekPosition = signal.seekPosition;
         if (displayMode == DisplayMode.verticalScroll) {
-          scrollController.jumpTo(
-              currentSeekPosition / 120 % (lyricSnippetTrack.length * 60));
+          scrollController.jumpTo(getScrollOffset(currentSeekPosition));
         }
       }
       if (signal is NotifyLyricParsed) {
@@ -108,6 +109,45 @@ class _VideoPaneState extends State<VideoPane> {
     }
 
     return lyricSnippetTrack;
+  }
+
+  double getMiddlePoint(LyricSnippet snippet) {
+    return (snippet.startTimestamp + snippet.endTimestamp) / 2;
+  }
+
+  double getScrollOffset(int targetPosition) {
+    int justBeforeIndex = 0;
+    int justAfterIndex = 0;
+    double justBeforePosition = 0;
+    double justAfterPosition = 240000;
+    for (int index = 0; index < lyricSnippetTrack.length; index++) {
+      double currentTime =
+          getMiddlePoint(lyricSnippetTrack[index].lyricSnippet);
+      if (currentTime < targetPosition) {
+        double beforeTime =
+            getMiddlePoint(lyricSnippetTrack[justBeforeIndex].lyricSnippet);
+        if (justBeforePosition < currentTime) {
+          justBeforePosition = currentTime;
+          justBeforeIndex = index;
+        }
+      } else {
+        double afterTime =
+            getMiddlePoint(lyricSnippetTrack[justAfterIndex].lyricSnippet);
+        if (currentTime < justAfterPosition) {
+          justAfterPosition = currentTime;
+          justAfterIndex = index;
+        }
+      }
+    }
+
+    double snippetOffset = (justAfterIndex - justBeforeIndex) * 60;
+    double midSnippetOffset = snippetOffset *
+        (targetPosition - justBeforePosition) /
+        (justAfterPosition - justBeforePosition);
+    debugPrint(
+        "${justBeforePosition}, ${targetPosition}, ${justAfterPosition} => ${midSnippetOffset}");
+    double scrollOffset = 60.0 * justBeforeIndex + midSnippetOffset;
+    return scrollOffset;
   }
 
   PartialTextPainter getBeforeSnippetPainter(
@@ -228,6 +268,8 @@ class _VideoPaneState extends State<VideoPane> {
     } else {
       double height = 60;
       List<Widget> columnSnippets = [];
+      columnSnippets.add(
+          Container(key: _videoPaneKey, color: Color(0xFFEEEEEE), height: 200));
       lyricSnippetTrack.forEach((LyricSnippetTrack trackSnippet) {
         LyricSnippet snippet = trackSnippet.lyricSnippet;
         Color fontColor = Color(0);
@@ -267,19 +309,6 @@ class _VideoPaneState extends State<VideoPane> {
               currentSeekPosition &&
           currentSeekPosition < snippet.lyricSnippet.endTimestamp + endBulge;
     }).toList();
-  }
-
-  List<TimingPoint> getAccumulatedTimingPoints(
-      int startTime, List<TimingPoint> timingPoints) {
-    List<TimingPoint> accumulatedList = [];
-
-    accumulatedList.add(TimingPoint(0, startTime));
-    for (int i = 0; i < timingPoints.length - 1; i++) {
-      accumulatedList.add(TimingPoint(
-          accumulatedList.last.wordLength + timingPoints[i].wordLength,
-          accumulatedList.last.wordDuration + timingPoints[i].wordDuration));
-    }
-    return accumulatedList;
   }
 }
 
