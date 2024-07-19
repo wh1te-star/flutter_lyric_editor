@@ -43,7 +43,7 @@ class PartialTextPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final backgroundPaint = Paint()..color = Color(0xFFEEEEEE);
+    final backgroundPaint = Paint()..color = Color.fromARGB(255, 164, 240, 156);
     canvas.drawRect(
         Rect.fromLTWH(0, 0, size.width, size.height), backgroundPaint);
 

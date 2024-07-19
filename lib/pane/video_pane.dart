@@ -124,15 +124,11 @@ class _VideoPaneState extends State<VideoPane> {
       double currentTime =
           getMiddlePoint(lyricSnippetTrack[index].lyricSnippet);
       if (currentTime < targetPosition) {
-        double beforeTime =
-            getMiddlePoint(lyricSnippetTrack[justBeforeIndex].lyricSnippet);
         if (justBeforePosition < currentTime) {
           justBeforePosition = currentTime;
           justBeforeIndex = index;
         }
       } else {
-        double afterTime =
-            getMiddlePoint(lyricSnippetTrack[justAfterIndex].lyricSnippet);
         if (currentTime < justAfterPosition) {
           justAfterPosition = currentTime;
           justAfterIndex = index;
@@ -144,8 +140,6 @@ class _VideoPaneState extends State<VideoPane> {
     double midSnippetOffset = snippetOffset *
         (targetPosition - justBeforePosition) /
         (justAfterPosition - justBeforePosition);
-    debugPrint(
-        "${justBeforePosition}, ${targetPosition}, ${justAfterPosition} => ${midSnippetOffset}");
     double scrollOffset = 60.0 * justBeforeIndex + midSnippetOffset;
     return scrollOffset;
   }
@@ -269,7 +263,7 @@ class _VideoPaneState extends State<VideoPane> {
       double height = 60;
       List<Widget> columnSnippets = [];
       columnSnippets.add(
-          Container(key: _videoPaneKey, color: Color(0xFFEEEEEE), height: 200));
+          Container(color: Color.fromARGB(255, 164, 240, 156), height: 200));
       lyricSnippetTrack.forEach((LyricSnippetTrack trackSnippet) {
         LyricSnippet snippet = trackSnippet.lyricSnippet;
         Color fontColor = Color(0);
@@ -284,6 +278,8 @@ class _VideoPaneState extends State<VideoPane> {
           ),
         );
       });
+      columnSnippets.add(
+          Container(color: Color.fromARGB(255, 164, 240, 156), height: 1000));
       return Focus(
         focusNode: focusNode,
         child: GestureDetector(
