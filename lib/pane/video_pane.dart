@@ -295,10 +295,14 @@ class _VideoPaneState extends State<VideoPane> {
             focusNode.requestFocus();
             debugPrint("The video pane is focused");
           },
-          child: SingleChildScrollView(
+          child: Scrollbar(
+            thumbVisibility: true,
             controller: scrollController,
-            child: Column(
-              children: columnSnippets,
+            child: SingleChildScrollView(
+              controller: scrollController,
+              child: Column(
+                children: columnSnippets,
+              ),
             ),
           ),
         ),
