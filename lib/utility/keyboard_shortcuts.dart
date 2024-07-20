@@ -103,6 +103,8 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
         LogicalKeySet(LogicalKeyboardKey.arrowDown):
             ActivateDownArrowKeyShortcutIntent(),
 
+        LogicalKeySet(LogicalKeyboardKey.keyU): ActivateUKeyShortcutIntent(),
+
         LogicalKeySet(LogicalKeyboardKey.keyH): ActivateHKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyJ): ActivateJKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyK): ActivateKKeyShortcutIntent(),
@@ -181,6 +183,11 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
         ActivateHKeyShortcutIntent: CallbackAction<ActivateHKeyShortcutIntent>(
           onInvoke: (ActivateHKeyShortcutIntent intent) => () {
             masterSubject.add(RequestMoveLeftCharCursor());
+          }(),
+        ),
+        ActivateUKeyShortcutIntent: CallbackAction<ActivateUKeyShortcutIntent>(
+          onInvoke: (ActivateUKeyShortcutIntent intent) => () {
+            masterSubject.add(RequestUndo());
           }(),
         ),
         ActivateJKeyShortcutIntent: CallbackAction<ActivateJKeyShortcutIntent>(
@@ -287,6 +294,8 @@ class ActivateDownArrowKeyShortcutIntent extends Intent {}
 class ActivateRightArrowKeyShortcutIntent extends Intent {}
 
 class ActivateLeftArrowKeyShortcutIntent extends Intent {}
+
+class ActivateUKeyShortcutIntent extends Intent {}
 
 class ActivateJKeyShortcutIntent extends Intent {}
 

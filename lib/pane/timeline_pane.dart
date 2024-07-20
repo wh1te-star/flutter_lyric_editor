@@ -80,7 +80,8 @@ class _TimelinePaneState extends State<TimelinePane> {
       }
       if (signal is NotifySnippetMove ||
           signal is NotifySnippetDivided ||
-          signal is NotifySnippetConcatenated) {
+          signal is NotifySnippetConcatenated ||
+          signal is NotifyUndo) {
         snippetsForeachVocalist = groupBy(signal.lyricSnippetList,
             (LyricSnippet snippet) => snippet.vocalist.name);
         setState(() {});

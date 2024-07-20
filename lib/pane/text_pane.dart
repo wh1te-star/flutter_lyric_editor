@@ -53,7 +53,8 @@ class _TextPaneState extends State<TextPane> {
     masterSubject.stream.listen((signal) {
       if (signal is NotifyLyricParsed ||
           signal is NotifySnippetDivided ||
-          signal is NotifySnippetConcatenated) {
+          signal is NotifySnippetConcatenated ||
+          signal is NotifyUndo) {
         lyricSnippets = signal.lyricSnippetList;
         lyricAppearance = List.filled(lyricSnippets.length, '');
         updateIndicators();

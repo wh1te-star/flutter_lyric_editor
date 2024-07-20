@@ -144,6 +144,13 @@ class NotifyTimingPointDeletion {
   NotifyTimingPointDeletion(this.characterPosition);
 }
 
+class RequestUndo {}
+
+class NotifyUndo {
+  List<LyricSnippet> lyricSnippetList;
+  NotifyUndo(this.lyricSnippetList);
+}
+
 class NotifySelectingSnippets {
   List<LyricSnippetID> snippetIDs;
   NotifySelectingSnippets(this.snippetIDs);
@@ -257,3 +264,5 @@ class NotifySnippetMove {
   List<LyricSnippet> lyricSnippetList;
   NotifySnippetMove(this.lyricSnippetList);
 }
+
+class NotifyDisplayModeSwitched {}

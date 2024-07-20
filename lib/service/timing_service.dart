@@ -19,6 +19,8 @@ class TimingService {
   int currentPosition = 0;
   int audioDuration = 180000;
 
+  List<List<LyricSnippet>> undoHistory = [];
+
   TimingService({required this.masterSubject, required this.context}) {
     masterSubject.stream.listen((signal) async {
       if (signal is RequestInitLyric) {
@@ -42,6 +44,8 @@ class TimingService {
             startTimestamp: 0,
             timingPoints: [TimingPoint(singlelineText.length, audioDuration)],
           ));
+
+          pushUndoHistory(lyricSnippetList);
           masterSubject.add(NotifyLyricParsed(lyricSnippetList,
               vocalistColorList, vocalistCombinationCorrespondence));
         } else {
@@ -62,6 +66,8 @@ class TimingService {
         if (file != null) {
           rawLyricText = await file.readAsString();
           lyricSnippetList = parseLyric(rawLyricText);
+
+          pushUndoHistory(lyricSnippetList);
           masterSubject.add(NotifyLyricParsed(lyricSnippetList,
               vocalistColorList, vocalistCombinationCorrespondence));
         } else {
@@ -86,16 +92,23 @@ class TimingService {
         await file.writeAsString(rawLyricText);
       }
       if (signal is RequestAddVocalist) {
+        pushUndoHistory(lyricSnippetList);
+
         addVocalist(signal.vocalistName);
         masterSubject.add(NotifyVocalistAdded(lyricSnippetList,
             vocalistColorList, vocalistCombinationCorrespondence));
       }
       if (signal is RequestDeleteVocalist) {
+        pushUndoHistory(lyricSnippetList);
+
         deleteVocalist(signal.vocalistName);
+
         masterSubject.add(NotifyVocalistDeleted(lyricSnippetList,
             vocalistColorList, vocalistCombinationCorrespondence));
       }
       if (signal is RequestChangeVocalistName) {
+        pushUndoHistory(lyricSnippetList);
+
         changeVocalistName(signal.oldName, signal.newName);
         masterSubject.add(NotifyVocalistNameChanged(lyricSnippetList,
             vocalistColorList, vocalistCombinationCorrespondence));
@@ -127,6 +140,8 @@ class TimingService {
         concatenateSnippets(snippets);
       }
       if (signal is RequestSnippetMove) {
+        pushUndoHistory(lyricSnippetList);
+
         LyricSnippet snippet = getSnippetWithID(signal.id);
         if (signal.holdLength) {
           if (signal.snippetEdge == SnippetEdge.start) {
@@ -154,6 +169,12 @@ class TimingService {
           }
         }
         masterSubject.add(NotifySnippetMove(lyricSnippetList));
+      }
+
+      if (signal is RequestUndo) {
+        lyricSnippetList = popUndoHistory();
+        assignIndex(lyricSnippetList);
+        masterSubject.add(NotifyUndo(lyricSnippetList));
       }
     });
     _loadLyricsFuture = loadLyrics();
@@ -574,5 +595,28 @@ class TimingService {
     snippet.timingPoints[index].wordDuration +=
         snippet.timingPoints[index + 1].wordDuration;
     snippet.timingPoints.removeAt(index + 1);
+  }
+
+  void pushUndoHistory(List<LyricSnippet> lyricSnippetList) {
+    List<LyricSnippet> copy = lyricSnippetList.map((snippet) {
+      return LyricSnippet(
+        vocalist: Vocalist(
+            snippet.vocalist.name, vocalistColorList[snippet.vocalist.name]!),
+        index: snippet.index,
+        sentence: snippet.sentence,
+        startTimestamp: snippet.startTimestamp,
+        timingPoints: snippet.timingPoints.map((point) {
+          return TimingPoint(point.wordLength, point.wordDuration);
+        }).toList(),
+      );
+    }).toList();
+    undoHistory.add(copy);
+  }
+
+  List<LyricSnippet> popUndoHistory() {
+    if (undoHistory.isEmpty) {
+      return [];
+    }
+    return undoHistory.removeLast();
   }
 }
