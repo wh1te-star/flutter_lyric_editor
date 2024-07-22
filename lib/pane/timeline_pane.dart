@@ -113,15 +113,19 @@ class _TimelinePaneState extends State<TimelinePane> {
       }
       if (signal is RequestTimelineCursorMoveLeft) {
         moveLeftCursor();
+        setState(() {});
       }
       if (signal is RequestTimelineCursorMoveRight) {
         moveRightCursor();
+        setState(() {});
       }
       if (signal is RequestTimelineCursorMoveUp) {
         moveUpCursor();
+        setState(() {});
       }
       if (signal is RequestTimelineCursorMoveDown) {
         moveDownCursor();
+        setState(() {});
       }
     });
     horizontalDetails.controller!.addListener(_onHorizontalScroll);
@@ -153,12 +157,24 @@ class _TimelinePaneState extends State<TimelinePane> {
         .indexWhere((snippet) => snippet.id == id);
   }
 
+  void resetCursorTimer() {
+    cursorTimer.cancel();
+    isCursorVisible = true;
+    setState(() {});
+
+    cursorTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      isCursorVisible = !isCursorVisible;
+      setState(() {});
+    });
+  }
+
   void moveLeftCursor() {
     LyricSnippetID nextCursorPosition = cursorPosition;
     nextCursorPosition.index--;
     if (nextCursorPosition.index >= 0) {
       nextCursorPosition = getSnippetWithID(nextCursorPosition).id;
       cursorPosition = nextCursorPosition;
+      resetCursorTimer();
     }
   }
 
@@ -169,6 +185,7 @@ class _TimelinePaneState extends State<TimelinePane> {
         snippetsForeachVocalist[cursorPosition.vocalist.name]!.length) {
       nextCursorPosition = getSnippetWithID(nextCursorPosition).id;
       cursorPosition = nextCursorPosition;
+      resetCursorTimer();
     }
   }
 
