@@ -221,6 +221,14 @@ class RequestTimelineZoomIn {}
 
 class RequestTimelineZoomOut {}
 
+class RequestTimelineCursorMoveLeft {}
+
+class RequestTimelineCursorMoveRight {}
+
+class RequestTimelineCursorMoveUp {}
+
+class RequestTimelineCursorMoveDown {}
+
 class RequestToEnterTextSelectMode {}
 
 class RequestToExitTextSelectMode {}

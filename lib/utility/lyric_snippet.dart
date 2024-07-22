@@ -52,6 +52,17 @@ class Vocalist {
   String name;
   int color;
   Vocalist(this.name, this.color);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (runtimeType != other.runtimeType) return false;
+    final Vocalist otherVocalist = other as Vocalist;
+    return name == otherVocalist.name && color == otherVocalist.color;
+  }
+
+  @override
+  int get hashCode => name.hashCode ^ color.hashCode;
 }
 
 class VocalistCombination {

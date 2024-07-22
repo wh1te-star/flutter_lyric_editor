@@ -122,6 +122,11 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
         LogicalKeySet(LogicalKeyboardKey.keyX): ActivateXKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyD):
             ActivateShiftDKeyShortcutIntent(),
+
+        LogicalKeySet(LogicalKeyboardKey.keyR): ActivateRKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyE): ActivateEKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyW): ActivateWKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyQ): ActivateQKeyShortcutIntent(),
       };
 
   Map<Type, Action<Intent>> get actions => {
@@ -253,6 +258,26 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
             masterSubject.add(RequestSwitchDisplayMode());
           }(),
         ),
+        ActivateRKeyShortcutIntent: CallbackAction<ActivateRKeyShortcutIntent>(
+          onInvoke: (ActivateRKeyShortcutIntent intent) => () {
+            masterSubject.add(RequestTimelineCursorMoveRight());
+          }(),
+        ),
+        ActivateEKeyShortcutIntent: CallbackAction<ActivateEKeyShortcutIntent>(
+          onInvoke: (ActivateEKeyShortcutIntent intent) => () {
+            masterSubject.add(RequestTimelineCursorMoveDown());
+          }(),
+        ),
+        ActivateWKeyShortcutIntent: CallbackAction<ActivateWKeyShortcutIntent>(
+          onInvoke: (ActivateWKeyShortcutIntent intent) => () {
+            masterSubject.add(RequestTimelineCursorMoveUp());
+          }(),
+        ),
+        ActivateQKeyShortcutIntent: CallbackAction<ActivateQKeyShortcutIntent>(
+          onInvoke: (ActivateQKeyShortcutIntent intent) => () {
+            masterSubject.add(RequestTimelineCursorMoveLeft());
+          }(),
+        ),
       };
 
   @override
@@ -318,3 +343,11 @@ class ActivateCommaShortcutIntent extends Intent {}
 class ActivateXKeyShortcutIntent extends Intent {}
 
 class ActivateShiftDKeyShortcutIntent extends Intent {}
+
+class ActivateRKeyShortcutIntent extends Intent {}
+
+class ActivateEKeyShortcutIntent extends Intent {}
+
+class ActivateWKeyShortcutIntent extends Intent {}
+
+class ActivateQKeyShortcutIntent extends Intent {}

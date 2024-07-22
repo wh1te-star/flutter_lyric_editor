@@ -111,6 +111,18 @@ class _TimelinePaneState extends State<TimelinePane> {
         zoomOut();
         setState(() {});
       }
+      if (signal is RequestTimelineCursorMoveLeft) {
+        moveLeftCursor();
+      }
+      if (signal is RequestTimelineCursorMoveRight) {
+        moveRightCursor();
+      }
+      if (signal is RequestTimelineCursorMoveUp) {
+        moveUpCursor();
+      }
+      if (signal is RequestTimelineCursorMoveDown) {
+        moveDownCursor();
+      }
     });
     horizontalDetails.controller!.addListener(_onHorizontalScroll);
     currentPositionScroller.addListener(_onHorizontalScroll);
@@ -130,6 +142,39 @@ class _TimelinePaneState extends State<TimelinePane> {
     debugPrint("timeline pane: zoom Out");
     intervalDuration = intervalDuration ~/ 2;
   }
+
+  LyricSnippet getSnippetWithID(LyricSnippetID id) {
+    return snippetsForeachVocalist[id.vocalist.name]!
+        .firstWhere((snippet) => snippet.id == id);
+  }
+
+  int getSnippetIndexWithID(LyricSnippetID id) {
+    return snippetsForeachVocalist[id.vocalist.name]!
+        .indexWhere((snippet) => snippet.id == id);
+  }
+
+  void moveLeftCursor() {
+    LyricSnippetID nextCursorPosition = cursorPosition;
+    nextCursorPosition.index--;
+    if (nextCursorPosition.index >= 0) {
+      nextCursorPosition = getSnippetWithID(nextCursorPosition).id;
+      cursorPosition = nextCursorPosition;
+    }
+  }
+
+  void moveRightCursor() {
+    LyricSnippetID nextCursorPosition = cursorPosition;
+    nextCursorPosition.index++;
+    if (nextCursorPosition.index <
+        snippetsForeachVocalist[cursorPosition.vocalist.name]!.length) {
+      nextCursorPosition = getSnippetWithID(nextCursorPosition).id;
+      cursorPosition = nextCursorPosition;
+    }
+  }
+
+  void moveUpCursor() {}
+
+  void moveDownCursor() {}
 
   @override
   Widget build(BuildContext context) {
