@@ -37,6 +37,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   Map<String, List<LyricSnippet>> snippetsForeachVocalist = {};
   Map<String, int> vocalistColorList = {};
   Map<String, List<String>> vocalistCombinationCorrespondence = {};
+  LyricSnippetID cursorPosition = LyricSnippetID(Vocalist("", 0), 0);
   List<LyricSnippetID> selectingSnippet = [];
   List<String> selectingVocalist = [];
   int audioDuration = 60000;
@@ -92,6 +93,8 @@ class _TimelinePaneState extends State<TimelinePane> {
           signal is NotifyVocalistNameChanged) {
         snippetsForeachVocalist = groupBy(signal.lyricSnippetList,
             (LyricSnippet snippet) => snippet.vocalist.name);
+        cursorPosition =
+            snippetsForeachVocalist[snippetsForeachVocalist.keys.first]![0].id;
         vocalistColorList = signal.vocalistColorList;
         vocalistCombinationCorrespondence =
             signal.vocalistCombinationCorrespondence;
@@ -379,13 +382,15 @@ class _TimelinePaneState extends State<TimelinePane> {
           },
           child: CustomPaint(
             painter: TimelinePainter(
-                snippets: snippetsForeachVocalist.entries.toList()[row].value,
-                selectingId: selectingSnippet,
-                intervalLength: intervalLength,
-                intervalDuration: intervalDuration,
-                topMargin: topMargin,
-                bottomMargin: bottomMargin,
-                color: Color(vocalistColorList[vocalistName]!)),
+              snippets: snippetsForeachVocalist.entries.toList()[row].value,
+              selectingId: selectingSnippet,
+              intervalLength: intervalLength,
+              intervalDuration: intervalDuration,
+              topMargin: topMargin,
+              bottomMargin: bottomMargin,
+              color: Color(vocalistColorList[vocalistName]!),
+              cursorPosition: cursorPosition,
+            ),
           ),
         ),
       );

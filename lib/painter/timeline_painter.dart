@@ -11,6 +11,7 @@ class TimelinePainter extends CustomPainter {
   final double topMargin;
   final double bottomMargin;
   final Color color;
+  final LyricSnippetID? cursorPosition;
 
   TimelinePainter({
     required this.snippets,
@@ -20,6 +21,7 @@ class TimelinePainter extends CustomPainter {
     required this.topMargin,
     required this.bottomMargin,
     required this.color,
+    this.cursorPosition,
   });
 
   @override
@@ -62,6 +64,14 @@ class TimelinePainter extends CustomPainter {
         width: 5.0,
         height: 5.0,
       ).paint(canvas, size);
+
+      if (snippet.id == cursorPosition) {
+        final paint = Paint()
+          ..color = Colors.black
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.0;
+        canvas.drawRect(rect, paint);
+      }
     });
   }
 
