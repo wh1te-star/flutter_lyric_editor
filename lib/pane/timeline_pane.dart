@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:collection/collection.dart';
@@ -38,6 +39,8 @@ class _TimelinePaneState extends State<TimelinePane> {
   Map<String, int> vocalistColorList = {};
   Map<String, List<String>> vocalistCombinationCorrespondence = {};
   LyricSnippetID cursorPosition = LyricSnippetID(Vocalist("", 0), 0);
+  bool isCursorVisible = true;
+  late Timer cursorTimer;
   List<LyricSnippetID> selectingSnippet = [];
   List<String> selectingVocalist = [];
   int audioDuration = 60000;
@@ -111,6 +114,11 @@ class _TimelinePaneState extends State<TimelinePane> {
     });
     horizontalDetails.controller!.addListener(_onHorizontalScroll);
     currentPositionScroller.addListener(_onHorizontalScroll);
+
+    cursorTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      isCursorVisible = !isCursorVisible;
+      setState(() {});
+    });
   }
 
   void zoomIn() {
@@ -172,6 +180,7 @@ class _TimelinePaneState extends State<TimelinePane> {
     currentPositionScroller.removeListener(_onHorizontalScroll);
     horizontalDetails.controller!.dispose();
     currentPositionScroller.dispose();
+    cursorTimer.cancel();
     super.dispose();
   }
 
@@ -389,7 +398,7 @@ class _TimelinePaneState extends State<TimelinePane> {
               topMargin: topMargin,
               bottomMargin: bottomMargin,
               color: Color(vocalistColorList[vocalistName]!),
-              cursorPosition: cursorPosition,
+              cursorPosition: isCursorVisible ? cursorPosition : null,
             ),
           ),
         ),
