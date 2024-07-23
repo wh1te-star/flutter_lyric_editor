@@ -123,10 +123,10 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
         LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyD):
             ActivateShiftDKeyShortcutIntent(),
 
+        LogicalKeySet(LogicalKeyboardKey.keyT): ActivateTKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyR): ActivateRKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyE): ActivateEKeyShortcutIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyW): ActivateWKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyQ): ActivateQKeyShortcutIntent(),
       };
 
   Map<Type, Action<Intent>> get actions => {
@@ -258,23 +258,23 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
             masterSubject.add(RequestSwitchDisplayMode());
           }(),
         ),
+        ActivateTKeyShortcutIntent: CallbackAction<ActivateTKeyShortcutIntent>(
+          onInvoke: (ActivateTKeyShortcutIntent intent) => () {
+            masterSubject.add(RequestTimelineCursorMoveRight());
+          }(),
+        ),
         ActivateRKeyShortcutIntent: CallbackAction<ActivateRKeyShortcutIntent>(
           onInvoke: (ActivateRKeyShortcutIntent intent) => () {
-            masterSubject.add(RequestTimelineCursorMoveRight());
+            masterSubject.add(RequestTimelineCursorMoveDown());
           }(),
         ),
         ActivateEKeyShortcutIntent: CallbackAction<ActivateEKeyShortcutIntent>(
           onInvoke: (ActivateEKeyShortcutIntent intent) => () {
-            masterSubject.add(RequestTimelineCursorMoveDown());
+            masterSubject.add(RequestTimelineCursorMoveUp());
           }(),
         ),
         ActivateWKeyShortcutIntent: CallbackAction<ActivateWKeyShortcutIntent>(
           onInvoke: (ActivateWKeyShortcutIntent intent) => () {
-            masterSubject.add(RequestTimelineCursorMoveUp());
-          }(),
-        ),
-        ActivateQKeyShortcutIntent: CallbackAction<ActivateQKeyShortcutIntent>(
-          onInvoke: (ActivateQKeyShortcutIntent intent) => () {
             masterSubject.add(RequestTimelineCursorMoveLeft());
           }(),
         ),
@@ -344,10 +344,10 @@ class ActivateXKeyShortcutIntent extends Intent {}
 
 class ActivateShiftDKeyShortcutIntent extends Intent {}
 
+class ActivateTKeyShortcutIntent extends Intent {}
+
 class ActivateRKeyShortcutIntent extends Intent {}
 
 class ActivateEKeyShortcutIntent extends Intent {}
 
 class ActivateWKeyShortcutIntent extends Intent {}
-
-class ActivateQKeyShortcutIntent extends Intent {}

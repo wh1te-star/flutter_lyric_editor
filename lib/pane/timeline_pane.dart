@@ -157,6 +157,50 @@ class _TimelinePaneState extends State<TimelinePane> {
         .indexWhere((snippet) => snippet.id == id);
   }
 
+  LyricSnippet getNearSnippetFromSeekPosition(
+      String vocalistName, int targetSeekPosition) {
+    List<LyricSnippet> snippets = snippetsForeachVocalist[vocalistName]!;
+    for (int index = 0; index < snippets.length; index++) {
+      int snippetStart = snippets[index].startTimestamp;
+      int snippetEnd = snippets[index].endTimestamp;
+      if (targetSeekPosition < snippetStart) {
+        if (index == 0) {
+          return snippets[0];
+        }
+        int leftDistance = targetSeekPosition - snippetEnd;
+        int rightDistance = snippetStart - targetSeekPosition;
+        if (leftDistance < rightDistance) {
+          return snippets[index - 1];
+        } else {
+          return snippets[index];
+        }
+      }
+      if (snippetStart < targetSeekPosition &&
+          targetSeekPosition < snippetEnd) {
+        return snippets[index];
+      }
+    }
+    return snippets.last;
+  }
+
+  String? getNextVocalist(String currentVocalist) {
+    List<String> vocalists = snippetsForeachVocalist.keys.toList();
+    int currentIndex = vocalists.indexOf(currentVocalist);
+    if (currentIndex != -1 && currentIndex < vocalists.length - 1) {
+      return vocalists[currentIndex + 1];
+    }
+    return null;
+  }
+
+  String? getPreviousVocalist(String currentVocalist) {
+    List<String> vocalists = snippetsForeachVocalist.keys.toList();
+    int currentIndex = vocalists.indexOf(currentVocalist);
+    if (currentIndex > 0) {
+      return vocalists[currentIndex - 1];
+    }
+    return null;
+  }
+
   void resetCursorTimer() {
     cursorTimer.cancel();
     isCursorVisible = true;
@@ -189,9 +233,23 @@ class _TimelinePaneState extends State<TimelinePane> {
     }
   }
 
-  void moveUpCursor() {}
+  void moveUpCursor() {
+    String upperVocalist = getPreviousVocalist(cursorPosition.vocalist.name)!;
+    LyricSnippet snippet = getSnippetWithID(cursorPosition);
+    int targetSeekPosition =
+        (snippet.startTimestamp + snippet.endTimestamp) ~/ 2;
+    cursorPosition =
+        getNearSnippetFromSeekPosition(upperVocalist, targetSeekPosition).id;
+  }
 
-  void moveDownCursor() {}
+  void moveDownCursor() {
+    String upperVocalist = getNextVocalist(cursorPosition.vocalist.name)!;
+    LyricSnippet snippet = getSnippetWithID(cursorPosition);
+    int targetSeekPosition =
+        (snippet.startTimestamp + snippet.endTimestamp) ~/ 2;
+    cursorPosition =
+        getNearSnippetFromSeekPosition(upperVocalist, targetSeekPosition).id;
+  }
 
   @override
   Widget build(BuildContext context) {
