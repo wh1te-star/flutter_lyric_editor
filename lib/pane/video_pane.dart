@@ -159,18 +159,28 @@ class _VideoPaneState extends State<VideoPane> {
     double midSnippetOffset = snippetOffset *
         (seekPosition - justBeforePosition) /
         (justAfterPosition - justBeforePosition);
-    double scrollOffset = 60.0 * justBeforeIndex + midSnippetOffset;
+    double scrollOffset = 60.0 * (justBeforeIndex + 1) + midSnippetOffset;
 
     return scrollOffset;
   }
 
   double getSeekPositionFromScrollOffset(double scrollOffset) {
-    int snippetIndex = (scrollOffset - 30) ~/ 60 + 1;
+    if (scrollOffset < 30) {
+      return lyricSnippetTrack[0].lyricSnippet.startTimestamp.toDouble();
+    }
+    int snippetIndex = (scrollOffset - 30) ~/ 60;
+    debugPrint("scroll offset: ${scrollOffset}, snippetIndex: ${snippetIndex}");
     late double startPosition;
     late double endPosition;
     if ((scrollOffset - 30) % 60 < 30) {
-      startPosition =
-          getMiddlePoint(lyricSnippetTrack[snippetIndex - 1].lyricSnippet);
+      if (snippetIndex == 0) {
+        startPosition = 2 *
+                getMiddlePoint(lyricSnippetTrack[snippetIndex].lyricSnippet) -
+            getMiddlePoint(lyricSnippetTrack[snippetIndex + 1].lyricSnippet);
+      } else {
+        startPosition =
+            getMiddlePoint(lyricSnippetTrack[snippetIndex - 1].lyricSnippet);
+      }
       endPosition =
           getMiddlePoint(lyricSnippetTrack[snippetIndex].lyricSnippet);
     } else {
@@ -305,6 +315,7 @@ class _VideoPaneState extends State<VideoPane> {
       List<Widget> columnSnippets = [];
       columnSnippets.add(
           Container(color: Color.fromARGB(255, 164, 240, 156), height: 200));
+      columnSnippets.add(Container(color: Colors.blueAccent, height: height));
       lyricSnippetTrack.forEach((LyricSnippetTrack trackSnippet) {
         LyricSnippet snippet = trackSnippet.lyricSnippet;
         Color fontColor = Color(0);
