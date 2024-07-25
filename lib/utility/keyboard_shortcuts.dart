@@ -87,194 +87,176 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
   }
 
   Map<LogicalKeySet, Intent> get shortcuts => {
-        LogicalKeySet(LogicalKeyboardKey.space):
-            ActivateSpaceKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyD): ActivateDKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyF): ActivateFKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyC): ActivateCKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyV): ActivateVKeyShortcutIntent(),
-
-        LogicalKeySet(LogicalKeyboardKey.arrowLeft):
-            ActivateLeftArrowKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.arrowRight):
-            ActivateRightArrowKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.arrowUp):
-            ActivateUpArrowKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.arrowDown):
-            ActivateDownArrowKeyShortcutIntent(),
-
-        LogicalKeySet(LogicalKeyboardKey.keyU): ActivateUKeyShortcutIntent(),
-
-        LogicalKeySet(LogicalKeyboardKey.keyH): ActivateHKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyJ): ActivateJKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyK): ActivateKKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyL): ActivateLKeyShortcutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.space): PlayPauseIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyN): RewindIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyM): ForwardIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyC): SnippetStartMoveIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyV): SnippetEndMoveIntent(),
+        LogicalKeySet(LogicalKeyboardKey.arrowLeft): SpeedDownIntent(),
+        LogicalKeySet(LogicalKeyboardKey.arrowRight): SpeedUpIntent(),
+        LogicalKeySet(LogicalKeyboardKey.arrowUp): VolumeUpIntent(),
+        LogicalKeySet(LogicalKeyboardKey.arrowDown): VolumeDownIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyU): UndoIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyH): TextPaneCursorMoveLeftIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyJ): TextPaneCursorMoveDownIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyK): TextPaneCursorMoveUpIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyL): TextPaneCursorMoveRightIntent(),
         LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyK):
-            ActivateCtrlKKeyShortcutIntent(),
+            TimelineZoomIn(),
         LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyJ):
-            ActivateCtrlJKeyShortcutIntent(),
-        //LogicalKeySet(LogicalKeyboardKey.keyB): ActivateBKeyShortcutIntent(),
-
-        LogicalKeySet(LogicalKeyboardKey.keyN): ActivateNKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyM): ActivateMKeyShortcutIntent(),
-
-        LogicalKeySet(LogicalKeyboardKey.comma): ActivateCommaShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyX): ActivateXKeyShortcutIntent(),
+            TimelineZoomOut(),
+        LogicalKeySet(LogicalKeyboardKey.keyI): TimingPointAddIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyO): TimingPointDeleteIntent(),
+        LogicalKeySet(LogicalKeyboardKey.comma): SnippetDivideIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyX): SnippetConcatenateIntent(),
         LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyD):
-            ActivateShiftDKeyShortcutIntent(),
-
-        LogicalKeySet(LogicalKeyboardKey.keyT): ActivateTKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyR): ActivateRKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyE): ActivateEKeyShortcutIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyW): ActivateWKeyShortcutIntent(),
+            DisplayModeSwitchIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyG): TimelineCursorMoveLeft(),
+        LogicalKeySet(LogicalKeyboardKey.keyF): TimelineCursorMoveDown(),
+        LogicalKeySet(LogicalKeyboardKey.keyD): TimelineCursorMoveUp(),
+        LogicalKeySet(LogicalKeyboardKey.keyS): TimelineCursorMoveRight(),
       };
 
   Map<Type, Action<Intent>> get actions => {
-        ActivateSpaceKeyShortcutIntent:
-            CallbackAction<ActivateSpaceKeyShortcutIntent>(
-          onInvoke: (ActivateSpaceKeyShortcutIntent intent) => () {
+        PlayPauseIntent: CallbackAction<PlayPauseIntent>(
+          onInvoke: (PlayPauseIntent intent) => () {
             masterSubject.add(RequestPlayPause());
           }(),
         ),
-        ActivateDKeyShortcutIntent: CallbackAction<ActivateDKeyShortcutIntent>(
-          onInvoke: (ActivateDKeyShortcutIntent intent) => () {
+        RewindIntent: CallbackAction<RewindIntent>(
+          onInvoke: (RewindIntent intent) => () {
             masterSubject.add(RequestRewind(1000));
           }(),
         ),
-        ActivateFKeyShortcutIntent: CallbackAction<ActivateFKeyShortcutIntent>(
-          onInvoke: (ActivateFKeyShortcutIntent intent) => () {
+        ForwardIntent: CallbackAction<ForwardIntent>(
+          onInvoke: (ForwardIntent intent) => () {
             masterSubject.add(RequestForward(1000));
           }(),
         ),
-        ActivateCKeyShortcutIntent: CallbackAction<ActivateCKeyShortcutIntent>(
-          onInvoke: (ActivateCKeyShortcutIntent intent) => () {
+        SnippetStartMoveIntent: CallbackAction<SnippetStartMoveIntent>(
+          onInvoke: (SnippetStartMoveIntent intent) => () {
             selectingSnippetIDs.forEach((LyricSnippetID id) {
               masterSubject
                   .add(RequestSnippetMove(id, SnippetEdge.start, false));
             });
           }(),
         ),
-        ActivateVKeyShortcutIntent: CallbackAction<ActivateVKeyShortcutIntent>(
-          onInvoke: (ActivateVKeyShortcutIntent intent) => () {
+        SnippetEndMoveIntent: CallbackAction<SnippetEndMoveIntent>(
+          onInvoke: (SnippetEndMoveIntent intent) => () {
             selectingSnippetIDs.forEach((LyricSnippetID id) {
               masterSubject.add(RequestSnippetMove(id, SnippetEdge.end, false));
             });
           }(),
         ),
-        ActivateUpArrowKeyShortcutIntent:
-            CallbackAction<ActivateUpArrowKeyShortcutIntent>(
-          onInvoke: (ActivateUpArrowKeyShortcutIntent intent) => () {
+        VolumeUpIntent: CallbackAction<VolumeUpIntent>(
+          onInvoke: (VolumeUpIntent intent) => () {
             masterSubject.add(RequestVolumeUp(0.1));
           }(),
         ),
-        ActivateDownArrowKeyShortcutIntent:
-            CallbackAction<ActivateDownArrowKeyShortcutIntent>(
-          onInvoke: (ActivateDownArrowKeyShortcutIntent intent) => () {
+        VolumeDownIntent: CallbackAction<VolumeDownIntent>(
+          onInvoke: (VolumeDownIntent intent) => () {
             masterSubject.add(RequestVolumeDown(0.1));
           }(),
         ),
-        ActivateRightArrowKeyShortcutIntent:
-            CallbackAction<ActivateRightArrowKeyShortcutIntent>(
-          onInvoke: (ActivateRightArrowKeyShortcutIntent intent) => () {
+        SpeedUpIntent: CallbackAction<SpeedUpIntent>(
+          onInvoke: (SpeedUpIntent intent) => () {
             masterSubject.add(RequestSpeedUp(0.1));
           }(),
         ),
-        ActivateLeftArrowKeyShortcutIntent:
-            CallbackAction<ActivateLeftArrowKeyShortcutIntent>(
-          onInvoke: (ActivateLeftArrowKeyShortcutIntent intent) => () {
+        SpeedDownIntent: CallbackAction<SpeedDownIntent>(
+          onInvoke: (SpeedDownIntent intent) => () {
             masterSubject.add(RequestSpeedDown(0.1));
           }(),
         ),
-        ActivateHKeyShortcutIntent: CallbackAction<ActivateHKeyShortcutIntent>(
-          onInvoke: (ActivateHKeyShortcutIntent intent) => () {
+        TextPaneCursorMoveLeftIntent:
+            CallbackAction<TextPaneCursorMoveLeftIntent>(
+          onInvoke: (TextPaneCursorMoveLeftIntent intent) => () {
             masterSubject.add(RequestMoveLeftCharCursor());
           }(),
         ),
-        ActivateUKeyShortcutIntent: CallbackAction<ActivateUKeyShortcutIntent>(
-          onInvoke: (ActivateUKeyShortcutIntent intent) => () {
+        UndoIntent: CallbackAction<UndoIntent>(
+          onInvoke: (UndoIntent intent) => () {
             masterSubject.add(RequestUndo());
           }(),
         ),
-        ActivateJKeyShortcutIntent: CallbackAction<ActivateJKeyShortcutIntent>(
-          onInvoke: (ActivateJKeyShortcutIntent intent) => () {
+        TextPaneCursorMoveDownIntent:
+            CallbackAction<TextPaneCursorMoveDownIntent>(
+          onInvoke: (TextPaneCursorMoveDownIntent intent) => () {
             masterSubject.add(RequestMoveDownCharCursor());
           }(),
         ),
-        ActivateKKeyShortcutIntent: CallbackAction<ActivateKKeyShortcutIntent>(
-          onInvoke: (ActivateKKeyShortcutIntent intent) => () {
+        TextPaneCursorMoveUpIntent: CallbackAction<TextPaneCursorMoveUpIntent>(
+          onInvoke: (TextPaneCursorMoveUpIntent intent) => () {
             masterSubject.add(RequestMoveUpCharCursor());
           }(),
         ),
-        ActivateLKeyShortcutIntent: CallbackAction<ActivateLKeyShortcutIntent>(
-          onInvoke: (ActivateLKeyShortcutIntent intent) => () {
+        TextPaneCursorMoveRightIntent:
+            CallbackAction<TextPaneCursorMoveRightIntent>(
+          onInvoke: (TextPaneCursorMoveRightIntent intent) => () {
             masterSubject.add(RequestMoveRightCharCursor());
           }(),
         ),
-        ActivateCtrlKKeyShortcutIntent:
-            CallbackAction<ActivateCtrlKKeyShortcutIntent>(
-          onInvoke: (ActivateCtrlKKeyShortcutIntent intent) => () {
+        TimelineZoomIn: CallbackAction<TimelineZoomIn>(
+          onInvoke: (TimelineZoomIn intent) => () {
             masterSubject.add(RequestTimelineZoomIn());
           }(),
         ),
-        ActivateCtrlJKeyShortcutIntent:
-            CallbackAction<ActivateCtrlJKeyShortcutIntent>(
-          onInvoke: (ActivateCtrlJKeyShortcutIntent intent) => () {
+        TimelineZoomOut: CallbackAction<TimelineZoomOut>(
+          onInvoke: (TimelineZoomOut intent) => () {
             masterSubject.add(RequestTimelineZoomOut());
           }(),
         ),
-        ActivateNKeyShortcutIntent: CallbackAction<ActivateNKeyShortcutIntent>(
-          onInvoke: (ActivateNKeyShortcutIntent intent) => () {
+        TimingPointAddIntent: CallbackAction<TimingPointAddIntent>(
+          onInvoke: (TimingPointAddIntent intent) => () {
             selectingSnippetIDs.forEach((LyricSnippetID id) {
               masterSubject.add(RequestToAddLyricTiming(
                   id, charCursorPosition, seekPosition));
             });
           }(),
         ),
-        ActivateMKeyShortcutIntent: CallbackAction<ActivateMKeyShortcutIntent>(
-          onInvoke: (ActivateMKeyShortcutIntent intent) => () {
+        TimingPointDeleteIntent: CallbackAction<TimingPointDeleteIntent>(
+          onInvoke: (TimingPointDeleteIntent intent) => () {
             selectingSnippetIDs.forEach((LyricSnippetID id) {
               masterSubject
                   .add(RequestToDeleteLyricTiming(id, charCursorPosition));
             });
           }(),
         ),
-        ActivateCommaShortcutIntent:
-            CallbackAction<ActivateCommaShortcutIntent>(
-          onInvoke: (ActivateCommaShortcutIntent intent) => () {
+        SnippetDivideIntent: CallbackAction<SnippetDivideIntent>(
+          onInvoke: (SnippetDivideIntent intent) => () {
             masterSubject.add(
                 RequestDivideSnippet(selectedSnippetID, charCursorPosition));
             textSelectMode = false;
             masterSubject.add(RequestToExitTextSelectMode());
           }(),
         ),
-        ActivateXKeyShortcutIntent: CallbackAction<ActivateXKeyShortcutIntent>(
-          onInvoke: (ActivateXKeyShortcutIntent intent) => () {
+        SnippetConcatenateIntent: CallbackAction<SnippetConcatenateIntent>(
+          onInvoke: (SnippetConcatenateIntent intent) => () {
             masterSubject.add(RequestConcatenateSnippet(selectingSnippetIDs));
           }(),
         ),
-        ActivateShiftDKeyShortcutIntent:
-            CallbackAction<ActivateShiftDKeyShortcutIntent>(
-          onInvoke: (ActivateShiftDKeyShortcutIntent intent) => () {
+        DisplayModeSwitchIntent: CallbackAction<DisplayModeSwitchIntent>(
+          onInvoke: (DisplayModeSwitchIntent intent) => () {
             masterSubject.add(RequestSwitchDisplayMode());
           }(),
         ),
-        ActivateTKeyShortcutIntent: CallbackAction<ActivateTKeyShortcutIntent>(
-          onInvoke: (ActivateTKeyShortcutIntent intent) => () {
+        TimelineCursorMoveLeft: CallbackAction<TimelineCursorMoveLeft>(
+          onInvoke: (TimelineCursorMoveLeft intent) => () {
             masterSubject.add(RequestTimelineCursorMoveRight());
           }(),
         ),
-        ActivateRKeyShortcutIntent: CallbackAction<ActivateRKeyShortcutIntent>(
-          onInvoke: (ActivateRKeyShortcutIntent intent) => () {
+        TimelineCursorMoveDown: CallbackAction<TimelineCursorMoveDown>(
+          onInvoke: (TimelineCursorMoveDown intent) => () {
             masterSubject.add(RequestTimelineCursorMoveDown());
           }(),
         ),
-        ActivateEKeyShortcutIntent: CallbackAction<ActivateEKeyShortcutIntent>(
-          onInvoke: (ActivateEKeyShortcutIntent intent) => () {
+        TimelineCursorMoveUp: CallbackAction<TimelineCursorMoveUp>(
+          onInvoke: (TimelineCursorMoveUp intent) => () {
             masterSubject.add(RequestTimelineCursorMoveUp());
           }(),
         ),
-        ActivateWKeyShortcutIntent: CallbackAction<ActivateWKeyShortcutIntent>(
-          onInvoke: (ActivateWKeyShortcutIntent intent) => () {
+        TimelineCursorMoveRight: CallbackAction<TimelineCursorMoveRight>(
+          onInvoke: (TimelineCursorMoveRight intent) => () {
             masterSubject.add(RequestTimelineCursorMoveLeft());
           }(),
         ),
@@ -302,52 +284,52 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
   }
 }
 
-class ActivateSpaceKeyShortcutIntent extends Intent {}
+class PlayPauseIntent extends Intent {}
 
-class ActivateFKeyShortcutIntent extends Intent {}
+class ForwardIntent extends Intent {}
 
-class ActivateDKeyShortcutIntent extends Intent {}
+class RewindIntent extends Intent {}
 
-class ActivateCKeyShortcutIntent extends Intent {}
+class SnippetStartMoveIntent extends Intent {}
 
-class ActivateVKeyShortcutIntent extends Intent {}
+class SnippetEndMoveIntent extends Intent {}
 
-class ActivateUpArrowKeyShortcutIntent extends Intent {}
+class VolumeUpIntent extends Intent {}
 
-class ActivateDownArrowKeyShortcutIntent extends Intent {}
+class VolumeDownIntent extends Intent {}
 
-class ActivateRightArrowKeyShortcutIntent extends Intent {}
+class SpeedUpIntent extends Intent {}
 
-class ActivateLeftArrowKeyShortcutIntent extends Intent {}
+class SpeedDownIntent extends Intent {}
 
-class ActivateUKeyShortcutIntent extends Intent {}
+class UndoIntent extends Intent {}
 
-class ActivateJKeyShortcutIntent extends Intent {}
+class TextPaneCursorMoveDownIntent extends Intent {}
 
-class ActivateKKeyShortcutIntent extends Intent {}
+class TextPaneCursorMoveUpIntent extends Intent {}
 
-class ActivateHKeyShortcutIntent extends Intent {}
+class TextPaneCursorMoveLeftIntent extends Intent {}
 
-class ActivateLKeyShortcutIntent extends Intent {}
+class TextPaneCursorMoveRightIntent extends Intent {}
 
-class ActivateCtrlKKeyShortcutIntent extends Intent {}
+class TimelineZoomIn extends Intent {}
 
-class ActivateCtrlJKeyShortcutIntent extends Intent {}
+class TimelineZoomOut extends Intent {}
 
-class ActivateNKeyShortcutIntent extends Intent {}
+class TimingPointAddIntent extends Intent {}
 
-class ActivateMKeyShortcutIntent extends Intent {}
+class TimingPointDeleteIntent extends Intent {}
 
-class ActivateCommaShortcutIntent extends Intent {}
+class SnippetDivideIntent extends Intent {}
 
-class ActivateXKeyShortcutIntent extends Intent {}
+class SnippetConcatenateIntent extends Intent {}
 
-class ActivateShiftDKeyShortcutIntent extends Intent {}
+class DisplayModeSwitchIntent extends Intent {}
 
-class ActivateTKeyShortcutIntent extends Intent {}
+class TimelineCursorMoveLeft extends Intent {}
 
-class ActivateRKeyShortcutIntent extends Intent {}
+class TimelineCursorMoveDown extends Intent {}
 
-class ActivateEKeyShortcutIntent extends Intent {}
+class TimelineCursorMoveUp extends Intent {}
 
-class ActivateWKeyShortcutIntent extends Intent {}
+class TimelineCursorMoveRight extends Intent {}
