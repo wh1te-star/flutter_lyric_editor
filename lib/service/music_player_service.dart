@@ -48,6 +48,9 @@ class MusicPlayerService {
       if (signal is RequestPlayPause) {
         playPause();
       }
+      if (signal is RequestSeek) {
+        seek(signal.seekPosition);
+      }
       if (signal is RequestRewind) {
         rewind(signal.millisec);
       }
@@ -75,6 +78,11 @@ class MusicPlayerService {
     } else {
       player.resume();
     }
+  }
+
+  void seek(int seekPosition) async {
+    Duration position = Duration(milliseconds: seekPosition);
+    await player.seek(position);
   }
 
   void rewind(int millisec) async {

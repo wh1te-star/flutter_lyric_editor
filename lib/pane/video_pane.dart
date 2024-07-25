@@ -53,8 +53,9 @@ class _VideoPaneState extends State<VideoPane> {
       }
       if (signal is NotifySeekPosition) {
         currentSeekPosition = signal.seekPosition;
-        if (displayMode == DisplayMode.verticalScroll) {
-          scrollController.jumpTo(getScrollOffset(currentSeekPosition));
+        if (displayMode == DisplayMode.verticalScroll && isPlaying) {
+          scrollController
+              .jumpTo(getScrollOffsetFromSeekPosition(currentSeekPosition));
         }
       }
       if (signal is NotifyLyricParsed) {
@@ -133,7 +134,7 @@ class _VideoPaneState extends State<VideoPane> {
     return (snippet.startTimestamp + snippet.endTimestamp) / 2;
   }
 
-  double getScrollOffset(int targetPosition) {
+  double getScrollOffsetFromSeekPosition(int seekPosition) {
     int justBeforeIndex = 0;
     int justAfterIndex = 0;
     double justBeforePosition = 0;
@@ -141,7 +142,7 @@ class _VideoPaneState extends State<VideoPane> {
     for (int index = 0; index < lyricSnippetTrack.length; index++) {
       double currentTime =
           getMiddlePoint(lyricSnippetTrack[index].lyricSnippet);
-      if (currentTime < targetPosition) {
+      if (currentTime < seekPosition) {
         if (justBeforePosition < currentTime) {
           justBeforePosition = currentTime;
           justBeforeIndex = index;
@@ -156,10 +157,32 @@ class _VideoPaneState extends State<VideoPane> {
 
     double snippetOffset = (justAfterIndex - justBeforeIndex) * 60;
     double midSnippetOffset = snippetOffset *
-        (targetPosition - justBeforePosition) /
+        (seekPosition - justBeforePosition) /
         (justAfterPosition - justBeforePosition);
     double scrollOffset = 60.0 * justBeforeIndex + midSnippetOffset;
+
     return scrollOffset;
+  }
+
+  double getSeekPositionFromScrollOffset(double scrollOffset) {
+    int snippetIndex = (scrollOffset - 30) ~/ 60 + 1;
+    late double startPosition;
+    late double endPosition;
+    if ((scrollOffset - 30) % 60 < 30) {
+      startPosition =
+          getMiddlePoint(lyricSnippetTrack[snippetIndex - 1].lyricSnippet);
+      endPosition =
+          getMiddlePoint(lyricSnippetTrack[snippetIndex].lyricSnippet);
+    } else {
+      startPosition =
+          getMiddlePoint(lyricSnippetTrack[snippetIndex].lyricSnippet);
+      endPosition =
+          getMiddlePoint(lyricSnippetTrack[snippetIndex + 1].lyricSnippet);
+    }
+    double scrollExtra = (scrollOffset % 60) / 60;
+    double seekPosition =
+        startPosition + (endPosition - startPosition) * scrollExtra;
+    return seekPosition;
   }
 
   PartialTextPainter getBeforeSnippetPainter(
@@ -322,6 +345,11 @@ class _VideoPaneState extends State<VideoPane> {
   }
 
   void _onScroll() {
+    if (!isPlaying) {
+      int position =
+          getSeekPositionFromScrollOffset(scrollController.offset).toInt();
+      masterSubject.add(RequestSeek(position));
+    }
     setState(() {});
   }
 

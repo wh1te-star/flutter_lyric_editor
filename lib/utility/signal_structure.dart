@@ -24,6 +24,11 @@ class NotifyAudioFileLoaded {
   NotifyAudioFileLoaded(this.millisec);
 }
 
+class RequestSeek {
+  final int seekPosition;
+  RequestSeek(this.seekPosition);
+}
+
 class RequestRewind {
   int millisec;
   RequestRewind(this.millisec);
