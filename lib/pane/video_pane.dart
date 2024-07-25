@@ -38,6 +38,8 @@ class _VideoPaneState extends State<VideoPane> {
   @override
   void initState() {
     super.initState();
+    scrollController.addListener(_onScroll);
+
     masterSubject.stream.listen((signal) {
       if (signal is RequestSwitchDisplayMode) {
         if (displayMode == DisplayMode.appearDissappear) {
@@ -81,6 +83,14 @@ class _VideoPaneState extends State<VideoPane> {
   LyricSnippetTrack getLyricSnippetWithID(LyricSnippetID id) {
     return lyricSnippetTrack
         .firstWhere((snippet) => snippet.lyricSnippet.id == id);
+  }
+
+  List<LyricSnippetTrack> getSnippetsAtCurrentSeekPosition() {
+    return lyricSnippetTrack.where((snippet) {
+      return snippet.lyricSnippet.startTimestamp - startBulge <
+              currentSeekPosition &&
+          currentSeekPosition < snippet.lyricSnippet.endTimestamp + endBulge;
+    }).toList();
   }
 
   List<LyricSnippetTrack> assignTrackNumber(
@@ -311,12 +321,15 @@ class _VideoPaneState extends State<VideoPane> {
     }
   }
 
-  List<LyricSnippetTrack> getSnippetsAtCurrentSeekPosition() {
-    return lyricSnippetTrack.where((snippet) {
-      return snippet.lyricSnippet.startTimestamp - startBulge <
-              currentSeekPosition &&
-          currentSeekPosition < snippet.lyricSnippet.endTimestamp + endBulge;
-    }).toList();
+  void _onScroll() {
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    scrollController.removeListener(_onScroll);
+    scrollController.dispose();
+    super.dispose();
   }
 }
 
