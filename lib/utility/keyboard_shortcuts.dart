@@ -107,7 +107,7 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
             TimelineZoomOut(),
         LogicalKeySet(LogicalKeyboardKey.keyI): TimingPointAddIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyO): TimingPointDeleteIntent(),
-        LogicalKeySet(LogicalKeyboardKey.comma): SnippetDivideIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyZ): SnippetDivideIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyX): SnippetConcatenateIntent(),
         LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyD):
             DisplayModeSwitchIntent(),
@@ -137,7 +137,7 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
           onInvoke: (SnippetStartMoveIntent intent) => () {
             selectingSnippetIDs.forEach((LyricSnippetID id) {
               masterSubject
-                  .add(RequestSnippetMove(id, SnippetEdge.start, false));
+                  .add(RequestSnippetMove(id, SnippetEdge.start, true));
             });
           }(),
         ),
@@ -226,8 +226,7 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
           onInvoke: (SnippetDivideIntent intent) => () {
             masterSubject.add(
                 RequestDivideSnippet(selectedSnippetID, charCursorPosition));
-            textSelectMode = false;
-            masterSubject.add(RequestToExitTextSelectMode());
+            //masterSubject.add(RequestToExitTextSelectMode());
           }(),
         ),
         SnippetConcatenateIntent: CallbackAction<SnippetConcatenateIntent>(
