@@ -614,35 +614,3 @@ class _TimelinePaneState extends State<TimelinePane> {
     }
   }
 }
-
-class CurrentPositionIndicator extends TwoDimensionalScrollView {
-  final double x;
-  final double height;
-
-  CurrentPositionIndicator({
-    super.key,
-    required this.x,
-    required this.height,
-    required TwoDimensionalChildDelegate delegate,
-    required verticalDetails,
-    required horizontalDetails,
-  }) : super(
-          delegate: delegate,
-          verticalDetails: verticalDetails,
-          horizontalDetails: horizontalDetails,
-        );
-
-  @override
-  Widget buildViewport(BuildContext context, ViewportOffset verticalOffset,
-      ViewportOffset horizontalOffset) {
-    return Container(
-      color: Colors.transparent,
-    );
-    /*
-    return CustomPaint(
-      painter: CurrentPositionIndicatorPainter(x: x, height: height),
-      child: Container(),
-    );
-    */
-  }
-}
