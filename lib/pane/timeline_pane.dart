@@ -273,8 +273,10 @@ class _TimelinePaneState extends State<TimelinePane> {
       focusNode: focusNode,
       child: GestureDetector(
         onTapDown: (TapDownDetails details) {
-          focusNode.requestFocus();
-          debugPrint("The timeline pane is focused");
+          if (!textFieldFocusNode.hasFocus) {
+            focusNode.requestFocus();
+            debugPrint("The timeline pane is focused");
+          }
         },
         child: Stack(children: [
           TableView.builder(
