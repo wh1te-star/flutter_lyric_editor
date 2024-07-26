@@ -24,8 +24,7 @@ class MyApp extends StatelessWidget {
       home: Scaffold(
         appBar: AppBar(
           title: Builder(
-            builder: (BuildContext context) =>
-                buildAppBarWithMenu(context, masterSubject),
+            builder: (BuildContext context) => buildAppBarWithMenu(context, masterSubject),
           ),
         ),
         body: AdjustablePaneLayout(masterSubject: masterSubject),
@@ -40,8 +39,7 @@ class AdjustablePaneLayout extends StatefulWidget {
   AdjustablePaneLayout({required this.masterSubject}) : super(key: Key('Main'));
 
   @override
-  _AdjustablePaneLayoutState createState() =>
-      _AdjustablePaneLayoutState(masterSubject);
+  _AdjustablePaneLayoutState createState() => _AdjustablePaneLayoutState(masterSubject);
 }
 
 class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
@@ -55,8 +53,8 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
 
   double horizontalBorderWidth = 10;
   double verticalBorderHeight = 10;
-  double VideoPaneWidth = 100;
-  double VideoPaneHeight = 100;
+  double LeftUpperPaneWidth = 100;
+  double LeftUpperPaneHeight = 100;
 
   late MusicPlayerService musicPlayerService;
   late TimingService lyricService;
@@ -75,10 +73,8 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   void initState() {
     super.initState();
 
-    musicPlayerService =
-        MusicPlayerService(masterSubject: masterSubject, context: context);
-    lyricService =
-        TimingService(masterSubject: masterSubject, context: context);
+    musicPlayerService = MusicPlayerService(masterSubject: masterSubject, context: context);
+    lyricService = TimingService(masterSubject: masterSubject, context: context);
     videoPaneFocusNode = FocusNode();
     textPaneFocusNode = FocusNode();
     timelinePaneFocusNode = FocusNode();
@@ -102,12 +98,12 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
         onHorizontalDragUpdate: (details) {
           setState(() {
             if (details.delta.dx > 0) {
-              VideoPaneWidth += details.delta.dx;
+              LeftUpperPaneWidth += details.delta.dx;
             } else {
-              if (VideoPaneWidth > videoPaneWidthlimit) {
-                VideoPaneWidth += details.delta.dx;
+              if (LeftUpperPaneWidth > videoPaneWidthlimit) {
+                LeftUpperPaneWidth += details.delta.dx;
               } else {
-                VideoPaneWidth = videoPaneWidthlimit;
+                LeftUpperPaneWidth = videoPaneWidthlimit;
               }
             }
           });
@@ -121,7 +117,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
         onHorizontalDragUpdate: (details) {},
         onVerticalDragUpdate: (details) {
           setState(() {
-            VideoPaneHeight += details.delta.dy;
+            LeftUpperPaneHeight += details.delta.dy;
           });
         });
 
@@ -152,8 +148,8 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     screenHeight = MediaQuery.of(context).size.height;
     exactWidth = screenWidth * MediaQuery.of(context).devicePixelRatio;
     exactHeight = screenHeight * MediaQuery.of(context).devicePixelRatio;
-    VideoPaneWidth = screenWidth * 2.0 / 3.0;
-    VideoPaneHeight = screenHeight * 2.0 / 3.0;
+    LeftUpperPaneWidth = screenWidth * 1.0 / 3.0;
+    LeftUpperPaneHeight = screenHeight * 2.0 / 3.0;
   }
 
   @override
@@ -168,12 +164,12 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
           return Column(
             children: <Widget>[
               Container(
-                height: VideoPaneHeight,
+                height: LeftUpperPaneHeight,
                 child: Row(
                   children: <Widget>[
-                    Container(width: VideoPaneWidth, child: videoPane),
+                    Container(width: LeftUpperPaneWidth, child: textPane),
                     videoTextBorder,
-                    Expanded(child: textPane),
+                    Expanded(child: videoPane),
                   ],
                 ),
               ),

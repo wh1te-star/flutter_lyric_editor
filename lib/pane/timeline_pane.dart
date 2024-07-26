@@ -17,12 +17,10 @@ class TimelinePane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
 
-  TimelinePane({required this.masterSubject, required this.focusNode})
-      : super(key: Key('TimelinePane'));
+  TimelinePane({required this.masterSubject, required this.focusNode}) : super(key: Key('TimelinePane'));
 
   @override
-  _TimelinePaneState createState() =>
-      _TimelinePaneState(masterSubject, focusNode);
+  _TimelinePaneState createState() => _TimelinePaneState(masterSubject, focusNode);
 }
 
 class _TimelinePaneState extends State<TimelinePane> {
@@ -30,10 +28,8 @@ class _TimelinePaneState extends State<TimelinePane> {
   final FocusNode focusNode;
   _TimelinePaneState(this.masterSubject, this.focusNode);
 
-  final ScrollableDetails verticalDetails = ScrollableDetails(
-      direction: AxisDirection.down, controller: ScrollController());
-  final ScrollableDetails horizontalDetails = ScrollableDetails(
-      direction: AxisDirection.right, controller: ScrollController());
+  final ScrollableDetails verticalDetails = ScrollableDetails(direction: AxisDirection.down, controller: ScrollController());
+  final ScrollableDetails horizontalDetails = ScrollableDetails(direction: AxisDirection.right, controller: ScrollController());
 
   Map<String, List<LyricSnippet>> snippetsForeachVocalist = {};
   Map<String, int> vocalistColorList = {};
@@ -71,8 +67,7 @@ class _TimelinePaneState extends State<TimelinePane> {
         });
       }
       if (signal is NotifySeekPosition) {
-        List<LyricSnippetID> currentSelectingSnippet =
-            getSnippetsAtCurrentSeekPosition();
+        List<LyricSnippetID> currentSelectingSnippet = getSnippetsAtCurrentSeekPosition();
         masterSubject.add(NotifyCurrentSnippets(currentSelectingSnippet));
 
         if (autoCurrentSelectMode) {
@@ -83,25 +78,15 @@ class _TimelinePaneState extends State<TimelinePane> {
           currentPosition = signal.seekPosition;
         });
       }
-      if (signal is NotifySnippetMove ||
-          signal is NotifySnippetDivided ||
-          signal is NotifySnippetConcatenated ||
-          signal is NotifyUndo) {
-        snippetsForeachVocalist = groupBy(signal.lyricSnippetList,
-            (LyricSnippet snippet) => snippet.vocalist.name);
+      if (signal is NotifySnippetMove || signal is NotifySnippetDivided || signal is NotifySnippetConcatenated || signal is NotifyUndo) {
+        snippetsForeachVocalist = groupBy(signal.lyricSnippetList, (LyricSnippet snippet) => snippet.vocalist.name);
         setState(() {});
       }
-      if (signal is NotifyLyricParsed ||
-          signal is NotifyVocalistAdded ||
-          signal is NotifyVocalistDeleted ||
-          signal is NotifyVocalistNameChanged) {
-        snippetsForeachVocalist = groupBy(signal.lyricSnippetList,
-            (LyricSnippet snippet) => snippet.vocalist.name);
-        cursorPosition =
-            snippetsForeachVocalist[snippetsForeachVocalist.keys.first]![0].id;
+      if (signal is NotifyLyricParsed || signal is NotifyVocalistAdded || signal is NotifyVocalistDeleted || signal is NotifyVocalistNameChanged) {
+        snippetsForeachVocalist = groupBy(signal.lyricSnippetList, (LyricSnippet snippet) => snippet.vocalist.name);
+        cursorPosition = snippetsForeachVocalist[snippetsForeachVocalist.keys.first]![0].id;
         vocalistColorList = signal.vocalistColorList;
-        vocalistCombinationCorrespondence =
-            signal.vocalistCombinationCorrespondence;
+        vocalistCombinationCorrespondence = signal.vocalistCombinationCorrespondence;
         setState(() {});
       }
       if (signal is RequestTimelineZoomIn) {
@@ -132,35 +117,29 @@ class _TimelinePaneState extends State<TimelinePane> {
     horizontalDetails.controller!.addListener(_onHorizontalScroll);
     currentPositionScroller.addListener(_onHorizontalScroll);
 
-    cursorTimer =
-        Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
+    cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
       isCursorVisible = !isCursorVisible;
       setState(() {});
     });
   }
 
   void zoomIn() {
-    debugPrint("timeline pane: zoom In");
     intervalDuration = intervalDuration * 2;
   }
 
   void zoomOut() {
-    debugPrint("timeline pane: zoom Out");
     intervalDuration = intervalDuration ~/ 2;
   }
 
   LyricSnippet getSnippetWithID(LyricSnippetID id) {
-    return snippetsForeachVocalist[id.vocalist.name]!
-        .firstWhere((snippet) => snippet.id == id);
+    return snippetsForeachVocalist[id.vocalist.name]!.firstWhere((snippet) => snippet.id == id);
   }
 
   int getSnippetIndexWithID(LyricSnippetID id) {
-    return snippetsForeachVocalist[id.vocalist.name]!
-        .indexWhere((snippet) => snippet.id == id);
+    return snippetsForeachVocalist[id.vocalist.name]!.indexWhere((snippet) => snippet.id == id);
   }
 
-  LyricSnippet getNearSnippetFromSeekPosition(
-      String vocalistName, int targetSeekPosition) {
+  LyricSnippet getNearSnippetFromSeekPosition(String vocalistName, int targetSeekPosition) {
     List<LyricSnippet> snippets = snippetsForeachVocalist[vocalistName]!;
     for (int index = 0; index < snippets.length; index++) {
       int snippetStart = snippets[index].startTimestamp;
@@ -177,8 +156,7 @@ class _TimelinePaneState extends State<TimelinePane> {
           return snippets[index];
         }
       }
-      if (snippetStart < targetSeekPosition &&
-          targetSeekPosition < snippetEnd) {
+      if (snippetStart < targetSeekPosition && targetSeekPosition < snippetEnd) {
         return snippets[index];
       }
     }
@@ -208,8 +186,7 @@ class _TimelinePaneState extends State<TimelinePane> {
     isCursorVisible = true;
     setState(() {});
 
-    cursorTimer =
-        Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
+    cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
       isCursorVisible = !isCursorVisible;
       setState(() {});
     });
@@ -221,8 +198,7 @@ class _TimelinePaneState extends State<TimelinePane> {
 
   void restartCursorTimer() {
     cursorTimer.cancel();
-    cursorTimer =
-        Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
+    cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
       isCursorVisible = !isCursorVisible;
       setState(() {});
     });
@@ -241,8 +217,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   void moveRightCursor() {
     LyricSnippetID nextCursorPosition = cursorPosition;
     nextCursorPosition.index++;
-    if (nextCursorPosition.index <
-        snippetsForeachVocalist[cursorPosition.vocalist.name]!.length) {
+    if (nextCursorPosition.index < snippetsForeachVocalist[cursorPosition.vocalist.name]!.length) {
       nextCursorPosition = getSnippetWithID(nextCursorPosition).id;
       cursorPosition = nextCursorPosition;
       resetCursorTimer();
@@ -252,19 +227,15 @@ class _TimelinePaneState extends State<TimelinePane> {
   void moveUpCursor() {
     String upperVocalist = getPreviousVocalist(cursorPosition.vocalist.name)!;
     LyricSnippet snippet = getSnippetWithID(cursorPosition);
-    int targetSeekPosition =
-        (snippet.startTimestamp + snippet.endTimestamp) ~/ 2;
-    cursorPosition =
-        getNearSnippetFromSeekPosition(upperVocalist, targetSeekPosition).id;
+    int targetSeekPosition = (snippet.startTimestamp + snippet.endTimestamp) ~/ 2;
+    cursorPosition = getNearSnippetFromSeekPosition(upperVocalist, targetSeekPosition).id;
   }
 
   void moveDownCursor() {
     String upperVocalist = getNextVocalist(cursorPosition.vocalist.name)!;
     LyricSnippet snippet = getSnippetWithID(cursorPosition);
-    int targetSeekPosition =
-        (snippet.startTimestamp + snippet.endTimestamp) ~/ 2;
-    cursorPosition =
-        getNearSnippetFromSeekPosition(upperVocalist, targetSeekPosition).id;
+    int targetSeekPosition = (snippet.startTimestamp + snippet.endTimestamp) ~/ 2;
+    cursorPosition = getNearSnippetFromSeekPosition(upperVocalist, targetSeekPosition).id;
   }
 
   @override
@@ -299,10 +270,8 @@ class _TimelinePaneState extends State<TimelinePane> {
                 controller: currentPositionScroller,
                 scrollDirection: Axis.horizontal,
                 child: CustomPaint(
-                  size: Size(
-                      audioDuration * intervalLength / intervalDuration, 800),
-                  painter: CurrentPositionIndicatorPainter(
-                      x: currentPosition * intervalLength / intervalDuration),
+                  size: Size(audioDuration * intervalLength / intervalDuration, 800),
+                  painter: CurrentPositionIndicatorPainter(x: currentPosition * intervalLength / intervalDuration),
                 ),
               ),
             ),
@@ -326,12 +295,8 @@ class _TimelinePaneState extends State<TimelinePane> {
     List<LyricSnippetID> currentSnippet = [];
     snippetsForeachVocalist.forEach((vocalist, snippets) {
       for (var snippet in snippets) {
-        final endtime = snippet.startTimestamp +
-            snippet.timingPoints
-                .map((point) => point.wordDuration)
-                .reduce((a, b) => a + b);
-        if (snippet.startTimestamp <= currentPosition &&
-            currentPosition <= endtime) {
+        final endtime = snippet.startTimestamp + snippet.timingPoints.map((point) => point.wordDuration).reduce((a, b) => a + b);
+        if (snippet.startTimestamp <= currentPosition && currentPosition <= endtime) {
           currentSnippet.add(snippet.id);
         }
       }
@@ -370,20 +335,14 @@ class _TimelinePaneState extends State<TimelinePane> {
     if (vicinity.row == 0) {
       return TableViewCell(
         child: CustomPaint(
-          painter: ScaleMark(
-              intervalLength: intervalLength,
-              majorMarkLength: majorMarkLength,
-              midiumMarkLength: midiumMarkLength,
-              minorMarkLength: minorMarkLength,
-              intervalDuration: intervalDuration),
+          painter: ScaleMark(intervalLength: intervalLength, majorMarkLength: majorMarkLength, midiumMarkLength: midiumMarkLength, minorMarkLength: minorMarkLength, intervalDuration: intervalDuration),
         ),
       );
     }
     if (vicinity.row == snippetsForeachVocalist.length + 1) {
       if (vicinity.column == 0) {
         if (isAddVocalistInput != "") {
-          final TextEditingController controller =
-              TextEditingController(text: "");
+          final TextEditingController controller = TextEditingController(text: "");
           return TableViewCell(
             child: TextField(
               controller: controller,
@@ -438,12 +397,10 @@ class _TimelinePaneState extends State<TimelinePane> {
       }
     }
     int row = vicinity.row - 1;
-    final String vocalistName =
-        snippetsForeachVocalist.entries.toList()[row].key;
+    final String vocalistName = snippetsForeachVocalist.entries.toList()[row].key;
     if (vicinity.column == 0) {
       if (edittingVocalistIndex == row) {
-        final TextEditingController controller =
-            TextEditingController(text: vocalistName);
+        final TextEditingController controller = TextEditingController(text: vocalistName);
         oldVocalistValue = vocalistName;
         return TableViewCell(
           child: TextField(
@@ -458,8 +415,7 @@ class _TimelinePaneState extends State<TimelinePane> {
                 masterSubject.add(RequestDeleteVocalist(oldVocalistValue));
               } else if (oldVocalistValue != value) {
                 restartCursorTimer();
-                masterSubject
-                    .add(RequestChangeVocalistName(oldVocalistValue, value));
+                masterSubject.add(RequestChangeVocalistName(oldVocalistValue, value));
               }
               setState(() {});
             },
@@ -489,11 +445,7 @@ class _TimelinePaneState extends State<TimelinePane> {
             child: CustomPaint(
               painter: RectanglePainter(
                 rect: Rect.fromLTRB(0.0, 0.0, 155, 60),
-                sentence: snippetsForeachVocalist.entries
-                    .toList()[row]
-                    .value[0]
-                    .vocalist
-                    .name,
+                sentence: snippetsForeachVocalist.entries.toList()[row].value[0].vocalist.name,
                 color: Color(vocalistColorList[vocalistName]!),
                 isSelected: selectingVocalist.contains(vocalistName),
               ),
@@ -509,17 +461,11 @@ class _TimelinePaneState extends State<TimelinePane> {
         child: GestureDetector(
           onTapDown: (TapDownDetails details) {
             Offset localPosition = details.localPosition;
-            final snippets =
-                snippetsForeachVocalist.entries.toList()[row].value;
+            final snippets = snippetsForeachVocalist.entries.toList()[row].value;
             for (var snippet in snippets) {
-              final endtime = snippet.startTimestamp +
-                  snippet.timingPoints
-                      .map((point) => point.wordDuration)
-                      .reduce((a, b) => a + b);
-              final touchedSeekPosition =
-                  localPosition.dx * intervalDuration / intervalLength;
-              if (snippet.startTimestamp <= touchedSeekPosition &&
-                  touchedSeekPosition <= endtime) {
+              final endtime = snippet.startTimestamp + snippet.timingPoints.map((point) => point.wordDuration).reduce((a, b) => a + b);
+              final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
+              if (snippet.startTimestamp <= touchedSeekPosition && touchedSeekPosition <= endtime) {
                 if (selectingSnippet.contains(snippet.id)) {
                   selectingSnippet.remove(snippet.id);
                 } else {
@@ -607,10 +553,8 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   void _onHorizontalScroll() {
-    if (horizontalDetails.controller!.hasClients &&
-        currentPositionScroller.hasClients) {
-      if (horizontalDetails.controller!.offset !=
-          currentPositionScroller.offset) {
+    if (horizontalDetails.controller!.hasClients && currentPositionScroller.hasClients) {
+      if (horizontalDetails.controller!.offset != currentPositionScroller.offset) {
         currentPositionScroller.jumpTo(horizontalDetails.controller!.offset);
       }
     }
