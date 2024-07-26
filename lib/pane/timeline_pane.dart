@@ -57,6 +57,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   late FocusNode textFieldFocusNode;
   bool isAddVocalistButtonSelected = false;
   String isAddVocalistInput = "";
+  int cursorBlinkInterval = 1;
 
   @override
   void initState() {
@@ -131,7 +132,8 @@ class _TimelinePaneState extends State<TimelinePane> {
     horizontalDetails.controller!.addListener(_onHorizontalScroll);
     currentPositionScroller.addListener(_onHorizontalScroll);
 
-    cursorTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+    cursorTimer =
+        Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
       isCursorVisible = !isCursorVisible;
       setState(() {});
     });
@@ -206,7 +208,21 @@ class _TimelinePaneState extends State<TimelinePane> {
     isCursorVisible = true;
     setState(() {});
 
-    cursorTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+    cursorTimer =
+        Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
+      isCursorVisible = !isCursorVisible;
+      setState(() {});
+    });
+  }
+
+  void pauseCursorTimer() {
+    cursorTimer.cancel();
+  }
+
+  void restartCursorTimer() {
+    cursorTimer.cancel();
+    cursorTimer =
+        Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
       isCursorVisible = !isCursorVisible;
       setState(() {});
     });
@@ -392,6 +408,7 @@ class _TimelinePaneState extends State<TimelinePane> {
               onTapDown: (TapDownDetails details) {
                 isAddVocalistButtonSelected = true;
                 textFieldFocusNode.requestFocus();
+                restartCursorTimer();
                 masterSubject.add(RequestKeyboardShortcutEnable(false));
                 setState(() {});
               },
@@ -438,6 +455,7 @@ class _TimelinePaneState extends State<TimelinePane> {
               if (value == "") {
                 masterSubject.add(RequestDeleteVocalist(oldVocalistValue));
               } else if (oldVocalistValue != value) {
+                restartCursorTimer();
                 masterSubject
                     .add(RequestChangeVocalistName(oldVocalistValue, value));
               }
@@ -462,6 +480,7 @@ class _TimelinePaneState extends State<TimelinePane> {
               edittingVocalistIndex = row;
               debugPrint("${row}");
               textFieldFocusNode.requestFocus();
+              pauseCursorTimer();
               masterSubject.add(RequestKeyboardShortcutEnable(false));
               setState(() {});
             },
@@ -576,6 +595,7 @@ class _TimelinePaneState extends State<TimelinePane> {
     if (!textFieldFocusNode.hasFocus) {
       edittingVocalistIndex = -1;
       isAddVocalistInput = "";
+      restartCursorTimer();
       masterSubject.add(RequestKeyboardShortcutEnable(true));
       debugPrint("release the text field focus.");
       setState(() {});
