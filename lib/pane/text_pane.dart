@@ -10,8 +10,7 @@ class TextPane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
 
-  TextPane({required this.masterSubject, required this.focusNode})
-      : super(key: Key('TextPane'));
+  TextPane({required this.masterSubject, required this.focusNode}) : super(key: Key('TextPane'));
 
   @override
   _TextPaneState createState() => _TextPaneState(masterSubject, focusNode);
@@ -51,10 +50,7 @@ class _TextPaneState extends State<TextPane> {
     super.initState();
 
     masterSubject.stream.listen((signal) {
-      if (signal is NotifyLyricParsed ||
-          signal is NotifySnippetDivided ||
-          signal is NotifySnippetConcatenated ||
-          signal is NotifyUndo) {
+      if (signal is NotifyLyricParsed || signal is NotifySnippetDivided || signal is NotifySnippetConcatenated || signal is NotifyUndo) {
         lyricSnippets = signal.lyricSnippetList;
         lyricAppearance = List.filled(lyricSnippets.length, '');
         updateIndicators();
@@ -64,36 +60,29 @@ class _TextPaneState extends State<TextPane> {
       if (signal is RequestMoveDownCharCursor) {
         moveDownCursor();
         masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
-        masterSubject.add(
-            NotifyLineCursorPosition(lyricSnippets[cursorPositionLine].id));
+        masterSubject.add(NotifyLineCursorPosition(lyricSnippets[cursorPositionLine].id));
       }
 
       if (signal is RequestMoveUpCharCursor) {
         moveUpCursor();
         masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
-        masterSubject.add(
-            NotifyLineCursorPosition(lyricSnippets[cursorPositionLine].id));
+        masterSubject.add(NotifyLineCursorPosition(lyricSnippets[cursorPositionLine].id));
       }
 
       if (signal is RequestMoveLeftCharCursor) {
         moveLeftCursor();
         masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
-        masterSubject.add(
-            NotifyLineCursorPosition(lyricSnippets[cursorPositionLine].id));
+        masterSubject.add(NotifyLineCursorPosition(lyricSnippets[cursorPositionLine].id));
       }
 
       if (signal is RequestMoveRightCharCursor) {
         moveRightCursor();
         masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
-        masterSubject.add(
-            NotifyLineCursorPosition(lyricSnippets[cursorPositionLine].id));
+        masterSubject.add(NotifyLineCursorPosition(lyricSnippets[cursorPositionLine].id));
       }
 
-      if (signal is NotifyTimingPointAdded ||
-          signal is NotifyTimingPointDeletion) {
-        lyricSnippets
-            .where((snippet) => snippet.id == signal.snippetID)
-            .forEach((LyricSnippet snippet) {
+      if (signal is NotifyTimingPointAdded || signal is NotifyTimingPointDeletion) {
+        lyricSnippets.where((snippet) => snippet.id == signal.snippetID).forEach((LyricSnippet snippet) {
           snippet.timingPoints = signal.timingPoints;
         });
         updateIndicators();
@@ -126,45 +115,28 @@ class _TextPaneState extends State<TextPane> {
   }
 
   void updateIndicators() {
-    timingPointsForEachLine = lyricSnippets
-        .map((snippet) => snippet.timingPoints
-            .take(snippet.timingPoints.length - 1)
-            .map((timingPoint) => timingPoint.wordLength)
-            .fold<List<int>>(
-                [], (acc, pos) => acc..add((acc.isEmpty ? 0 : acc.last) + pos)))
-        .toList();
+    timingPointsForEachLine = lyricSnippets.map((snippet) => snippet.timingPoints.take(snippet.timingPoints.length - 1).map((timingPoint) => timingPoint.wordLength).fold<List<int>>([], (acc, pos) => acc..add((acc.isEmpty ? 0 : acc.last) + pos))).toList();
     for (int i = 0; i < timingPointsForEachLine.length; i++) {
-      Map<int, String> timingPointsForEachLineMap = timingPointsForEachLine[i]
-          .asMap()
-          .map((key, value) => MapEntry(value, timingPointChar));
-      lyricAppearance[i] =
-          InsertChars(lyricSnippets[i].sentence, timingPointsForEachLineMap);
+      Map<int, String> timingPointsForEachLineMap = timingPointsForEachLine[i].asMap().map((key, value) => MapEntry(value, timingPointChar));
+      lyricAppearance[i] = InsertChars(lyricSnippets[i].sentence, timingPointsForEachLineMap);
     }
   }
 
   void moveUpCursor() {
     if (cursorPositionLine > 0) {
       cursorPositionLine--;
-      cursorPosition = lyricSnippets
-              .take(cursorPositionLine)
-              .fold(0, (prev, curr) => prev + curr.sentence.length) +
-          cursorPositionChar;
+      cursorPosition = lyricSnippets.take(cursorPositionLine).fold(0, (prev, curr) => prev + curr.sentence.length) + cursorPositionChar;
       setState(() {});
-      debugPrint(
-          "K key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
+      debugPrint("K key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
     }
   }
 
   void moveDownCursor() {
     if (cursorPositionLine < lyricSnippets.length - 1) {
       cursorPositionLine++;
-      cursorPosition = lyricSnippets
-              .take(cursorPositionLine)
-              .fold(0, (prev, curr) => prev + curr.sentence.length) +
-          cursorPositionChar;
+      cursorPosition = lyricSnippets.take(cursorPositionLine).fold(0, (prev, curr) => prev + curr.sentence.length) + cursorPositionChar;
       setState(() {});
-      debugPrint(
-          "J key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
+      debugPrint("J key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
     }
   }
 
@@ -173,33 +145,27 @@ class _TextPaneState extends State<TextPane> {
       cursorPositionChar--;
       cursorPosition--;
       setState(() {});
-      debugPrint(
-          "H key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
+      debugPrint("H key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
     }
   }
 
   void moveRightCursor() {
-    if (cursorPositionChar <=
-        lyricSnippets[cursorPositionLine].sentence.length) {
+    if (cursorPositionChar <= lyricSnippets[cursorPositionLine].sentence.length) {
       cursorPositionChar++;
       cursorPosition++;
       setState(() {});
-      debugPrint(
-          "L key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
+      debugPrint("L key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
     }
   }
 
   void addTimingPoint(int charPosition, int seekPosition) {
-    masterSubject
-        .add(RequestToAddLyricTiming(snippetID, cursorPosition, seekPosition));
-    debugPrint(
-        "request to add a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
+    masterSubject.add(RequestToAddLyricTiming(snippetID, cursorPosition, seekPosition));
+    debugPrint("request to add a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
   }
 
   void deleteTimingPoint(int charPosition) {
     masterSubject.add(RequestToDeleteLyricTiming(snippetID, cursorPosition));
-    debugPrint(
-        "request to delete a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
+    debugPrint("request to delete a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
   }
 
   @override
@@ -237,11 +203,7 @@ class _TextPaneState extends State<TextPane> {
             padding: padding,
             child: Container(
               color: backgroundColor,
-              child: TextSelectMode
-                  ? highlightedLyricItemSelectionMode(lyricAppearance[index],
-                      cursorPositionLine, cursorPositionChar)
-                  : highlightedLyricItem(lyricAppearance[index],
-                      cursorPositionLine, cursorPositionChar),
+              child: TextSelectMode ? highlightedLyricItemSelectionMode(lyricAppearance[index], cursorPositionLine, cursorPositionChar) : highlightedLyricItem(lyricAppearance[index], cursorPositionLine, cursorPositionChar),
             ),
           );
         } else {
@@ -263,8 +225,7 @@ class _TextPaneState extends State<TextPane> {
   Widget highlightedLyricItem(String lyrics, int lineIndex, int charIndex) {
     int timingPointsBeforeCursor = 0;
     List<int> currentLineTimingPoint = timingPointsForEachLine[lineIndex];
-    while (timingPointsBeforeCursor < currentLineTimingPoint.length &&
-        currentLineTimingPoint[timingPointsBeforeCursor] < charIndex) {
+    while (timingPointsBeforeCursor < currentLineTimingPoint.length && currentLineTimingPoint[timingPointsBeforeCursor] < charIndex) {
       timingPointsBeforeCursor++;
     }
     int cursorIndexTimingPoints = currentLineTimingPoint.indexOf(charIndex);
@@ -283,25 +244,17 @@ class _TextPaneState extends State<TextPane> {
     return RichText(
       text: TextSpan(
         children: [
-          TextSpan(
-              text: beforeN,
-              style: const TextStyle(fontSize: 20, color: Colors.black)),
-          TextSpan(
-              text: charAtN,
-              style: const TextStyle(fontSize: 40, color: Colors.red)),
-          TextSpan(
-              text: afterN,
-              style: const TextStyle(fontSize: 20, color: Colors.black)),
+          TextSpan(text: beforeN, style: const TextStyle(fontSize: 20, color: Colors.black)),
+          TextSpan(text: charAtN, style: const TextStyle(fontSize: 40, color: Colors.red)),
+          TextSpan(text: afterN, style: const TextStyle(fontSize: 20, color: Colors.black)),
         ],
       ),
     );
   }
 
-  Widget highlightedLyricItemSelectionMode(
-      String lyrics, int lineIndex, int charIndex) {
+  Widget highlightedLyricItemSelectionMode(String lyrics, int lineIndex, int charIndex) {
     String beforeSelect = lyrics.substring(0, selectionBasePosition);
-    String selecting =
-        lyrics.substring(selectionBasePosition, cursorPositionChar);
+    String selecting = lyrics.substring(selectionBasePosition, cursorPositionChar);
     String afterSelect = lyrics.substring(cursorPositionChar);
 
     return RichText(
@@ -313,10 +266,7 @@ class _TextPaneState extends State<TextPane> {
           ),
           TextSpan(
             text: selecting,
-            style: const TextStyle(
-                fontSize: 20,
-                color: Colors.black,
-                backgroundColor: Colors.blue),
+            style: const TextStyle(fontSize: 20, color: Colors.black, backgroundColor: Colors.blue),
           ),
           TextSpan(
             text: afterSelect,
@@ -328,20 +278,14 @@ class _TextPaneState extends State<TextPane> {
   }
 
   String replaceNthCharacter(String originalString, int index, String newChar) {
-    return originalString.substring(0, index) +
-        newChar +
-        originalString.substring(index + 1);
+    return originalString.substring(0, index) + newChar + originalString.substring(index + 1);
   }
 
-  String inserCharacterAt(
-      String originalString, int index, String insertingChar) {
-    return originalString.substring(0, index) +
-        insertingChar +
-        originalString.substring(index);
+  String inserCharacterAt(String originalString, int index, String insertingChar) {
+    return originalString.substring(0, index) + insertingChar + originalString.substring(index);
   }
 
-  Map<int, String> AddChar(
-      Map<int, String> mapToBeAdded, Map<int, String> mapToAdd) {
+  Map<int, String> AddChar(Map<int, String> mapToBeAdded, Map<int, String> mapToAdd) {
     Map<int, String> charPositions = {...mapToBeAdded};
     for (var entry in mapToAdd.entries) {
       charPositions[entry.key] = entry.value;
@@ -350,14 +294,12 @@ class _TextPaneState extends State<TextPane> {
   }
 
   String InsertChars(String originalString, Map<int, String> charPositions) {
-    List<MapEntry<int, String>> sortedCharPositions =
-        charPositions.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+    List<MapEntry<int, String>> sortedCharPositions = charPositions.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
     String resultString = "";
     int previousPosition = 0;
 
     for (MapEntry<int, String> entry in sortedCharPositions) {
-      resultString +=
-          originalString.substring(previousPosition, entry.key) + entry.value;
+      resultString += originalString.substring(previousPosition, entry.key) + entry.value;
       previousPosition = entry.key;
     }
     resultString += originalString.substring(previousPosition);

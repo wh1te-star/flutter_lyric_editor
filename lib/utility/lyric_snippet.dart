@@ -18,28 +18,21 @@ class LyricSnippet {
 
   LyricSnippetID get id => LyricSnippetID(vocalist, index);
   int get endTimestamp {
-    return startTimestamp +
-        timingPoints.fold(0, (sum, current) => sum + current.wordDuration);
+    return startTimestamp + timingPoints.fold(0, (sum, current) => sum + current.wordDuration);
   }
 
   int charPosition(int index) {
     if (index < 0 || index >= timingPoints.length) {
-      throw RangeError(
-          'Index ${index} is out of bounds for timingPoints with length ${timingPoints.length}');
+      throw RangeError('Index ${index} is out of bounds for timingPoints with length ${timingPoints.length}');
     }
-    return timingPoints
-        .take(index + 1)
-        .fold(0, (sum, current) => sum + current.wordLength);
+    return timingPoints.take(index + 1).fold(0, (sum, current) => sum + current.wordLength);
   }
 
   int seekPosition(int index) {
     if (index < 0 || index >= timingPoints.length) {
-      throw RangeError(
-          'Index ${index} is out of bounds for timingPoints with length ${timingPoints.length}');
+      throw RangeError('Index ${index} is out of bounds for timingPoints with length ${timingPoints.length}');
     }
-    return timingPoints
-        .take(index + 1)
-        .fold(0, (sum, current) => sum + current.wordDuration);
+    return timingPoints.take(index + 1).fold(0, (sum, current) => sum + current.wordDuration);
   }
 
   set id(LyricSnippetID id) {
@@ -71,15 +64,10 @@ class VocalistCombination {
   VocalistCombination(this.vocalistNames);
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is VocalistCombination &&
-          runtimeType == other.runtimeType &&
-          listEquals(vocalistNames..sort(), other.vocalistNames..sort());
+  bool operator ==(Object other) => identical(this, other) || other is VocalistCombination && runtimeType == other.runtimeType && listEquals(vocalistNames..sort(), other.vocalistNames..sort());
 
   @override
-  int get hashCode =>
-      vocalistNames.fold(0, (prev, element) => 31 * prev + element.hashCode);
+  int get hashCode => vocalistNames.fold(0, (prev, element) => 31 * prev + element.hashCode);
 }
 
 class TimingPoint {

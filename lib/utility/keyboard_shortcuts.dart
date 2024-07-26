@@ -20,12 +20,7 @@ class KeyboardShortcuts extends StatefulWidget {
   });
 
   @override
-  _KeyboardShortcutsState createState() => _KeyboardShortcutsState(
-      masterSubject: this.masterSubject,
-      child: this.child,
-      videoPaneFocusNode: this.videoPaneFocusNode,
-      textPaneFocusNode: this.textPaneFocusNode,
-      timelinePaneFocusNode: this.timelinePaneFocusNode);
+  _KeyboardShortcutsState createState() => _KeyboardShortcutsState(masterSubject: this.masterSubject, child: this.child, videoPaneFocusNode: this.videoPaneFocusNode, textPaneFocusNode: this.textPaneFocusNode, timelinePaneFocusNode: this.timelinePaneFocusNode);
 }
 
 class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
@@ -101,16 +96,13 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
         LogicalKeySet(LogicalKeyboardKey.keyJ): TextPaneCursorMoveDownIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyK): TextPaneCursorMoveUpIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyL): TextPaneCursorMoveRightIntent(),
-        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyK):
-            TimelineZoomIn(),
-        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyJ):
-            TimelineZoomOut(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyK): TimelineZoomIn(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyJ): TimelineZoomOut(),
         LogicalKeySet(LogicalKeyboardKey.keyI): TimingPointAddIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyO): TimingPointDeleteIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyZ): SnippetDivideIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyX): SnippetConcatenateIntent(),
-        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyD):
-            DisplayModeSwitchIntent(),
+        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyD): DisplayModeSwitchIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyG): TimelineCursorMoveLeft(),
         LogicalKeySet(LogicalKeyboardKey.keyF): TimelineCursorMoveDown(),
         LogicalKeySet(LogicalKeyboardKey.keyD): TimelineCursorMoveUp(),
@@ -136,8 +128,7 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
         SnippetStartMoveIntent: CallbackAction<SnippetStartMoveIntent>(
           onInvoke: (SnippetStartMoveIntent intent) => () {
             selectingSnippetIDs.forEach((LyricSnippetID id) {
-              masterSubject
-                  .add(RequestSnippetMove(id, SnippetEdge.start, true));
+              masterSubject.add(RequestSnippetMove(id, SnippetEdge.start, true));
             });
           }(),
         ),
@@ -168,8 +159,7 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
             masterSubject.add(RequestSpeedDown(0.1));
           }(),
         ),
-        TextPaneCursorMoveLeftIntent:
-            CallbackAction<TextPaneCursorMoveLeftIntent>(
+        TextPaneCursorMoveLeftIntent: CallbackAction<TextPaneCursorMoveLeftIntent>(
           onInvoke: (TextPaneCursorMoveLeftIntent intent) => () {
             masterSubject.add(RequestMoveLeftCharCursor());
           }(),
@@ -179,8 +169,7 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
             masterSubject.add(RequestUndo());
           }(),
         ),
-        TextPaneCursorMoveDownIntent:
-            CallbackAction<TextPaneCursorMoveDownIntent>(
+        TextPaneCursorMoveDownIntent: CallbackAction<TextPaneCursorMoveDownIntent>(
           onInvoke: (TextPaneCursorMoveDownIntent intent) => () {
             masterSubject.add(RequestMoveDownCharCursor());
           }(),
@@ -190,8 +179,7 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
             masterSubject.add(RequestMoveUpCharCursor());
           }(),
         ),
-        TextPaneCursorMoveRightIntent:
-            CallbackAction<TextPaneCursorMoveRightIntent>(
+        TextPaneCursorMoveRightIntent: CallbackAction<TextPaneCursorMoveRightIntent>(
           onInvoke: (TextPaneCursorMoveRightIntent intent) => () {
             masterSubject.add(RequestMoveRightCharCursor());
           }(),
@@ -209,23 +197,20 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
         TimingPointAddIntent: CallbackAction<TimingPointAddIntent>(
           onInvoke: (TimingPointAddIntent intent) => () {
             selectingSnippetIDs.forEach((LyricSnippetID id) {
-              masterSubject.add(RequestToAddLyricTiming(
-                  id, charCursorPosition, seekPosition));
+              masterSubject.add(RequestToAddLyricTiming(id, charCursorPosition, seekPosition));
             });
           }(),
         ),
         TimingPointDeleteIntent: CallbackAction<TimingPointDeleteIntent>(
           onInvoke: (TimingPointDeleteIntent intent) => () {
             selectingSnippetIDs.forEach((LyricSnippetID id) {
-              masterSubject
-                  .add(RequestToDeleteLyricTiming(id, charCursorPosition));
+              masterSubject.add(RequestToDeleteLyricTiming(id, charCursorPosition));
             });
           }(),
         ),
         SnippetDivideIntent: CallbackAction<SnippetDivideIntent>(
           onInvoke: (SnippetDivideIntent intent) => () {
-            masterSubject.add(
-                RequestDivideSnippet(selectedSnippetID, charCursorPosition));
+            masterSubject.add(RequestDivideSnippet(selectedSnippetID, charCursorPosition));
             //masterSubject.add(RequestToExitTextSelectMode());
           }(),
         ),

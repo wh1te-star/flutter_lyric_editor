@@ -7,8 +7,7 @@ import 'package:rxdart/rxdart.dart';
 import 'string_resource.dart';
 import 'package:file_selector/file_selector.dart';
 
-AppBar buildAppBarWithMenu(
-    BuildContext context, PublishSubject<dynamic> masterSubject) {
+AppBar buildAppBarWithMenu(BuildContext context, PublishSubject<dynamic> masterSubject) {
   return AppBar(
     title: Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -17,8 +16,7 @@ AppBar buildAppBarWithMenu(
           hint: const Text(StringResource.applicationMenu),
           onChanged: (String? newValue) {
             if (newValue == StringResource.applicationMenuExit) {
-              if (Theme.of(context).platform == TargetPlatform.iOS ||
-                  Theme.of(context).platform == TargetPlatform.android) {
+              if (Theme.of(context).platform == TargetPlatform.iOS || Theme.of(context).platform == TargetPlatform.android) {
                 SystemNavigator.pop();
               } else {
                 exit(0);
@@ -27,8 +25,7 @@ AppBar buildAppBarWithMenu(
               debugPrint('Selected Item: $newValue');
             }
           },
-          items:
-              <String>[StringResource.applicationMenuExit].map((String value) {
+          items: <String>[StringResource.applicationMenuExit].map((String value) {
             return DropdownMenuItem<String>(
               value: value,
               child: Text(value),

@@ -9,8 +9,7 @@ class VideoPane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
 
-  VideoPane({required this.masterSubject, required this.focusNode})
-      : super(key: Key('VideoPane'));
+  VideoPane({required this.masterSubject, required this.focusNode}) : super(key: Key('VideoPane'));
 
   @override
   _VideoPaneState createState() => _VideoPaneState(masterSubject, focusNode);
@@ -54,25 +53,19 @@ class _VideoPaneState extends State<VideoPane> {
       if (signal is NotifySeekPosition) {
         currentSeekPosition = signal.seekPosition;
         if (displayMode == DisplayMode.verticalScroll && isPlaying) {
-          scrollController
-              .jumpTo(getScrollOffsetFromSeekPosition(currentSeekPosition));
+          scrollController.jumpTo(getScrollOffsetFromSeekPosition(currentSeekPosition));
         }
       }
       if (signal is NotifyLyricParsed) {
         lyricSnippetTrack = assignTrackNumber(signal.lyricSnippetList);
         vocalistColorList = signal.vocalistColorList;
-        vocalistCombinationCorrespondence =
-            signal.vocalistCombinationCorrespondence;
+        vocalistCombinationCorrespondence = signal.vocalistCombinationCorrespondence;
       }
-      if (signal is NotifySnippetDivided ||
-          signal is NotifySnippetConcatenated ||
-          signal is NotifyUndo) {
+      if (signal is NotifySnippetDivided || signal is NotifySnippetConcatenated || signal is NotifyUndo) {
         lyricSnippetTrack = assignTrackNumber(signal.lyricSnippetList);
       }
-      if (signal is NotifyTimingPointAdded ||
-          signal is NotifyTimingPointDeletion) {
-        LyricSnippet snippet =
-            getLyricSnippetWithID(signal.snippetID).lyricSnippet;
+      if (signal is NotifyTimingPointAdded || signal is NotifyTimingPointDeletion) {
+        LyricSnippet snippet = getLyricSnippetWithID(signal.snippetID).lyricSnippet;
         snippet.timingPoints = signal.timingPoints;
       }
       setState(() {});
@@ -82,23 +75,18 @@ class _VideoPaneState extends State<VideoPane> {
   String defaultText = "Video Pane";
 
   LyricSnippetTrack getLyricSnippetWithID(LyricSnippetID id) {
-    return lyricSnippetTrack
-        .firstWhere((snippet) => snippet.lyricSnippet.id == id);
+    return lyricSnippetTrack.firstWhere((snippet) => snippet.lyricSnippet.id == id);
   }
 
   List<LyricSnippetTrack> getSnippetsAtCurrentSeekPosition() {
     return lyricSnippetTrack.where((snippet) {
-      return snippet.lyricSnippet.startTimestamp - startBulge <
-              currentSeekPosition &&
-          currentSeekPosition < snippet.lyricSnippet.endTimestamp + endBulge;
+      return snippet.lyricSnippet.startTimestamp - startBulge < currentSeekPosition && currentSeekPosition < snippet.lyricSnippet.endTimestamp + endBulge;
     }).toList();
   }
 
-  List<LyricSnippetTrack> assignTrackNumber(
-      List<LyricSnippet> lyricSnippetList) {
+  List<LyricSnippetTrack> assignTrackNumber(List<LyricSnippet> lyricSnippetList) {
     if (lyricSnippetList.isEmpty) return [];
-    lyricSnippetList
-        .sort((a, b) => a.startTimestamp.compareTo(b.startTimestamp));
+    lyricSnippetList.sort((a, b) => a.startTimestamp.compareTo(b.startTimestamp));
 
     List<LyricSnippetTrack> lyricSnippetTrack = [];
 
@@ -120,8 +108,7 @@ class _VideoPaneState extends State<VideoPane> {
         maxOverlap = currentOverlap;
       }
 
-      lyricSnippetTrack
-          .add(LyricSnippetTrack(lyricSnippetList[i], currentOverlap - 1));
+      lyricSnippetTrack.add(LyricSnippetTrack(lyricSnippetList[i], currentOverlap - 1));
       if (currentOverlap > maxLanes) {
         maxLanes = currentOverlap;
       }
@@ -140,8 +127,7 @@ class _VideoPaneState extends State<VideoPane> {
     double justBeforePosition = 0;
     double justAfterPosition = 240000;
     for (int index = 0; index < lyricSnippetTrack.length; index++) {
-      double currentTime =
-          getMiddlePoint(lyricSnippetTrack[index].lyricSnippet);
+      double currentTime = getMiddlePoint(lyricSnippetTrack[index].lyricSnippet);
       if (currentTime < seekPosition) {
         if (justBeforePosition < currentTime) {
           justBeforePosition = currentTime;
@@ -156,9 +142,7 @@ class _VideoPaneState extends State<VideoPane> {
     }
 
     double snippetOffset = (justAfterIndex - justBeforeIndex) * 60;
-    double midSnippetOffset = snippetOffset *
-        (seekPosition - justBeforePosition) /
-        (justAfterPosition - justBeforePosition);
+    double midSnippetOffset = snippetOffset * (seekPosition - justBeforePosition) / (justAfterPosition - justBeforePosition);
     double scrollOffset = 60.0 * (justBeforeIndex + 1) + midSnippetOffset;
 
     return scrollOffset;
@@ -174,29 +158,21 @@ class _VideoPaneState extends State<VideoPane> {
     late double endPosition;
     if ((scrollOffset - 30) % 60 < 30) {
       if (snippetIndex == 0) {
-        startPosition = 2 *
-                getMiddlePoint(lyricSnippetTrack[snippetIndex].lyricSnippet) -
-            getMiddlePoint(lyricSnippetTrack[snippetIndex + 1].lyricSnippet);
+        startPosition = 2 * getMiddlePoint(lyricSnippetTrack[snippetIndex].lyricSnippet) - getMiddlePoint(lyricSnippetTrack[snippetIndex + 1].lyricSnippet);
       } else {
-        startPosition =
-            getMiddlePoint(lyricSnippetTrack[snippetIndex - 1].lyricSnippet);
+        startPosition = getMiddlePoint(lyricSnippetTrack[snippetIndex - 1].lyricSnippet);
       }
-      endPosition =
-          getMiddlePoint(lyricSnippetTrack[snippetIndex].lyricSnippet);
+      endPosition = getMiddlePoint(lyricSnippetTrack[snippetIndex].lyricSnippet);
     } else {
-      startPosition =
-          getMiddlePoint(lyricSnippetTrack[snippetIndex].lyricSnippet);
-      endPosition =
-          getMiddlePoint(lyricSnippetTrack[snippetIndex + 1].lyricSnippet);
+      startPosition = getMiddlePoint(lyricSnippetTrack[snippetIndex].lyricSnippet);
+      endPosition = getMiddlePoint(lyricSnippetTrack[snippetIndex + 1].lyricSnippet);
     }
     double scrollExtra = (scrollOffset % 60) / 60;
-    double seekPosition =
-        startPosition + (endPosition - startPosition) * scrollExtra;
+    double seekPosition = startPosition + (endPosition - startPosition) * scrollExtra;
     return seekPosition;
   }
 
-  PartialTextPainter getBeforeSnippetPainter(
-      LyricSnippet snippet, fontFamily, Color fontColor) {
+  PartialTextPainter getBeforeSnippetPainter(LyricSnippet snippet, fontFamily, Color fontColor) {
     return PartialTextPainter(
       text: snippet.sentence,
       start: 0,
@@ -210,8 +186,7 @@ class _VideoPaneState extends State<VideoPane> {
     );
   }
 
-  PartialTextPainter getAfterSnippetPainter(
-      LyricSnippet snippet, fontFamily, Color fontColor) {
+  PartialTextPainter getAfterSnippetPainter(LyricSnippet snippet, fontFamily, Color fontColor) {
     return PartialTextPainter(
       text: snippet.sentence,
       start: 0,
@@ -225,8 +200,7 @@ class _VideoPaneState extends State<VideoPane> {
     );
   }
 
-  PartialTextPainter getColorHilightedText(LyricSnippet snippet,
-      int seekPosition, String fontFamily, Color fontColor) {
+  PartialTextPainter getColorHilightedText(LyricSnippet snippet, int seekPosition, String fontFamily, Color fontColor) {
     if (currentSeekPosition < snippet.startTimestamp) {
       return getBeforeSnippetPainter(snippet, fontFamily, fontColor);
     } else if (snippet.endTimestamp < currentSeekPosition) {
@@ -263,8 +237,7 @@ class _VideoPaneState extends State<VideoPane> {
     }
     return Expanded(
       child: CustomPaint(
-        painter: getColorHilightedText(
-            snippet, currentSeekPosition, fontFamily, fontColor),
+        painter: getColorHilightedText(snippet, currentSeekPosition, fontFamily, fontColor),
         size: Size(double.infinity, double.infinity),
       ),
     );
@@ -273,18 +246,11 @@ class _VideoPaneState extends State<VideoPane> {
   @override
   Widget build(BuildContext context) {
     String fontFamily = "Times New Roman";
-    List<LyricSnippetTrack> currentSnippets =
-        getSnippetsAtCurrentSeekPosition();
+    List<LyricSnippetTrack> currentSnippets = getSnippetsAtCurrentSeekPosition();
 
     if (displayMode == DisplayMode.appearDissappear) {
-      LyricSnippet emptySnippet = LyricSnippet(
-          vocalist: Vocalist("", 0),
-          index: 0,
-          sentence: "",
-          startTimestamp: currentSeekPosition,
-          timingPoints: [TimingPoint(1, 1)]);
-      List<Widget> content =
-          List<Widget>.generate(maxLanes, (index) => Container());
+      LyricSnippet emptySnippet = LyricSnippet(vocalist: Vocalist("", 0), index: 0, sentence: "", startTimestamp: currentSeekPosition, timingPoints: [TimingPoint(1, 1)]);
+      List<Widget> content = List<Widget>.generate(maxLanes, (index) => Container());
 
       for (int i = 0; i < maxLanes; i++) {
         LyricSnippet targetSnippet = currentSnippets
@@ -313,8 +279,7 @@ class _VideoPaneState extends State<VideoPane> {
     } else {
       double height = 60;
       List<Widget> columnSnippets = [];
-      columnSnippets.add(
-          Container(color: Color.fromARGB(255, 164, 240, 156), height: 200));
+      columnSnippets.add(Container(color: Color.fromARGB(255, 164, 240, 156), height: 200));
       columnSnippets.add(Container(color: Colors.blueAccent, height: height));
       lyricSnippetTrack.forEach((LyricSnippetTrack trackSnippet) {
         LyricSnippet snippet = trackSnippet.lyricSnippet;
@@ -324,14 +289,12 @@ class _VideoPaneState extends State<VideoPane> {
         }
         columnSnippets.add(
           CustomPaint(
-            painter: getColorHilightedText(
-                snippet, currentSeekPosition, fontFamily, fontColor),
+            painter: getColorHilightedText(snippet, currentSeekPosition, fontFamily, fontColor),
             size: Size(double.infinity, height),
           ),
         );
       });
-      columnSnippets.add(
-          Container(color: Color.fromARGB(255, 164, 240, 156), height: 1000));
+      columnSnippets.add(Container(color: Color.fromARGB(255, 164, 240, 156), height: 1000));
       return Focus(
         focusNode: focusNode,
         child: GestureDetector(
@@ -357,8 +320,7 @@ class _VideoPaneState extends State<VideoPane> {
 
   void _onScroll() {
     if (!isPlaying) {
-      int position =
-          getSeekPositionFromScrollOffset(scrollController.offset).toInt();
+      int position = getSeekPositionFromScrollOffset(scrollController.offset).toInt();
       masterSubject.add(RequestSeek(position));
     }
     setState(() {});

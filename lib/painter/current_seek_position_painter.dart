@@ -19,8 +19,7 @@ class CurrentSeekPositionPainter extends TwoDimensionalScrollView {
         );
 
   @override
-  Widget buildViewport(BuildContext context, ViewportOffset verticalOffset,
-      ViewportOffset horizontalOffset) {
+  Widget buildViewport(BuildContext context, ViewportOffset verticalOffset, ViewportOffset horizontalOffset) {
     return Container(
       color: Colors.transparent,
     );

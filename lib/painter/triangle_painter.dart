@@ -30,9 +30,6 @@ class TrianglePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant TrianglePainter oldDelegate) {
-    return oldDelegate.x != x ||
-        oldDelegate.y != y ||
-        oldDelegate.width != width ||
-        oldDelegate.height != height;
+    return oldDelegate.x != x || oldDelegate.y != y || oldDelegate.width != width || oldDelegate.height != height;
   }
 }

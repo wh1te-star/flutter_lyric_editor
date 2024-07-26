@@ -116,8 +116,7 @@ class SortedMap<K extends Comparable, V> implements Map<K, V> {
   }
 
   @override
-  Iterable<MapEntry<K, V>> get entries =>
-      keys.map((key) => MapEntry(key, _map[key]!));
+  Iterable<MapEntry<K, V>> get entries => keys.map((key) => MapEntry(key, _map[key]!));
 
   @override
   void removeWhere(bool Function(K key, V value) test) {
@@ -126,8 +125,7 @@ class SortedMap<K extends Comparable, V> implements Map<K, V> {
   }
 
   void _sortKeys() {
-    final sortedEntries = _map.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
+    final sortedEntries = _map.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
     _map
       ..clear()
       ..addEntries(sortedEntries);

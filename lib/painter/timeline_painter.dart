@@ -31,10 +31,7 @@ class TimelinePainter extends CustomPainter {
 
     snippets.forEach((LyricSnippet snippet) {
       if (snippet.sentence == "") return;
-      final endtime = snippet.startTimestamp +
-          snippet.timingPoints
-              .map((point) => point.wordDuration)
-              .reduce((a, b) => a + b);
+      final endtime = snippet.startTimestamp + snippet.timingPoints.map((point) => point.wordDuration).reduce((a, b) => a + b);
       final left = snippet.startTimestamp * intervalLength / intervalDuration;
       final right = endtime * intervalLength / intervalDuration;
       final rect = Rect.fromLTRB(left, top, right, bottom);

@@ -7,12 +7,7 @@ class ScaleMark extends CustomPainter {
   final double minorMarkLength;
   final int intervalDuration;
 
-  ScaleMark(
-      {required this.intervalLength,
-      required this.majorMarkLength,
-      required this.midiumMarkLength,
-      required this.minorMarkLength,
-      required this.intervalDuration});
+  ScaleMark({required this.intervalLength, required this.majorMarkLength, required this.midiumMarkLength, required this.minorMarkLength, required this.intervalDuration});
 
   @override
   void paint(Canvas canvas, Size size) {

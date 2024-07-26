@@ -20,11 +20,7 @@ class RectanglePainter extends CustomPainter {
 
     final textSpan = TextSpan(
       text: sentence,
-      style: TextStyle(
-          color: ThemeData.estimateBrightnessForColor(color) == Brightness.light
-              ? Colors.black
-              : Colors.white,
-          fontSize: 16),
+      style: TextStyle(color: ThemeData.estimateBrightnessForColor(color) == Brightness.light ? Colors.black : Colors.white, fontSize: 16),
     );
     final textPainter = TextPainter(
       text: textSpan,
@@ -100,9 +96,6 @@ class RectanglePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant RectanglePainter oldDelegate) {
-    return oldDelegate.rect != rect ||
-        oldDelegate.sentence != sentence ||
-        oldDelegate.color != color ||
-        oldDelegate.isSelected != isSelected;
+    return oldDelegate.rect != rect || oldDelegate.sentence != sentence || oldDelegate.color != color || oldDelegate.isSelected != isSelected;
   }
 }
