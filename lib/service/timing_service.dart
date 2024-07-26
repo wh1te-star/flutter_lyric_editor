@@ -21,6 +21,8 @@ class TimingService {
 
   List<List<LyricSnippet>> undoHistory = [];
 
+  String defaultVocalistName = "vocalist 1";
+
   TimingService({required this.masterSubject, required this.context}) {
     masterSubject.stream.listen((signal) async {
       if (signal is RequestInitLyric) {
@@ -38,14 +40,16 @@ class TimingService {
               rawText.replaceAll("\n", "").replaceAll("\r", "");
           lyricSnippetList.clear();
           lyricSnippetList.add(LyricSnippet(
-            vocalist: Vocalist("vocalist 1", 0),
+            vocalist: Vocalist(defaultVocalistName, 0),
             index: 1,
             sentence: singlelineText,
             startTimestamp: 0,
             timingPoints: [TimingPoint(singlelineText.length, audioDuration)],
           ));
 
-          pushUndoHistory(lyricSnippetList);
+          vocalistColorList.clear();
+          vocalistColorList[defaultVocalistName] = 0xff777777;
+
           masterSubject.add(NotifyLyricParsed(lyricSnippetList,
               vocalistColorList, vocalistCombinationCorrespondence));
         } else {
@@ -436,6 +440,9 @@ class TimingService {
   }
 
   void divideSnippet(int index, int charPosition, int seekPosition) {
+    if (index == -1) {
+      return;
+    }
     int snippetMargin = 100;
     String beforeString =
         lyricSnippetList[index].sentence.substring(0, charPosition);
@@ -471,12 +478,12 @@ class TimingService {
         ),
       );
     }
-    if (index != -1) {
+    if (newSnippets.isNotEmpty) {
       lyricSnippetList.removeAt(index);
       lyricSnippetList.insertAll(index, newSnippets);
+      assignIndex(lyricSnippetList);
+      masterSubject.add(NotifySnippetDivided(lyricSnippetList));
     }
-    assignIndex(lyricSnippetList);
-    masterSubject.add(NotifySnippetDivided(lyricSnippetList));
   }
 
   void concatenateSnippets(List<LyricSnippet> snippets) {
