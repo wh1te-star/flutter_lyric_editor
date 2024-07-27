@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -20,10 +22,14 @@ class _TextPaneState extends State<TextPane> {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
 
-  static const String cursorChar = '●';
+  static const String cursorChar = ' ';
   static const String timingPointChar = '|';
   static const String linefeedChar = '\n';
   //static const String sectionChar = '\n\n';
+
+  int cursorBlinkInterval = 1;
+  bool isCursorVisible = true;
+  late Timer cursorTimer;
 
   LyricSnippetID snippetID = LyricSnippetID(Vocalist("", 0), 0);
   String entireLyricString = "";
@@ -112,6 +118,11 @@ class _TextPaneState extends State<TextPane> {
         setState(() {});
       }
     });
+
+    cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
+      isCursorVisible = !isCursorVisible;
+      setState(() {});
+    });
   }
 
   void updateIndicators() {
@@ -166,6 +177,29 @@ class _TextPaneState extends State<TextPane> {
   void deleteTimingPoint(int charPosition) {
     masterSubject.add(RequestToDeleteLyricTiming(snippetID, cursorPosition));
     debugPrint("request to delete a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
+  }
+
+  void resetCursorTimer() {
+    cursorTimer.cancel();
+    isCursorVisible = true;
+    setState(() {});
+
+    cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
+      isCursorVisible = !isCursorVisible;
+      setState(() {});
+    });
+  }
+
+  void pauseCursorTimer() {
+    cursorTimer.cancel();
+  }
+
+  void restartCursorTimer() {
+    cursorTimer.cancel();
+    cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
+      isCursorVisible = !isCursorVisible;
+      setState(() {});
+    });
   }
 
   @override
@@ -241,12 +275,13 @@ class _TextPaneState extends State<TextPane> {
     String charAtN = lyrics[charIndex].toString();
     String afterN = lyrics.substring(charIndex + 1);
 
+    Color cursorColor = isCursorVisible ? Colors.transparent : Colors.red;
     return RichText(
       text: TextSpan(
         children: [
-          TextSpan(text: beforeN, style: const TextStyle(fontSize: 20, color: Colors.black)),
-          TextSpan(text: charAtN, style: const TextStyle(fontSize: 40, color: Colors.red)),
-          TextSpan(text: afterN, style: const TextStyle(fontSize: 20, color: Colors.black)),
+          TextSpan(text: beforeN, style: TextStyle(fontSize: 20, color: Colors.black)),
+          TextSpan(text: charAtN, style: TextStyle(fontSize: 20, backgroundColor: cursorColor)),
+          TextSpan(text: afterN, style: TextStyle(fontSize: 20, color: Colors.black)),
         ],
       ),
     );
