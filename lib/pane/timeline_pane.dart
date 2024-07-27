@@ -181,23 +181,13 @@ class _TimelinePaneState extends State<TimelinePane> {
     return null;
   }
 
-  void resetCursorTimer() {
-    cursorTimer.cancel();
-    isCursorVisible = true;
-    setState(() {});
-
-    cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
-      isCursorVisible = !isCursorVisible;
-      setState(() {});
-    });
-  }
-
   void pauseCursorTimer() {
     cursorTimer.cancel();
   }
 
   void restartCursorTimer() {
     cursorTimer.cancel();
+    isCursorVisible = true;
     cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
       isCursorVisible = !isCursorVisible;
       setState(() {});
@@ -210,7 +200,7 @@ class _TimelinePaneState extends State<TimelinePane> {
     if (nextCursorPosition.index >= 0) {
       nextCursorPosition = getSnippetWithID(nextCursorPosition).id;
       cursorPosition = nextCursorPosition;
-      resetCursorTimer();
+      restartCursorTimer();
     }
   }
 
@@ -220,7 +210,7 @@ class _TimelinePaneState extends State<TimelinePane> {
     if (nextCursorPosition.index < snippetsForeachVocalist[cursorPosition.vocalist.name]!.length) {
       nextCursorPosition = getSnippetWithID(nextCursorPosition).id;
       cursorPosition = nextCursorPosition;
-      resetCursorTimer();
+      restartCursorTimer();
     }
   }
 

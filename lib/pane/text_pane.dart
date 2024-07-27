@@ -60,7 +60,6 @@ class _TextPaneState extends State<TextPane> {
         lyricSnippets = signal.lyricSnippetList;
         lyricAppearance = List.filled(lyricSnippets.length, '');
         updateIndicators();
-        setState(() {});
       }
 
       if (signal is RequestMoveDownCharCursor) {
@@ -92,12 +91,10 @@ class _TextPaneState extends State<TextPane> {
           snippet.timingPoints = signal.timingPoints;
         });
         updateIndicators();
-        setState(() {});
       }
 
       if (signal is NotifyTimingPointDeletion) {
         updateIndicators();
-        setState(() {});
       }
 
       if (signal is NotifySeekPosition) {
@@ -107,7 +104,6 @@ class _TextPaneState extends State<TextPane> {
       if (signal is RequestToEnterTextSelectMode) {
         TextSelectMode = true;
         selectionBasePosition = cursorPositionChar;
-        setState(() {});
       }
 
       if (signal is RequestToExitTextSelectMode) {
@@ -115,8 +111,8 @@ class _TextPaneState extends State<TextPane> {
         lyricAppearance = List.filled(lyricSnippets.length, '');
         updateIndicators();
         cursorPositionChar = lyricSnippets[cursorPositionLine].sentence.length;
-        setState(() {});
       }
+      setState(() {});
     });
 
     cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
@@ -137,7 +133,7 @@ class _TextPaneState extends State<TextPane> {
     if (cursorPositionLine > 0) {
       cursorPositionLine--;
       cursorPosition = lyricSnippets.take(cursorPositionLine).fold(0, (prev, curr) => prev + curr.sentence.length) + cursorPositionChar;
-      setState(() {});
+      restartCursorTimer();
       debugPrint("K key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
     }
   }
@@ -146,7 +142,7 @@ class _TextPaneState extends State<TextPane> {
     if (cursorPositionLine < lyricSnippets.length - 1) {
       cursorPositionLine++;
       cursorPosition = lyricSnippets.take(cursorPositionLine).fold(0, (prev, curr) => prev + curr.sentence.length) + cursorPositionChar;
-      setState(() {});
+      restartCursorTimer();
       debugPrint("J key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
     }
   }
@@ -155,7 +151,7 @@ class _TextPaneState extends State<TextPane> {
     if (cursorPositionChar > 0) {
       cursorPositionChar--;
       cursorPosition--;
-      setState(() {});
+      restartCursorTimer();
       debugPrint("H key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
     }
   }
@@ -164,7 +160,7 @@ class _TextPaneState extends State<TextPane> {
     if (cursorPositionChar <= lyricSnippets[cursorPositionLine].sentence.length) {
       cursorPositionChar++;
       cursorPosition++;
-      setState(() {});
+      restartCursorTimer();
       debugPrint("L key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
     }
   }
@@ -179,23 +175,13 @@ class _TextPaneState extends State<TextPane> {
     debugPrint("request to delete a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
   }
 
-  void resetCursorTimer() {
-    cursorTimer.cancel();
-    isCursorVisible = true;
-    setState(() {});
-
-    cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
-      isCursorVisible = !isCursorVisible;
-      setState(() {});
-    });
-  }
-
   void pauseCursorTimer() {
     cursorTimer.cancel();
   }
 
   void restartCursorTimer() {
     cursorTimer.cancel();
+    isCursorVisible = true;
     cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
       isCursorVisible = !isCursorVisible;
       setState(() {});
@@ -275,7 +261,7 @@ class _TextPaneState extends State<TextPane> {
     String charAtN = lyrics[charIndex].toString();
     String afterN = lyrics.substring(charIndex + 1);
 
-    Color cursorColor = isCursorVisible ? Colors.transparent : Colors.red;
+    Color cursorColor = isCursorVisible ? Colors.black : Colors.transparent;
     return RichText(
       text: TextSpan(
         children: [
