@@ -1,12 +1,13 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
+import 'package:lyric_editor/utility/signal_structure.dart';
+import 'package:lyric_editor/utility/sorted_list.dart';
 import 'package:rxdart/rxdart.dart';
-import '../utility/signal_structure.dart';
-import '../utility/sorted_list.dart';
 
 class TextPane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
@@ -188,6 +189,18 @@ class _TextPaneState extends State<TextPane> {
     });
   }
 
+  List<int> getSnippetIndexesAtCurrentSeekPosition() {
+    return lyricSnippets
+        .asMap()
+        .entries
+        .where((entry) {
+          LyricSnippet snippet = entry.value;
+          return snippet.startTimestamp < seekPosition && seekPosition < snippet.endTimestamp;
+        })
+        .map((e) => e.key)
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Focus(
@@ -203,6 +216,7 @@ class _TextPaneState extends State<TextPane> {
     );
   }
 
+  /*
   Widget lyricListWidget() {
     return ListView.builder(
       shrinkWrap: true,
@@ -238,6 +252,32 @@ class _TextPaneState extends State<TextPane> {
             ),
           );
         }
+      },
+    );
+  }
+  */
+  Widget lyricListWidget() {
+    List<int> currentSnippetIndexes = getSnippetIndexesAtCurrentSeekPosition();
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: currentSnippetIndexes.length,
+      itemBuilder: (context, index) {
+        Color backgroundColor = Colors.transparent;
+        double fontSize = 16;
+        EdgeInsets padding = const EdgeInsets.symmetric(vertical: 1.0);
+
+        return Padding(
+          padding: padding,
+          child: Container(
+            color: backgroundColor,
+            child: Center(
+              child: Text(
+                lyricAppearance[currentSnippetIndexes[index]],
+                style: TextStyle(fontSize: fontSize, color: Colors.black),
+              ),
+            ),
+          ),
+        );
       },
     );
   }
