@@ -8,6 +8,7 @@ import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:lyric_editor/utility/sorted_list.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:tuple/tuple.dart';
 
 class TextPane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
@@ -189,16 +190,22 @@ class _TextPaneState extends State<TextPane> {
     });
   }
 
-  List<int> getSnippetIndexesAtCurrentSeekPosition() {
-    return lyricSnippets
-        .asMap()
-        .entries
-        .where((entry) {
-          LyricSnippet snippet = entry.value;
-          return snippet.startTimestamp < seekPosition && seekPosition < snippet.endTimestamp;
-        })
-        .map((e) => e.key)
-        .toList();
+  Tuple3<List<int>, List<int>, List<int>> getSnippetIndexesAtCurrentSeekPosition() {
+    List<int> beforeSnippetIndexes = [];
+    List<int> currentSnippetIndexes = [];
+    List<int> afterSnippetIndexes = [];
+    for (int index = 0; index < lyricSnippets.length; index++) {
+      int start = lyricSnippets[index].startTimestamp;
+      int end = lyricSnippets[index].endTimestamp;
+      if (seekPosition < start) {
+        beforeSnippetIndexes.add(index);
+      } else if (seekPosition < end) {
+        currentSnippetIndexes.add(index);
+      } else {
+        afterSnippetIndexes.add(index);
+      }
+    }
+    return Tuple3(beforeSnippetIndexes, currentSnippetIndexes, afterSnippetIndexes);
   }
 
   @override
@@ -216,69 +223,47 @@ class _TextPaneState extends State<TextPane> {
     );
   }
 
-  /*
   Widget lyricListWidget() {
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: lyricSnippets.length,
-      itemBuilder: (context, index) {
-        Color backgroundColor = Colors.transparent;
-        double fontSize = 16;
-        EdgeInsets padding = const EdgeInsets.symmetric(vertical: 1.0);
-
-        if (index == cursorPositionLine) {
-          backgroundColor = Colors.yellowAccent;
-          fontSize = 20;
-          padding = const EdgeInsets.symmetric(vertical: 10.0);
-        }
-
-        if (index == cursorPositionLine) {
-          return Padding(
-            padding: padding,
-            child: Container(
-              color: backgroundColor,
-              child: TextSelectMode ? highlightedLyricItemSelectionMode(lyricAppearance[index], cursorPositionLine, cursorPositionChar) : highlightedLyricItem(lyricAppearance[index], cursorPositionLine, cursorPositionChar),
-            ),
-          );
-        } else {
-          return Padding(
-            padding: padding,
-            child: Container(
-              color: backgroundColor,
-              child: Text(
-                lyricAppearance[index],
-                style: TextStyle(fontSize: fontSize, color: Colors.black),
-              ),
-            ),
-          );
-        }
-      },
-    );
-  }
-  */
-  Widget lyricListWidget() {
-    List<int> currentSnippetIndexes = getSnippetIndexesAtCurrentSeekPosition();
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: currentSnippetIndexes.length,
-      itemBuilder: (context, index) {
-        Color backgroundColor = Colors.transparent;
-        double fontSize = 16;
-        EdgeInsets padding = const EdgeInsets.symmetric(vertical: 1.0);
-
-        return Padding(
-          padding: padding,
+    final indexesTuple = getSnippetIndexesAtCurrentSeekPosition();
+    List<int> beforeSnippetIndexes = indexesTuple.item1;
+    List<int> currentSnippetIndexes = indexesTuple.item2;
+    List<int> afterSnippetIndexes = indexesTuple.item3;
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: beforeSnippetIndexes.length,
+            itemBuilder: (context, index) {
+              return Text(lyricAppearance[beforeSnippetIndexes[index]]);
+            },
+          ),
+        ),
+        Center(
           child: Container(
-            color: backgroundColor,
-            child: Center(
-              child: Text(
-                lyricAppearance[currentSnippetIndexes[index]],
-                style: TextStyle(fontSize: fontSize, color: Colors.black),
-              ),
+            color: Colors.blueAccent,
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: currentSnippetIndexes.length,
+              itemBuilder: (context, index) {
+                return Text(lyricAppearance[currentSnippetIndexes[index]]);
+              },
             ),
           ),
-        );
-      },
+        ),
+        Expanded(
+          child: ListView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: afterSnippetIndexes.length,
+            itemBuilder: (context, index) {
+              return Text(lyricAppearance[afterSnippetIndexes[index]]);
+            },
+          ),
+        ),
+      ],
     );
   }
 
