@@ -38,10 +38,14 @@ class _TextPaneState extends State<TextPane> {
   int cursorPosition = 0;
   int seekPosition = 0;
 
+  int maxLanes = 0;
+  double lineHeight = 20;
   List<LyricSnippet> lyricSnippets = [];
   List<String> lyricAppearance = [];
   int cursorPositionChar = 0;
   int cursorPositionLine = 0;
+
+  List<LyricSnippetID> selectingSnippets = [];
 
   List<List<int>> timingPointsForEachLine = [];
 
@@ -62,6 +66,8 @@ class _TextPaneState extends State<TextPane> {
         lyricSnippets = signal.lyricSnippetList;
         lyricAppearance = List.filled(lyricSnippets.length, '');
         updateIndicators();
+        //maxLanes = getMaxTracks(lyricSnippets);
+        maxLanes = 4;
       }
 
       if (signal is RequestMoveDownCharCursor) {
@@ -86,6 +92,10 @@ class _TextPaneState extends State<TextPane> {
         moveRightCursor();
         masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
         masterSubject.add(NotifyLineCursorPosition(lyricSnippets[cursorPositionLine].id));
+      }
+
+      if (signal is NotifySelectingSnippets) {
+        selectingSnippets = signal.snippetIDs;
       }
 
       if (signal is NotifyTimingPointAdded || signal is NotifyTimingPointDeletion) {
@@ -208,6 +218,41 @@ class _TextPaneState extends State<TextPane> {
     return Tuple3(beforeSnippetIndexes, currentSnippetIndexes, afterSnippetIndexes);
   }
 
+  int getMaxTracks(List<LyricSnippet> lyricSnippetList) {
+    int maxOverlap = 0;
+    int currentOverlap = 1;
+    int currentEndTime = lyricSnippetList[0].endTimestamp;
+
+    for (int i = 1; i < lyricSnippetList.length; ++i) {
+      int start = lyricSnippetList[i].startTimestamp;
+      int end = lyricSnippetList[i].endTimestamp;
+      if (start <= currentEndTime) {
+        currentOverlap++;
+      } else {
+        currentOverlap = 1;
+        currentEndTime = end;
+      }
+      if (currentOverlap > maxOverlap) {
+        maxOverlap = currentOverlap;
+      }
+
+      if (currentOverlap > maxLanes) {
+        maxLanes = currentOverlap;
+      }
+    }
+    return maxLanes;
+  }
+
+  List<int> getIndexFromIDs(List<LyricSnippetID> lyricSnippetIDs) {
+    List<int> indexes = [];
+    for (int i = 0; i < lyricSnippets.length; i++) {
+      if (lyricSnippetIDs.contains(lyricSnippets[i].id)) {
+        indexes.add(i);
+      }
+    }
+    return indexes;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Focus(
@@ -225,27 +270,42 @@ class _TextPaneState extends State<TextPane> {
 
   Widget lyricListWidget() {
     final indexesTuple = getSnippetIndexesAtCurrentSeekPosition();
-    List<int> beforeSnippetIndexes = indexesTuple.item1;
-    List<int> currentSnippetIndexes = indexesTuple.item2;
-    List<int> afterSnippetIndexes = indexesTuple.item3;
+    late List<int> beforeSnippetIndexes;
+    late List<int> currentSnippetIndexes;
+    late List<int> afterSnippetIndexes;
+    if (selectingSnippets.isEmpty) {
+      beforeSnippetIndexes = indexesTuple.item1;
+      currentSnippetIndexes = indexesTuple.item2;
+      afterSnippetIndexes = indexesTuple.item3;
+    } else {
+      beforeSnippetIndexes = indexesTuple.item1 + indexesTuple.item2;
+      currentSnippetIndexes = getIndexFromIDs(selectingSnippets);
+      afterSnippetIndexes = indexesTuple.item3;
+    }
+
+    late double height;
+    if (selectingSnippets.length < maxLanes) {
+      height = lineHeight * maxLanes;
+    } else {
+      height = lineHeight * selectingSnippets.length;
+    }
     return Column(
       children: [
         Expanded(
           child: ListView.builder(
             shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemCount: beforeSnippetIndexes.length,
+            itemCount: afterSnippetIndexes.length,
             itemBuilder: (context, index) {
-              return Text(lyricAppearance[beforeSnippetIndexes[index]]);
+              return Text(lyricAppearance[afterSnippetIndexes[index]]);
             },
           ),
         ),
         Center(
           child: Container(
-            color: Colors.blueAccent,
+            height: height,
+            color: Colors.yellowAccent,
             child: ListView.builder(
               shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
               itemCount: currentSnippetIndexes.length,
               itemBuilder: (context, index) {
                 return Text(lyricAppearance[currentSnippetIndexes[index]]);
@@ -256,10 +316,9 @@ class _TextPaneState extends State<TextPane> {
         Expanded(
           child: ListView.builder(
             shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemCount: afterSnippetIndexes.length,
+            itemCount: beforeSnippetIndexes.length,
             itemBuilder: (context, index) {
-              return Text(lyricAppearance[afterSnippetIndexes[index]]);
+              return Text(lyricAppearance[beforeSnippetIndexes[index]]);
             },
           ),
         ),
