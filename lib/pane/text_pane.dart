@@ -49,6 +49,8 @@ class _TextPaneState extends State<TextPane> {
 
   List<List<int>> timingPointsForEachLine = [];
 
+  List<int> highlightingSnippetsIndexes = [];
+
   SortedMap<int, String> timingPointMap = SortedMap<int, String>();
   SortedMap<int, String> sectionPointMap = SortedMap<int, String>();
 
@@ -282,6 +284,7 @@ class _TextPaneState extends State<TextPane> {
       currentSnippetIndexes = getIndexFromIDs(selectingSnippets);
       afterSnippetIndexes = indexesTuple.item3;
     }
+    highlightingSnippetsIndexes = currentSnippetIndexes;
 
     late double height;
     if (selectingSnippets.length < maxLanes) {
@@ -308,7 +311,11 @@ class _TextPaneState extends State<TextPane> {
               shrinkWrap: true,
               itemCount: currentSnippetIndexes.length,
               itemBuilder: (context, index) {
-                return Text(lyricAppearance[currentSnippetIndexes[index]]);
+                if (currentSnippetIndexes[index] == cursorPositionLine) {
+                  return highlightedLyricItem(lyricAppearance[currentSnippetIndexes[index]], 0, cursorPositionChar);
+                } else {
+                  return Text(lyricAppearance[currentSnippetIndexes[index]]);
+                }
               },
             ),
           ),
