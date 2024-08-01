@@ -113,6 +113,7 @@ class _TextPaneState extends State<TextPane> {
 
       if (signal is NotifySeekPosition) {
         seekPosition = signal.seekPosition;
+        updateCursorIfNeeded();
       }
 
       if (signal is RequestToEnterTextSelectMode) {
@@ -133,6 +134,12 @@ class _TextPaneState extends State<TextPane> {
       isCursorVisible = !isCursorVisible;
       setState(() {});
     });
+  }
+
+  void updateCursorIfNeeded() {
+    if (highlightingSnippetsIndexes.isNotEmpty && !highlightingSnippetsIndexes.contains(cursorPositionLine)) {
+      cursorPositionLine = highlightingSnippetsIndexes[0];
+    }
   }
 
   void updateIndicators() {
