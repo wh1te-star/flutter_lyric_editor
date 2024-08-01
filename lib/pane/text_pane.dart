@@ -356,9 +356,9 @@ class _TextPaneState extends State<TextPane> {
     return RichText(
       text: TextSpan(
         children: [
-          TextSpan(text: beforeN, style: TextStyle(fontSize: 20, color: Colors.black)),
-          TextSpan(text: charAtN, style: TextStyle(fontSize: 20, backgroundColor: cursorColor)),
-          TextSpan(text: afterN, style: TextStyle(fontSize: 20, color: Colors.black)),
+          TextSpan(text: beforeN, style: TextStyle(fontSize: 14, color: Colors.black)),
+          TextSpan(text: charAtN, style: TextStyle(fontSize: 14, backgroundColor: cursorColor)),
+          TextSpan(text: afterN, style: TextStyle(fontSize: 14, color: Colors.black)),
         ],
       ),
     );
