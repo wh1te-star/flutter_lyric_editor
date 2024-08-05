@@ -113,7 +113,7 @@ class _TextPaneState extends State<TextPane> {
 
       if (signal is NotifySeekPosition) {
         seekPosition = signal.seekPosition;
-        updateCursorIfNeeded();
+        updateCursorIfNeed();
       }
 
       if (signal is RequestToEnterTextSelectMode) {
@@ -136,7 +136,7 @@ class _TextPaneState extends State<TextPane> {
     });
   }
 
-  void updateCursorIfNeeded() {
+  void updateCursorIfNeed() {
     if (highlightingSnippetsIndexes.isNotEmpty && !highlightingSnippetsIndexes.contains(cursorPositionLine)) {
       cursorPositionLine = highlightingSnippetsIndexes[0];
     }
@@ -319,7 +319,7 @@ class _TextPaneState extends State<TextPane> {
               itemCount: currentSnippetIndexes.length,
               itemBuilder: (context, index) {
                 if (currentSnippetIndexes[index] == cursorPositionLine) {
-                  return highlightedLyricItem(lyricAppearance[currentSnippetIndexes[index]], 0, cursorPositionChar);
+                  return highlightedLyricItem(lyricAppearance[currentSnippetIndexes[index]], cursorPositionLine, cursorPositionChar);
                 } else {
                   return Text(lyricAppearance[currentSnippetIndexes[index]]);
                 }
