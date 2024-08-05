@@ -24,7 +24,7 @@ class _TextPaneState extends State<TextPane> {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
 
-  static const String cursorChar = ' ';
+  static const String cursorChar = '\xa0';
   static const String timingPointChar = '|';
   static const String linefeedChar = '\n';
   //static const String sectionChar = '\n\n';
@@ -352,7 +352,7 @@ class _TextPaneState extends State<TextPane> {
     if (cursorIndexTimingPoints >= 0) {
       lyrics = replaceNthCharacter(lyrics, charIndex, cursorChar);
     } else {
-      lyrics = inserCharacterAt(lyrics, charIndex, cursorChar);
+      lyrics = insertCharacterAt(lyrics, charIndex, cursorChar);
     }
 
     String beforeN = lyrics.substring(0, charIndex);
@@ -400,7 +400,7 @@ class _TextPaneState extends State<TextPane> {
     return originalString.substring(0, index) + newChar + originalString.substring(index + 1);
   }
 
-  String inserCharacterAt(String originalString, int index, String insertingChar) {
+  String insertCharacterAt(String originalString, int index, String insertingChar) {
     return originalString.substring(0, index) + insertingChar + originalString.substring(index);
   }
 
