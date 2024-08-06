@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:lyric_editor/pane/video_pane.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:lyric_editor/utility/sorted_list.dart';
@@ -42,14 +43,15 @@ class _TextPaneState extends State<TextPane> {
   double lineHeight = 20;
   List<LyricSnippet> lyricSnippets = [];
   List<String> lyricAppearance = [];
-  int cursorPositionChar = 0;
-  int cursorPositionLine = 0;
+  int apparentCursorCharPosition = 0;
+  int actualCursorCharPosition = 0;
+  LyricSnippetID cursorLinePosition = LyricSnippetID(Vocalist("", 0), 0);
 
   List<LyricSnippetID> selectingSnippets = [];
 
   List<List<int>> timingPointsForEachLine = [];
 
-  List<int> highlightingSnippetsIndexes = [];
+  List<LyricSnippetID> highlightingSnippetsIndexes = [];
 
   SortedMap<int, String> timingPointMap = SortedMap<int, String>();
   SortedMap<int, String> sectionPointMap = SortedMap<int, String>();
@@ -74,26 +76,26 @@ class _TextPaneState extends State<TextPane> {
 
       if (signal is RequestMoveDownCharCursor) {
         moveDownCursor();
-        masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
-        masterSubject.add(NotifyLineCursorPosition(lyricSnippets[cursorPositionLine].id));
+        masterSubject.add(NotifyCharCursorPosition(apparentCursorCharPosition));
+        masterSubject.add(NotifyLineCursorPosition(cursorLinePosition));
       }
 
       if (signal is RequestMoveUpCharCursor) {
         moveUpCursor();
-        masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
-        masterSubject.add(NotifyLineCursorPosition(lyricSnippets[cursorPositionLine].id));
+        masterSubject.add(NotifyCharCursorPosition(apparentCursorCharPosition));
+        masterSubject.add(NotifyLineCursorPosition(cursorLinePosition));
       }
 
       if (signal is RequestMoveLeftCharCursor) {
         moveLeftCursor();
-        masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
-        masterSubject.add(NotifyLineCursorPosition(lyricSnippets[cursorPositionLine].id));
+        masterSubject.add(NotifyCharCursorPosition(apparentCursorCharPosition));
+        masterSubject.add(NotifyLineCursorPosition(cursorLinePosition));
       }
 
       if (signal is RequestMoveRightCharCursor) {
         moveRightCursor();
-        masterSubject.add(NotifyCharCursorPosition(cursorPositionChar));
-        masterSubject.add(NotifyLineCursorPosition(lyricSnippets[cursorPositionLine].id));
+        masterSubject.add(NotifyCharCursorPosition(apparentCursorCharPosition));
+        masterSubject.add(NotifyLineCursorPosition(cursorLinePosition));
       }
 
       if (signal is NotifySelectingSnippets) {
@@ -118,14 +120,14 @@ class _TextPaneState extends State<TextPane> {
 
       if (signal is RequestToEnterTextSelectMode) {
         TextSelectMode = true;
-        selectionBasePosition = cursorPositionChar;
+        selectionBasePosition = apparentCursorCharPosition;
       }
 
       if (signal is RequestToExitTextSelectMode) {
         TextSelectMode = false;
         lyricAppearance = List.filled(lyricSnippets.length, '');
         updateIndicators();
-        cursorPositionChar = lyricSnippets[cursorPositionLine].sentence.length;
+        apparentCursorCharPosition = getSnippetWithID(cursorLinePosition).sentence.length;
       }
       setState(() {});
     });
@@ -136,9 +138,17 @@ class _TextPaneState extends State<TextPane> {
     });
   }
 
+  int getSnippetIndexWithID(LyricSnippetID id) {
+    return lyricSnippets.indexWhere((snippet) => snippet.id == id);
+  }
+
+  LyricSnippet getSnippetWithID(LyricSnippetID id) {
+    return lyricSnippets.firstWhere((snippet) => snippet.id == id);
+  }
+
   void updateCursorIfNeed() {
-    if (highlightingSnippetsIndexes.isNotEmpty && !highlightingSnippetsIndexes.contains(cursorPositionLine)) {
-      cursorPositionLine = highlightingSnippetsIndexes[0];
+    if (highlightingSnippetsIndexes.isNotEmpty && !highlightingSnippetsIndexes.contains(cursorLinePosition)) {
+      cursorLinePosition = highlightingSnippetsIndexes[0];
     }
   }
 
@@ -151,38 +161,42 @@ class _TextPaneState extends State<TextPane> {
   }
 
   void moveUpCursor() {
-    if (cursorPositionLine > 0) {
-      cursorPositionLine--;
-      cursorPosition = lyricSnippets.take(cursorPositionLine).fold(0, (prev, curr) => prev + curr.sentence.length) + cursorPositionChar;
+    /*
+    if (cursorLinePosition != highlightingSnippetsIndexes[0]) {
+      cursorLinePosition = highlightingSnippetsIndexes[highlightingSnippetsIndexes[cursorLinePosition - 1]];
+      cursorPosition = lyricSnippets.take(cursorLinePosition).fold(0, (prev, curr) => prev + curr.sentence.length) + apparentCursorCharPosition;
       restartCursorTimer();
-      debugPrint("K key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
+      debugPrint("K key: cursor: $cursorPosition, LineCursor: $cursorLinePosition, CharCursor: $apparentCursorCharPosition");
     }
+*/
   }
 
   void moveDownCursor() {
-    if (cursorPositionLine < lyricSnippets.length - 1) {
-      cursorPositionLine++;
-      cursorPosition = lyricSnippets.take(cursorPositionLine).fold(0, (prev, curr) => prev + curr.sentence.length) + cursorPositionChar;
+    /*
+    if (cursorLinePosition < lyricSnippets.length - 1) {
+      cursorLinePosition++;
+      cursorPosition = lyricSnippets.take(cursorLinePosition).fold(0, (prev, curr) => prev + curr.sentence.length) + apparentCursorCharPosition;
       restartCursorTimer();
-      debugPrint("J key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
+      debugPrint("J key: cursor: $cursorPosition, LineCursor: $cursorLinePosition, CharCursor: $apparentCursorCharPosition");
     }
+*/
   }
 
   void moveLeftCursor() {
-    if (cursorPositionChar > 0) {
-      cursorPositionChar--;
+    if (apparentCursorCharPosition > 0) {
+      apparentCursorCharPosition--;
       cursorPosition--;
       restartCursorTimer();
-      debugPrint("H key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
+      debugPrint("H key: cursor: $cursorPosition, LineCursor: $cursorLinePosition, CharCursor: $apparentCursorCharPosition");
     }
   }
 
   void moveRightCursor() {
-    if (cursorPositionChar <= lyricSnippets[cursorPositionLine].sentence.length) {
-      cursorPositionChar++;
+    if (apparentCursorCharPosition <= getSnippetWithID(cursorLinePosition).sentence.length) {
+      apparentCursorCharPosition++;
       cursorPosition++;
       restartCursorTimer();
-      debugPrint("L key: cursor: $cursorPosition, LineCursor: $cursorPositionLine, CharCursor: $cursorPositionChar");
+      debugPrint("L key: cursor: $cursorPosition, LineCursor: $cursorLinePosition, CharCursor: $apparentCursorCharPosition");
     }
   }
 
@@ -209,21 +223,21 @@ class _TextPaneState extends State<TextPane> {
     });
   }
 
-  Tuple3<List<int>, List<int>, List<int>> getSnippetIndexesAtCurrentSeekPosition() {
-    List<int> beforeSnippetIndexes = [];
-    List<int> currentSnippetIndexes = [];
-    List<int> afterSnippetIndexes = [];
-    for (int index = 0; index < lyricSnippets.length; index++) {
-      int start = lyricSnippets[index].startTimestamp;
-      int end = lyricSnippets[index].endTimestamp;
+  Tuple3<List<LyricSnippetID>, List<LyricSnippetID>, List<LyricSnippetID>> getSnippetIDsAtCurrentSeekPosition() {
+    List<LyricSnippetID> beforeSnippetIndexes = [];
+    List<LyricSnippetID> currentSnippetIndexes = [];
+    List<LyricSnippetID> afterSnippetIndexes = [];
+    lyricSnippets.forEach((LyricSnippet snippet) {
+      int start = snippet.startTimestamp;
+      int end = snippet.endTimestamp;
       if (seekPosition < start) {
-        beforeSnippetIndexes.add(index);
+        beforeSnippetIndexes.add(snippet.id);
       } else if (seekPosition < end) {
-        currentSnippetIndexes.add(index);
+        currentSnippetIndexes.add(snippet.id);
       } else {
-        afterSnippetIndexes.add(index);
+        afterSnippetIndexes.add(snippet.id);
       }
-    }
+    });
     return Tuple3(beforeSnippetIndexes, currentSnippetIndexes, afterSnippetIndexes);
   }
 
@@ -278,20 +292,20 @@ class _TextPaneState extends State<TextPane> {
   }
 
   Widget lyricListWidget() {
-    final indexesTuple = getSnippetIndexesAtCurrentSeekPosition();
-    late List<int> beforeSnippetIndexes;
-    late List<int> currentSnippetIndexes;
-    late List<int> afterSnippetIndexes;
+    final indexesTuple = getSnippetIDsAtCurrentSeekPosition();
+    late List<LyricSnippetID> beforeSnippetIDs;
+    late List<LyricSnippetID> currentSnippetIDs;
+    late List<LyricSnippetID> afterSnippetIDs;
     if (selectingSnippets.isEmpty) {
-      beforeSnippetIndexes = indexesTuple.item1;
-      currentSnippetIndexes = indexesTuple.item2;
-      afterSnippetIndexes = indexesTuple.item3;
+      beforeSnippetIDs = indexesTuple.item1;
+      currentSnippetIDs = indexesTuple.item2;
+      afterSnippetIDs = indexesTuple.item3;
     } else {
-      beforeSnippetIndexes = indexesTuple.item1 + indexesTuple.item2;
-      currentSnippetIndexes = getIndexFromIDs(selectingSnippets);
-      afterSnippetIndexes = indexesTuple.item3;
+      beforeSnippetIDs = indexesTuple.item1 + indexesTuple.item2;
+      currentSnippetIDs = selectingSnippets;
+      afterSnippetIDs = indexesTuple.item3;
     }
-    highlightingSnippetsIndexes = currentSnippetIndexes;
+    highlightingSnippetsIndexes = currentSnippetIDs;
 
     late double height;
     if (selectingSnippets.length < maxLanes) {
@@ -304,9 +318,10 @@ class _TextPaneState extends State<TextPane> {
         Expanded(
           child: ListView.builder(
             shrinkWrap: true,
-            itemCount: afterSnippetIndexes.length,
+            itemCount: afterSnippetIDs.length,
             itemBuilder: (context, index) {
-              return Text(lyricAppearance[afterSnippetIndexes[index]]);
+              int lyricSnippetIndex = getSnippetIndexWithID(afterSnippetIDs[index]);
+              return Text(lyricAppearance[lyricSnippetIndex]);
             },
           ),
         ),
@@ -316,12 +331,13 @@ class _TextPaneState extends State<TextPane> {
             color: Colors.yellowAccent,
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: currentSnippetIndexes.length,
+              itemCount: currentSnippetIDs.length,
               itemBuilder: (context, index) {
-                if (currentSnippetIndexes[index] == cursorPositionLine) {
-                  return highlightedLyricItem(lyricAppearance[currentSnippetIndexes[index]], cursorPositionLine, cursorPositionChar);
+                int lyricSnippetIndex = getSnippetIndexWithID(currentSnippetIDs[index]);
+                if (currentSnippetIDs[index] == cursorLinePosition) {
+                  return highlightedLyricItem(lyricAppearance[lyricSnippetIndex], cursorLinePosition, apparentCursorCharPosition);
                 } else {
-                  return Text(lyricAppearance[currentSnippetIndexes[index]]);
+                  return Text(lyricAppearance[lyricSnippetIndex]);
                 }
               },
             ),
@@ -330,9 +346,10 @@ class _TextPaneState extends State<TextPane> {
         Expanded(
           child: ListView.builder(
             shrinkWrap: true,
-            itemCount: beforeSnippetIndexes.length,
+            itemCount: beforeSnippetIDs.length,
             itemBuilder: (context, index) {
-              return Text(lyricAppearance[beforeSnippetIndexes[index]]);
+              int lyricSnippetIndex = getSnippetIndexWithID(beforeSnippetIDs[index]);
+              return Text(lyricAppearance[lyricSnippetIndex]);
             },
           ),
         ),
@@ -340,8 +357,9 @@ class _TextPaneState extends State<TextPane> {
     );
   }
 
-  Widget highlightedLyricItem(String lyrics, int lineIndex, int charIndex) {
+  Widget highlightedLyricItem(String lyrics, LyricSnippetID snippetID, int charIndex) {
     int timingPointsBeforeCursor = 0;
+    int lineIndex = getSnippetIndexWithID(snippetID);
     List<int> currentLineTimingPoint = timingPointsForEachLine[lineIndex];
     while (timingPointsBeforeCursor < currentLineTimingPoint.length && currentLineTimingPoint[timingPointsBeforeCursor] < charIndex) {
       timingPointsBeforeCursor++;
@@ -373,8 +391,8 @@ class _TextPaneState extends State<TextPane> {
 
   Widget highlightedLyricItemSelectionMode(String lyrics, int lineIndex, int charIndex) {
     String beforeSelect = lyrics.substring(0, selectionBasePosition);
-    String selecting = lyrics.substring(selectionBasePosition, cursorPositionChar);
-    String afterSelect = lyrics.substring(cursorPositionChar);
+    String selecting = lyrics.substring(selectionBasePosition, apparentCursorCharPosition);
+    String afterSelect = lyrics.substring(apparentCursorCharPosition);
 
     return RichText(
       text: TextSpan(
