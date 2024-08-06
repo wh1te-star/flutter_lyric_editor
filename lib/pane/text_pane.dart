@@ -48,7 +48,7 @@ class _TextPaneState extends State<TextPane> {
 
   List<List<int>> timingPointsForEachLine = [];
 
-  List<LyricSnippetID> highlightingSnippetsIndexes = [];
+  List<LyricSnippetID> highlightingSnippetsIDs = [];
 
   SortedMap<int, String> timingPointMap = SortedMap<int, String>();
   SortedMap<int, String> sectionPointMap = SortedMap<int, String>();
@@ -144,8 +144,8 @@ class _TextPaneState extends State<TextPane> {
   }
 
   void updateCursorIfNeed() {
-    if (highlightingSnippetsIndexes.isNotEmpty && !highlightingSnippetsIndexes.contains(cursorLinePosition)) {
-      cursorLinePosition = highlightingSnippetsIndexes[0];
+    if (highlightingSnippetsIDs.isNotEmpty && !highlightingSnippetsIDs.contains(cursorLinePosition)) {
+      cursorLinePosition = highlightingSnippetsIDs[0];
     }
   }
 
@@ -158,25 +158,21 @@ class _TextPaneState extends State<TextPane> {
   }
 
   void moveUpCursor() {
-    /*
-    if (cursorLinePosition != highlightingSnippetsIndexes[0]) {
-      cursorLinePosition = highlightingSnippetsIndexes[highlightingSnippetsIndexes[cursorLinePosition - 1]];
-      cursorPosition = lyricSnippets.take(cursorLinePosition).fold(0, (prev, curr) => prev + curr.sentence.length) + apparentCursorCharPosition;
+    int highlightSnippetsIndex = highlightingSnippetsIDs.indexWhere((id) => id == cursorLinePosition);
+    if (highlightSnippetsIndex > 0) {
+      cursorLinePosition = highlightingSnippetsIDs[highlightSnippetsIndex - 1];
       restartCursorTimer();
-      debugPrint("K key: cursor: $cursorPosition, LineCursor: $cursorLinePosition, CharCursor: $apparentCursorCharPosition");
+      debugPrint("K key: LineCursor: ${cursorLinePosition}, CharCursor: $apparentCursorCharPosition");
     }
-*/
   }
 
   void moveDownCursor() {
-    /*
-    if (cursorLinePosition < lyricSnippets.length - 1) {
-      cursorLinePosition++;
-      cursorPosition = lyricSnippets.take(cursorLinePosition).fold(0, (prev, curr) => prev + curr.sentence.length) + apparentCursorCharPosition;
+    int highlightSnippetsIndex = highlightingSnippetsIDs.indexWhere((id) => id == cursorLinePosition);
+    if (highlightSnippetsIndex < highlightingSnippetsIDs.length - 1) {
+      cursorLinePosition = highlightingSnippetsIDs[highlightSnippetsIndex + 1];
       restartCursorTimer();
-      debugPrint("J key: cursor: $cursorPosition, LineCursor: $cursorLinePosition, CharCursor: $apparentCursorCharPosition");
+      debugPrint("J key: LineCursor: ${cursorLinePosition}, CharCursor: $apparentCursorCharPosition");
     }
-*/
   }
 
   void moveLeftCursor() {
@@ -290,7 +286,7 @@ class _TextPaneState extends State<TextPane> {
       currentSnippetIDs = selectingSnippets;
       afterSnippetIDs = indexesTuple.item3;
     }
-    highlightingSnippetsIndexes = currentSnippetIDs;
+    highlightingSnippetsIDs = currentSnippetIDs;
 
     late double height;
     if (selectingSnippets.length < maxLanes) {
