@@ -34,9 +34,6 @@ class _TextPaneState extends State<TextPane> {
   bool isCursorVisible = true;
   late Timer cursorTimer;
 
-  LyricSnippetID snippetID = LyricSnippetID(Vocalist("", 0), 0);
-  String entireLyricString = "";
-  int cursorPosition = 0;
   int seekPosition = 0;
 
   int maxLanes = 0;
@@ -185,29 +182,17 @@ class _TextPaneState extends State<TextPane> {
   void moveLeftCursor() {
     if (apparentCursorCharPosition > 0) {
       apparentCursorCharPosition--;
-      cursorPosition--;
       restartCursorTimer();
-      debugPrint("H key: cursor: $cursorPosition, LineCursor: $cursorLinePosition, CharCursor: $apparentCursorCharPosition");
+      debugPrint("H key: LineCursor: $cursorLinePosition, CharCursor: $apparentCursorCharPosition");
     }
   }
 
   void moveRightCursor() {
     if (apparentCursorCharPosition <= getSnippetWithID(cursorLinePosition).sentence.length) {
       apparentCursorCharPosition++;
-      cursorPosition++;
       restartCursorTimer();
-      debugPrint("L key: cursor: $cursorPosition, LineCursor: $cursorLinePosition, CharCursor: $apparentCursorCharPosition");
+      debugPrint("L key: LineCursor: $cursorLinePosition, CharCursor: $apparentCursorCharPosition");
     }
-  }
-
-  void addTimingPoint(int charPosition, int seekPosition) {
-    masterSubject.add(RequestToAddLyricTiming(snippetID, cursorPosition, seekPosition));
-    debugPrint("request to add a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
-  }
-
-  void deleteTimingPoint(int charPosition) {
-    masterSubject.add(RequestToDeleteLyricTiming(snippetID, cursorPosition));
-    debugPrint("request to delete a lyric timing point between ${cursorPosition} and ${cursorPosition + 1} th characters.");
   }
 
   void pauseCursorTimer() {
