@@ -40,8 +40,7 @@ class _TextPaneState extends State<TextPane> {
   double lineHeight = 20;
   List<LyricSnippet> lyricSnippets = [];
   List<String> lyricAppearance = [];
-  int apparentCursorCharPosition = 0;
-  int actualCursorCharPosition = 0;
+  int cursorCharPosition = 0;
   LyricSnippetID cursorLinePosition = LyricSnippetID(Vocalist("", 0), 0);
 
   List<LyricSnippetID> selectingSnippets = [];
@@ -73,25 +72,25 @@ class _TextPaneState extends State<TextPane> {
 
       if (signal is RequestMoveDownCharCursor) {
         moveDownCursor();
-        masterSubject.add(NotifyCharCursorPosition(apparentCursorCharPosition));
+        masterSubject.add(NotifyCharCursorPosition(cursorCharPosition));
         masterSubject.add(NotifyLineCursorPosition(cursorLinePosition));
       }
 
       if (signal is RequestMoveUpCharCursor) {
         moveUpCursor();
-        masterSubject.add(NotifyCharCursorPosition(apparentCursorCharPosition));
+        masterSubject.add(NotifyCharCursorPosition(cursorCharPosition));
         masterSubject.add(NotifyLineCursorPosition(cursorLinePosition));
       }
 
       if (signal is RequestMoveLeftCharCursor) {
         moveLeftCursor();
-        masterSubject.add(NotifyCharCursorPosition(apparentCursorCharPosition));
+        masterSubject.add(NotifyCharCursorPosition(cursorCharPosition));
         masterSubject.add(NotifyLineCursorPosition(cursorLinePosition));
       }
 
       if (signal is RequestMoveRightCharCursor) {
         moveRightCursor();
-        masterSubject.add(NotifyCharCursorPosition(apparentCursorCharPosition));
+        masterSubject.add(NotifyCharCursorPosition(cursorCharPosition));
         masterSubject.add(NotifyLineCursorPosition(cursorLinePosition));
       }
 
@@ -117,14 +116,14 @@ class _TextPaneState extends State<TextPane> {
 
       if (signal is RequestToEnterTextSelectMode) {
         TextSelectMode = true;
-        selectionBasePosition = apparentCursorCharPosition;
+        selectionBasePosition = cursorCharPosition;
       }
 
       if (signal is RequestToExitTextSelectMode) {
         TextSelectMode = false;
         lyricAppearance = List.filled(lyricSnippets.length, '');
         updateIndicators();
-        apparentCursorCharPosition = getSnippetWithID(cursorLinePosition).sentence.length;
+        cursorCharPosition = getSnippetWithID(cursorLinePosition).sentence.length;
       }
       setState(() {});
     });
@@ -162,7 +161,7 @@ class _TextPaneState extends State<TextPane> {
     if (highlightSnippetsIndex > 0) {
       cursorLinePosition = highlightingSnippetsIDs[highlightSnippetsIndex - 1];
       restartCursorTimer();
-      debugPrint("K key: LineCursor: ${cursorLinePosition}, CharCursor: $apparentCursorCharPosition");
+      debugPrint("K key: LineCursor: ${cursorLinePosition}, CharCursor: $cursorCharPosition");
     }
   }
 
@@ -171,23 +170,27 @@ class _TextPaneState extends State<TextPane> {
     if (highlightSnippetsIndex < highlightingSnippetsIDs.length - 1) {
       cursorLinePosition = highlightingSnippetsIDs[highlightSnippetsIndex + 1];
       restartCursorTimer();
-      debugPrint("J key: LineCursor: ${cursorLinePosition}, CharCursor: $apparentCursorCharPosition");
+      debugPrint("J key: LineCursor: ${cursorLinePosition}, CharCursor: $cursorCharPosition");
     }
   }
 
   void moveLeftCursor() {
-    if (apparentCursorCharPosition > 0) {
-      apparentCursorCharPosition--;
+    if (cursorCharPosition > 0) {
+      LyricSnippet cursorSnippet = getSnippetWithID(cursorLinePosition);
+      if (cursorCharPosition > cursorSnippet.sentence.length) {
+        cursorCharPosition = cursorSnippet.sentence.length;
+      }
+      cursorCharPosition--;
       restartCursorTimer();
-      debugPrint("H key: LineCursor: $cursorLinePosition, CharCursor: $apparentCursorCharPosition");
+      debugPrint("H key: LineCursor: $cursorLinePosition, CharCursor: $cursorCharPosition");
     }
   }
 
   void moveRightCursor() {
-    if (apparentCursorCharPosition <= getSnippetWithID(cursorLinePosition).sentence.length) {
-      apparentCursorCharPosition++;
+    if (cursorCharPosition < getSnippetWithID(cursorLinePosition).sentence.length) {
+      cursorCharPosition++;
       restartCursorTimer();
-      debugPrint("L key: LineCursor: $cursorLinePosition, CharCursor: $apparentCursorCharPosition");
+      debugPrint("L key: LineCursor: $cursorLinePosition, CharCursor: $cursorCharPosition");
     }
   }
 
@@ -316,7 +319,11 @@ class _TextPaneState extends State<TextPane> {
               itemBuilder: (context, index) {
                 int lyricSnippetIndex = getSnippetIndexWithID(currentSnippetIDs[index]);
                 if (currentSnippetIDs[index] == cursorLinePosition) {
-                  return highlightedLyricItem(lyricAppearance[lyricSnippetIndex], cursorLinePosition, apparentCursorCharPosition);
+                  if (cursorCharPosition > lyricSnippets[lyricSnippetIndex].sentence.length) {
+                    return highlightedLyricItem(lyricAppearance[lyricSnippetIndex], cursorLinePosition, lyricSnippets[lyricSnippetIndex].sentence.length);
+                  } else {
+                    return highlightedLyricItem(lyricAppearance[lyricSnippetIndex], cursorLinePosition, cursorCharPosition);
+                  }
                 } else {
                   return Text(lyricAppearance[lyricSnippetIndex]);
                 }
@@ -372,8 +379,8 @@ class _TextPaneState extends State<TextPane> {
 
   Widget highlightedLyricItemSelectionMode(String lyrics, int lineIndex, int charIndex) {
     String beforeSelect = lyrics.substring(0, selectionBasePosition);
-    String selecting = lyrics.substring(selectionBasePosition, apparentCursorCharPosition);
-    String afterSelect = lyrics.substring(apparentCursorCharPosition);
+    String selecting = lyrics.substring(selectionBasePosition, cursorCharPosition);
+    String afterSelect = lyrics.substring(cursorCharPosition);
 
     return RichText(
       text: TextSpan(
