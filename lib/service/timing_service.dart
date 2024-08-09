@@ -113,12 +113,12 @@ class TimingService {
       if (signal is RequestToAddLyricTiming) {
         LyricSnippet snippet = getSnippetWithID(signal.snippetID);
         addTimingPoint(snippet, signal.characterPosition, signal.seekPosition);
-        masterSubject.add(NotifyTimingPointAdded(signal.snippetID, snippet.timingPoints));
+        masterSubject.add(NotifyTimingPointAdded(lyricSnippetList));
       }
       if (signal is RequestToDeleteLyricTiming) {
         LyricSnippet snippet = getSnippetWithID(signal.snippetID);
         deleteTimingPoint(snippet, signal.characterPosition, signal.choice);
-        masterSubject.add(NotifyTimingPointDeletion(signal.characterPosition));
+        masterSubject.add(NotifyTimingPointDeleted(lyricSnippetList));
       }
       if (signal is NotifySeekPosition) {
         currentPosition = signal.seekPosition;
@@ -537,9 +537,9 @@ class TimingService {
       index++;
     }
     if (position != characterPosition) return;
-    snippet.timingPoints[index].wordLength += snippet.timingPoints[index + 1].wordLength;
-    snippet.timingPoints[index].wordDuration += snippet.timingPoints[index + 1].wordDuration;
-    snippet.timingPoints.removeAt(index + 1);
+    snippet.timingPoints[index - 1].wordLength += snippet.timingPoints[index].wordLength;
+    snippet.timingPoints[index - 1].wordDuration += snippet.timingPoints[index].wordDuration;
+    snippet.timingPoints.removeAt(index);
   }
 
   void pushUndoHistory(List<LyricSnippet> lyricSnippetList) {

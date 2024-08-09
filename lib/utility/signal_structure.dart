@@ -100,12 +100,6 @@ class RequestToAddLyricTiming {
   RequestToAddLyricTiming(this.snippetID, this.characterPosition, this.seekPosition);
 }
 
-class NotifyTimingPointAdded {
-  LyricSnippetID snippetID;
-  List<TimingPoint> timingPoints;
-  NotifyTimingPointAdded(this.snippetID, this.timingPoints);
-}
-
 class RequestToDeleteLyricTiming {
   LyricSnippetID snippetID;
   int characterPosition;
@@ -116,6 +110,16 @@ class RequestToDeleteLyricTiming {
 enum Choice {
   former,
   latter,
+}
+
+class NotifyTimingPointAdded {
+  List<LyricSnippet> lyricSnippetList;
+  NotifyTimingPointAdded(this.lyricSnippetList);
+}
+
+class NotifyTimingPointDeleted {
+  List<LyricSnippet> lyricSnippetList;
+  NotifyTimingPointDeleted(this.lyricSnippetList);
 }
 
 class NotifyVocalistAdded {
@@ -137,11 +141,6 @@ class NotifyVocalistNameChanged {
   Map<String, int> vocalistColorList = {};
   Map<String, List<String>> vocalistCombinationCorrespondence = {};
   NotifyVocalistNameChanged(this.lyricSnippetList, this.vocalistColorList, this.vocalistCombinationCorrespondence);
-}
-
-class NotifyTimingPointDeletion {
-  int characterPosition;
-  NotifyTimingPointDeletion(this.characterPosition);
 }
 
 class RequestUndo {}

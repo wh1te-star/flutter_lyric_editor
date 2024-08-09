@@ -67,8 +67,14 @@ class _TextPaneState extends State<TextPane> {
         lyricSnippets = signal.lyricSnippetList;
         lyricAppearance = List.filled(lyricSnippets.length, '');
         updateIndicators();
-        //maxLanes = getMaxTracks(lyricSnippets);
-        maxLanes = 4;
+        maxLanes = getMaxTracks(lyricSnippets);
+      }
+
+      if (signal is NotifyTimingPointAdded || signal is NotifyTimingPointDeleted) {
+        lyricSnippets = signal.lyricSnippetList;
+        lyricAppearance = List.filled(lyricSnippets.length, '');
+        updateIndicators();
+        maxLanes = getMaxTracks(lyricSnippets);
       }
 
       if (signal is RequestMoveDownCharCursor) {
@@ -97,17 +103,6 @@ class _TextPaneState extends State<TextPane> {
 
       if (signal is NotifySelectingSnippets) {
         selectingSnippets = signal.snippetIDs;
-      }
-
-      if (signal is NotifyTimingPointAdded || signal is NotifyTimingPointDeletion) {
-        lyricSnippets.where((snippet) => snippet.id == signal.snippetID).forEach((LyricSnippet snippet) {
-          snippet.timingPoints = signal.timingPoints;
-        });
-        updateIndicators();
-      }
-
-      if (signal is NotifyTimingPointDeletion) {
-        updateIndicators();
       }
 
       if (signal is NotifySeekPosition) {

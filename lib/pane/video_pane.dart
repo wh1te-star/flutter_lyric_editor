@@ -64,9 +64,8 @@ class _VideoPaneState extends State<VideoPane> {
       if (signal is NotifySnippetDivided || signal is NotifySnippetConcatenated || signal is NotifyUndo) {
         lyricSnippetTrack = assignTrackNumber(signal.lyricSnippetList);
       }
-      if (signal is NotifyTimingPointAdded || signal is NotifyTimingPointDeletion) {
-        LyricSnippet snippet = getLyricSnippetWithID(signal.snippetID).lyricSnippet;
-        snippet.timingPoints = signal.timingPoints;
+      if (signal is NotifyTimingPointAdded || signal is NotifyTimingPointDeleted) {
+        lyricSnippetTrack = assignTrackNumber(signal.lyricSnippetList);
       }
       setState(() {});
     });
