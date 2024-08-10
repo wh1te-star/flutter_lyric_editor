@@ -1,17 +1,22 @@
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:lyric_editor/utility/signal_structure.dart';
-import 'dart:async';
-import 'package:rxdart/rxdart.dart';
 
-class MusicPlayerService {
-  final PublishSubject<dynamic> masterSubject;
+class MusicPlayerService extends ChangeNotifier {
   AudioPlayer player = AudioPlayer();
   late DeviceFileSource audioFile;
   BuildContext context;
 
-  MusicPlayerService({required this.context, required this.masterSubject}) {
+  bool _isPlaying = false;
+  int _seekPosition = 0;
+  int _audioDuration = 240000;
+
+  bool get isPlaying => _isPlaying;
+  int get audioDuration => _audioDuration;
+  int get seekPosition => _seekPosition;
+
+  MusicPlayerService({required this.context}) {
+    /*
     player.onPositionChanged.listen((event) {
       masterSubject.add(NotifySeekPosition(event.inMilliseconds));
     });
@@ -24,52 +29,77 @@ class MusicPlayerService {
     });
     player.onDurationChanged.listen((duration) {
       masterSubject.add(NotifyAudioFileLoaded(duration.inMilliseconds));
+      notifyListeners();
     });
-    masterSubject.stream.listen((signal) async {
-      if (signal is RequestInitAudio) {
-        final XTypeGroup typeGroup = XTypeGroup(
-          label: 'audio',
-          extensions: ['mp3', 'wav', 'flac'],
-          mimeTypes: ['audio/mpeg', 'audio/x-wav', 'audio/flac'],
-        );
-        final XFile? file = await openFile(acceptedTypeGroups: [typeGroup]);
+    */
+    player.onPlayerStateChanged.listen((event) {
+      if (player.state == PlayerState.playing) {
+        _isPlaying = true;
+      } else {
+        _isPlaying = false;
+      }
+      notifyListeners();
+    });
+    player.onPositionChanged.listen((event) {
+      _seekPosition = event.inMilliseconds;
+      notifyListeners();
+    });
+    player.onDurationChanged.listen((duration) {
+      _audioDuration = duration.inMilliseconds;
+      notifyListeners();
+    });
+  }
 
-        if (file != null) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Selected file: ${file.name}'),
-          ));
-          initAudio(file.path);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('No file selected')),
-          );
-        }
-      }
-      if (signal is RequestPlayPause) {
-        playPause();
-      }
-      if (signal is RequestSeek) {
-        seek(signal.seekPosition);
-      }
-      if (signal is RequestRewind) {
-        rewind(signal.millisec);
-      }
-      if (signal is RequestForward) {
-        forward(signal.millisec);
-      }
-      if (signal is RequestVolumeUp) {
-        volumeUp(signal.value);
-      }
-      if (signal is RequestVolumeDown) {
-        volumeDown(signal.value);
-      }
-      if (signal is RequestSpeedUp) {
-        speedUp(signal.rate);
-      }
-      if (signal is RequestSpeedDown) {
-        speedDown(signal.rate);
-      }
-    });
+  void requestInitAudio() async {
+    final XTypeGroup typeGroup = XTypeGroup(
+      label: 'audio',
+      extensions: ['mp3', 'wav', 'flac'],
+      mimeTypes: ['audio/mpeg', 'audio/x-wav', 'audio/flac'],
+    );
+    final XFile? file = await openFile(acceptedTypeGroups: [typeGroup]);
+
+    if (file != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Selected file: ${file.name}'),
+      ));
+      initAudio(file.path);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No file selected')),
+      );
+    }
+  }
+
+  void requestPlayPause() {
+    playPause();
+  }
+
+  void requestSeek(int seekPosition) {
+    seek(seekPosition);
+  }
+
+  void requestRewind(int millisec) {
+    rewind(millisec);
+  }
+
+  void requestForward(int millisec) {
+    forward(millisec);
+  }
+
+  void requestVolumeUp(double value) {
+    volumeUp(value);
+  }
+
+  void requestVolumeDown(double value) {
+    volumeDown(value);
+  }
+
+  void requestSpeedUp(double rate) {
+    speedUp(rate);
+  }
+
+  void requestSpeedDown(double rate) {
+    speedDown(rate);
   }
 
   void playPause() {

@@ -4,208 +4,225 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
-import 'package:lyric_editor/utility/signal_structure.dart';
-import 'package:rxdart/rxdart.dart';
+import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:xml/xml.dart' as xml;
 
-class TimingService {
+class TimingService extends ChangeNotifier {
   final BuildContext context;
-  final PublishSubject<dynamic> masterSubject;
-  String rawLyricText = "";
-  Map<String, int> vocalistColorList = {};
-  Map<String, List<String>> vocalistCombinationCorrespondence = {};
-  List<LyricSnippet> lyricSnippetList = [];
-  Future<void>? _loadLyricsFuture;
-  int currentPosition = 0;
-  int audioDuration = 180000;
+  final MusicPlayerService musicPlayerProvider;
 
-  List<List<LyricSnippet>> undoHistory = [];
+  TimingService({required this.context, required this.musicPlayerProvider}) {
+    _loadLyricsFuture = loadLyrics();
+  }
+
+  String rawLyricText = "";
+  List<List<LyricSnippet>> _undoHistory = [];
+
+  Map<String, int> _vocalistColorList = {};
+  Map<String, List<String>> _vocalistCombinationCorrespondence = {};
+  List<LyricSnippet> _lyricSnippetList = [];
+  Future<void>? _loadLyricsFuture;
+
+  Map<String, int> get vocalistColorList => _vocalistColorList;
+  Map<String, List<String>> get vocalistCombinationCorrespondence => _vocalistCombinationCorrespondence;
+  List<LyricSnippet> get lyricSnippetList => _lyricSnippetList;
+  Future<void>? get loadLyricsFuture => _loadLyricsFuture;
 
   String defaultVocalistName = "vocalist 1";
 
-  TimingService({required this.masterSubject, required this.context}) {
-    masterSubject.stream.listen((signal) async {
-      if (signal is RequestInitLyric) {
-        final XFile? file = await openFile(acceptedTypeGroups: [
-          XTypeGroup(
-            label: 'text',
-            extensions: ['txt'],
-            mimeTypes: ['text/plain'],
-          )
-        ]);
+  void requestInitLyric() async {
+    final XFile? file = await openFile(acceptedTypeGroups: [
+      XTypeGroup(
+        label: 'text',
+        extensions: ['txt'],
+        mimeTypes: ['text/plain'],
+      )
+    ]);
 
-        if (file != null) {
-          String rawText = await file.readAsString();
-          String singlelineText = rawText.replaceAll("\n", "").replaceAll("\r", "");
-          lyricSnippetList.clear();
-          lyricSnippetList.add(LyricSnippet(
-            vocalist: Vocalist(defaultVocalistName, 0),
-            index: 1,
-            sentence: singlelineText,
-            startTimestamp: 0,
-            timingPoints: [TimingPoint(singlelineText.length, audioDuration)],
-          ));
+    if (file != null) {
+      int audioDuration = musicPlayerProvider.audioDuration;
+      String rawText = await file.readAsString();
+      String singlelineText = rawText.replaceAll("\n", "").replaceAll("\r", "");
+      _lyricSnippetList.clear();
+      _lyricSnippetList.add(LyricSnippet(
+        vocalist: Vocalist(defaultVocalistName, 0),
+        index: 1,
+        sentence: singlelineText,
+        startTimestamp: 0,
+        timingPoints: [TimingPoint(singlelineText.length, audioDuration)],
+      ));
 
-          vocalistColorList.clear();
-          vocalistColorList[defaultVocalistName] = 0xff777777;
+      _vocalistColorList.clear();
+      _vocalistColorList[defaultVocalistName] = 0xff777777;
 
-          masterSubject.add(NotifyLyricParsed(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('No file selected')),
-          );
+      notifyListeners();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No file selected')),
+      );
+    }
+  }
+
+  void requestLoadLyric() async {
+    final XFile? file = await openFile(acceptedTypeGroups: [
+      XTypeGroup(
+        label: 'xlrc',
+        extensions: ['xlrc'],
+        mimeTypes: ['application/xml'],
+      )
+    ]);
+
+    if (file != null) {
+      rawLyricText = await file.readAsString();
+      _lyricSnippetList = parseLyric(rawLyricText);
+
+      pushUndoHistory(_lyricSnippetList);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No file selected')),
+      );
+    }
+    notifyListeners();
+  }
+
+  void requestExportLyric() async {
+    const String fileName = 'example.xlrc';
+    final FileSaveLocation? result = await getSaveLocation(suggestedName: fileName);
+    if (result == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No file selected')),
+      );
+      return;
+    }
+
+    final String rawLyricText = serializeLyric(_lyricSnippetList);
+    final File file = File(result.path);
+    await file.writeAsString(rawLyricText);
+    notifyListeners();
+  }
+
+  void requestAddVocalist(String vocalistName) {
+    pushUndoHistory(_lyricSnippetList);
+
+    addVocalist(vocalistName);
+    notifyListeners();
+  }
+
+  void requestDeleteVocalist(String vocalistName) {
+    pushUndoHistory(_lyricSnippetList);
+
+    deleteVocalist(vocalistName);
+    notifyListeners();
+  }
+
+  void requestChangeVocalistName(String oldName, String newName) {
+    pushUndoHistory(_lyricSnippetList);
+
+    changeVocalistName(oldName, newName);
+    notifyListeners();
+  }
+
+  void requestToAddLyricTiming(LyricSnippetID snippetID, int characterPosition, int seekPosition) {
+    LyricSnippet snippet = getSnippetWithID(snippetID);
+    addTimingPoint(snippet, characterPosition, seekPosition);
+  }
+
+  void requestToDeleteLyricTiming(LyricSnippetID snippetID, int characterPosition, Choice choice) {
+    LyricSnippet snippet = getSnippetWithID(snippetID);
+    deleteTimingPoint(snippet, characterPosition, choice);
+    notifyListeners();
+  }
+
+  void requestDivideSnippet(LyricSnippetID snippetID, int characterPosition) {
+    int index = getSnippetIndexWithID(snippetID);
+    int currentPosition = musicPlayerProvider.seekPosition;
+    divideSnippet(index, characterPosition, currentPosition);
+    notifyListeners();
+  }
+
+  void requestConcatenateSnippet(List<LyricSnippetID> snippetIDs) {
+    List<LyricSnippet> snippets = translateIDsToSnippets(snippetIDs);
+    concatenateSnippets(snippets);
+    notifyListeners();
+  }
+
+  void requestSnippetMove(LyricSnippetID snippetID, SnippetEdge snippetEdge, bool holdLength) {
+    pushUndoHistory(_lyricSnippetList);
+
+    LyricSnippet snippet = getSnippetWithID(snippetID);
+    int currentPosition = musicPlayerProvider.audioDuration;
+    if (holdLength) {
+      if (snippetEdge == SnippetEdge.start) {
+        moveSnippet(snippet, snippet.startTimestamp - currentPosition);
+      } else {
+        moveSnippet(snippet, currentPosition - snippet.endTimestamp);
+      }
+    } else {
+      if (snippetEdge == SnippetEdge.start) {
+        if (currentPosition < snippet.startTimestamp) {
+          extendSnippet(snippet, SnippetEdge.start, snippet.startTimestamp - currentPosition);
+        } else if (snippet.startTimestamp < currentPosition) {
+          shortenSnippet(snippet, SnippetEdge.start, currentPosition - snippet.startTimestamp);
+        }
+      } else {
+        if (currentPosition < snippet.endTimestamp) {
+          shortenSnippet(snippet, SnippetEdge.end, snippet.endTimestamp - currentPosition);
+        } else if (snippet.endTimestamp < currentPosition) {
+          extendSnippet(snippet, SnippetEdge.end, currentPosition - snippet.endTimestamp);
         }
       }
-      if (signal is RequestLoadLyric) {
-        final XFile? file = await openFile(acceptedTypeGroups: [
-          XTypeGroup(
-            label: 'xlrc',
-            extensions: ['xlrc'],
-            mimeTypes: ['application/xml'],
-          )
-        ]);
+    }
+    notifyListeners();
+  }
 
-        if (file != null) {
-          rawLyricText = await file.readAsString();
-          lyricSnippetList = parseLyric(rawLyricText);
-
-          pushUndoHistory(lyricSnippetList);
-          masterSubject.add(NotifyLyricParsed(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('No file selected')),
-          );
-        }
-      }
-      if (signal is RequestExportLyric) {
-        const String fileName = 'example.xlrc';
-        final FileSaveLocation? result = await getSaveLocation(suggestedName: fileName);
-        if (result == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('No file selected')),
-          );
-          return;
-        }
-
-        final String rawLyricText = serializeLyric(lyricSnippetList);
-        final File file = File(result.path);
-        await file.writeAsString(rawLyricText);
-      }
-      if (signal is RequestAddVocalist) {
-        pushUndoHistory(lyricSnippetList);
-
-        addVocalist(signal.vocalistName);
-        masterSubject.add(NotifyVocalistAdded(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
-      }
-      if (signal is RequestDeleteVocalist) {
-        pushUndoHistory(lyricSnippetList);
-
-        deleteVocalist(signal.vocalistName);
-
-        masterSubject.add(NotifyVocalistDeleted(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
-      }
-      if (signal is RequestChangeVocalistName) {
-        pushUndoHistory(lyricSnippetList);
-
-        changeVocalistName(signal.oldName, signal.newName);
-        masterSubject.add(NotifyVocalistNameChanged(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
-      }
-      if (signal is RequestToAddLyricTiming) {
-        LyricSnippet snippet = getSnippetWithID(signal.snippetID);
-        addTimingPoint(snippet, signal.characterPosition, signal.seekPosition);
-        masterSubject.add(NotifyTimingPointAdded(lyricSnippetList));
-      }
-      if (signal is RequestToDeleteLyricTiming) {
-        LyricSnippet snippet = getSnippetWithID(signal.snippetID);
-        deleteTimingPoint(snippet, signal.characterPosition, signal.choice);
-        masterSubject.add(NotifyTimingPointDeleted(lyricSnippetList));
-      }
+  void requestUndo() {
+    _lyricSnippetList = popUndoHistory();
+    assignIndex(_lyricSnippetList);
+    notifyListeners();
+  }
+  /* Define music player provider callback
       if (signal is NotifySeekPosition) {
         currentPosition = signal.seekPosition;
       }
       if (signal is NotifyAudioFileLoaded) {
         audioDuration = signal.millisec;
       }
-
-      if (signal is RequestDivideSnippet) {
-        int index = getSnippetIndexWithID(signal.snippetID);
-        divideSnippet(index, signal.charPos, currentPosition);
-      }
-      if (signal is RequestConcatenateSnippet) {
-        List<LyricSnippet> snippets = translateIDsToSnippets(signal.snippetIDs);
-        concatenateSnippets(snippets);
-      }
-      if (signal is RequestSnippetMove) {
-        pushUndoHistory(lyricSnippetList);
-
-        LyricSnippet snippet = getSnippetWithID(signal.id);
-        if (signal.holdLength) {
-          if (signal.snippetEdge == SnippetEdge.start) {
-            moveSnippet(snippet, snippet.startTimestamp - currentPosition);
-          } else {
-            moveSnippet(snippet, currentPosition - snippet.endTimestamp);
-          }
-        } else {
-          if (signal.snippetEdge == SnippetEdge.start) {
-            if (currentPosition < snippet.startTimestamp) {
-              extendSnippet(snippet, SnippetEdge.start, snippet.startTimestamp - currentPosition);
-            } else if (snippet.startTimestamp < currentPosition) {
-              shortenSnippet(snippet, SnippetEdge.start, currentPosition - snippet.startTimestamp);
-            }
-          } else {
-            if (currentPosition < snippet.endTimestamp) {
-              shortenSnippet(snippet, SnippetEdge.end, snippet.endTimestamp - currentPosition);
-            } else if (snippet.endTimestamp < currentPosition) {
-              extendSnippet(snippet, SnippetEdge.end, currentPosition - snippet.endTimestamp);
-            }
-          }
-        }
-        masterSubject.add(NotifySnippetMove(lyricSnippetList));
-      }
-
-      if (signal is RequestUndo) {
-        lyricSnippetList = popUndoHistory();
-        assignIndex(lyricSnippetList);
-        masterSubject.add(NotifyUndo(lyricSnippetList));
-      }
-    });
-    _loadLyricsFuture = loadLyrics();
-  }
+      */
 
   List<LyricSnippet> translateIDsToSnippets(List<LyricSnippetID> ids) {
     return ids.map((id) => getSnippetWithID(id)).toList();
   }
 
   int getSnippetIndexWithID(LyricSnippetID id) {
-    return lyricSnippetList.indexWhere((snippet) => snippet.id == id);
+    return _lyricSnippetList.indexWhere((snippet) => snippet.id == id);
   }
 
   LyricSnippet getSnippetWithID(LyricSnippetID id) {
-    return lyricSnippetList.firstWhere((snippet) => snippet.id == id);
+    return _lyricSnippetList.firstWhere((snippet) => snippet.id == id);
   }
 
   void removeSnippetWithID(LyricSnippetID id) {
-    lyricSnippetList.removeWhere((snippet) => snippet.id == id);
+    _lyricSnippetList.removeWhere((snippet) => snippet.id == id);
   }
 
   List<LyricSnippet> getSnippetsWithVocalistName(String vocalistName) {
-    return lyricSnippetList.where((snippet) => snippet.vocalist.name == vocalistName).toList();
+    return _lyricSnippetList.where((snippet) => snippet.vocalist.name == vocalistName).toList();
   }
 
   void addVocalist(String vocalistName) {
-    vocalistColorList[vocalistName] = 0xFF222222;
-    lyricSnippetList.add(LyricSnippet(vocalist: Vocalist(vocalistName, 0), index: 0, sentence: "", startTimestamp: 0, timingPoints: [TimingPoint(0, 1)]));
+    _vocalistColorList[vocalistName] = 0xFF222222;
+    _lyricSnippetList.add(LyricSnippet(vocalist: Vocalist(vocalistName, 0), index: 0, sentence: "", startTimestamp: 0, timingPoints: [TimingPoint(0, 1)]));
   }
 
   void deleteVocalist(String vocalistName) {
-    vocalistColorList.remove(vocalistName);
-    lyricSnippetList.removeWhere((snippet) => snippet.vocalist.name == vocalistName);
+    _vocalistColorList.remove(vocalistName);
+    _lyricSnippetList.removeWhere((snippet) => snippet.vocalist.name == vocalistName);
   }
 
   void changeVocalistName(String oldName, String newName) {
     Map<String, List<String>> updatedMap = {};
 
-    vocalistCombinationCorrespondence.forEach((String key, List<String> value) {
+    _vocalistCombinationCorrespondence.forEach((String key, List<String> value) {
       int index = value.indexOf(oldName);
       if (index != -1) {
         value[index] = newName;
@@ -215,10 +232,10 @@ class TimingService {
       }
     });
 
-    vocalistCombinationCorrespondence = updatedMap;
+    _vocalistCombinationCorrespondence = updatedMap;
 
-    vocalistColorList[newName] = vocalistColorList[oldName]!;
-    vocalistColorList.remove(oldName);
+    _vocalistColorList[newName] = _vocalistColorList[oldName]!;
+    _vocalistColorList.remove(oldName);
 
     getSnippetsWithVocalistName(oldName).forEach((LyricSnippet snippet) {
       snippet.vocalist = Vocalist(newName, 0);
@@ -228,10 +245,10 @@ class TimingService {
   Future<void> loadLyrics() async {
     try {
       rawLyricText = await rootBundle.loadString('assets/ウェルカムティーフレンド.xlrc');
-      masterSubject.add(NotifyLyricLoaded(rawLyricText));
+      notifyListeners();
 
-      lyricSnippetList = parseLyric(rawLyricText);
-      masterSubject.add(NotifyLyricParsed(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
+      _lyricSnippetList = parseLyric(rawLyricText);
+      notifyListeners();
       //writeTranslatedXmlToFile();
     } catch (e) {
       debugPrint("Error loading lyrics: $e");
@@ -256,11 +273,11 @@ class TimingService {
       for (var colorElement in colorElements) {
         final name = colorElement.getAttribute('name')!;
         final color = int.parse(colorElement.getAttribute('color')!, radix: 16);
-        vocalistColorList[name] = color + 0xFF000000;
+        _vocalistColorList[name] = color + 0xFF000000;
 
         final vocalistNames = colorElement.findAllElements('Vocalist').map((e) => e.innerText).toList();
         if (vocalistNames.length >= 2) {
-          vocalistCombinationCorrespondence[name] = vocalistNames;
+          _vocalistCombinationCorrespondence[name] = vocalistNames;
         }
       }
     }
@@ -340,7 +357,7 @@ class TimingService {
     final builder = xml.XmlBuilder();
     builder.processing('xml', 'version="1.0" encoding="UTF-8"');
     builder.element('Lyrics', nest: () {
-      for (var snippet in lyricSnippetList) {
+      for (var snippet in _lyricSnippetList) {
         builder.element('LineTimestamp', attributes: {
           'vocalistName': snippet.vocalist.name,
           'startTime': _formatTimestamp(snippet.startTimestamp),
@@ -394,8 +411,9 @@ class TimingService {
   }
 
   List<LyricSnippet> getSnippetsAtCurrentSeekPosition() {
-    return lyricSnippetList.where((snippet) {
+    return _lyricSnippetList.where((snippet) {
       final endtime = snippet.startTimestamp + snippet.timingPoints.map((point) => point.wordDuration).reduce((a, b) => a + b);
+      int currentPosition = musicPlayerProvider.seekPosition;
       return snippet.startTimestamp < currentPosition && currentPosition < endtime;
     }).toList();
   }
@@ -405,24 +423,25 @@ class TimingService {
       return;
     }
     int snippetMargin = 100;
-    String beforeString = lyricSnippetList[index].sentence.substring(0, charPosition);
-    String afterString = lyricSnippetList[index].sentence.substring(charPosition);
-    Vocalist vocalist = lyricSnippetList[index].vocalist;
+    String beforeString = _lyricSnippetList[index].sentence.substring(0, charPosition);
+    String afterString = _lyricSnippetList[index].sentence.substring(charPosition);
+    Vocalist vocalist = _lyricSnippetList[index].vocalist;
     List<LyricSnippet> newSnippets = [];
+    int currentPosition = musicPlayerProvider.seekPosition;
     if (beforeString.isNotEmpty) {
-      int snippetDuration = currentPosition - lyricSnippetList[index].startTimestamp;
+      int snippetDuration = currentPosition - _lyricSnippetList[index].startTimestamp;
       newSnippets.add(
         LyricSnippet(
           vocalist: vocalist,
           index: 0,
           sentence: beforeString,
-          startTimestamp: lyricSnippetList[index].startTimestamp,
+          startTimestamp: _lyricSnippetList[index].startTimestamp,
           timingPoints: [TimingPoint(beforeString.length, snippetDuration)],
         ),
       );
     }
     if (afterString.isNotEmpty) {
-      int snippetDuration = lyricSnippetList[index].endTimestamp - lyricSnippetList[index].startTimestamp - currentPosition - snippetMargin;
+      int snippetDuration = _lyricSnippetList[index].endTimestamp - _lyricSnippetList[index].startTimestamp - currentPosition - snippetMargin;
       newSnippets.add(
         LyricSnippet(
           vocalist: vocalist,
@@ -434,10 +453,9 @@ class TimingService {
       );
     }
     if (newSnippets.isNotEmpty) {
-      lyricSnippetList.removeAt(index);
-      lyricSnippetList.insertAll(index, newSnippets);
-      assignIndex(lyricSnippetList);
-      masterSubject.add(NotifySnippetDivided(lyricSnippetList));
+      _lyricSnippetList.removeAt(index);
+      _lyricSnippetList.insertAll(index, newSnippets);
+      assignIndex(_lyricSnippetList);
     }
   }
 
@@ -464,8 +482,7 @@ class TimingService {
         removeSnippetWithID(rightSnippet.id);
       }
     });
-    assignIndex(lyricSnippetList);
-    masterSubject.add(NotifySnippetConcatenated(lyricSnippetList));
+    assignIndex(_lyricSnippetList);
   }
 
   void moveSnippet(LyricSnippet snippet, int shiftDuration) {
@@ -545,7 +562,7 @@ class TimingService {
   void pushUndoHistory(List<LyricSnippet> lyricSnippetList) {
     List<LyricSnippet> copy = lyricSnippetList.map((snippet) {
       return LyricSnippet(
-        vocalist: Vocalist(snippet.vocalist.name, vocalistColorList[snippet.vocalist.name]!),
+        vocalist: Vocalist(snippet.vocalist.name, _vocalistColorList[snippet.vocalist.name]!),
         index: snippet.index,
         sentence: snippet.sentence,
         startTimestamp: snippet.startTimestamp,
@@ -554,13 +571,23 @@ class TimingService {
         }).toList(),
       );
     }).toList();
-    undoHistory.add(copy);
+    _undoHistory.add(copy);
   }
 
   List<LyricSnippet> popUndoHistory() {
-    if (undoHistory.isEmpty) {
+    if (_undoHistory.isEmpty) {
       return [];
     }
-    return undoHistory.removeLast();
+    return _undoHistory.removeLast();
   }
+}
+
+enum Choice {
+  former,
+  latter,
+}
+
+enum SnippetEdge {
+  start,
+  end,
 }

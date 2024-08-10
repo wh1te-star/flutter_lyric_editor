@@ -1,84 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lyric_editor/pane/text_pane.dart';
+import 'package:lyric_editor/pane/timeline_pane.dart';
+import 'package:lyric_editor/pane/video_pane.dart';
+import 'package:lyric_editor/service/music_player_service.dart';
+import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
-import 'package:rxdart/rxdart.dart';
-import 'signal_structure.dart';
+
+class KeyboardShortcutsProvider with ChangeNotifier {
+  bool _enable = true;
+
+  bool get enable => _enable;
+
+  void setEnable(bool value) {
+    _enable = value;
+    notifyListeners();
+  }
+
+  KeyboardShortcutsProvider();
+}
 
 class KeyboardShortcuts extends StatefulWidget {
-  final PublishSubject<dynamic> masterSubject;
   final Widget child;
-  final FocusNode videoPaneFocusNode;
-  final FocusNode textPaneFocusNode;
-  final FocusNode timelinePaneFocusNode;
+  final KeyboardShortcutsProvider keyboardShortcutsProvider;
+  final MusicPlayerService musicPlayerProvider;
+  final TimingService timingProvider;
+  final TextPaneProvider textPaneProvider;
+  final TimelinePaneProvider timelinePaneProvider;
+  final VideoPaneProvider videoPaneProvider;
 
-  KeyboardShortcuts({
-    required this.masterSubject,
-    required this.child,
-    required this.videoPaneFocusNode,
-    required this.textPaneFocusNode,
-    required this.timelinePaneFocusNode,
-  });
+  KeyboardShortcuts({required this.child, required this.keyboardShortcutsProvider, required this.musicPlayerProvider, required this.timingProvider, required this.textPaneProvider, required this.timelinePaneProvider, required this.videoPaneProvider});
 
   @override
-  _KeyboardShortcutsState createState() => _KeyboardShortcutsState(masterSubject: this.masterSubject, child: this.child, videoPaneFocusNode: this.videoPaneFocusNode, textPaneFocusNode: this.textPaneFocusNode, timelinePaneFocusNode: this.timelinePaneFocusNode);
+  _KeyboardShortcutsState createState() => _KeyboardShortcutsState(child: this.child, keyboardShortcutsProvider: this.keyboardShortcutsProvider, musicPlayerProvider: musicPlayerProvider, timingProvider: timingProvider, textPaneProvider: textPaneProvider, timelinePaneProvider: timelinePaneProvider, videoPaneProvider: videoPaneProvider);
 }
 
 class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
-  final PublishSubject<dynamic> masterSubject;
   final Widget child;
-  final FocusNode videoPaneFocusNode;
-  final FocusNode textPaneFocusNode;
-  final FocusNode timelinePaneFocusNode;
+  final KeyboardShortcutsProvider keyboardShortcutsProvider;
+  final MusicPlayerService musicPlayerProvider;
+  final TimingService timingProvider;
+  final TextPaneProvider textPaneProvider;
+  final TimelinePaneProvider timelinePaneProvider;
+  final VideoPaneProvider videoPaneProvider;
 
-  bool enable = true;
-
-  List<LyricSnippetID> selectingSnippetIDs = [];
-  List<String> selectingVocalist = [];
-  int seekPosition = 0;
-  int charCursorPosition = 0;
-
-  bool textSelectMode = false;
-  int selectedPosition = 0;
-  LyricSnippetID selectedSnippetID = LyricSnippetID(Vocalist("", 0), 0);
-
-  _KeyboardShortcutsState({
-    required this.masterSubject,
-    required this.child,
-    required this.videoPaneFocusNode,
-    required this.textPaneFocusNode,
-    required this.timelinePaneFocusNode,
-  });
+  _KeyboardShortcutsState({required this.child, required this.keyboardShortcutsProvider, required this.musicPlayerProvider, required this.timingProvider, required this.textPaneProvider, required this.timelinePaneProvider, required this.videoPaneProvider});
 
   @override
   void initState() {
     super.initState();
-
-    widget.masterSubject.stream.listen((signal) {
-      if (signal is RequestKeyboardShortcutEnable) {
-        enable = signal.enable;
-        debugPrint("enable: ${enable}");
-        setState(() {});
-        NotifyKeyboardShortcutEnable(enable);
-      }
-      if (signal is NotifySelectingSnippets) {
-        selectingSnippetIDs = signal.snippetIDs;
-      }
-      if (signal is NotifySelectingVocalist) {
-        selectingVocalist.add(signal.vocalistName);
-      }
-      if (signal is NotifyDeselectingVocalist) {
-        selectingVocalist.remove(signal.vocalistName);
-      }
-      if (signal is NotifySeekPosition) {
-        seekPosition = signal.seekPosition;
-      }
-      if (signal is NotifyCharCursorPosition) {
-        charCursorPosition = signal.cursorPosition;
-      }
-      if (signal is NotifyLineCursorPosition) {
-        selectedSnippetID = signal.cursorSnippetID;
-      }
-    });
   }
 
   Map<LogicalKeySet, Intent> get shortcuts => {
@@ -112,142 +82,155 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
   Map<Type, Action<Intent>> get actions => {
         PlayPauseIntent: CallbackAction<PlayPauseIntent>(
           onInvoke: (PlayPauseIntent intent) => () {
-            masterSubject.add(RequestPlayPause());
+            musicPlayerProvider.requestPlayPause();
           }(),
         ),
         RewindIntent: CallbackAction<RewindIntent>(
           onInvoke: (RewindIntent intent) => () {
-            masterSubject.add(RequestRewind(1000));
+            musicPlayerProvider.requestRewind(1000);
           }(),
         ),
         ForwardIntent: CallbackAction<ForwardIntent>(
           onInvoke: (ForwardIntent intent) => () {
-            masterSubject.add(RequestForward(1000));
+            musicPlayerProvider.requestForward(1000);
           }(),
         ),
         SnippetStartMoveIntent: CallbackAction<SnippetStartMoveIntent>(
           onInvoke: (SnippetStartMoveIntent intent) => () {
+            List<LyricSnippetID> selectingSnippetIDs = timelinePaneProvider.selectingSnippet;
             selectingSnippetIDs.forEach((LyricSnippetID id) {
-              masterSubject.add(RequestSnippetMove(id, SnippetEdge.start, true));
+              timingProvider.requestSnippetMove(id, SnippetEdge.start, true);
             });
           }(),
         ),
         SnippetEndMoveIntent: CallbackAction<SnippetEndMoveIntent>(
           onInvoke: (SnippetEndMoveIntent intent) => () {
+            List<LyricSnippetID> selectingSnippetIDs = timelinePaneProvider.selectingSnippet;
             selectingSnippetIDs.forEach((LyricSnippetID id) {
-              masterSubject.add(RequestSnippetMove(id, SnippetEdge.end, false));
+              timingProvider.requestSnippetMove(id, SnippetEdge.end, false);
             });
           }(),
         ),
         VolumeUpIntent: CallbackAction<VolumeUpIntent>(
           onInvoke: (VolumeUpIntent intent) => () {
-            masterSubject.add(RequestVolumeUp(0.1));
+            musicPlayerProvider.requestVolumeUp(0.1);
           }(),
         ),
         VolumeDownIntent: CallbackAction<VolumeDownIntent>(
           onInvoke: (VolumeDownIntent intent) => () {
-            masterSubject.add(RequestVolumeDown(0.1));
+            musicPlayerProvider.requestVolumeDown(0.1);
           }(),
         ),
         SpeedUpIntent: CallbackAction<SpeedUpIntent>(
           onInvoke: (SpeedUpIntent intent) => () {
-            masterSubject.add(RequestSpeedUp(0.1));
+            musicPlayerProvider.requestSpeedUp(0.1);
           }(),
         ),
         SpeedDownIntent: CallbackAction<SpeedDownIntent>(
           onInvoke: (SpeedDownIntent intent) => () {
-            masterSubject.add(RequestSpeedDown(0.1));
-          }(),
-        ),
-        TextPaneCursorMoveLeftIntent: CallbackAction<TextPaneCursorMoveLeftIntent>(
-          onInvoke: (TextPaneCursorMoveLeftIntent intent) => () {
-            masterSubject.add(RequestMoveLeftCharCursor());
+            musicPlayerProvider.requestSpeedDown(0.1);
           }(),
         ),
         UndoIntent: CallbackAction<UndoIntent>(
           onInvoke: (UndoIntent intent) => () {
-            masterSubject.add(RequestUndo());
+            timingProvider.requestUndo();
+          }(),
+        ),
+        TextPaneCursorMoveLeftIntent: CallbackAction<TextPaneCursorMoveLeftIntent>(
+          onInvoke: (TextPaneCursorMoveLeftIntent intent) => () {
+            textPaneProvider.requestMoveLeftCharCursor();
           }(),
         ),
         TextPaneCursorMoveDownIntent: CallbackAction<TextPaneCursorMoveDownIntent>(
           onInvoke: (TextPaneCursorMoveDownIntent intent) => () {
-            masterSubject.add(RequestMoveDownCharCursor());
+            textPaneProvider.requestMoveDownCharCursor();
           }(),
         ),
         TextPaneCursorMoveUpIntent: CallbackAction<TextPaneCursorMoveUpIntent>(
           onInvoke: (TextPaneCursorMoveUpIntent intent) => () {
-            masterSubject.add(RequestMoveUpCharCursor());
+            textPaneProvider.requestMoveUpCharCursor();
           }(),
         ),
         TextPaneCursorMoveRightIntent: CallbackAction<TextPaneCursorMoveRightIntent>(
           onInvoke: (TextPaneCursorMoveRightIntent intent) => () {
-            masterSubject.add(RequestMoveRightCharCursor());
+            textPaneProvider.requestMoveRightCharCursor();
           }(),
         ),
         TimelineZoomIn: CallbackAction<TimelineZoomIn>(
           onInvoke: (TimelineZoomIn intent) => () {
-            masterSubject.add(RequestTimelineZoomIn());
+            timelinePaneProvider.requestTimelineZoomIn();
           }(),
         ),
         TimelineZoomOut: CallbackAction<TimelineZoomOut>(
           onInvoke: (TimelineZoomOut intent) => () {
-            masterSubject.add(RequestTimelineZoomOut());
+            timelinePaneProvider.requestTimelineZoomOut();
           }(),
         ),
         TimingPointAddIntent: CallbackAction<TimingPointAddIntent>(
           onInvoke: (TimingPointAddIntent intent) => () {
+            List<LyricSnippetID> selectingSnippetIDs = timelinePaneProvider.selectingSnippet;
+            int charCursorPosition = textPaneProvider.cursorCharPosition;
+            int seekPosition = musicPlayerProvider.seekPosition;
             selectingSnippetIDs.forEach((LyricSnippetID id) {
-              masterSubject.add(RequestToAddLyricTiming(id, charCursorPosition, seekPosition));
+              timingProvider.requestToAddLyricTiming(id, charCursorPosition, seekPosition);
             });
           }(),
         ),
         TimingPointDeleteIntent: CallbackAction<TimingPointDeleteIntent>(
           onInvoke: (TimingPointDeleteIntent intent) => () {
+            List<LyricSnippetID> selectingSnippetIDs = timelinePaneProvider.selectingSnippet;
+            int charCursorPosition = textPaneProvider.cursorCharPosition;
             selectingSnippetIDs.forEach((LyricSnippetID id) {
-              masterSubject.add(RequestToDeleteLyricTiming(id, charCursorPosition));
+              timingProvider.requestToDeleteLyricTiming(id, charCursorPosition, Choice.former);
             });
           }(),
         ),
         SnippetDivideIntent: CallbackAction<SnippetDivideIntent>(
           onInvoke: (SnippetDivideIntent intent) => () {
-            masterSubject.add(RequestDivideSnippet(selectedSnippetID, charCursorPosition));
-            //masterSubject.add(RequestToExitTextSelectMode());
+            List<LyricSnippetID> selectedSnippetIDs = timelinePaneProvider.selectingSnippet;
+            int charCursorPosition = textPaneProvider.cursorCharPosition;
+            selectedSnippetIDs.forEach((LyricSnippetID id) {
+              timingProvider.requestDivideSnippet(id, charCursorPosition);
+              //masterSubject.add(RequestToExitTextSelectMode());
+            });
           }(),
         ),
         SnippetConcatenateIntent: CallbackAction<SnippetConcatenateIntent>(
           onInvoke: (SnippetConcatenateIntent intent) => () {
-            masterSubject.add(RequestConcatenateSnippet(selectingSnippetIDs));
+            List<LyricSnippetID> selectedSnippetIDs = timelinePaneProvider.selectingSnippet;
+            timingProvider.requestConcatenateSnippet(selectedSnippetIDs);
           }(),
         ),
         DisplayModeSwitchIntent: CallbackAction<DisplayModeSwitchIntent>(
           onInvoke: (DisplayModeSwitchIntent intent) => () {
-            masterSubject.add(RequestSwitchDisplayMode());
+            videoPaneProvider.requestSwitchDisplayMode();
           }(),
         ),
         TimelineCursorMoveLeft: CallbackAction<TimelineCursorMoveLeft>(
           onInvoke: (TimelineCursorMoveLeft intent) => () {
-            masterSubject.add(RequestTimelineCursorMoveRight());
+            timelinePaneProvider.requestTimelineCursorMoveRight();
           }(),
         ),
         TimelineCursorMoveDown: CallbackAction<TimelineCursorMoveDown>(
           onInvoke: (TimelineCursorMoveDown intent) => () {
-            masterSubject.add(RequestTimelineCursorMoveDown());
+            timelinePaneProvider.requestTimelineCursorMoveDown();
           }(),
         ),
         TimelineCursorMoveUp: CallbackAction<TimelineCursorMoveUp>(
           onInvoke: (TimelineCursorMoveUp intent) => () {
-            masterSubject.add(RequestTimelineCursorMoveUp());
+            timelinePaneProvider.requestTimelineCursorMoveUp();
           }(),
         ),
         TimelineCursorMoveRight: CallbackAction<TimelineCursorMoveRight>(
           onInvoke: (TimelineCursorMoveRight intent) => () {
-            masterSubject.add(RequestTimelineCursorMoveLeft());
+            timelinePaneProvider.requestTimelineCursorMoveLeft();
           }(),
         ),
       };
 
   @override
   Widget build(BuildContext context) {
+    bool enable = keyboardShortcutsProvider.enable;
     if (enable) {
       return Shortcuts(
         shortcuts: shortcuts,

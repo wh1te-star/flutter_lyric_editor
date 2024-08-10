@@ -2,12 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lyric_editor/utility/signal_structure.dart';
-import 'package:rxdart/rxdart.dart';
+import 'package:lyric_editor/service/music_player_service.dart';
+import 'package:lyric_editor/service/timing_service.dart';
 import 'string_resource.dart';
-import 'package:file_selector/file_selector.dart';
 
-AppBar buildAppBarWithMenu(BuildContext context, PublishSubject<dynamic> masterSubject) {
+AppBar buildAppBarWithMenu(BuildContext context, MusicPlayerService musicPlayerProvider, TimingService timingProvider) {
   return AppBar(
     title: Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -37,19 +36,19 @@ AppBar buildAppBarWithMenu(BuildContext context, PublishSubject<dynamic> masterS
           onChanged: (String? newValue) {
             switch (newValue) {
               case StringResource.fileMenuOpenAudio:
-                masterSubject.add(RequestInitAudio());
+                musicPlayerProvider.requestInitAudio();
                 break;
 
               case StringResource.fileMenuCreateNewLyric:
-                masterSubject.add(RequestInitLyric());
+                timingProvider.requestInitLyric();
                 break;
 
               case StringResource.fileMenuOpenLyric:
-                masterSubject.add(RequestLoadLyric());
+                timingProvider.requestLoadLyric();
                 break;
 
               case StringResource.fileMenuExportLyric:
-                masterSubject.add(RequestExportLyric());
+                timingProvider.requestExportLyric();
                 break;
 
               default:
