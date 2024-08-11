@@ -86,12 +86,12 @@ class VideoPane extends ConsumerStatefulWidget {
 
 class _VideoPaneState extends ConsumerState<VideoPane> {
   final FocusNode focusNode;
-  late final KeyboardShortcutsNotifier keyboardShortcutsProvider;
-  late final MusicPlayerService musicPlayerProvider;
-  late final TimingService timingProvider;
-  late final TextPaneNotifier textPaneProvider;
-  late final TimelinePaneNotifier timelinePaneProvider;
-  late final VideoPaneNotifier videoPaneProvider;
+  late final KeyboardShortcutsNotifier keyboardShortcutsProvider = ref.read(keyboardShortcutsMasterProvider);
+  late final MusicPlayerService musicPlayerProvider = ref.read(musicPlayerMasterProvider);
+  late final TimingService timingProvider = ref.read(timingMasterProvider);
+  late final TextPaneNotifier textPaneProvider = ref.read(textPaneMasterProvider);
+  late final TimelinePaneNotifier timelinePaneProvider = ref.read(timelinePaneMasterProvider);
+  late final VideoPaneNotifier videoPaneProvider = ref.read(videoPaneMasterProvider);
 
   _VideoPaneState(this.focusNode);
 
@@ -127,13 +127,6 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
   @override
   Widget build(BuildContext context) {
-    keyboardShortcutsProvider = ref.read(keyboardShortcutsMasterProvider);
-    musicPlayerProvider = ref.read(musicPlayerMasterProvider);
-    timingProvider = ref.read(timingMasterProvider);
-    textPaneProvider = ref.read(textPaneMasterProvider);
-    timelinePaneProvider = ref.read(timelinePaneMasterProvider);
-    videoPaneProvider = ref.read(videoPaneMasterProvider);
-
     String fontFamily = "Times New Roman";
     List<LyricSnippetTrack> currentSnippets = getSnippetsAtCurrentSeekPosition();
 

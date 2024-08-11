@@ -36,12 +36,12 @@ class KeyboardShortcuts extends ConsumerStatefulWidget {
 class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
   final BuildContext context;
   final Widget child;
-  late final keyboardShortcutsProvider;
-  late final musicPlayerProvider;
-  late final timingProvider;
-  late final textPaneProvider;
-  late final timelinePaneProvider;
-  late final videoPaneProvider;
+  late final keyboardShortcutsProvider = ref.read(keyboardShortcutsMasterProvider);
+  late final musicPlayerProvider = ref.read(musicPlayerMasterProvider);
+  late final timingProvider = ref.read(timingMasterProvider);
+  late final textPaneProvider = ref.read(textPaneMasterProvider);
+  late final timelinePaneProvider = ref.read(timelinePaneMasterProvider);
+  late final videoPaneProvider = ref.read(videoPaneMasterProvider);
 
   _KeyboardShortcutsState({required this.context, required this.child});
 
@@ -229,13 +229,6 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
 
   @override
   Widget build(BuildContext context) {
-    keyboardShortcutsProvider = ref.read(keyboardShortcutsMasterProvider);
-    musicPlayerProvider = ref.read(musicPlayerMasterProvider);
-    timingProvider = ref.read(timingMasterProvider);
-    textPaneProvider = ref.read(textPaneMasterProvider);
-    timelinePaneProvider = ref.read(timelinePaneMasterProvider);
-    videoPaneProvider = ref.read(videoPaneMasterProvider);
-
     bool enable = keyboardShortcutsProvider.enable;
     if (enable) {
       return Shortcuts(

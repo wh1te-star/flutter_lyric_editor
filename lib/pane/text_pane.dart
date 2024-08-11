@@ -240,10 +240,10 @@ class TextPane extends ConsumerStatefulWidget {
 
 class _TextPaneState extends ConsumerState<TextPane> {
   final FocusNode focusNode;
-  late final MusicPlayerService musicPlayerProvider;
-  late final TimingService timingProvider;
-  late final TextPaneNotifier textPaneProvider;
-  late final TimelinePaneNotifier timelinePaneProvider;
+  late final MusicPlayerService musicPlayerProvider = ref.read(musicPlayerMasterProvider);
+  late final TimingService timingProvider = ref.read(timingMasterProvider);
+  late final TextPaneNotifier textPaneProvider = ref.read(textPaneMasterProvider);
+  late final TimelinePaneNotifier timelinePaneProvider = ref.read(timelinePaneMasterProvider);
 
   //static const String sectionChar = '\n\n';
 
@@ -288,11 +288,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
   @override
   Widget build(BuildContext context) {
-    musicPlayerProvider = ref.read(musicPlayerMasterProvider);
-    timingProvider = ref.read(timingMasterProvider);
-    textPaneProvider = ref.read(textPaneMasterProvider);
-    timelinePaneProvider = ref.read(timelinePaneMasterProvider);
-
     return Focus(
       focusNode: focusNode,
       child: GestureDetector(

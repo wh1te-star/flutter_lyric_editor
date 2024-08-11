@@ -204,10 +204,10 @@ class TimelinePane extends ConsumerStatefulWidget {
 class _TimelinePaneState extends ConsumerState<TimelinePane> {
   final FocusNode focusNode;
   late final KeyboardShortcutsNotifier keyboardShortcutsProvider;
-  late final MusicPlayerService musicPlayerProvider;
-  late final TimingService timingProvider;
-  late final TextPaneNotifier textPaneProvider;
-  late final TimelinePaneNotifier timelinePaneProvider;
+  late final MusicPlayerService musicPlayerProvider = ref.read(musicPlayerMasterProvider);
+  late final TimingService timingProvider = ref.read(timingMasterProvider);
+  late final TextPaneNotifier textPaneProvider = ref.read(textPaneMasterProvider);
+  late final TimelinePaneNotifier timelinePaneProvider = ref.read(timelinePaneMasterProvider);
 
   _TimelinePaneState(this.focusNode);
 
@@ -230,11 +230,6 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
 
   @override
   Widget build(BuildContext context) {
-    musicPlayerProvider = ref.read(musicPlayerMasterProvider);
-    timingProvider = ref.read(timingMasterProvider);
-    textPaneProvider = ref.read(textPaneMasterProvider);
-    timelinePaneProvider = ref.read(timelinePaneMasterProvider);
-
     Map<String, List<LyricSnippet>> snippetsForeachVocalist = timelinePaneProvider.snippetsForeachVocalist;
     int audioDuration = musicPlayerProvider.audioDuration;
     int intervalDuration = timelinePaneProvider.intervalDuration;

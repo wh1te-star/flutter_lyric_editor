@@ -371,8 +371,8 @@ class TimingService extends ChangeNotifier {
     if (_loadLyricsFuture != null) {
       await _loadLyricsFuture;
     }
-    //String first30Chars = rawLyricText.substring(0, 30);
-    //debugPrint(first30Chars);
+    String first30Chars = rawLyricText.substring(0, 30);
+    debugPrint(first30Chars);
   }
 
   List<LyricSnippet> getSnippetsAtCurrentSeekPosition() {

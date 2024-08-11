@@ -116,8 +116,6 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
     musicPlayerService.play();
 
     lyricService.printLyric();
-
-    //loadText();
   }
 
   @override
