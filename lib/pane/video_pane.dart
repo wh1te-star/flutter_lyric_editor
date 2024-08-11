@@ -19,7 +19,12 @@ class VideoPaneNotifier with ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
   final TimingService timingProvider;
 
-  VideoPaneNotifier(this.musicPlayerProvider, this.timingProvider);
+  VideoPaneNotifier(this.musicPlayerProvider, this.timingProvider) {
+    musicPlayerProvider.addListener(() {});
+    timingProvider.addListener(() {
+      lyricSnippetTrack = assignTrackNumber(timingProvider.lyricSnippetList);
+    });
+  }
 
   bool isPlaying = true;
   int startBulge = 1000;
@@ -86,12 +91,12 @@ class VideoPane extends ConsumerStatefulWidget {
 
 class _VideoPaneState extends ConsumerState<VideoPane> {
   final FocusNode focusNode;
-  late final KeyboardShortcutsNotifier keyboardShortcutsProvider = ref.read(keyboardShortcutsMasterProvider);
-  late final MusicPlayerService musicPlayerProvider = ref.read(musicPlayerMasterProvider);
-  late final TimingService timingProvider = ref.read(timingMasterProvider);
-  late final TextPaneNotifier textPaneProvider = ref.read(textPaneMasterProvider);
-  late final TimelinePaneNotifier timelinePaneProvider = ref.read(timelinePaneMasterProvider);
-  late final VideoPaneNotifier videoPaneProvider = ref.read(videoPaneMasterProvider);
+  late final KeyboardShortcutsNotifier keyboardShortcutsProvider = ref.watch(keyboardShortcutsMasterProvider);
+  late final MusicPlayerService musicPlayerProvider = ref.watch(musicPlayerMasterProvider);
+  late final TimingService timingProvider = ref.watch(timingMasterProvider);
+  late final TextPaneNotifier textPaneProvider = ref.watch(textPaneMasterProvider);
+  late final TimelinePaneNotifier timelinePaneProvider = ref.watch(timelinePaneMasterProvider);
+  late final VideoPaneNotifier videoPaneProvider = ref.watch(videoPaneMasterProvider);
 
   _VideoPaneState(this.focusNode);
 
@@ -127,6 +132,28 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<KeyboardShortcutsNotifier>(keyboardShortcutsMasterProvider, (previous, current) {
+      setState(() {});
+    });
+    ref.listen<MusicPlayerService>(musicPlayerMasterProvider, (previous, current) {
+      setState(() {});
+      if (videoPaneProvider.displayMode == DisplayMode.verticalScroll && musicPlayerProvider.isPlaying) {
+        scrollController.jumpTo(getScrollOffsetFromSeekPosition(musicPlayerProvider.seekPosition));
+      }
+    });
+    ref.listen<TimingService>(timingMasterProvider, (previous, current) {
+      setState(() {});
+    });
+    ref.listen<TextPaneNotifier>(textPaneMasterProvider, (previous, current) {
+      setState(() {});
+    });
+    ref.listen<TimelinePaneNotifier>(timelinePaneMasterProvider, (previous, current) {
+      setState(() {});
+    });
+    ref.listen<VideoPaneNotifier>(videoPaneMasterProvider, (previous, current) {
+      setState(() {});
+    });
+
     String fontFamily = "Times New Roman";
     List<LyricSnippetTrack> currentSnippets = getSnippetsAtCurrentSeekPosition();
 

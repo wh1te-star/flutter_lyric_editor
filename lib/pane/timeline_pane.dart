@@ -10,6 +10,7 @@ import 'package:lyric_editor/painter/rectangle_painter.dart';
 import 'package:lyric_editor/painter/scale_mark.dart';
 import 'package:lyric_editor/painter/timeline_painter.dart';
 import 'package:lyric_editor/pane/text_pane.dart';
+import 'package:lyric_editor/pane/video_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
@@ -29,6 +30,15 @@ class TimelinePaneNotifier with ChangeNotifier {
   TimelinePaneNotifier(this.musicPlayerProvider, this.timingProvider) {
     cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
       isCursorVisible = !isCursorVisible;
+    });
+
+    musicPlayerProvider.addListener(() {
+      if (autoCurrentSelectMode) {
+        selectingSnippet = getSnippetsAtCurrentSeekPosition();
+      }
+    });
+    timingProvider.addListener(() {
+      snippetsForeachVocalist = groupBy(timingProvider.lyricSnippetList, (LyricSnippet snippet) => snippet.vocalist.name);
     });
   }
 
@@ -59,27 +69,27 @@ class TimelinePaneNotifier with ChangeNotifier {
         vocalistCombinationCorrespondence = signal.vocalistCombinationCorrespondence;
       }
       */
-  requestTimelineZoomIn() {
+  void requestTimelineZoomIn() {
     zoomIn();
   }
 
-  requestTimelineZoomOut() {
+  void requestTimelineZoomOut() {
     zoomOut();
   }
 
-  requestTimelineCursorMoveLeft() {
+  void requestTimelineCursorMoveLeft() {
     moveLeftCursor();
   }
 
-  requestTimelineCursorMoveRight() {
+  void requestTimelineCursorMoveRight() {
     moveRightCursor();
   }
 
-  requestTimelineCursorMoveUp() {
+  void requestTimelineCursorMoveUp() {
     moveUpCursor();
   }
 
-  requestTimelineCursorMoveDown() {
+  void requestTimelineCursorMoveDown() {
     moveDownCursor();
   }
 
@@ -187,6 +197,20 @@ class TimelinePaneNotifier with ChangeNotifier {
     return null;
   }
 
+  List<LyricSnippetID> getSnippetsAtCurrentSeekPosition() {
+    List<LyricSnippetID> currentSnippet = [];
+    int currentPosition = musicPlayerProvider.seekPosition;
+    snippetsForeachVocalist.forEach((vocalist, snippets) {
+      for (var snippet in snippets) {
+        final endtime = snippet.startTimestamp + snippet.timingPoints.map((point) => point.wordDuration).reduce((a, b) => a + b);
+        if (snippet.startTimestamp <= currentPosition && currentPosition <= endtime) {
+          currentSnippet.add(snippet.id);
+        }
+      }
+    });
+    return currentSnippet;
+  }
+
   void dispose() {
     cursorTimer.cancel();
     super.dispose();
@@ -203,11 +227,11 @@ class TimelinePane extends ConsumerStatefulWidget {
 
 class _TimelinePaneState extends ConsumerState<TimelinePane> {
   final FocusNode focusNode;
-  late final KeyboardShortcutsNotifier keyboardShortcutsProvider;
-  late final MusicPlayerService musicPlayerProvider = ref.read(musicPlayerMasterProvider);
-  late final TimingService timingProvider = ref.read(timingMasterProvider);
-  late final TextPaneNotifier textPaneProvider = ref.read(textPaneMasterProvider);
-  late final TimelinePaneNotifier timelinePaneProvider = ref.read(timelinePaneMasterProvider);
+  late final KeyboardShortcutsNotifier keyboardShortcutsProvider = ref.watch(keyboardShortcutsMasterProvider);
+  late final MusicPlayerService musicPlayerProvider = ref.watch(musicPlayerMasterProvider);
+  late final TimingService timingProvider = ref.watch(timingMasterProvider);
+  late final TextPaneNotifier textPaneProvider = ref.watch(textPaneMasterProvider);
+  late final TimelinePaneNotifier timelinePaneProvider = ref.watch(timelinePaneMasterProvider);
 
   _TimelinePaneState(this.focusNode);
 
@@ -230,6 +254,25 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<KeyboardShortcutsNotifier>(keyboardShortcutsMasterProvider, (previous, current) {
+      setState(() {});
+    });
+    ref.listen<MusicPlayerService>(musicPlayerMasterProvider, (previous, current) {
+      setState(() {});
+    });
+    ref.listen<TimingService>(timingMasterProvider, (previous, current) {
+      setState(() {});
+    });
+    ref.listen<TextPaneNotifier>(textPaneMasterProvider, (previous, current) {
+      setState(() {});
+    });
+    ref.listen<TimelinePaneNotifier>(timelinePaneMasterProvider, (previous, current) {
+      setState(() {});
+    });
+    ref.listen<VideoPaneNotifier>(videoPaneMasterProvider, (previous, current) {
+      setState(() {});
+    });
+
     Map<String, List<LyricSnippet>> snippetsForeachVocalist = timelinePaneProvider.snippetsForeachVocalist;
     int audioDuration = musicPlayerProvider.audioDuration;
     int intervalDuration = timelinePaneProvider.intervalDuration;

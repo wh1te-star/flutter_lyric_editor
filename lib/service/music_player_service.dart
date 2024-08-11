@@ -18,22 +18,6 @@ class MusicPlayerService extends ChangeNotifier {
   int get seekPosition => _seekPosition;
 
   MusicPlayerService() {
-    /*
-    player.onPositionChanged.listen((event) {
-      masterSubject.add(NotifySeekPosition(event.inMilliseconds));
-    });
-    player.onPlayerStateChanged.listen((event) {
-      if (player.state == PlayerState.playing) {
-        masterSubject.add(NotifyIsPlaying(true));
-      } else {
-        masterSubject.add(NotifyIsPlaying(false));
-      }
-    });
-    player.onDurationChanged.listen((duration) {
-      masterSubject.add(NotifyAudioFileLoaded(duration.inMilliseconds));
-      notifyListeners();
-    });
-    */
     player.onPlayerStateChanged.listen((event) {
       if (player.state == PlayerState.playing) {
         _isPlaying = true;

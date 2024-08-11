@@ -30,6 +30,13 @@ class TextPaneNotifier extends ChangeNotifier {
     cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
       isCursorVisible = !isCursorVisible;
     });
+
+    musicPlayerProvider.addListener(() {
+      updateCursorIfNeed();
+    });
+    timingProvider.addListener(() {
+      updateIndicators();
+    });
   }
 
   static const String cursorChar = '\xa0';
@@ -39,6 +46,7 @@ class TextPaneNotifier extends ChangeNotifier {
   int maxLanes = 0;
 
   List<String> lyricAppearance = [];
+  List<List<int>> timingPointsForEachLine = [];
 
   LyricSnippetID cursorLinePosition = LyricSnippetID(Vocalist("", 0), 0);
   int cursorCharPosition = 0;
@@ -47,8 +55,6 @@ class TextPaneNotifier extends ChangeNotifier {
   int cursorBlinkInterval = 1;
   bool isCursorVisible = true;
   late Timer cursorTimer;
-
-  List<List<int>> timingPointsForEachLine = [];
 
   List<LyricSnippetID> highlightingSnippetsIDs = [];
 
@@ -104,6 +110,9 @@ class TextPaneNotifier extends ChangeNotifier {
   void updateIndicators() {
     List<LyricSnippet> lyricSnippets = timingProvider.lyricSnippetList;
     timingPointsForEachLine = lyricSnippets.map((snippet) => snippet.timingPoints.take(snippet.timingPoints.length - 1).map((timingPoint) => timingPoint.wordLength).fold<List<int>>([], (acc, pos) => acc..add((acc.isEmpty ? 0 : acc.last) + pos))).toList();
+
+    lyricAppearance.clear();
+    lyricAppearance = List<String>.generate(timingPointsForEachLine.length, (index) => 'default');
     for (int i = 0; i < timingPointsForEachLine.length; i++) {
       Map<int, String> timingPointsForEachLineMap = timingPointsForEachLine[i].asMap().map((key, value) => MapEntry(value, timingPointChar));
       lyricAppearance[i] = InsertChars(lyricSnippets[i].sentence, timingPointsForEachLineMap);
@@ -240,10 +249,11 @@ class TextPane extends ConsumerStatefulWidget {
 
 class _TextPaneState extends ConsumerState<TextPane> {
   final FocusNode focusNode;
-  late final MusicPlayerService musicPlayerProvider = ref.read(musicPlayerMasterProvider);
-  late final TimingService timingProvider = ref.read(timingMasterProvider);
-  late final TextPaneNotifier textPaneProvider = ref.read(textPaneMasterProvider);
-  late final TimelinePaneNotifier timelinePaneProvider = ref.read(timelinePaneMasterProvider);
+  late final KeyboardShortcutsNotifier keyboardShortcutsProvider;
+  late final MusicPlayerService musicPlayerProvider = ref.watch(musicPlayerMasterProvider);
+  late final TimingService timingProvider = ref.watch(timingMasterProvider);
+  late final TextPaneNotifier textPaneProvider = ref.watch(textPaneMasterProvider);
+  late final TimelinePaneNotifier timelinePaneProvider = ref.watch(timelinePaneMasterProvider);
 
   //static const String sectionChar = '\n\n';
 
@@ -288,6 +298,25 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<KeyboardShortcutsNotifier>(keyboardShortcutsMasterProvider, (previous, current) {
+      setState(() {});
+    });
+    ref.listen<MusicPlayerService>(musicPlayerMasterProvider, (previous, current) {
+      setState(() {});
+    });
+    ref.listen<TimingService>(timingMasterProvider, (previous, current) {
+      setState(() {});
+    });
+    ref.listen<TextPaneNotifier>(textPaneMasterProvider, (previous, current) {
+      setState(() {});
+    });
+    ref.listen<TimelinePaneNotifier>(timelinePaneMasterProvider, (previous, current) {
+      setState(() {});
+    });
+    ref.listen<VideoPaneNotifier>(videoPaneMasterProvider, (previous, current) {
+      setState(() {});
+    });
+
     return Focus(
       focusNode: focusNode,
       child: GestureDetector(
