@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
@@ -36,19 +37,19 @@ AppBar buildAppBarWithMenu(BuildContext context, MusicPlayerService musicPlayerP
           onChanged: (String? newValue) {
             switch (newValue) {
               case StringResource.fileMenuOpenAudio:
-                musicPlayerProvider.requestInitAudio();
+                openAudio(context, musicPlayerProvider);
                 break;
 
               case StringResource.fileMenuCreateNewLyric:
-                timingProvider.requestInitLyric();
+                createNewLyric(context, timingProvider);
                 break;
 
               case StringResource.fileMenuOpenLyric:
-                timingProvider.requestLoadLyric();
+                openLyric(context, timingProvider);
                 break;
 
               case StringResource.fileMenuExportLyric:
-                timingProvider.requestExportLyric();
+                exportLyric(context, timingProvider);
                 break;
 
               default:
@@ -71,4 +72,74 @@ AppBar buildAppBarWithMenu(BuildContext context, MusicPlayerService musicPlayerP
       ],
     ),
   );
+}
+
+void openAudio(BuildContext context, MusicPlayerService musicPlayerProvider) async {
+  final XTypeGroup typeGroup = XTypeGroup(
+    label: 'audio',
+    extensions: ['mp3', 'wav', 'flac'],
+    mimeTypes: ['audio/mpeg', 'audio/x-wav', 'audio/flac'],
+  );
+  final XFile? file = await openFile(acceptedTypeGroups: [typeGroup]);
+
+  if (file != null) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Selected file: ${file.name}'),
+    ));
+    musicPlayerProvider.requestInitAudio(file.path);
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('No file selected')),
+    );
+  }
+}
+
+void createNewLyric(BuildContext context, TimingService timingProvider) async {
+  final XFile? file = await openFile(acceptedTypeGroups: [
+    XTypeGroup(
+      label: 'text',
+      extensions: ['txt'],
+      mimeTypes: ['text/plain'],
+    )
+  ]);
+
+  if (file != null) {
+    String rawText = await file.readAsString();
+    timingProvider.requestInitLyric(rawText);
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('No file selected')),
+    );
+  }
+}
+
+void openLyric(BuildContext context, TimingService timingProvider) async {
+  final XFile? file = await openFile(acceptedTypeGroups: [
+    XTypeGroup(
+      label: 'xlrc',
+      extensions: ['xlrc'],
+      mimeTypes: ['application/xml'],
+    )
+  ]);
+
+  if (file != null) {
+    String rawText = await file.readAsString();
+    timingProvider.requestLoadLyric(rawText);
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('No file selected')),
+    );
+  }
+}
+
+void exportLyric(BuildContext context, TimingService timingProvider) async {
+  const String fileName = 'example.xlrc';
+  final FileSaveLocation? result = await getSaveLocation(suggestedName: fileName);
+  if (result == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('No file selected')),
+    );
+    return;
+  }
+  timingProvider.requestExportLyric(result);
 }

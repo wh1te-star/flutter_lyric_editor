@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/painter/partial_text_painter.dart';
 import 'package:lyric_editor/pane/text_pane.dart';
 import 'package:lyric_editor/pane/timeline_pane.dart';
@@ -8,11 +9,17 @@ import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 
-class VideoPaneProvider with ChangeNotifier {
+final videoPaneMasterProvider = ChangeNotifierProvider((ref) {
+  final musicPlayer = ref.watch(musicPlayerMasterProvider);
+  final timing = ref.watch(timingMasterProvider);
+  return VideoPaneNotifier(musicPlayer, timing);
+});
+
+class VideoPaneNotifier with ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
   final TimingService timingProvider;
 
-  VideoPaneProvider({required this.musicPlayerProvider, required this.timingProvider});
+  VideoPaneNotifier(this.musicPlayerProvider, this.timingProvider);
 
   bool isPlaying = true;
   int startBulge = 1000;
@@ -69,30 +76,24 @@ class VideoPaneProvider with ChangeNotifier {
   }
 }
 
-class VideoPane extends StatefulWidget {
+class VideoPane extends ConsumerStatefulWidget {
   final FocusNode focusNode;
-  final KeyboardShortcutsProvider keyboardShortcutsProvider;
-  final MusicPlayerService musicPlayerProvider;
-  final TimingService timingProvider;
-  final TextPaneProvider textPaneProvider;
-  final TimelinePaneProvider timelinePaneProvider;
-  final VideoPaneProvider videoPaneProvider;
 
-  VideoPane({required this.focusNode, required this.keyboardShortcutsProvider, required this.musicPlayerProvider, required this.timingProvider, required this.textPaneProvider, required this.timelinePaneProvider, required this.videoPaneProvider}) : super(key: Key('TextPane'));
+  VideoPane(this.focusNode);
   @override
-  _VideoPaneState createState() => _VideoPaneState(focusNode, keyboardShortcutsProvider, musicPlayerProvider, timingProvider, textPaneProvider, timelinePaneProvider, videoPaneProvider);
+  _VideoPaneState createState() => _VideoPaneState(focusNode);
 }
 
-class _VideoPaneState extends State<VideoPane> {
+class _VideoPaneState extends ConsumerState<VideoPane> {
   final FocusNode focusNode;
-  final KeyboardShortcutsProvider keyboardShortcutsProvider;
-  final MusicPlayerService musicPlayerProvider;
-  final TimingService timingProvider;
-  final TextPaneProvider textPaneProvider;
-  final TimelinePaneProvider timelinePaneProvider;
-  final VideoPaneProvider videoPaneProvider;
+  late final KeyboardShortcutsNotifier keyboardShortcutsProvider;
+  late final MusicPlayerService musicPlayerProvider;
+  late final TimingService timingProvider;
+  late final TextPaneNotifier textPaneProvider;
+  late final TimelinePaneNotifier timelinePaneProvider;
+  late final VideoPaneNotifier videoPaneProvider;
 
-  _VideoPaneState(this.focusNode, this.keyboardShortcutsProvider, this.musicPlayerProvider, this.timingProvider, this.textPaneProvider, this.timelinePaneProvider, this.videoPaneProvider);
+  _VideoPaneState(this.focusNode);
 
   ScrollController scrollController = ScrollController();
 
@@ -126,6 +127,13 @@ class _VideoPaneState extends State<VideoPane> {
 
   @override
   Widget build(BuildContext context) {
+    keyboardShortcutsProvider = ref.read(keyboardShortcutsMasterProvider);
+    musicPlayerProvider = ref.read(musicPlayerMasterProvider);
+    timingProvider = ref.read(timingMasterProvider);
+    textPaneProvider = ref.read(textPaneMasterProvider);
+    timelinePaneProvider = ref.read(timelinePaneMasterProvider);
+    videoPaneProvider = ref.read(videoPaneMasterProvider);
+
     String fontFamily = "Times New Roman";
     List<LyricSnippetTrack> currentSnippets = getSnippetsAtCurrentSeekPosition();
 

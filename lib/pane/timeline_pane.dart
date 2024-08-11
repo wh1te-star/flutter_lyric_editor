@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/painter/current_position_indicator_painter.dart';
 import 'package:lyric_editor/painter/rectangle_painter.dart';
 import 'package:lyric_editor/painter/scale_mark.dart';
@@ -15,11 +16,17 @@ import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:two_dimensional_scrollables/two_dimensional_scrollables.dart';
 
-class TimelinePaneProvider with ChangeNotifier {
+final timelinePaneMasterProvider = ChangeNotifierProvider((ref) {
+  final musicPlayer = ref.watch(musicPlayerMasterProvider);
+  final timing = ref.watch(timingMasterProvider);
+  return TimelinePaneNotifier(musicPlayer, timing);
+});
+
+class TimelinePaneNotifier with ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
   final TimingService timingProvider;
 
-  TimelinePaneProvider({required this.musicPlayerProvider, required this.timingProvider}) {
+  TimelinePaneNotifier(this.musicPlayerProvider, this.timingProvider) {
     cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
       isCursorVisible = !isCursorVisible;
     });
@@ -186,28 +193,23 @@ class TimelinePaneProvider with ChangeNotifier {
   }
 }
 
-class TimelinePane extends StatefulWidget {
+class TimelinePane extends ConsumerStatefulWidget {
   final FocusNode focusNode;
-  final KeyboardShortcutsProvider keyboardShortcutsProvider;
-  final MusicPlayerService musicPlayerProvider;
-  final TimingService timingProvider;
-  final TextPaneProvider textPaneProvider;
-  final TimelinePaneProvider timelinePaneProvider;
 
-  TimelinePane({required this.focusNode, required this.keyboardShortcutsProvider, required this.musicPlayerProvider, required this.timingProvider, required this.textPaneProvider, required this.timelinePaneProvider}) : super(key: Key('TextPane'));
+  TimelinePane(this.focusNode);
   @override
-  _TimelinePaneState createState() => _TimelinePaneState(focusNode, keyboardShortcutsProvider, musicPlayerProvider, timingProvider, textPaneProvider, timelinePaneProvider);
+  _TimelinePaneState createState() => _TimelinePaneState(focusNode);
 }
 
-class _TimelinePaneState extends State<TimelinePane> {
+class _TimelinePaneState extends ConsumerState<TimelinePane> {
   final FocusNode focusNode;
-  final KeyboardShortcutsProvider keyboardShortcutsProvider;
-  final MusicPlayerService musicPlayerProvider;
-  final TimingService timingProvider;
-  final TextPaneProvider textPaneProvider;
-  final TimelinePaneProvider timelinePaneProvider;
+  late final KeyboardShortcutsNotifier keyboardShortcutsProvider;
+  late final MusicPlayerService musicPlayerProvider;
+  late final TimingService timingProvider;
+  late final TextPaneNotifier textPaneProvider;
+  late final TimelinePaneNotifier timelinePaneProvider;
 
-  _TimelinePaneState(this.focusNode, this.keyboardShortcutsProvider, this.musicPlayerProvider, this.timingProvider, this.textPaneProvider, this.timelinePaneProvider);
+  _TimelinePaneState(this.focusNode);
 
   final ScrollController currentPositionScroller = ScrollController();
   final ScrollableDetails verticalDetails = ScrollableDetails(direction: AxisDirection.down, controller: ScrollController());
@@ -228,6 +230,11 @@ class _TimelinePaneState extends State<TimelinePane> {
 
   @override
   Widget build(BuildContext context) {
+    musicPlayerProvider = ref.read(musicPlayerMasterProvider);
+    timingProvider = ref.read(timingMasterProvider);
+    textPaneProvider = ref.read(textPaneMasterProvider);
+    timelinePaneProvider = ref.read(timelinePaneMasterProvider);
+
     Map<String, List<LyricSnippet>> snippetsForeachVocalist = timelinePaneProvider.snippetsForeachVocalist;
     int audioDuration = musicPlayerProvider.audioDuration;
     int intervalDuration = timelinePaneProvider.intervalDuration;

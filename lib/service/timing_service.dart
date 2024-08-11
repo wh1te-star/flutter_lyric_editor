@@ -3,15 +3,20 @@ import 'package:collection/collection.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:xml/xml.dart' as xml;
 
+final timingMasterProvider = ChangeNotifierProvider((ref) {
+  final musicPlayerService = ref.watch(musicPlayerMasterProvider);
+  return TimingService(musicPlayerService);
+});
+
 class TimingService extends ChangeNotifier {
-  final BuildContext context;
   final MusicPlayerService musicPlayerProvider;
 
-  TimingService({required this.context, required this.musicPlayerProvider}) {
+  TimingService(this.musicPlayerProvider) {
     _loadLyricsFuture = loadLyrics();
   }
 
@@ -30,71 +35,31 @@ class TimingService extends ChangeNotifier {
 
   String defaultVocalistName = "vocalist 1";
 
-  void requestInitLyric() async {
-    final XFile? file = await openFile(acceptedTypeGroups: [
-      XTypeGroup(
-        label: 'text',
-        extensions: ['txt'],
-        mimeTypes: ['text/plain'],
-      )
-    ]);
+  void requestInitLyric(String rawText) async {
+    int audioDuration = musicPlayerProvider.audioDuration;
+    String singlelineText = rawText.replaceAll("\n", "").replaceAll("\r", "");
+    _lyricSnippetList.clear();
+    _lyricSnippetList.add(LyricSnippet(
+      vocalist: Vocalist(defaultVocalistName, 0),
+      index: 1,
+      sentence: singlelineText,
+      startTimestamp: 0,
+      timingPoints: [TimingPoint(singlelineText.length, audioDuration)],
+    ));
 
-    if (file != null) {
-      int audioDuration = musicPlayerProvider.audioDuration;
-      String rawText = await file.readAsString();
-      String singlelineText = rawText.replaceAll("\n", "").replaceAll("\r", "");
-      _lyricSnippetList.clear();
-      _lyricSnippetList.add(LyricSnippet(
-        vocalist: Vocalist(defaultVocalistName, 0),
-        index: 1,
-        sentence: singlelineText,
-        startTimestamp: 0,
-        timingPoints: [TimingPoint(singlelineText.length, audioDuration)],
-      ));
+    _vocalistColorList.clear();
+    _vocalistColorList[defaultVocalistName] = 0xff777777;
 
-      _vocalistColorList.clear();
-      _vocalistColorList[defaultVocalistName] = 0xff777777;
-
-      notifyListeners();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No file selected')),
-      );
-    }
-  }
-
-  void requestLoadLyric() async {
-    final XFile? file = await openFile(acceptedTypeGroups: [
-      XTypeGroup(
-        label: 'xlrc',
-        extensions: ['xlrc'],
-        mimeTypes: ['application/xml'],
-      )
-    ]);
-
-    if (file != null) {
-      rawLyricText = await file.readAsString();
-      _lyricSnippetList = parseLyric(rawLyricText);
-
-      pushUndoHistory(_lyricSnippetList);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No file selected')),
-      );
-    }
     notifyListeners();
   }
 
-  void requestExportLyric() async {
-    const String fileName = 'example.xlrc';
-    final FileSaveLocation? result = await getSaveLocation(suggestedName: fileName);
-    if (result == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No file selected')),
-      );
-      return;
-    }
+  void requestLoadLyric(String rawText) async {
+    rawLyricText = rawText;
+    _lyricSnippetList = parseLyric(rawText);
+    notifyListeners();
+  }
 
+  void requestExportLyric(FileSaveLocation result) async {
     final String rawLyricText = serializeLyric(_lyricSnippetList);
     final File file = File(result.path);
     await file.writeAsString(rawLyricText);

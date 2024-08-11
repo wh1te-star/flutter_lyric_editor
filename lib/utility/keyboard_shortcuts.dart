@@ -6,8 +6,11 @@ import 'package:lyric_editor/pane/video_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class KeyboardShortcutsProvider with ChangeNotifier {
+final keyboardShortcutsMasterProvider = ChangeNotifierProvider((ref) => KeyboardShortcutsNotifier());
+
+class KeyboardShortcutsNotifier with ChangeNotifier {
   bool _enable = true;
 
   bool get enable => _enable;
@@ -17,34 +20,30 @@ class KeyboardShortcutsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  KeyboardShortcutsProvider();
+  KeyboardShortcutsNotifier();
 }
 
-class KeyboardShortcuts extends StatefulWidget {
+class KeyboardShortcuts extends ConsumerStatefulWidget {
+  final BuildContext context;
   final Widget child;
-  final KeyboardShortcutsProvider keyboardShortcutsProvider;
-  final MusicPlayerService musicPlayerProvider;
-  final TimingService timingProvider;
-  final TextPaneProvider textPaneProvider;
-  final TimelinePaneProvider timelinePaneProvider;
-  final VideoPaneProvider videoPaneProvider;
 
-  KeyboardShortcuts({required this.child, required this.keyboardShortcutsProvider, required this.musicPlayerProvider, required this.timingProvider, required this.textPaneProvider, required this.timelinePaneProvider, required this.videoPaneProvider});
+  KeyboardShortcuts({required this.context, required this.child});
 
   @override
-  _KeyboardShortcutsState createState() => _KeyboardShortcutsState(child: this.child, keyboardShortcutsProvider: this.keyboardShortcutsProvider, musicPlayerProvider: musicPlayerProvider, timingProvider: timingProvider, textPaneProvider: textPaneProvider, timelinePaneProvider: timelinePaneProvider, videoPaneProvider: videoPaneProvider);
+  _KeyboardShortcutsState createState() => _KeyboardShortcutsState(context: context, child: this.child);
 }
 
-class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
+class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
+  final BuildContext context;
   final Widget child;
-  final KeyboardShortcutsProvider keyboardShortcutsProvider;
-  final MusicPlayerService musicPlayerProvider;
-  final TimingService timingProvider;
-  final TextPaneProvider textPaneProvider;
-  final TimelinePaneProvider timelinePaneProvider;
-  final VideoPaneProvider videoPaneProvider;
+  late final keyboardShortcutsProvider;
+  late final musicPlayerProvider;
+  late final timingProvider;
+  late final textPaneProvider;
+  late final timelinePaneProvider;
+  late final videoPaneProvider;
 
-  _KeyboardShortcutsState({required this.child, required this.keyboardShortcutsProvider, required this.musicPlayerProvider, required this.timingProvider, required this.textPaneProvider, required this.timelinePaneProvider, required this.videoPaneProvider});
+  _KeyboardShortcutsState({required this.context, required this.child});
 
   @override
   void initState() {
@@ -230,6 +229,13 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
 
   @override
   Widget build(BuildContext context) {
+    keyboardShortcutsProvider = ref.read(keyboardShortcutsMasterProvider);
+    musicPlayerProvider = ref.read(musicPlayerMasterProvider);
+    timingProvider = ref.read(timingMasterProvider);
+    textPaneProvider = ref.read(textPaneMasterProvider);
+    timelinePaneProvider = ref.read(timelinePaneMasterProvider);
+    videoPaneProvider = ref.read(videoPaneMasterProvider);
+
     bool enable = keyboardShortcutsProvider.enable;
     if (enable) {
       return Shortcuts(

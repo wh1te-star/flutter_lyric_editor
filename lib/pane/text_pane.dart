@@ -12,12 +12,21 @@ import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/sorted_list.dart';
 import 'package:tuple/tuple.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class TextPaneProvider with ChangeNotifier {
+final textPaneMasterProvider = ChangeNotifierProvider((ref) {
+  final keyboardShortcuts = ref.watch(keyboardShortcutsMasterProvider);
+  final musicPlayer = ref.watch(musicPlayerMasterProvider);
+  final timing = ref.watch(timingMasterProvider);
+  return TextPaneNotifier(keyboardShortcuts, musicPlayer, timing);
+});
+
+class TextPaneNotifier extends ChangeNotifier {
+  final KeyboardShortcutsNotifier keyboardShortcutsProvider;
   final MusicPlayerService musicPlayerProvider;
   final TimingService timingProvider;
 
-  TextPaneProvider({required this.musicPlayerProvider, required this.timingProvider}) {
+  TextPaneNotifier(this.keyboardShortcutsProvider, this.musicPlayerProvider, this.timingProvider) {
     cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
       isCursorVisible = !isCursorVisible;
     });
@@ -220,25 +229,21 @@ class TextPaneProvider with ChangeNotifier {
   }
 }
 
-class TextPane extends StatefulWidget {
+class TextPane extends ConsumerStatefulWidget {
   final FocusNode focusNode;
-  final MusicPlayerService musicPlayerProvider;
-  final TimingService timingProvider;
-  final TextPaneProvider textPaneProvider;
-  final TimelinePaneProvider timelinePaneProvider;
 
-  TextPane({required this.focusNode, required this.musicPlayerProvider, required this.timingProvider, required this.textPaneProvider, required this.timelinePaneProvider}) : super(key: Key('TextPane'));
+  TextPane(this.focusNode) : super(key: Key('TextPane'));
 
   @override
-  _TextPaneState createState() => _TextPaneState(focusNode, musicPlayerProvider, timingProvider, textPaneProvider, timelinePaneProvider);
+  _TextPaneState createState() => _TextPaneState(focusNode);
 }
 
-class _TextPaneState extends State<TextPane> {
+class _TextPaneState extends ConsumerState<TextPane> {
   final FocusNode focusNode;
-  final MusicPlayerService musicPlayerProvider;
-  final TimingService timingProvider;
-  final TextPaneProvider textPaneProvider;
-  final TimelinePaneProvider timelinePaneProvider;
+  late final MusicPlayerService musicPlayerProvider;
+  late final TimingService timingProvider;
+  late final TextPaneNotifier textPaneProvider;
+  late final TimelinePaneNotifier timelinePaneProvider;
 
   //static const String sectionChar = '\n\n';
 
@@ -249,7 +254,7 @@ class _TextPaneState extends State<TextPane> {
   bool TextSelectMode = false;
   int selectionBasePosition = 0;
 
-  _TextPaneState(this.focusNode, this.musicPlayerProvider, this.timingProvider, this.textPaneProvider, this.timelinePaneProvider);
+  _TextPaneState(this.focusNode);
 
   @override
   void initState() {
@@ -283,6 +288,11 @@ class _TextPaneState extends State<TextPane> {
 
   @override
   Widget build(BuildContext context) {
+    musicPlayerProvider = ref.read(musicPlayerMasterProvider);
+    timingProvider = ref.read(timingMasterProvider);
+    textPaneProvider = ref.read(textPaneMasterProvider);
+    timelinePaneProvider = ref.read(timelinePaneMasterProvider);
+
     return Focus(
       focusNode: focusNode,
       child: GestureDetector(
@@ -381,9 +391,9 @@ class _TextPaneState extends State<TextPane> {
 
     charIndex = charIndex + timingPointsBeforeCursor;
     if (cursorIndexTimingPoints >= 0) {
-      lyrics = replaceNthCharacter(lyrics, charIndex, TextPaneProvider.cursorChar);
+      lyrics = replaceNthCharacter(lyrics, charIndex, TextPaneNotifier.cursorChar);
     } else {
-      lyrics = insertCharacterAt(lyrics, charIndex, TextPaneProvider.cursorChar);
+      lyrics = insertCharacterAt(lyrics, charIndex, TextPaneNotifier.cursorChar);
     }
 
     String beforeN = lyrics.substring(0, charIndex);

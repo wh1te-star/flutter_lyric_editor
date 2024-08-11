@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:provider/provider.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
@@ -10,69 +12,36 @@ import 'pane/timeline_pane.dart';
 import 'pane/adjustable_pane_border.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
-  late final KeyboardShortcutsProvider keyboardShortcutsProvider;
-  late final MusicPlayerService musicPlayerProvider;
-  late final TimingService timingProvider;
-  late final TextPaneProvider textPaneProvider;
-  late final TimelinePaneProvider timelinePaneProvider;
-  late final VideoPaneProvider videoPaneProvider;
-
   @override
   Widget build(BuildContext context) {
-    keyboardShortcutsProvider = KeyboardShortcutsProvider();
-    musicPlayerProvider = MusicPlayerService(context: context);
-    timingProvider = TimingService(context: context, musicPlayerProvider: musicPlayerProvider);
-    textPaneProvider = TextPaneProvider(musicPlayerProvider: musicPlayerProvider, timingProvider: timingProvider);
-    timelinePaneProvider = TimelinePaneProvider(musicPlayerProvider: musicPlayerProvider, timingProvider: timingProvider);
-    videoPaneProvider = VideoPaneProvider(musicPlayerProvider: musicPlayerProvider, timingProvider: timingProvider);
-
     return MaterialApp(
       home: Scaffold(
+        /*
         appBar: AppBar(
           title: Builder(
-            builder: (BuildContext context) => buildAppBarWithMenu(context, musicPlayerProvider, timingProvider),
+            builder: (BuildContext context) => buildAppBarWithMenu(context),
           ),
         ),
-        body: AdjustablePaneLayout(keyboardShortcutsProvider: keyboardShortcutsProvider, musicPlayerProvider: musicPlayerProvider, timingProvider: timingProvider, textPaneProvider: textPaneProvider, timelinePaneProvider: timelinePaneProvider, videoPaneProvider: videoPaneProvider),
+        */
+        body: AdjustablePaneLayout(),
       ),
     );
   }
 }
 
-class AdjustablePaneLayout extends StatefulWidget {
-  final KeyboardShortcutsProvider keyboardShortcutsProvider;
-  final MusicPlayerService musicPlayerProvider;
-  final TimingService timingProvider;
-  final TextPaneProvider textPaneProvider;
-  final TimelinePaneProvider timelinePaneProvider;
-  final VideoPaneProvider videoPaneProvider;
-
-  AdjustablePaneLayout({
-    required this.keyboardShortcutsProvider,
-    required this.musicPlayerProvider,
-    required this.timingProvider,
-    required this.textPaneProvider,
-    required this.timelinePaneProvider,
-    required this.videoPaneProvider,
-  }) : super(key: Key('Main'));
+class AdjustablePaneLayout extends ConsumerStatefulWidget {
+  AdjustablePaneLayout() : super(key: Key('Main'));
 
   @override
-  _AdjustablePaneLayoutState createState() => _AdjustablePaneLayoutState(keyboardShortcutsProvider, musicPlayerProvider, timingProvider, textPaneProvider, timelinePaneProvider, videoPaneProvider);
+  _AdjustablePaneLayoutState createState() => _AdjustablePaneLayoutState();
 }
 
-class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
-  final KeyboardShortcutsProvider keyboardShortcutsProvider;
-  final MusicPlayerService musicPlayerProvider;
-  final TimingService timingProvider;
-  final TextPaneProvider textPaneProvider;
-  final TimelinePaneProvider timelinePaneProvider;
-  final VideoPaneProvider videoPaneProvider;
-
-  _AdjustablePaneLayoutState(this.keyboardShortcutsProvider, this.musicPlayerProvider, this.timingProvider, this.textPaneProvider, this.timelinePaneProvider, this.videoPaneProvider);
+class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
+  _AdjustablePaneLayoutState();
 
   double screenWidth = 0.0;
   double screenHeight = 0.0;
@@ -105,12 +74,12 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     textPaneFocusNode = FocusNode();
     timelinePaneFocusNode = FocusNode();
 
-    musicPlayerService = MusicPlayerService(context: context);
-    lyricService = TimingService(context: context, musicPlayerProvider: musicPlayerProvider);
+    musicPlayerService = ref.read(musicPlayerMasterProvider);
+    lyricService = ref.read(timingMasterProvider);
 
-    textPane = TextPane(focusNode: textPaneFocusNode, musicPlayerProvider: musicPlayerProvider, timingProvider: timingProvider, textPaneProvider: textPaneProvider, timelinePaneProvider: timelinePaneProvider);
-    timelinePane = TimelinePane(focusNode: timelinePaneFocusNode, keyboardShortcutsProvider: keyboardShortcutsProvider, musicPlayerProvider: musicPlayerProvider, timingProvider: timingProvider, textPaneProvider: textPaneProvider, timelinePaneProvider: timelinePaneProvider);
-    videoPane = VideoPane(focusNode: videoPaneFocusNode, keyboardShortcutsProvider: keyboardShortcutsProvider, musicPlayerProvider: musicPlayerProvider, timingProvider: timingProvider, textPaneProvider: textPaneProvider, timelinePaneProvider: timelinePaneProvider, videoPaneProvider: videoPaneProvider);
+    textPane = TextPane(textPaneFocusNode);
+    timelinePane = TimelinePane(timelinePaneFocusNode);
+    videoPane = VideoPane(videoPaneFocusNode);
 
     videoTextBorder = AdjustablePaneBorder(
         child: Container(
@@ -165,12 +134,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   @override
   Widget build(BuildContext context) {
     return KeyboardShortcuts(
-      keyboardShortcutsProvider: keyboardShortcutsProvider,
-      timingProvider: timingProvider,
-      musicPlayerProvider: musicPlayerProvider,
-      textPaneProvider: textPaneProvider,
-      timelinePaneProvider: timelinePaneProvider,
-      videoPaneProvider: videoPaneProvider,
+      context: context,
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           return Column(
