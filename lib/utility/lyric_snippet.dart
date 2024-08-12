@@ -17,6 +17,7 @@ class LyricSnippet {
   });
 
   LyricSnippetID get id => LyricSnippetID(vocalist, index);
+
   int get endTimestamp {
     return startTimestamp + timingPoints.fold(0, (sum, current) => sum + current.wordDuration);
   }
@@ -39,6 +40,25 @@ class LyricSnippet {
     vocalist = id.vocalist;
     index = id.index;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LyricSnippet &&
+          runtimeType == other.runtimeType &&
+          vocalist == other.vocalist &&
+          index == other.index &&
+          sentence == other.sentence &&
+          startTimestamp == other.startTimestamp &&
+          listEquals(timingPoints, other.timingPoints);
+
+  @override
+  int get hashCode =>
+      vocalist.hashCode ^
+      index.hashCode ^
+      sentence.hashCode ^
+      startTimestamp.hashCode ^
+      timingPoints.hashCode;
 }
 
 class Vocalist {
@@ -73,7 +93,19 @@ class VocalistCombination {
 class TimingPoint {
   int wordLength;
   int wordDuration;
+
   TimingPoint(this.wordLength, this.wordDuration);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (runtimeType != other.runtimeType) return false;
+    final TimingPoint otherTimingPoint = other as TimingPoint;
+    return wordLength == otherTimingPoint.wordLength && wordDuration == otherTimingPoint.wordDuration;
+  }
+
+  @override
+  int get hashCode => wordLength.hashCode ^ wordDuration.hashCode;
 }
 
 class LyricSnippetID {
