@@ -37,7 +37,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
   final BuildContext context;
   final Widget child;
   late final keyboardShortcutsProvider = ref.watch(keyboardShortcutsMasterProvider);
-  late final musicPlayerProvider = ref.watch(musicPlayerMasterProvider);
+  late final musicPlayerProvider = ref.watch(musicPlayerMasterProvider.notifier);
   late final timingProvider = ref.watch(timingMasterProvider);
   late final textPaneProvider = ref.watch(textPaneMasterProvider);
   late final timelinePaneProvider = ref.watch(timelinePaneMasterProvider);

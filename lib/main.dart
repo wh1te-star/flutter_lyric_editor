@@ -53,8 +53,8 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
   double LeftUpperPaneWidth = 100;
   double LeftUpperPaneHeight = 100;
 
-  late MusicPlayerService musicPlayerService;
-  late TimingService lyricService;
+  late MusicPlayerNotifier musicPlayerService;
+  late TimingNotifier lyricService;
   late FocusNode videoPaneFocusNode;
   late FocusNode textPaneFocusNode;
   late FocusNode timelinePaneFocusNode;

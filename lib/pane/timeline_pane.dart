@@ -24,8 +24,8 @@ final timelinePaneMasterProvider = ChangeNotifierProvider((ref) {
 });
 
 class TimelinePaneNotifier with ChangeNotifier {
-  final MusicPlayerService musicPlayerProvider;
-  final TimingService timingProvider;
+  final MusicPlayerNotifier musicPlayerProvider;
+  final TimingNotifier timingProvider;
 
   TimelinePaneNotifier(this.musicPlayerProvider, this.timingProvider) {
     cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
@@ -35,6 +35,7 @@ class TimelinePaneNotifier with ChangeNotifier {
     musicPlayerProvider.addListener(() {
       if (autoCurrentSelectMode) {
         selectingSnippet = getSnippetsAtCurrentSeekPosition();
+        debugPrint("autoCurrentSelectMode: ${selectingSnippet.length}");
       }
     });
     timingProvider.addListener(() {
@@ -69,6 +70,15 @@ class TimelinePaneNotifier with ChangeNotifier {
         vocalistCombinationCorrespondence = signal.vocalistCombinationCorrespondence;
       }
       */
+
+  void addSnippetSelection(LyricSnippetID snippetID) {
+    selectingSnippet.add(snippetID);
+  }
+
+  void removeSnippetSelection(LyricSnippetID snippetID) {
+    selectingSnippet.remove(snippetID);
+  }
+
   void requestTimelineZoomIn() {
     zoomIn();
   }
@@ -228,8 +238,8 @@ class TimelinePane extends ConsumerStatefulWidget {
 class _TimelinePaneState extends ConsumerState<TimelinePane> {
   final FocusNode focusNode;
   late final KeyboardShortcutsNotifier keyboardShortcutsProvider = ref.watch(keyboardShortcutsMasterProvider);
-  late final MusicPlayerService musicPlayerProvider = ref.watch(musicPlayerMasterProvider);
-  late final TimingService timingProvider = ref.watch(timingMasterProvider);
+  late final MusicPlayerNotifier musicPlayerProvider = ref.watch(musicPlayerMasterProvider);
+  late final TimingNotifier timingProvider = ref.watch(timingMasterProvider);
   late final TextPaneNotifier textPaneProvider = ref.watch(textPaneMasterProvider);
   late final TimelinePaneNotifier timelinePaneProvider = ref.watch(timelinePaneMasterProvider);
 
@@ -257,10 +267,10 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     ref.listen<KeyboardShortcutsNotifier>(keyboardShortcutsMasterProvider, (previous, current) {
       setState(() {});
     });
-    ref.listen<MusicPlayerService>(musicPlayerMasterProvider, (previous, current) {
+    ref.listen<MusicPlayerNotifier>(musicPlayerMasterProvider, (previous, current) {
       setState(() {});
     });
-    ref.listen<TimingService>(timingMasterProvider, (previous, current) {
+    ref.listen<TimingNotifier>(timingMasterProvider, (previous, current) {
       setState(() {});
     });
     ref.listen<TextPaneNotifier>(textPaneMasterProvider, (previous, current) {
@@ -523,9 +533,9 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
               final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
               if (snippet.startTimestamp <= touchedSeekPosition && touchedSeekPosition <= endtime) {
                 if (selectingSnippet.contains(snippet.id)) {
-                  selectingSnippet.remove(snippet.id);
+                  timelinePaneProvider.removeSnippetSelection(snippet.id);
                 } else {
-                  selectingSnippet.add(snippet.id);
+                  timelinePaneProvider.addSnippetSelection(snippet.id);
                 }
               }
             }

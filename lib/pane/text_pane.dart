@@ -23,8 +23,8 @@ final textPaneMasterProvider = ChangeNotifierProvider((ref) {
 
 class TextPaneNotifier extends ChangeNotifier {
   final KeyboardShortcutsNotifier keyboardShortcutsProvider;
-  final MusicPlayerService musicPlayerProvider;
-  final TimingService timingProvider;
+  final MusicPlayerNotifier musicPlayerProvider;
+  final TimingNotifier timingProvider;
 
   TextPaneNotifier(this.keyboardShortcutsProvider, this.musicPlayerProvider, this.timingProvider) {
     cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
@@ -97,8 +97,7 @@ class TextPaneNotifier extends ChangeNotifier {
 */
 
   LyricSnippet getSnippetWithID(LyricSnippetID id) {
-    List<LyricSnippet> lyricSnippets = timingProvider.lyricSnippetList;
-    return lyricSnippets.firstWhere((snippet) => snippet.id == id);
+    return timingProvider.lyricSnippetList.firstWhere((snippet) => snippet.id == id);
   }
 
   void updateCursorIfNeed() {
@@ -250,8 +249,8 @@ class TextPane extends ConsumerStatefulWidget {
 class _TextPaneState extends ConsumerState<TextPane> {
   final FocusNode focusNode;
   late final KeyboardShortcutsNotifier keyboardShortcutsProvider;
-  late final MusicPlayerService musicPlayerProvider = ref.watch(musicPlayerMasterProvider);
-  late final TimingService timingProvider = ref.watch(timingMasterProvider);
+  late final MusicPlayerNotifier musicPlayerProvider = ref.watch(musicPlayerMasterProvider);
+  late final TimingNotifier timingProvider = ref.watch(timingMasterProvider);
   late final TextPaneNotifier textPaneProvider = ref.watch(textPaneMasterProvider);
   late final TimelinePaneNotifier timelinePaneProvider = ref.watch(timelinePaneMasterProvider);
 
@@ -301,10 +300,10 @@ class _TextPaneState extends ConsumerState<TextPane> {
     ref.listen<KeyboardShortcutsNotifier>(keyboardShortcutsMasterProvider, (previous, current) {
       setState(() {});
     });
-    ref.listen<MusicPlayerService>(musicPlayerMasterProvider, (previous, current) {
+    ref.listen<MusicPlayerNotifier>(musicPlayerMasterProvider, (previous, current) {
       setState(() {});
     });
-    ref.listen<TimingService>(timingMasterProvider, (previous, current) {
+    ref.listen<TimingNotifier>(timingMasterProvider, (previous, current) {
       setState(() {});
     });
     ref.listen<TextPaneNotifier>(textPaneMasterProvider, (previous, current) {

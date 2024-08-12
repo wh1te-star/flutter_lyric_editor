@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final musicPlayerMasterProvider = ChangeNotifierProvider((ref) => MusicPlayerService());
+final musicPlayerMasterProvider = ChangeNotifierProvider((ref) => MusicPlayerNotifier());
 
-class MusicPlayerService extends ChangeNotifier {
+class MusicPlayerNotifier extends ChangeNotifier {
   AudioPlayer player = AudioPlayer();
   late DeviceFileSource audioFile;
 
@@ -17,7 +17,7 @@ class MusicPlayerService extends ChangeNotifier {
   int get audioDuration => _audioDuration;
   int get seekPosition => _seekPosition;
 
-  MusicPlayerService() {
+  MusicPlayerNotifier() {
     player.onPlayerStateChanged.listen((event) {
       if (player.state == PlayerState.playing) {
         _isPlaying = true;
@@ -28,6 +28,7 @@ class MusicPlayerService extends ChangeNotifier {
     });
     player.onPositionChanged.listen((event) {
       _seekPosition = event.inMilliseconds;
+      //debugPrint("onPositionChanged: ${_seekPosition}");
       notifyListeners();
     });
     player.onDurationChanged.listen((duration) {

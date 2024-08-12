@@ -7,7 +7,7 @@ import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'string_resource.dart';
 
-AppBar buildAppBarWithMenu(BuildContext context, MusicPlayerService musicPlayerProvider, TimingService timingProvider) {
+AppBar buildAppBarWithMenu(BuildContext context, MusicPlayerNotifier musicPlayerProvider, TimingNotifier timingProvider) {
   return AppBar(
     title: Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -74,7 +74,7 @@ AppBar buildAppBarWithMenu(BuildContext context, MusicPlayerService musicPlayerP
   );
 }
 
-void openAudio(BuildContext context, MusicPlayerService musicPlayerProvider) async {
+void openAudio(BuildContext context, MusicPlayerNotifier musicPlayerProvider) async {
   final XTypeGroup typeGroup = XTypeGroup(
     label: 'audio',
     extensions: ['mp3', 'wav', 'flac'],
@@ -94,7 +94,7 @@ void openAudio(BuildContext context, MusicPlayerService musicPlayerProvider) asy
   }
 }
 
-void createNewLyric(BuildContext context, TimingService timingProvider) async {
+void createNewLyric(BuildContext context, TimingNotifier timingProvider) async {
   final XFile? file = await openFile(acceptedTypeGroups: [
     XTypeGroup(
       label: 'text',
@@ -113,7 +113,7 @@ void createNewLyric(BuildContext context, TimingService timingProvider) async {
   }
 }
 
-void openLyric(BuildContext context, TimingService timingProvider) async {
+void openLyric(BuildContext context, TimingNotifier timingProvider) async {
   final XFile? file = await openFile(acceptedTypeGroups: [
     XTypeGroup(
       label: 'xlrc',
@@ -132,7 +132,7 @@ void openLyric(BuildContext context, TimingService timingProvider) async {
   }
 }
 
-void exportLyric(BuildContext context, TimingService timingProvider) async {
+void exportLyric(BuildContext context, TimingNotifier timingProvider) async {
   const String fileName = 'example.xlrc';
   final FileSaveLocation? result = await getSaveLocation(suggestedName: fileName);
   if (result == null) {

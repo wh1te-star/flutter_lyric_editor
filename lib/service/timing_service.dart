@@ -10,14 +10,16 @@ import 'package:xml/xml.dart' as xml;
 
 final timingMasterProvider = ChangeNotifierProvider((ref) {
   final musicPlayerService = ref.watch(musicPlayerMasterProvider);
-  return TimingService(musicPlayerService);
+  return TimingNotifier(musicPlayerService);
 });
 
-class TimingService extends ChangeNotifier {
-  final MusicPlayerService musicPlayerProvider;
+class TimingNotifier extends ChangeNotifier {
+  final MusicPlayerNotifier musicPlayerProvider;
 
-  TimingService(this.musicPlayerProvider) {
+  TimingNotifier(this.musicPlayerProvider) {
     _loadLyricsFuture = loadLyrics();
+
+    musicPlayerProvider.addListener(() {});
   }
 
   String rawLyricText = "";

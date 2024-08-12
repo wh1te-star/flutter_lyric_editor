@@ -16,8 +16,8 @@ final videoPaneMasterProvider = ChangeNotifierProvider((ref) {
 });
 
 class VideoPaneNotifier with ChangeNotifier {
-  final MusicPlayerService musicPlayerProvider;
-  final TimingService timingProvider;
+  final MusicPlayerNotifier musicPlayerProvider;
+  final TimingNotifier timingProvider;
 
   VideoPaneNotifier(this.musicPlayerProvider, this.timingProvider) {
     musicPlayerProvider.addListener(() {});
@@ -92,8 +92,8 @@ class VideoPane extends ConsumerStatefulWidget {
 class _VideoPaneState extends ConsumerState<VideoPane> {
   final FocusNode focusNode;
   late final KeyboardShortcutsNotifier keyboardShortcutsProvider = ref.watch(keyboardShortcutsMasterProvider);
-  late final MusicPlayerService musicPlayerProvider = ref.watch(musicPlayerMasterProvider);
-  late final TimingService timingProvider = ref.watch(timingMasterProvider);
+  late final MusicPlayerNotifier musicPlayerProvider = ref.watch(musicPlayerMasterProvider);
+  late final TimingNotifier timingProvider = ref.watch(timingMasterProvider);
   late final TextPaneNotifier textPaneProvider = ref.watch(textPaneMasterProvider);
   late final TimelinePaneNotifier timelinePaneProvider = ref.watch(timelinePaneMasterProvider);
   late final VideoPaneNotifier videoPaneProvider = ref.watch(videoPaneMasterProvider);
@@ -135,13 +135,13 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     ref.listen<KeyboardShortcutsNotifier>(keyboardShortcutsMasterProvider, (previous, current) {
       setState(() {});
     });
-    ref.listen<MusicPlayerService>(musicPlayerMasterProvider, (previous, current) {
+    ref.listen<MusicPlayerNotifier>(musicPlayerMasterProvider, (previous, current) {
       setState(() {});
       if (videoPaneProvider.displayMode == DisplayMode.verticalScroll && musicPlayerProvider.isPlaying) {
         scrollController.jumpTo(getScrollOffsetFromSeekPosition(musicPlayerProvider.seekPosition));
       }
     });
-    ref.listen<TimingService>(timingMasterProvider, (previous, current) {
+    ref.listen<TimingNotifier>(timingMasterProvider, (previous, current) {
       setState(() {});
     });
     ref.listen<TextPaneNotifier>(textPaneMasterProvider, (previous, current) {
