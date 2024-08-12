@@ -41,24 +41,27 @@ class LyricSnippet {
     index = id.index;
   }
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is LyricSnippet &&
-          runtimeType == other.runtimeType &&
-          vocalist == other.vocalist &&
-          index == other.index &&
-          sentence == other.sentence &&
-          startTimestamp == other.startTimestamp &&
-          listEquals(timingPoints, other.timingPoints);
+  LyricSnippet copyWith({
+    Vocalist? vocalist,
+    int? index,
+    String? sentence,
+    int? startTimestamp,
+    List<TimingPoint>? timingPoints,
+  }) {
+    return LyricSnippet(
+      vocalist: vocalist ?? this.vocalist,
+      index: index ?? this.index,
+      sentence: sentence ?? this.sentence,
+      startTimestamp: startTimestamp ?? this.startTimestamp,
+      timingPoints: timingPoints != null ? List<TimingPoint>.from(timingPoints) : List<TimingPoint>.from(this.timingPoints),
+    );
+  }
 
   @override
-  int get hashCode =>
-      vocalist.hashCode ^
-      index.hashCode ^
-      sentence.hashCode ^
-      startTimestamp.hashCode ^
-      timingPoints.hashCode;
+  bool operator ==(Object other) => identical(this, other) || other is LyricSnippet && runtimeType == other.runtimeType && vocalist == other.vocalist && index == other.index && sentence == other.sentence && startTimestamp == other.startTimestamp && listEquals(timingPoints, other.timingPoints);
+
+  @override
+  int get hashCode => vocalist.hashCode ^ index.hashCode ^ sentence.hashCode ^ startTimestamp.hashCode ^ timingPoints.hashCode;
 }
 
 class Vocalist {

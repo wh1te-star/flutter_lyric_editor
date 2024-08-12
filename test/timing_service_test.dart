@@ -14,6 +14,33 @@ void main() {
     late MockBuildContext mockContext;
     late PublishSubject<dynamic> masterSubject;
     late TimingService timingService;
+    final dataSetSnippet1 = LyricSnippet(
+      vocalist: Vocalist("sample vocalist name", Colors.black.value),
+      index: 0,
+      sentence: "abcdefghijklmnopqrst",
+      startTimestamp: 2000,
+      timingPoints: [
+        TimingPoint(3, 300),
+        TimingPoint(2, 100),
+        TimingPoint(6, 700),
+        TimingPoint(4, 500),
+        TimingPoint(5, 600),
+      ],
+    );
+    final dataSetSnippet2 = LyricSnippet(
+      vocalist: Vocalist("sample vocalist name", Colors.black.value),
+      index: 0,
+      sentence: "abcdefghijklmnopqrs",
+      startTimestamp: 5000,
+      timingPoints: [
+        TimingPoint(3, 400),
+        TimingPoint(2, 300),
+        TimingPoint(7, 700),
+        TimingPoint(0, 100),
+        TimingPoint(5, 600),
+        TimingPoint(2, 200),
+      ],
+    );
 
     setUp(() {
       mockContext = MockBuildContext();
@@ -21,45 +48,40 @@ void main() {
       timingService = TimingService(masterSubject: masterSubject, context: mockContext);
     });
 
-    test('addTimingPoint should add a new timing point to the snippet', () {
-      // Arrange
-      final snippet = LyricSnippet(
-        vocalist: Vocalist("sample vocalist name", Colors.black.value),
-        index: 0,
-        sentence: "abcdefghijklmnopqrst",
-        startTimestamp: 2000,
-        timingPoints: [
-          TimingPoint(3, 300),
-          TimingPoint(2, 100),
-          TimingPoint(6, 700),
-          TimingPoint(4, 500),
-          TimingPoint(5, 600),
-        ],
-      );
-      final characterPosition = 4;
-      final seekPosition = 2350;
+    test('Test the normal inserts 1', () {
+      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final int characterPosition = 4;
+      final int seekPosition = 2350;
+      final List<TimingPoint> expectedTimingPoints = [
+        TimingPoint(3, 300),
+        TimingPoint(1, 50),
+        TimingPoint(1, 50),
+        TimingPoint(6, 700),
+        TimingPoint(4, 500),
+        TimingPoint(5, 600),
+      ];
 
-      final expectedSnippet = LyricSnippet(
-        vocalist: Vocalist("sample vocalist name", Colors.black.value),
-        index: 0,
-        sentence: "abcdefghijklmnopqrst",
-        startTimestamp: 2000,
-        timingPoints: [
-          TimingPoint(3, 300),
-          TimingPoint(1, 50),
-          TimingPoint(1, 50),
-          TimingPoint(6, 700),
-          TimingPoint(4, 500),
-          TimingPoint(5, 600),
-        ],
-      );
+      timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
 
-      timingService.addTimingPoint(snippet, characterPosition, seekPosition);
+      expect(targetSnippet.timingPoints, expectedTimingPoints);
+    });
 
-      snippet.timingPoints.forEach((TimingPoint timingPoint) {
-        debugPrint("${timingPoint.wordLength}, ${timingPoint.wordDuration}");
-      });
-      expect(snippet, expectedSnippet);
+    test('Test the normal inserts 2', () {
+      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final characterPosition = 8;
+      final seekPosition = 2450;
+      final List<TimingPoint> expectedTimingPoints = [
+        TimingPoint(3, 300),
+        TimingPoint(2, 100),
+        TimingPoint(3, 50),
+        TimingPoint(3, 650),
+        TimingPoint(4, 500),
+        TimingPoint(5, 600),
+      ];
+
+      timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
+
+      expect(targetSnippet.timingPoints, expectedTimingPoints);
     });
   });
 }
