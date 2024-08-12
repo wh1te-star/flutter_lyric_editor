@@ -1,47 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:provider/provider.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 import 'package:lyric_editor/service/timing_service.dart';
-import 'package:lyric_editor/service/music_player_service.dart';
+import 'package:lyric_editor/utility/signal_structure.dart';
+import 'package:rxdart/rxdart.dart';
 import 'utility/appbar_menu.dart';
+import 'service/music_player_service.dart';
 import 'pane/video_pane.dart';
 import 'pane/text_pane.dart';
 import 'pane/timeline_pane.dart';
 import 'pane/adjustable_pane_border.dart';
 
 void main() {
-  runApp(ProviderScope(child: MyApp()));
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  final masterSubject = PublishSubject<dynamic>();
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        /*
         appBar: AppBar(
           title: Builder(
-            builder: (BuildContext context) => buildAppBarWithMenu(context),
+            builder: (BuildContext context) => buildAppBarWithMenu(context, masterSubject),
           ),
         ),
-        */
-        body: AdjustablePaneLayout(),
+        body: AdjustablePaneLayout(masterSubject: masterSubject),
       ),
     );
   }
 }
 
-class AdjustablePaneLayout extends ConsumerStatefulWidget {
-  AdjustablePaneLayout() : super(key: Key('Main'));
+class AdjustablePaneLayout extends StatefulWidget {
+  final PublishSubject<dynamic> masterSubject;
+
+  AdjustablePaneLayout({required this.masterSubject}) : super(key: Key('Main'));
 
   @override
-  _AdjustablePaneLayoutState createState() => _AdjustablePaneLayoutState();
+  _AdjustablePaneLayoutState createState() => _AdjustablePaneLayoutState(masterSubject);
 }
 
-class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
-  _AdjustablePaneLayoutState();
+class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
+  final PublishSubject<dynamic> masterSubject;
+  _AdjustablePaneLayoutState(this.masterSubject);
 
   double screenWidth = 0.0;
   double screenHeight = 0.0;
@@ -53,8 +56,8 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
   double LeftUpperPaneWidth = 100;
   double LeftUpperPaneHeight = 100;
 
-  late MusicPlayerNotifier musicPlayerService;
-  late TimingNotifier lyricService;
+  late MusicPlayerService musicPlayerService;
+  late TimingService lyricService;
   late FocusNode videoPaneFocusNode;
   late FocusNode textPaneFocusNode;
   late FocusNode timelinePaneFocusNode;
@@ -70,17 +73,23 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
   void initState() {
     super.initState();
 
+    musicPlayerService = MusicPlayerService(masterSubject: masterSubject, context: context);
+    lyricService = TimingService(masterSubject: masterSubject, context: context);
     videoPaneFocusNode = FocusNode();
     textPaneFocusNode = FocusNode();
     timelinePaneFocusNode = FocusNode();
-
-    musicPlayerService = ref.read(musicPlayerMasterProvider);
-    lyricService = ref.read(timingMasterProvider);
-
-    textPane = TextPane(textPaneFocusNode);
-    timelinePane = TimelinePane(timelinePaneFocusNode);
-    videoPane = VideoPane(videoPaneFocusNode);
-
+    videoPane = VideoPane(
+      masterSubject: masterSubject,
+      focusNode: videoPaneFocusNode,
+    );
+    textPane = TextPane(
+      masterSubject: masterSubject,
+      focusNode: textPaneFocusNode,
+    );
+    timelinePane = TimelinePane(
+      masterSubject: masterSubject,
+      focusNode: timelinePaneFocusNode,
+    );
     videoTextBorder = AdjustablePaneBorder(
         child: Container(
           width: horizontalBorderWidth,
@@ -112,10 +121,24 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
           });
         });
 
+    masterSubject.listen((signal) {
+      if (signal is NotifyVideoPaneWidthLimit) {
+        videoPaneWidthlimit = signal.widthLimit;
+      }
+    });
+
     musicPlayerService.initAudio('assets/09 ウェルカムティーフレンド.mp3');
     musicPlayerService.play();
 
     lyricService.printLyric();
+
+    //loadText();
+  }
+
+  void loadText() async {
+    String filePath = 'assets/ウェルカムティーフレンド.txt';
+    String rawText = await rootBundle.loadString(filePath);
+    masterSubject.add(RequestInitLyric(lyric: rawText));
   }
 
   @override
@@ -132,7 +155,10 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
   @override
   Widget build(BuildContext context) {
     return KeyboardShortcuts(
-      context: context,
+      masterSubject: masterSubject,
+      videoPaneFocusNode: videoPaneFocusNode,
+      textPaneFocusNode: textPaneFocusNode,
+      timelinePaneFocusNode: timelinePaneFocusNode,
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           return Column(
