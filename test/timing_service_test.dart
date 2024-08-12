@@ -83,5 +83,12 @@ void main() {
 
       expect(targetSnippet.timingPoints, expectedTimingPoints);
     });
+    test('addTimingPoint should throw TimingPointException when index != seekIndex', () {
+      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final characterPosition = 8;
+      final seekPosition = 2300;
+
+      expect(() => timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition), throwsA(isA<TimingPointException>()));
+    });
   });
 }

@@ -112,7 +112,11 @@ class TimingService {
       }
       if (signal is RequestToAddLyricTiming) {
         LyricSnippet snippet = getSnippetWithID(signal.snippetID);
-        addTimingPoint(snippet, signal.characterPosition, signal.seekPosition);
+        try {
+          addTimingPoint(snippet, signal.characterPosition, signal.seekPosition);
+        } catch (e) {
+          debugPrint(e.toString());
+        }
         masterSubject.add(NotifyTimingPointAdded(lyricSnippetList));
       }
       if (signal is RequestToDeleteLyricTiming) {
@@ -520,8 +524,7 @@ class TimingService {
       seekIndex++;
     }
     if (index != seekIndex) {
-      debugPrint("There is the contradiction in the order between the character position and the seek position.");
-      return;
+      throw TimingPointException("There is a contradiction in the order between the character position and the seek position.");
     }
     if (restWordLength != 0) {
       snippet.timingPoints[index] = TimingPoint(snippet.timingPoints[index].wordLength - restWordLength, snippet.timingPoints[index].wordDuration - restWordDuration);
@@ -563,4 +566,12 @@ class TimingService {
     }
     return undoHistory.removeLast();
   }
+}
+
+class TimingPointException implements Exception {
+  final String message;
+  TimingPointException(this.message);
+
+  @override
+  String toString() => 'TimingPointException: $message';
 }
