@@ -88,12 +88,12 @@ void main() {
       expect(targetSnippet.timingPoints, expectedTimingPoints);
     });
 
-    test('Test to throw TimingPointException when index != seekIndex No.1', () {
+    test('Test the seek position is not valid range.', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final characterPosition = 8;
       final seekPosition = 2300;
 
-      expect(() => timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition), throwsExceptionWithMessageContaining("contradiction"));
+      expect(() => timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition), throwsExceptionWithMessageContaining("valid range"));
     });
 
     test('Test to add a timing point twice. No.1', () {
@@ -117,11 +117,11 @@ void main() {
     test('Test to add a timing point twice. No.2', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final characterPosition = 5;
-      final seekPosition = 2350;
+      final seekPosition = 2360;
       final List<TimingPoint> expectedTimingPoints = [
         TimingPoint(3, 300),
-        TimingPoint(2, 50),
-        TimingPoint(0, 50),
+        TimingPoint(2, 60),
+        TimingPoint(0, 40),
         TimingPoint(6, 700),
         TimingPoint(4, 500),
         TimingPoint(5, 600),
@@ -209,7 +209,7 @@ void main() {
     });
 
     test('Test to throw TimingPointException when tring to add a timing point third time at the same char position. No.1', () {
-      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
       final characterPosition = 12;
       final seekPosition = 5800;
 

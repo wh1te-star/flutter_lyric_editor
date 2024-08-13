@@ -109,6 +109,11 @@ class TimingPoint {
 
   @override
   int get hashCode => wordLength.hashCode ^ wordDuration.hashCode;
+
+  @override
+  String toString() {
+    return 'TimingPoint(wordLength: $wordLength, wordDuration: $wordDuration)';
+  }
 }
 
 class LyricSnippetID {
