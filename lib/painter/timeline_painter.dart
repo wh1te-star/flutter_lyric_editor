@@ -31,7 +31,7 @@ class TimelinePainter extends CustomPainter {
 
     snippets.forEach((LyricSnippet snippet) {
       if (snippet.sentence == "") return;
-      final endtime = snippet.startTimestamp + snippet.timingPoints.map((point) => point.wordDuration).reduce((a, b) => a + b);
+      final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
       final left = snippet.startTimestamp * intervalLength / intervalDuration;
       final right = endtime * intervalLength / intervalDuration;
       final rect = Rect.fromLTRB(left, top, right, bottom);
@@ -46,14 +46,14 @@ class TimelinePainter extends CustomPainter {
       rectanglePainter.paint(canvas, size);
 
       double x = snippet.startTimestamp * intervalLength / intervalDuration;
-      snippet.timingPoints.forEach((TimingPoint timingPoint) {
+      snippet.sentenceSegments.forEach((SentenceSegment sentenceSegment) {
         TrianglePainter(
           x: x,
           y: top,
           width: 5.0,
           height: 5.0,
         ).paint(canvas, size);
-        x += timingPoint.wordDuration * intervalLength / intervalDuration;
+        x += sentenceSegment.wordDuration * intervalLength / intervalDuration;
       });
       TrianglePainter(
         x: x,

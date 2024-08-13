@@ -43,7 +43,7 @@ class TimingService {
             index: 1,
             sentence: singlelineText,
             startTimestamp: 0,
-            timingPoints: [TimingPoint(singlelineText.length, audioDuration)],
+            sentenceSegments: [SentenceSegment(singlelineText.length, audioDuration)],
           ));
 
           vocalistColorList.clear();
@@ -198,7 +198,7 @@ class TimingService {
 
   void addVocalist(String vocalistName) {
     vocalistColorList[vocalistName] = 0xFF222222;
-    lyricSnippetList.add(LyricSnippet(vocalist: Vocalist(vocalistName, 0), index: 0, sentence: "", startTimestamp: 0, timingPoints: [TimingPoint(0, 1)]));
+    lyricSnippetList.add(LyricSnippet(vocalist: Vocalist(vocalistName, 0), index: 0, sentence: "", startTimestamp: 0, sentenceSegments: [SentenceSegment(0, 1)]));
   }
 
   void deleteVocalist(String vocalistName) {
@@ -277,12 +277,12 @@ class TimingService {
 
       final wordTimestamps = lineTimestamp.findElements('WordTimestamp');
       String sentence = '';
-      List<TimingPoint> timingPoints = [];
+      List<SentenceSegment> sentenceSegments = [];
 
       for (var wordTimestamp in wordTimestamps) {
         final time = parseTimestamp(wordTimestamp.getAttribute('time')!);
         final word = wordTimestamp.innerText;
-        timingPoints.add(TimingPoint(word.length, time));
+        sentenceSegments.add(SentenceSegment(word.length, time));
         sentence += word;
       }
       snippets.add(LyricSnippet(
@@ -290,7 +290,7 @@ class TimingService {
         index: 0,
         sentence: sentence,
         startTimestamp: startTime,
-        timingPoints: timingPoints,
+        sentenceSegments: sentenceSegments,
       ));
     }
 
@@ -309,13 +309,13 @@ class TimingService {
           'startTime': _formatTimestamp(snippet.startTimestamp),
         }, nest: () {
           int characterPosition = 0;
-          for (var timingPoint in snippet.timingPoints) {
+          for (var sentenceSegment in snippet.sentenceSegments) {
             builder.element('WordTimestamp',
                 attributes: {
-                  'time': _formatTimestamp(timingPoint.wordDuration),
+                  'time': _formatTimestamp(sentenceSegment.wordDuration),
                 },
-                nest: snippet.sentence.substring(characterPosition, characterPosition + timingPoint.wordLength));
-            characterPosition += timingPoint.wordLength;
+                nest: snippet.sentence.substring(characterPosition, characterPosition + sentenceSegment.wordLength));
+            characterPosition += sentenceSegment.wordLength;
           }
         });
       }
@@ -350,11 +350,11 @@ class TimingService {
           'startTime': _formatTimestamp(snippet.startTimestamp),
         }, nest: () {
           int characterPosition = 0;
-          for (int i = 0; i < snippet.timingPoints.length; i++) {
-            final currentPoint = snippet.timingPoints[i];
-            final nextPoint = i < snippet.timingPoints.length - 1 ? snippet.timingPoints[i + 1] : null;
+          for (int i = 0; i < snippet.sentenceSegments.length; i++) {
+            final currentPoint = snippet.sentenceSegments[i];
+            final nextPoint = i < snippet.sentenceSegments.length - 1 ? snippet.sentenceSegments[i + 1] : null;
 
-            final endtime = snippet.timingPoints.map((point) => point.wordDuration).reduce((a, b) => a + b);
+            final endtime = snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
             final duration = nextPoint != null ? nextPoint.wordDuration - currentPoint.wordDuration : endtime - currentPoint.wordDuration;
 
             builder.element('WordTimestamp',
@@ -399,7 +399,7 @@ class TimingService {
 
   List<LyricSnippet> getSnippetsAtCurrentSeekPosition() {
     return lyricSnippetList.where((snippet) {
-      final endtime = snippet.startTimestamp + snippet.timingPoints.map((point) => point.wordDuration).reduce((a, b) => a + b);
+      final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
       return snippet.startTimestamp < currentPosition && currentPosition < endtime;
     }).toList();
   }
@@ -421,7 +421,7 @@ class TimingService {
           index: 0,
           sentence: beforeString,
           startTimestamp: lyricSnippetList[index].startTimestamp,
-          timingPoints: [TimingPoint(beforeString.length, snippetDuration)],
+          sentenceSegments: [SentenceSegment(beforeString.length, snippetDuration)],
         ),
       );
     }
@@ -433,7 +433,7 @@ class TimingService {
           index: 0,
           sentence: afterString,
           startTimestamp: currentPosition + snippetMargin,
-          timingPoints: [TimingPoint(afterString.length, snippetDuration)],
+          sentenceSegments: [SentenceSegment(afterString.length, snippetDuration)],
         ),
       );
     }
@@ -461,9 +461,9 @@ class TimingService {
         } else {
           extendDuration = 0;
         }
-        leftSnippet.timingPoints.last.wordDuration += extendDuration;
+        leftSnippet.sentenceSegments.last.wordDuration += extendDuration;
         leftSnippet.sentence += rightSnippet.sentence;
-        leftSnippet.timingPoints.addAll(rightSnippet.timingPoints);
+        leftSnippet.sentenceSegments.addAll(rightSnippet.sentenceSegments);
 
         removeSnippetWithID(rightSnippet.id);
       }
@@ -480,9 +480,9 @@ class TimingService {
     assert(extendDuration >= 0, "Should be shorten function.");
     if (snippetEdge == SnippetEdge.start) {
       snippet.startTimestamp -= extendDuration;
-      snippet.timingPoints.first.wordDuration += extendDuration;
+      snippet.sentenceSegments.first.wordDuration += extendDuration;
     } else {
-      snippet.timingPoints.last.wordDuration += extendDuration;
+      snippet.sentenceSegments.last.wordDuration += extendDuration;
     }
   }
 
@@ -491,31 +491,36 @@ class TimingService {
     if (snippetEdge == SnippetEdge.start) {
       int index = 0;
       int rest = shortenDuration;
-      while (index < snippet.timingPoints.length && rest - snippet.timingPoints[index].wordDuration > 0) {
-        rest -= snippet.timingPoints[index].wordDuration;
+      while (index < snippet.sentenceSegments.length && rest - snippet.sentenceSegments[index].wordDuration > 0) {
+        rest -= snippet.sentenceSegments[index].wordDuration;
         index++;
       }
       snippet.startTimestamp += shortenDuration;
-      snippet.timingPoints = snippet.timingPoints.sublist(index);
-      snippet.timingPoints.first.wordDuration -= rest;
+      snippet.sentenceSegments = snippet.sentenceSegments.sublist(index);
+      snippet.sentenceSegments.first.wordDuration -= rest;
     } else {
-      int index = snippet.timingPoints.length - 1;
+      int index = snippet.sentenceSegments.length - 1;
       int rest = shortenDuration;
-      while (index >= 0 && rest - snippet.timingPoints[index].wordDuration > 0) {
-        rest -= snippet.timingPoints[index].wordDuration;
+      while (index >= 0 && rest - snippet.sentenceSegments[index].wordDuration > 0) {
+        rest -= snippet.sentenceSegments[index].wordDuration;
         index--;
       }
-      snippet.timingPoints = snippet.timingPoints.sublist(0, index + 1);
-      snippet.timingPoints.last.wordDuration -= rest;
+      snippet.sentenceSegments = snippet.sentenceSegments.sublist(0, index + 1);
+      snippet.sentenceSegments.last.wordDuration -= rest;
     }
   }
 
   void addTimingPoint(LyricSnippet snippet, int characterPosition, int seekPosition) {
     int index = 0;
     int restWordLength = characterPosition;
-    for (int i = 0; i < snippet.timingPoints.length; i++) {
-      int nextRestWordLength = restWordLength - snippet.timingPoints[i].wordLength;
-      if (nextRestWordLength <= 0) {
+    for (int i = 0; i < snippet.sentenceSegments.length; i++) {
+      int nextRestWordLength = restWordLength - snippet.sentenceSegments[i].wordLength;
+      if (nextRestWordLength == 0) {
+        index = i;
+        restWordLength = 0;
+        break;
+      }
+      if (nextRestWordLength < 0) {
         index = i;
         break;
       }
@@ -523,9 +528,14 @@ class TimingService {
     }
     int seekIndex = 0;
     int restWordDuration = seekPosition - snippet.startTimestamp;
-    for (int i = 0; i < snippet.timingPoints.length; i++) {
-      int nextRestWordDuration = restWordDuration - snippet.timingPoints[i].wordDuration;
-      if (nextRestWordDuration <= 0) {
+    for (int i = 0; i < snippet.sentenceSegments.length; i++) {
+      int nextRestWordDuration = restWordDuration - snippet.sentenceSegments[i].wordDuration;
+      if (nextRestWordDuration == 0) {
+        restWordDuration = 0;
+        seekIndex = i;
+        break;
+      }
+      if (nextRestWordDuration < 0) {
         seekIndex = i;
         break;
       }
@@ -539,38 +549,43 @@ class TimingService {
       if (index != seekIndex) {
         throw TimingPointException("The seek position is out of the valid range.");
       }
-      snippet.timingPoints[index] = TimingPoint(snippet.timingPoints[index].wordLength - restWordLength, snippet.timingPoints[index].wordDuration - restWordDuration);
-      snippet.timingPoints.insert(index, TimingPoint(restWordLength, restWordDuration));
+      snippet.sentenceSegments[index] = SentenceSegment(snippet.sentenceSegments[index].wordLength - restWordLength, snippet.sentenceSegments[index].wordDuration - restWordDuration);
+      snippet.sentenceSegments.insert(index, SentenceSegment(restWordLength, restWordDuration));
     } else {
       debugPrint("index: ${index}");
-      if (snippet.timingPoints[index].wordLength != 0) {
-        int leftBoundSeekPosition = snippet.startTimestamp;
-        int centerSeekPosition = snippet.startTimestamp;
-        int rightBoundSeekPosition = snippet.startTimestamp;
-        for (int i = 0; i < index - 1; i++) {
-          leftBoundSeekPosition += snippet.timingPoints[i].wordDuration;
-        }
-        for (int i = 0; i < index; i++) {
-          centerSeekPosition += snippet.timingPoints[i].wordDuration;
-        }
-        for (int i = 0; i < index + 1; i++) {
-          rightBoundSeekPosition += snippet.timingPoints[i].wordDuration;
-        }
-        debugPrint("$leftBoundSeekPosition, $centerSeekPosition, $rightBoundSeekPosition <- $seekPosition");
 
-        if (leftBoundSeekPosition <= seekPosition && seekPosition <= rightBoundSeekPosition) {
-          if (seekPosition < centerSeekPosition) {
-            snippet.timingPoints.insert(index, TimingPoint(0, centerSeekPosition - seekPosition));
-            snippet.timingPoints[index - 1] = TimingPoint(snippet.timingPoints[index - 1].wordLength, snippet.timingPoints[index - 1].wordDuration - (centerSeekPosition - seekPosition));
+      int leftBoundSeekPosition = snippet.startTimestamp;
+      int centerSeekPosition = snippet.startTimestamp;
+      int rightBoundSeekPosition = snippet.startTimestamp;
+      for (int i = 0; i < index - 1; i++) {
+        leftBoundSeekPosition += snippet.sentenceSegments[i].wordDuration;
+      }
+      for (int i = 0; i < index; i++) {
+        centerSeekPosition += snippet.sentenceSegments[i].wordDuration;
+      }
+      for (int i = 0; i < index + 1; i++) {
+        rightBoundSeekPosition += snippet.sentenceSegments[i].wordDuration;
+      }
+      debugPrint("$leftBoundSeekPosition, $centerSeekPosition, $rightBoundSeekPosition <- $seekPosition");
+
+      if (leftBoundSeekPosition <= seekPosition && seekPosition <= rightBoundSeekPosition) {
+        if (seekPosition < centerSeekPosition) {
+          if (snippet.sentenceSegments[index].wordLength != 0) {
+            snippet.sentenceSegments.insert(index, SentenceSegment(0, centerSeekPosition - seekPosition));
+            snippet.sentenceSegments[index - 1] = SentenceSegment(snippet.sentenceSegments[index - 1].wordLength, snippet.sentenceSegments[index - 1].wordDuration - (centerSeekPosition - seekPosition));
           } else {
-            snippet.timingPoints.insert(index, TimingPoint(0, restWordDuration));
-            snippet.timingPoints[index + 1] = TimingPoint(snippet.timingPoints[index + 1].wordLength - restWordLength, snippet.timingPoints[index + 1].wordDuration - (seekPosition - centerSeekPosition));
+            throw TimingPointException("Cannot add timing point more than 2 at the same char position.");
           }
         } else {
-          throw TimingPointException("The seek position is out of the valid range.");
+          if (snippet.sentenceSegments[index].wordLength != 0) {
+            snippet.sentenceSegments.insert(index, SentenceSegment(0, seekPosition - centerSeekPosition));
+            snippet.sentenceSegments[index + 1] = SentenceSegment(snippet.sentenceSegments[index + 1].wordLength - restWordLength, snippet.sentenceSegments[index + 1].wordDuration - (seekPosition - centerSeekPosition));
+          } else {
+            throw TimingPointException("Cannot add timing point more than 2 at the same char position.");
+          }
         }
       } else {
-        throw TimingPointException("Cannot add timing point more than 2 at the same char position.");
+        throw TimingPointException("The seek position is out of the valid range.");
       }
     }
   }
@@ -578,14 +593,14 @@ class TimingService {
   void deleteTimingPoint(LyricSnippet snippet, int characterPosition, Choice choice) {
     int index = 0;
     int position = 0;
-    while (index < snippet.timingPoints.length && position < characterPosition) {
-      position += snippet.timingPoints[index].wordLength;
+    while (index < snippet.sentenceSegments.length && position < characterPosition) {
+      position += snippet.sentenceSegments[index].wordLength;
       index++;
     }
     if (position != characterPosition) return;
-    snippet.timingPoints[index - 1].wordLength += snippet.timingPoints[index].wordLength;
-    snippet.timingPoints[index - 1].wordDuration += snippet.timingPoints[index].wordDuration;
-    snippet.timingPoints.removeAt(index);
+    snippet.sentenceSegments[index - 1].wordLength += snippet.sentenceSegments[index].wordLength;
+    snippet.sentenceSegments[index - 1].wordDuration += snippet.sentenceSegments[index].wordDuration;
+    snippet.sentenceSegments.removeAt(index);
   }
 
   void pushUndoHistory(List<LyricSnippet> lyricSnippetList) {
@@ -595,8 +610,8 @@ class TimingService {
         index: snippet.index,
         sentence: snippet.sentence,
         startTimestamp: snippet.startTimestamp,
-        timingPoints: snippet.timingPoints.map((point) {
-          return TimingPoint(point.wordLength, point.wordDuration);
+        sentenceSegments: snippet.sentenceSegments.map((point) {
+          return SentenceSegment(point.wordLength, point.wordDuration);
         }).toList(),
       );
     }).toList();

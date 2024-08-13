@@ -208,17 +208,17 @@ class _VideoPaneState extends State<VideoPane> {
       int wordIndex = 0;
       int startChar = 0;
       int restDuration = seekPosition - snippet.startTimestamp;
-      while (restDuration - snippet.timingPoints[wordIndex].wordDuration > 0) {
-        startChar += snippet.timingPoints[wordIndex].wordLength;
-        restDuration -= snippet.timingPoints[wordIndex].wordDuration;
+      while (restDuration - snippet.sentenceSegments[wordIndex].wordDuration > 0) {
+        startChar += snippet.sentenceSegments[wordIndex].wordLength;
+        restDuration -= snippet.sentenceSegments[wordIndex].wordDuration;
         wordIndex++;
       }
       double percent;
-      percent = restDuration / snippet.timingPoints[wordIndex].wordDuration;
+      percent = restDuration / snippet.sentenceSegments[wordIndex].wordDuration;
       return PartialTextPainter(
         text: snippet.sentence,
         start: startChar,
-        end: startChar + snippet.timingPoints[wordIndex].wordLength,
+        end: startChar + snippet.sentenceSegments[wordIndex].wordLength,
         percent: percent,
         fontFamily: fontFamily,
         fontSize: 40,
@@ -248,7 +248,7 @@ class _VideoPaneState extends State<VideoPane> {
     List<LyricSnippetTrack> currentSnippets = getSnippetsAtCurrentSeekPosition();
 
     if (displayMode == DisplayMode.appearDissappear) {
-      LyricSnippet emptySnippet = LyricSnippet(vocalist: Vocalist("", 0), index: 0, sentence: "", startTimestamp: currentSeekPosition, timingPoints: [TimingPoint(1, 1)]);
+      LyricSnippet emptySnippet = LyricSnippet(vocalist: Vocalist("", 0), index: 0, sentence: "", startTimestamp: currentSeekPosition, sentenceSegments: [SentenceSegment(1, 1)]);
       List<Widget> content = List<Widget>.generate(maxLanes, (index) => Container());
 
       for (int i = 0; i < maxLanes; i++) {

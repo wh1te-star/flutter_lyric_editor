@@ -285,7 +285,7 @@ class _TimelinePaneState extends State<TimelinePane> {
     List<LyricSnippetID> currentSnippet = [];
     snippetsForeachVocalist.forEach((vocalist, snippets) {
       for (var snippet in snippets) {
-        final endtime = snippet.startTimestamp + snippet.timingPoints.map((point) => point.wordDuration).reduce((a, b) => a + b);
+        final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
         if (snippet.startTimestamp <= currentPosition && currentPosition <= endtime) {
           currentSnippet.add(snippet.id);
         }
@@ -453,7 +453,7 @@ class _TimelinePaneState extends State<TimelinePane> {
             Offset localPosition = details.localPosition;
             final snippets = snippetsForeachVocalist.entries.toList()[row].value;
             for (var snippet in snippets) {
-              final endtime = snippet.startTimestamp + snippet.timingPoints.map((point) => point.wordDuration).reduce((a, b) => a + b);
+              final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
               final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
               if (snippet.startTimestamp <= touchedSeekPosition && touchedSeekPosition <= endtime) {
                 if (selectingSnippet.contains(snippet.id)) {

@@ -5,35 +5,35 @@ class LyricSnippet {
   int index;
   String sentence;
   int startTimestamp;
-  List<TimingPoint> timingPoints;
-  late List<TimingPoint> accumulatedTimingPoints;
+  List<SentenceSegment> sentenceSegments;
+  late List<SentenceSegment> accumulatedSentenceSegments;
 
   LyricSnippet({
     required this.vocalist,
     required this.index,
     required this.sentence,
     required this.startTimestamp,
-    required this.timingPoints,
+    required this.sentenceSegments,
   });
 
   LyricSnippetID get id => LyricSnippetID(vocalist, index);
 
   int get endTimestamp {
-    return startTimestamp + timingPoints.fold(0, (sum, current) => sum + current.wordDuration);
+    return startTimestamp + sentenceSegments.fold(0, (sum, current) => sum + current.wordDuration);
   }
 
   int charPosition(int index) {
-    if (index < 0 || index >= timingPoints.length) {
-      throw RangeError('Index ${index} is out of bounds for timingPoints with length ${timingPoints.length}');
+    if (index < 0 || index >= sentenceSegments.length) {
+      throw RangeError('Index ${index} is out of bounds for sentenceSegments with length ${sentenceSegments.length}');
     }
-    return timingPoints.take(index + 1).fold(0, (sum, current) => sum + current.wordLength);
+    return sentenceSegments.take(index + 1).fold(0, (sum, current) => sum + current.wordLength);
   }
 
   int seekPosition(int index) {
-    if (index < 0 || index >= timingPoints.length) {
-      throw RangeError('Index ${index} is out of bounds for timingPoints with length ${timingPoints.length}');
+    if (index < 0 || index >= sentenceSegments.length) {
+      throw RangeError('Index ${index} is out of bounds for sentenceSegments with length ${sentenceSegments.length}');
     }
-    return timingPoints.take(index + 1).fold(0, (sum, current) => sum + current.wordDuration);
+    return sentenceSegments.take(index + 1).fold(0, (sum, current) => sum + current.wordDuration);
   }
 
   set id(LyricSnippetID id) {
@@ -46,22 +46,22 @@ class LyricSnippet {
     int? index,
     String? sentence,
     int? startTimestamp,
-    List<TimingPoint>? timingPoints,
+    List<SentenceSegment>? sentenceSegments,
   }) {
     return LyricSnippet(
       vocalist: vocalist ?? this.vocalist,
       index: index ?? this.index,
       sentence: sentence ?? this.sentence,
       startTimestamp: startTimestamp ?? this.startTimestamp,
-      timingPoints: timingPoints != null ? List<TimingPoint>.from(timingPoints) : List<TimingPoint>.from(this.timingPoints),
+      sentenceSegments: sentenceSegments != null ? List<SentenceSegment>.from(sentenceSegments) : List<SentenceSegment>.from(this.sentenceSegments),
     );
   }
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is LyricSnippet && runtimeType == other.runtimeType && vocalist == other.vocalist && index == other.index && sentence == other.sentence && startTimestamp == other.startTimestamp && listEquals(timingPoints, other.timingPoints);
+  bool operator ==(Object other) => identical(this, other) || other is LyricSnippet && runtimeType == other.runtimeType && vocalist == other.vocalist && index == other.index && sentence == other.sentence && startTimestamp == other.startTimestamp && listEquals(sentenceSegments, other.sentenceSegments);
 
   @override
-  int get hashCode => vocalist.hashCode ^ index.hashCode ^ sentence.hashCode ^ startTimestamp.hashCode ^ timingPoints.hashCode;
+  int get hashCode => vocalist.hashCode ^ index.hashCode ^ sentence.hashCode ^ startTimestamp.hashCode ^ sentenceSegments.hashCode;
 }
 
 class Vocalist {
@@ -93,18 +93,18 @@ class VocalistCombination {
   int get hashCode => vocalistNames.fold(0, (prev, element) => 31 * prev + element.hashCode);
 }
 
-class TimingPoint {
+class SentenceSegment {
   int wordLength;
   int wordDuration;
 
-  TimingPoint(this.wordLength, this.wordDuration);
+  SentenceSegment(this.wordLength, this.wordDuration);
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final TimingPoint otherTimingPoint = other as TimingPoint;
-    return wordLength == otherTimingPoint.wordLength && wordDuration == otherTimingPoint.wordDuration;
+    final SentenceSegment otherSentenceSegments = other as SentenceSegment;
+    return wordLength == otherSentenceSegments.wordLength && wordDuration == otherSentenceSegments.wordDuration;
   }
 
   @override
@@ -112,7 +112,7 @@ class TimingPoint {
 
   @override
   String toString() {
-    return 'TimingPoint(wordLength: $wordLength, wordDuration: $wordDuration)';
+    return 'SentenceSegment(wordLength: $wordLength, wordDuration: $wordDuration)';
   }
 }
 

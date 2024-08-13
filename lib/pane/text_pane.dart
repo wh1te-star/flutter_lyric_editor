@@ -46,11 +46,11 @@ class _TextPaneState extends State<TextPane> {
 
   List<LyricSnippetID> selectingSnippets = [];
 
-  List<List<int>> timingPointsForEachLine = [];
+  List<List<int>> sentenceSegmentsForEachLine = [];
 
   List<LyricSnippetID> highlightingSnippetsIDs = [];
 
-  SortedMap<int, String> timingPointMap = SortedMap<int, String>();
+  SortedMap<int, String> sentenceSegmentMap = SortedMap<int, String>();
   SortedMap<int, String> sectionPointMap = SortedMap<int, String>();
 
   bool TextSelectMode = false;
@@ -139,10 +139,10 @@ class _TextPaneState extends State<TextPane> {
   }
 
   void updateIndicators() {
-    timingPointsForEachLine = lyricSnippets.map((snippet) => snippet.timingPoints.take(snippet.timingPoints.length - 1).map((timingPoint) => timingPoint.wordLength).fold<List<int>>([], (acc, pos) => acc..add((acc.isEmpty ? 0 : acc.last) + pos))).toList();
-    for (int i = 0; i < timingPointsForEachLine.length; i++) {
-      Map<int, String> timingPointsForEachLineMap = timingPointsForEachLine[i].asMap().map((key, value) => MapEntry(value, timingPointChar));
-      lyricAppearance[i] = InsertChars(lyricSnippets[i].sentence, timingPointsForEachLineMap);
+    sentenceSegmentsForEachLine = lyricSnippets.map((snippet) => snippet.sentenceSegments.take(snippet.sentenceSegments.length - 1).map((sentenceSegmentMap) => sentenceSegmentMap.wordLength).fold<List<int>>([], (acc, pos) => acc..add((acc.isEmpty ? 0 : acc.last) + pos))).toList();
+    for (int i = 0; i < sentenceSegmentsForEachLine.length; i++) {
+      Map<int, String> sentenceSegmentsForEachLineMap = sentenceSegmentsForEachLine[i].asMap().map((key, value) => MapEntry(value, timingPointChar));
+      lyricAppearance[i] = InsertChars(lyricSnippets[i].sentence, sentenceSegmentsForEachLineMap);
     }
   }
 
@@ -367,16 +367,16 @@ class _TextPaneState extends State<TextPane> {
   }
 
   Widget highlightedLyricItem(String lyrics, LyricSnippetID snippetID, int charIndex) {
-    int timingPointsBeforeCursor = 0;
+    int sentenceSegmentsBeforeCursor = 0;
     int lineIndex = getSnippetIndexWithID(snippetID);
-    List<int> currentLineTimingPoint = timingPointsForEachLine[lineIndex];
-    while (timingPointsBeforeCursor < currentLineTimingPoint.length && currentLineTimingPoint[timingPointsBeforeCursor] < charIndex) {
-      timingPointsBeforeCursor++;
+    List<int> currentLinesentenceSegment = sentenceSegmentsForEachLine[lineIndex];
+    while (sentenceSegmentsBeforeCursor < currentLinesentenceSegment.length && currentLinesentenceSegment[sentenceSegmentsBeforeCursor] < charIndex) {
+      sentenceSegmentsBeforeCursor++;
     }
-    int cursorIndexTimingPoints = currentLineTimingPoint.indexOf(charIndex);
+    int cursorIndexsentenceSegments = currentLinesentenceSegment.indexOf(charIndex);
 
-    charIndex = charIndex + timingPointsBeforeCursor;
-    if (cursorIndexTimingPoints >= 0) {
+    charIndex = charIndex + sentenceSegmentsBeforeCursor;
+    if (cursorIndexsentenceSegments >= 0) {
       lyrics = replaceNthCharacter(lyrics, charIndex, cursorChar);
     } else {
       lyrics = insertCharacterAt(lyrics, charIndex, cursorChar);
