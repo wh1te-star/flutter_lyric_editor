@@ -511,81 +511,82 @@ class TimingService {
   }
 
   void addTimingPoint(LyricSnippet snippet, int characterPosition, int seekPosition) {
-    int index = 0;
-    int restWordLength = characterPosition;
-    for (int i = 0; i < snippet.sentenceSegments.length; i++) {
-      int nextRestWordLength = restWordLength - snippet.sentenceSegments[i].wordLength;
-      if (nextRestWordLength == 0) {
-        index = i;
-        restWordLength = 0;
-        break;
-      }
-      if (nextRestWordLength < 0) {
-        index = i;
-        break;
-      }
-      restWordLength = nextRestWordLength;
-    }
-    int seekIndex = 0;
-    int restWordDuration = seekPosition - snippet.startTimestamp;
-    for (int i = 0; i < snippet.sentenceSegments.length; i++) {
-      int nextRestWordDuration = restWordDuration - snippet.sentenceSegments[i].wordDuration;
-      if (nextRestWordDuration == 0) {
-        restWordDuration = 0;
-        seekIndex = i;
-        break;
-      }
-      if (nextRestWordDuration < 0) {
-        seekIndex = i;
-        break;
-      }
-      restWordDuration = nextRestWordDuration;
+    if (characterPosition <= 0 || snippet.sentence.length <= characterPosition) {
+      throw TimingPointException("The char position is out of the valid range.");
     }
 
-    debugPrint("char index: ${index}, seek index: ${seekIndex}");
-    debugPrint("char rest: ${restWordLength}, seek rest: ${restWordDuration}");
+    int timingPointIndex = -1;
+    int leftBoundPosition = 0;
+    int centerPosition = 0;
+    int rightBoundPosition = 0;
 
-    if (restWordLength != 0) {
-      if (index != seekIndex) {
-        throw TimingPointException("The seek position is out of the valid range.");
+    int sentenceSegmentIndex = -1;
+    int charRest = 0;
+
+    int charPositionSum = 0;
+    int durationSum = 0;
+    for (int index = 0; index < snippet.sentenceSegments.length; index++) {
+      charPositionSum += snippet.sentenceSegments[index].wordLength;
+      durationSum += snippet.sentenceSegments[index].wordDuration;
+      if (charPositionSum == characterPosition) {
+        timingPointIndex = index + 1;
+        leftBoundPosition = snippet.startTimestamp + (durationSum - snippet.sentenceSegments[index].wordDuration);
+        centerPosition = snippet.startTimestamp + durationSum;
+        rightBoundPosition = snippet.startTimestamp + (durationSum + snippet.sentenceSegments[index + 1].wordDuration);
+        break;
       }
-      snippet.sentenceSegments[index] = SentenceSegment(snippet.sentenceSegments[index].wordLength - restWordLength, snippet.sentenceSegments[index].wordDuration - restWordDuration);
-      snippet.sentenceSegments.insert(index, SentenceSegment(restWordLength, restWordDuration));
+      if (charPositionSum > characterPosition) {
+        sentenceSegmentIndex = index;
+        leftBoundPosition = snippet.startTimestamp + durationSum - snippet.sentenceSegments[index].wordDuration;
+        rightBoundPosition = snippet.startTimestamp + durationSum;
+        charRest = characterPosition - (charPositionSum - snippet.sentenceSegments[index].wordLength);
+        break;
+      }
+    }
+
+    if (timingPointIndex == -1) {
+      if (seekPosition <= leftBoundPosition || rightBoundPosition <= seekPosition) {
+        throw TimingPointException("The seek position is not valid.");
+      }
+
+      int formerLength = charRest;
+      int formerDuration = rightBoundPosition - seekPosition;
+      int latterLength = snippet.sentenceSegments[sentenceSegmentIndex].wordLength - charRest;
+      int latterDuration = seekPosition - leftBoundPosition;
+
+      snippet.sentenceSegments[sentenceSegmentIndex] = SentenceSegment(formerLength, formerDuration);
+      snippet.sentenceSegments.insert(sentenceSegmentIndex, SentenceSegment(latterLength, latterDuration));
     } else {
-      debugPrint("index: ${index}");
+      if (seekPosition <= leftBoundPosition || rightBoundPosition <= seekPosition) {
+        throw TimingPointException("The seek position is not valid.");
+      }
+      if (seekPosition == centerPosition) {
+        throw TimingPointException("Cannot add duplicate timing point.");
+      }
+      if (snippet.sentenceSegments[timingPointIndex].wordLength==0) {
+        throw TimingPointException("Cannot add timing point more than 2");
+      }
 
-      int leftBoundSeekPosition = snippet.startTimestamp;
-      int centerSeekPosition = snippet.startTimestamp;
-      int rightBoundSeekPosition = snippet.startTimestamp;
-      for (int i = 0; i < index - 1; i++) {
-        leftBoundSeekPosition += snippet.sentenceSegments[i].wordDuration;
-      }
-      for (int i = 0; i < index; i++) {
-        centerSeekPosition += snippet.sentenceSegments[i].wordDuration;
-      }
-      for (int i = 0; i < index + 1; i++) {
-        rightBoundSeekPosition += snippet.sentenceSegments[i].wordDuration;
-      }
-      debugPrint("$leftBoundSeekPosition, $centerSeekPosition, $rightBoundSeekPosition <- $seekPosition");
+      int formerLength;
+      int formerDuration;
+      int latterLength;
+      int latterDuration;
+      if (seekPosition < centerPosition) {
+        formerLength = snippet.sentenceSegments[timingPointIndex-1].wordLength;
+        formerDuration = seekPosition - leftBoundPosition;
+        latterLength = 0;
+        latterDuration = centerPosition - seekPosition;
 
-      if (leftBoundSeekPosition <= seekPosition && seekPosition <= rightBoundSeekPosition) {
-        if (seekPosition < centerSeekPosition) {
-          if (snippet.sentenceSegments[index].wordLength != 0) {
-            snippet.sentenceSegments.insert(index, SentenceSegment(0, centerSeekPosition - seekPosition));
-            snippet.sentenceSegments[index - 1] = SentenceSegment(snippet.sentenceSegments[index - 1].wordLength, snippet.sentenceSegments[index - 1].wordDuration - (centerSeekPosition - seekPosition));
-          } else {
-            throw TimingPointException("Cannot add timing point more than 2 at the same char position.");
-          }
-        } else {
-          if (snippet.sentenceSegments[index].wordLength != 0) {
-            snippet.sentenceSegments.insert(index, SentenceSegment(0, seekPosition - centerSeekPosition));
-            snippet.sentenceSegments[index + 1] = SentenceSegment(snippet.sentenceSegments[index + 1].wordLength - restWordLength, snippet.sentenceSegments[index + 1].wordDuration - (seekPosition - centerSeekPosition));
-          } else {
-            throw TimingPointException("Cannot add timing point more than 2 at the same char position.");
-          }
-        }
+        snippet.sentenceSegments[timingPointIndex-1] = SentenceSegment(formerLength, formerDuration);
+        snippet.sentenceSegments.insert(timingPointIndex, SentenceSegment(latterLength, latterDuration));
       } else {
-        throw TimingPointException("The seek position is out of the valid range.");
+        formerLength = snippet.sentenceSegments[timingPointIndex].wordLength;
+        formerDuration = rightBoundPosition - seekPosition;
+        latterLength = 0;
+        latterDuration = seekPosition - centerPosition;
+
+        snippet.sentenceSegments[timingPointIndex] = SentenceSegment(formerLength, formerDuration);
+        snippet.sentenceSegments.insert(timingPointIndex, SentenceSegment(latterLength, latterDuration));
       }
     }
   }

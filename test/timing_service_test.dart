@@ -88,12 +88,12 @@ void main() {
       expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
     });
 
-    test('Test the seek position is not valid range.', () {
+    test('Test the seek position is not valid', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final characterPosition = 8;
       final seekPosition = 2300;
 
-      expect(() => timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition), throwsExceptionWithMessageContaining("valid range"));
+      expect(() => timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition), throwsExceptionWithMessageContaining("not valid"));
     });
 
     test('Test to add a timing point twice. No.1', () {
