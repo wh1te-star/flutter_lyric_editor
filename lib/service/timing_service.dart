@@ -537,7 +537,7 @@ class TimingService {
       }
       if (charPositionSum > characterPosition) {
         sentenceSegmentIndex = index;
-        leftBoundPosition = snippet.startTimestamp + durationSum - snippet.sentenceSegments[index].wordDuration;
+        leftBoundPosition = snippet.startTimestamp + (durationSum - snippet.sentenceSegments[index].wordDuration);
         rightBoundPosition = snippet.startTimestamp + durationSum;
         charRest = characterPosition - (charPositionSum - snippet.sentenceSegments[index].wordLength);
         break;
@@ -550,12 +550,12 @@ class TimingService {
       }
 
       int formerLength = charRest;
-      int formerDuration = rightBoundPosition - seekPosition;
+      int formerDuration = seekPosition - leftBoundPosition;
       int latterLength = snippet.sentenceSegments[sentenceSegmentIndex].wordLength - charRest;
-      int latterDuration = seekPosition - leftBoundPosition;
+      int latterDuration = rightBoundPosition - seekPosition;
 
-      snippet.sentenceSegments[sentenceSegmentIndex] = SentenceSegment(formerLength, formerDuration);
-      snippet.sentenceSegments.insert(sentenceSegmentIndex, SentenceSegment(latterLength, latterDuration));
+      snippet.sentenceSegments[sentenceSegmentIndex] = SentenceSegment(latterLength, latterDuration);
+      snippet.sentenceSegments.insert(sentenceSegmentIndex, SentenceSegment(formerLength, formerDuration));
     } else {
       if (seekPosition <= leftBoundPosition || rightBoundPosition <= seekPosition) {
         throw TimingPointException("The seek position is not valid.");
@@ -563,7 +563,7 @@ class TimingService {
       if (seekPosition == centerPosition) {
         throw TimingPointException("Cannot add duplicate timing point.");
       }
-      if (snippet.sentenceSegments[timingPointIndex].wordLength==0) {
+      if (snippet.sentenceSegments[timingPointIndex].wordLength == 0) {
         throw TimingPointException("Cannot add timing point more than 2");
       }
 
@@ -572,12 +572,12 @@ class TimingService {
       int latterLength;
       int latterDuration;
       if (seekPosition < centerPosition) {
-        formerLength = snippet.sentenceSegments[timingPointIndex-1].wordLength;
+        formerLength = snippet.sentenceSegments[timingPointIndex - 1].wordLength;
         formerDuration = seekPosition - leftBoundPosition;
         latterLength = 0;
         latterDuration = centerPosition - seekPosition;
 
-        snippet.sentenceSegments[timingPointIndex-1] = SentenceSegment(formerLength, formerDuration);
+        snippet.sentenceSegments[timingPointIndex - 1] = SentenceSegment(formerLength, formerDuration);
         snippet.sentenceSegments.insert(timingPointIndex, SentenceSegment(latterLength, latterDuration));
       } else {
         formerLength = snippet.sentenceSegments[timingPointIndex].wordLength;

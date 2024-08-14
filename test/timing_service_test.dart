@@ -54,13 +54,13 @@ void main() {
 
     test('Test to add a timing point to a snippet No.1', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
-      final int characterPosition = 4;
-      final int seekPosition = 2350;
+      final int characterPosition = 7;
+      final int seekPosition = 2450;
       final List<SentenceSegment> expectedSentenceSegments = [
         SentenceSegment(3, 300),
-        SentenceSegment(1, 50),
-        SentenceSegment(1, 50),
-        SentenceSegment(6, 700),
+        SentenceSegment(2, 100),
+        SentenceSegment(2, 50),
+        SentenceSegment(4, 650),
         SentenceSegment(4, 500),
         SentenceSegment(5, 600),
       ];
