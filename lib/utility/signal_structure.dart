@@ -103,11 +103,11 @@ class RequestToAddLyricTiming {
 class RequestToDeleteLyricTiming {
   LyricSnippetID snippetID;
   int characterPosition;
-  Choice choice = Choice.former;
-  RequestToDeleteLyricTiming(this.snippetID, this.characterPosition, {this.choice = Choice.former});
+  Option option = Option.former;
+  RequestToDeleteLyricTiming(this.snippetID, this.characterPosition, {this.option = Option.former});
 }
 
-enum Choice {
+enum Option {
   former,
   latter,
 }

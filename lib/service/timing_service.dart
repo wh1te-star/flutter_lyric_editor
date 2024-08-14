@@ -121,7 +121,7 @@ class TimingService {
       }
       if (signal is RequestToDeleteLyricTiming) {
         LyricSnippet snippet = getSnippetWithID(signal.snippetID);
-        deleteTimingPoint(snippet, signal.characterPosition, signal.choice);
+        deleteTimingPoint(snippet, signal.characterPosition, signal.option);
         masterSubject.add(NotifyTimingPointDeleted(lyricSnippetList));
       }
       if (signal is NotifySeekPosition) {
@@ -591,7 +591,7 @@ class TimingService {
     }
   }
 
-  void deleteTimingPoint(LyricSnippet snippet, int characterPosition, Choice choice) {
+  void deleteTimingPoint(LyricSnippet snippet, int characterPosition, Option option) {
     int index = 0;
     int position = 0;
     while (index < snippet.sentenceSegments.length && position < characterPosition) {
