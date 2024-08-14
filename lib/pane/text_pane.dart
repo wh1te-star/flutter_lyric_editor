@@ -46,7 +46,7 @@ class _TextPaneState extends State<TextPane> {
 
   List<LyricSnippetID> selectingSnippets = [];
 
-  List<List<int>> sentenceSegmentsForEachLine = [];
+  List<List<int>> timingPointsForEachLine = [];
 
   List<LyricSnippetID> highlightingSnippetsIDs = [];
 
@@ -66,14 +66,14 @@ class _TextPaneState extends State<TextPane> {
       if (signal is NotifyLyricParsed || signal is NotifySnippetDivided || signal is NotifySnippetConcatenated || signal is NotifyUndo) {
         lyricSnippets = signal.lyricSnippetList;
         lyricAppearance = List.filled(lyricSnippets.length, '');
-        updateIndicators();
+        updateLyricAppearance();
         maxLanes = getMaxTracks(lyricSnippets);
       }
 
       if (signal is NotifyTimingPointAdded || signal is NotifyTimingPointDeleted) {
         lyricSnippets = signal.lyricSnippetList;
         lyricAppearance = List.filled(lyricSnippets.length, '');
-        updateIndicators();
+        updateLyricAppearance();
         maxLanes = getMaxTracks(lyricSnippets);
       }
 
@@ -118,7 +118,7 @@ class _TextPaneState extends State<TextPane> {
       if (signal is RequestToExitTextSelectMode) {
         TextSelectMode = false;
         lyricAppearance = List.filled(lyricSnippets.length, '');
-        updateIndicators();
+        updateLyricAppearance();
         cursorCharPosition = getSnippetWithID(cursorLinePosition).sentence.length;
       }
       setState(() {});
@@ -138,11 +138,19 @@ class _TextPaneState extends State<TextPane> {
     return lyricSnippets.firstWhere((snippet) => snippet.id == id);
   }
 
-  void updateIndicators() {
-    sentenceSegmentsForEachLine = lyricSnippets.map((snippet) => snippet.sentenceSegments.take(snippet.sentenceSegments.length - 1).map((sentenceSegmentMap) => sentenceSegmentMap.wordLength).fold<List<int>>([], (acc, pos) => acc..add((acc.isEmpty ? 0 : acc.last) + pos))).toList();
-    for (int i = 0; i < sentenceSegmentsForEachLine.length; i++) {
-      Map<int, String> sentenceSegmentsForEachLineMap = sentenceSegmentsForEachLine[i].asMap().map((key, value) => MapEntry(value, timingPointChar));
-      lyricAppearance[i] = InsertChars(lyricSnippets[i].sentence, sentenceSegmentsForEachLineMap);
+  void updateLyricAppearance() {
+    timingPointsForEachLine = lyricSnippets.map((snippet) => snippet.sentenceSegments.take(snippet.sentenceSegments.length - 1).map((sentenceSegmentMap) => sentenceSegmentMap.wordLength).fold<List<int>>([], (acc, pos) => acc..add((acc.isEmpty ? 0 : acc.last) + pos))).toList();
+    for (int index = 0; index < timingPointsForEachLine.length; index++) {
+      Map<int, String> timingPointsForEachLineMap = {};
+      for (int i = 0; i < timingPointsForEachLine[index].length; i++) {
+        int key = timingPointsForEachLine[index][i];
+        if (timingPointsForEachLineMap.containsKey(key)) {
+          timingPointsForEachLineMap[key] =timingPointsForEachLineMap[key]!+ timingPointChar;
+        }else{
+          timingPointsForEachLineMap[key] =timingPointChar;
+        }
+      }
+      lyricAppearance[index] = InsertChars(lyricSnippets[index].sentence, timingPointsForEachLineMap);
     }
   }
 
@@ -369,7 +377,7 @@ class _TextPaneState extends State<TextPane> {
   Widget highlightedLyricItem(String lyrics, LyricSnippetID snippetID, int charIndex) {
     int sentenceSegmentsBeforeCursor = 0;
     int lineIndex = getSnippetIndexWithID(snippetID);
-    List<int> currentLinesentenceSegment = sentenceSegmentsForEachLine[lineIndex];
+    List<int> currentLinesentenceSegment = timingPointsForEachLine[lineIndex];
     while (sentenceSegmentsBeforeCursor < currentLinesentenceSegment.length && currentLinesentenceSegment[sentenceSegmentsBeforeCursor] < charIndex) {
       sentenceSegmentsBeforeCursor++;
     }
