@@ -8,6 +8,7 @@ import 'package:lyric_editor/painter/current_position_indicator_painter.dart';
 import 'package:lyric_editor/painter/rectangle_painter.dart';
 import 'package:lyric_editor/painter/scale_mark.dart';
 import 'package:lyric_editor/painter/timeline_painter.dart';
+import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
@@ -35,8 +36,6 @@ class _TimelinePaneState extends State<TimelinePane> {
   Map<String, int> vocalistColorList = {};
   Map<String, List<String>> vocalistCombinationCorrespondence = {};
   LyricSnippetID cursorPosition = LyricSnippetID(Vocalist("", 0), 0);
-  bool isCursorVisible = true;
-  late Timer cursorTimer;
   List<LyricSnippetID> selectingSnippet = [];
   List<String> selectingVocalist = [];
   int audioDuration = 60000;
@@ -53,7 +52,8 @@ class _TimelinePaneState extends State<TimelinePane> {
   late FocusNode textFieldFocusNode;
   bool isAddVocalistButtonSelected = false;
   String isAddVocalistInput = "";
-  int cursorBlinkInterval = 1;
+
+  late CursorBlinker cursorBlinker;
 
   @override
   void initState() {
@@ -117,10 +117,11 @@ class _TimelinePaneState extends State<TimelinePane> {
     horizontalDetails.controller!.addListener(_onHorizontalScroll);
     currentPositionScroller.addListener(_onHorizontalScroll);
 
-    cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
-      isCursorVisible = !isCursorVisible;
-      setState(() {});
-    });
+    cursorBlinker = CursorBlinker(
+        blinkIntervalInMillisec: 1000,
+        onTick: () {
+          setState(() {});
+        });
   }
 
   void zoomIn() {
@@ -181,26 +182,13 @@ class _TimelinePaneState extends State<TimelinePane> {
     return null;
   }
 
-  void pauseCursorTimer() {
-    cursorTimer.cancel();
-  }
-
-  void restartCursorTimer() {
-    cursorTimer.cancel();
-    isCursorVisible = true;
-    cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
-      isCursorVisible = !isCursorVisible;
-      setState(() {});
-    });
-  }
-
   void moveLeftCursor() {
     LyricSnippetID nextCursorPosition = cursorPosition;
     nextCursorPosition.index--;
     if (nextCursorPosition.index >= 0) {
       nextCursorPosition = getSnippetWithID(nextCursorPosition).id;
       cursorPosition = nextCursorPosition;
-      restartCursorTimer();
+      cursorBlinker.restartCursorTimer();
     }
   }
 
@@ -210,7 +198,7 @@ class _TimelinePaneState extends State<TimelinePane> {
     if (nextCursorPosition.index < snippetsForeachVocalist[cursorPosition.vocalist.name]!.length) {
       nextCursorPosition = getSnippetWithID(nextCursorPosition).id;
       cursorPosition = nextCursorPosition;
-      restartCursorTimer();
+      cursorBlinker.restartCursorTimer();
     }
   }
 
@@ -277,7 +265,6 @@ class _TimelinePaneState extends State<TimelinePane> {
     currentPositionScroller.removeListener(_onHorizontalScroll);
     horizontalDetails.controller!.dispose();
     currentPositionScroller.dispose();
-    cursorTimer.cancel();
     super.dispose();
   }
 
@@ -359,7 +346,7 @@ class _TimelinePaneState extends State<TimelinePane> {
               onTapDown: (TapDownDetails details) {
                 isAddVocalistButtonSelected = true;
                 textFieldFocusNode.requestFocus();
-                restartCursorTimer();
+                cursorBlinker.restartCursorTimer();
                 masterSubject.add(RequestKeyboardShortcutEnable(false));
                 setState(() {});
               },
@@ -404,7 +391,7 @@ class _TimelinePaneState extends State<TimelinePane> {
               if (value == "") {
                 masterSubject.add(RequestDeleteVocalist(oldVocalistValue));
               } else if (oldVocalistValue != value) {
-                restartCursorTimer();
+                cursorBlinker.restartCursorTimer();
                 masterSubject.add(RequestChangeVocalistName(oldVocalistValue, value));
               }
               setState(() {});
@@ -428,7 +415,7 @@ class _TimelinePaneState extends State<TimelinePane> {
               edittingVocalistIndex = row;
               debugPrint("${row}");
               textFieldFocusNode.requestFocus();
-              pauseCursorTimer();
+              cursorBlinker.pauseCursorTimer();
               masterSubject.add(RequestKeyboardShortcutEnable(false));
               setState(() {});
             },
@@ -475,7 +462,7 @@ class _TimelinePaneState extends State<TimelinePane> {
               topMargin: topMargin,
               bottomMargin: bottomMargin,
               color: Color(vocalistColorList[vocalistName]!),
-              cursorPosition: isCursorVisible ? cursorPosition : null,
+              cursorPosition: cursorBlinker.isCursorVisible ? cursorPosition : null,
             ),
           ),
         ),
@@ -533,7 +520,7 @@ class _TimelinePaneState extends State<TimelinePane> {
     if (!textFieldFocusNode.hasFocus) {
       edittingVocalistIndex = -1;
       isAddVocalistInput = "";
-      restartCursorTimer();
+      cursorBlinker.restartCursorTimer();
       masterSubject.add(RequestKeyboardShortcutEnable(true));
       debugPrint("release the text field focus.");
       setState(() {});

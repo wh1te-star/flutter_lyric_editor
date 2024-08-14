@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lyric_editor/pane/video_pane.dart';
+import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:lyric_editor/utility/sorted_list.dart';
@@ -30,9 +31,7 @@ class _TextPaneState extends State<TextPane> {
   static const String linefeedChar = '\n';
   //static const String sectionChar = '\n\n';
 
-  int cursorBlinkInterval = 1;
-  bool isCursorVisible = true;
-  late Timer cursorTimer;
+  late CursorBlinker cursorBlinker;
 
   int seekPosition = 0;
 
@@ -126,10 +125,11 @@ class _TextPaneState extends State<TextPane> {
       setState(() {});
     });
 
-    cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
-      isCursorVisible = !isCursorVisible;
-      setState(() {});
-    });
+    cursorBlinker = CursorBlinker(
+        blinkIntervalInMillisec: 1000,
+        onTick: () {
+          setState(() {});
+        });
   }
 
   int getSnippetIndexWithID(LyricSnippetID id) {
@@ -173,7 +173,7 @@ class _TextPaneState extends State<TextPane> {
         cursorCharPosition = nextSnippet.sentence.length;
       }
 
-      restartCursorTimer();
+      cursorBlinker.restartCursorTimer();
     }
   }
 
@@ -193,7 +193,7 @@ class _TextPaneState extends State<TextPane> {
         cursorCharPosition = nextSnippet.sentence.length;
       }
 
-      restartCursorTimer();
+      cursorBlinker.restartCursorTimer();
       debugPrint("K key: LineCursor: ${cursorLinePosition}, CharCursor: ${cursorCharPosition}_${cursorPositionOption}");
     }
   }
@@ -214,7 +214,7 @@ class _TextPaneState extends State<TextPane> {
         cursorCharPosition = nextSnippet.sentence.length;
       }
 
-      restartCursorTimer();
+      cursorBlinker.restartCursorTimer();
       debugPrint("J key: LineCursor: ${cursorLinePosition}, CharCursor: ${cursorCharPosition}_${cursorPositionOption}");
     }
   }
@@ -233,7 +233,7 @@ class _TextPaneState extends State<TextPane> {
         cursorPositionOption = Option.former;
       }
 
-      restartCursorTimer();
+      cursorBlinker.restartCursorTimer();
       debugPrint("H key: LineCursor: ${cursorLinePosition}, CharCursor: ${cursorCharPosition}_${cursorPositionOption}");
     }
   }
@@ -254,22 +254,9 @@ class _TextPaneState extends State<TextPane> {
         cursorPositionOption = Option.former;
       }
 
-      restartCursorTimer();
+      cursorBlinker.restartCursorTimer();
       debugPrint("L key: LineCursor: ${cursorLinePosition}, CharCursor: ${cursorCharPosition}_${cursorPositionOption}");
     }
-  }
-
-  void pauseCursorTimer() {
-    cursorTimer.cancel();
-  }
-
-  void restartCursorTimer() {
-    cursorTimer.cancel();
-    isCursorVisible = true;
-    cursorTimer = Timer.periodic(Duration(seconds: cursorBlinkInterval), (timer) {
-      isCursorVisible = !isCursorVisible;
-      setState(() {});
-    });
   }
 
   Tuple3<List<LyricSnippetID>, List<LyricSnippetID>, List<LyricSnippetID>> getSnippetIDsAtCurrentSeekPosition() {
@@ -429,7 +416,7 @@ class _TextPaneState extends State<TextPane> {
     String charAtN = lyrics[charIndex].toString();
     String afterN = lyrics.substring(charIndex + 1);
 
-    Color cursorColor = isCursorVisible ? Colors.black : Colors.transparent;
+    Color cursorColor = cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent;
     return RichText(
       text: TextSpan(
         children: [
