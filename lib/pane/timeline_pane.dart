@@ -324,8 +324,6 @@ class _TimelinePaneState extends State<TimelinePane> {
       }
     } else if (vicinity.row <= snippetsForeachVocalist.length) {
       int index = vicinity.row - 1;
-      final String vocalistName = snippetsForeachVocalist.entries.toList()[index].key;
-      final lanes = getLanes(snippetsForeachVocalist[vocalistName]!);
       if (vicinity.column == 0) {
         return cellVocalistPanel(index);
       } else {
@@ -363,10 +361,12 @@ class _TimelinePaneState extends State<TimelinePane> {
     late final extent;
     if (index == 0) {
       extent = 20.0;
-    } else if (index == snippetsForeachVocalist.length + 1) {
-      extent = 40.0;
+    } else if (index <= snippetsForeachVocalist.length) {
+      final String vocalistName = snippetsForeachVocalist.entries.toList()[index-1].key;
+      final lanes = getLanes(snippetsForeachVocalist[vocalistName]!);
+      extent = 60.0 * lanes;
     } else {
-      extent = 60.0;
+      extent = 40.0;
     }
     return TableSpan(
       extent: FixedTableSpanExtent(extent),
@@ -435,7 +435,10 @@ class _TimelinePaneState extends State<TimelinePane> {
       );
     } else {
       return TableViewCell(
-        child: GestureDetector(
+
+  child: LayoutBuilder(
+        builder: (context, constraints){
+          return GestureDetector(
           onTapDown: (TapDownDetails details) {
             if (selectingVocalist.contains(vocalistName)) {
               selectingVocalist.remove(vocalistName);
@@ -456,13 +459,15 @@ class _TimelinePaneState extends State<TimelinePane> {
           },
           child: CustomPaint(
             painter: RectanglePainter(
-              rect: Rect.fromLTRB(0.0, 0.0, 155, 60),
+              rect: Rect.fromLTRB(0.0, 0.0, 155, constraints.maxHeight),
               sentence: snippetsForeachVocalist.entries.toList()[index].value[0].vocalist.name,
               color: Color(vocalistColorList[vocalistName]!),
               isSelected: selectingVocalist.contains(vocalistName),
             ),
           ),
-        ),
+        );
+  },
+  )
       );
     }
   }

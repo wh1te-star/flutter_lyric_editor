@@ -26,15 +26,28 @@ class TimelinePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final top = topMargin;
-    final bottom = size.height - bottomMargin;
+    int maxLanes = getMaxLanes(snippets);
+
+    int previousEndtime = 0;
+    int currentLane = 0;
 
     snippets.forEach((LyricSnippet snippet) {
       if (snippet.sentence == "") return;
+
       final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
+      if (snippet.startTimestamp < previousEndtime) {
+        currentLane++;
+      } else {
+        currentLane = 0;
+        previousEndtime = endtime;
+      }
+
+      final top = currentLane * size.height / maxLanes + topMargin;
+      final bottom = currentLane * size.height / maxLanes + size.height / maxLanes - bottomMargin;
       final left = snippet.startTimestamp * intervalLength / intervalDuration;
       final right = endtime * intervalLength / intervalDuration;
       final rect = Rect.fromLTRB(left, top, right, bottom);
+
 
       final isSelected = selectingId.contains(snippet.id);
       final rectanglePainter = RectanglePainter(
@@ -70,6 +83,31 @@ class TimelinePainter extends CustomPainter {
         canvas.drawRect(rect, paint);
       }
     });
+  }
+
+  int getMaxLanes(List<LyricSnippet> lyricSnippetList) {
+    if (lyricSnippetList.isEmpty) return 0;
+    lyricSnippetList.sort((a, b) => a.startTimestamp.compareTo(b.startTimestamp));
+
+    int maxOverlap = 0;
+    int currentOverlap = 1;
+    int currentEndTime = lyricSnippetList[0].endTimestamp;
+
+    for (int i = 1; i < lyricSnippetList.length; ++i) {
+      int start = lyricSnippetList[i].startTimestamp;
+      int end = lyricSnippetList[i].endTimestamp;
+      if (start <= currentEndTime) {
+        currentOverlap++;
+      } else {
+        currentOverlap = 1;
+        currentEndTime = end;
+      }
+      if (currentOverlap > maxOverlap) {
+        maxOverlap = currentOverlap;
+      }
+    }
+
+    return maxOverlap;
   }
 
   @override
