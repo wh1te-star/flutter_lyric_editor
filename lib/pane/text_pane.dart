@@ -80,25 +80,25 @@ class _TextPaneState extends State<TextPane> {
 
       if (signal is RequestMoveDownCharCursor) {
         moveDownCursor();
-        masterSubject.add(NotifyCharCursorPosition(cursorCharPosition));
+        masterSubject.add(NotifyCharCursorPosition(cursorCharPosition, cursorPositionOption));
         masterSubject.add(NotifyLineCursorPosition(cursorLinePosition));
       }
 
       if (signal is RequestMoveUpCharCursor) {
         moveUpCursor();
-        masterSubject.add(NotifyCharCursorPosition(cursorCharPosition));
+        masterSubject.add(NotifyCharCursorPosition(cursorCharPosition, cursorPositionOption));
         masterSubject.add(NotifyLineCursorPosition(cursorLinePosition));
       }
 
       if (signal is RequestMoveLeftCharCursor) {
         moveLeftCursor();
-        masterSubject.add(NotifyCharCursorPosition(cursorCharPosition));
+        masterSubject.add(NotifyCharCursorPosition(cursorCharPosition, cursorPositionOption));
         masterSubject.add(NotifyLineCursorPosition(cursorLinePosition));
       }
 
       if (signal is RequestMoveRightCharCursor) {
         moveRightCursor();
-        masterSubject.add(NotifyCharCursorPosition(cursorCharPosition));
+        masterSubject.add(NotifyCharCursorPosition(cursorCharPosition, cursorPositionOption));
         masterSubject.add(NotifyLineCursorPosition(cursorLinePosition));
       }
 

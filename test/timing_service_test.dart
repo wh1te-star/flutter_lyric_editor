@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/service/timing_service.dart';
+import 'package:lyric_editor/utility/signal_structure.dart';
+import 'package:xml/xml_events.dart';
 import 'timing_service_test.mocks.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:mockito/annotations.dart';
@@ -215,5 +217,122 @@ void main() {
 
       expect(() => timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition), throwsExceptionWithMessageContaining("Cannot add timing point more than 2"));
     });
+
+    test('Test to delete a timing point. No.1', () {
+      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final characterPosition = 5;
+      final option = Option.former;
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(3, 300),
+        SentenceSegment(8, 800),
+        SentenceSegment(4, 500),
+        SentenceSegment(5, 600),
+      ];
+
+      timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
+
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
+    test('Test to delete a timing point. No.2', () {
+      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final characterPosition = 11;
+      final option = Option.former;
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(3, 300),
+        SentenceSegment(2, 100),
+        SentenceSegment(10, 1200),
+        SentenceSegment(5, 600),
+      ];
+
+      timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
+
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
+    test('Test to try to delete a non-existent timing point.', () {
+      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final characterPosition = 6;
+      final option = Option.former;
+
+      expect(() => timingService.deleteTimingPoint(targetSnippet, characterPosition, option), throwsExceptionWithMessageContaining("There is not specified timing point."));
+    });
+
+    test('Test to delete a timing point. No.1', () {
+      final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
+      final characterPosition = 5;
+      final option = Option.former;
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(3, 400),
+        SentenceSegment(9, 1000),
+        SentenceSegment(0, 100),
+        SentenceSegment(5, 600),
+        SentenceSegment(2, 200),
+      ];
+
+      timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
+
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
+    test('Test to delete a timing point. No.2', () {
+      final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
+      final characterPosition = 17;
+      final option = Option.former;
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(3, 400),
+        SentenceSegment(2, 300),
+        SentenceSegment(7, 700),
+        SentenceSegment(0, 100),
+        SentenceSegment(7, 800),
+      ];
+
+      timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
+
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
+    test('Test to try to delete a non-existent timing point.', () {
+      final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
+      final characterPosition = 17;
+      final option = Option.latter;
+
+      expect(() => timingService.deleteTimingPoint(targetSnippet, characterPosition, option), throwsExceptionWithMessageContaining("There is not specified timing point."));
+    });
+
+    test('Test to a former timing point of a character position.', () {
+      final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
+      final characterPosition = 12;
+      final option = Option.former;
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(3, 400),
+        SentenceSegment(2, 300),
+        SentenceSegment(7, 800),
+        SentenceSegment(5, 600),
+        SentenceSegment(2, 200),
+      ];
+
+      timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
+
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
+    test('Test to a latter timing point of a character position.', () {
+      final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
+      final characterPosition = 12;
+      final option = Option.latter;
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(3, 400),
+        SentenceSegment(2, 300),
+        SentenceSegment(7, 700),
+        SentenceSegment(5, 700),
+        SentenceSegment(2, 200),
+      ];
+
+      timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
+
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
   });
 }

@@ -36,6 +36,7 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
   List<String> selectingVocalist = [];
   int seekPosition = 0;
   int charCursorPosition = 0;
+  Option cursorPositionOption = Option.former;
 
   bool textSelectMode = false;
   int selectedPosition = 0;
@@ -74,6 +75,7 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
       }
       if (signal is NotifyCharCursorPosition) {
         charCursorPosition = signal.cursorPosition;
+        cursorPositionOption = signal.option;
       }
       if (signal is NotifyLineCursorPosition) {
         selectedSnippetID = signal.cursorSnippetID;
@@ -197,14 +199,17 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
         TimingPointAddIntent: CallbackAction<TimingPointAddIntent>(
           onInvoke: (TimingPointAddIntent intent) => () {
             selectingSnippetIDs.forEach((LyricSnippetID id) {
-              masterSubject.add(RequestToAddLyricTiming(id, charCursorPosition, seekPosition));
+              masterSubject.add(RequestToAddTimingPoint(id, charCursorPosition, seekPosition));
             });
           }(),
         ),
         TimingPointDeleteIntent: CallbackAction<TimingPointDeleteIntent>(
           onInvoke: (TimingPointDeleteIntent intent) => () {
             selectingSnippetIDs.forEach((LyricSnippetID id) {
-              masterSubject.add(RequestToDeleteLyricTiming(id, charCursorPosition));
+              masterSubject.add(RequestToDeleteTimingPoint(
+                id,
+                charCursorPosition,
+              ));
             });
           }(),
         ),

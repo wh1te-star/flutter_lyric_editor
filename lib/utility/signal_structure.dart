@@ -93,18 +93,18 @@ class RequestChangeVocalistName {
   RequestChangeVocalistName(this.oldName, this.newName);
 }
 
-class RequestToAddLyricTiming {
+class RequestToAddTimingPoint {
   LyricSnippetID snippetID;
   int characterPosition;
   int seekPosition;
-  RequestToAddLyricTiming(this.snippetID, this.characterPosition, this.seekPosition);
+  RequestToAddTimingPoint(this.snippetID, this.characterPosition, this.seekPosition);
 }
 
-class RequestToDeleteLyricTiming {
+class RequestToDeleteTimingPoint {
   LyricSnippetID snippetID;
   int characterPosition;
   Option option = Option.former;
-  RequestToDeleteLyricTiming(this.snippetID, this.characterPosition, {this.option = Option.former});
+  RequestToDeleteTimingPoint(this.snippetID, this.characterPosition, {this.option = Option.former});
 }
 
 enum Option {
@@ -182,7 +182,8 @@ class NotifySeekPosition {
 
 class NotifyCharCursorPosition {
   int cursorPosition;
-  NotifyCharCursorPosition(this.cursorPosition);
+  Option option;
+  NotifyCharCursorPosition(this.cursorPosition, this.option);
 }
 
 class NotifyLineCursorPosition {

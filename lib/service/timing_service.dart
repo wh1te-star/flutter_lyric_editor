@@ -110,7 +110,7 @@ class TimingService {
         changeVocalistName(signal.oldName, signal.newName);
         masterSubject.add(NotifyVocalistNameChanged(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
       }
-      if (signal is RequestToAddLyricTiming) {
+      if (signal is RequestToAddTimingPoint) {
         LyricSnippet snippet = getSnippetWithID(signal.snippetID);
         try {
           addTimingPoint(snippet, signal.characterPosition, signal.seekPosition);
@@ -119,9 +119,13 @@ class TimingService {
         }
         masterSubject.add(NotifyTimingPointAdded(lyricSnippetList));
       }
-      if (signal is RequestToDeleteLyricTiming) {
+      if (signal is RequestToDeleteTimingPoint) {
         LyricSnippet snippet = getSnippetWithID(signal.snippetID);
-        deleteTimingPoint(snippet, signal.characterPosition, signal.option);
+        try {
+          deleteTimingPoint(snippet, signal.characterPosition, signal.option);
+        } catch (e) {
+          debugPrint(e.toString());
+        }
         masterSubject.add(NotifyTimingPointDeleted(lyricSnippetList));
       }
       if (signal is NotifySeekPosition) {
@@ -592,16 +596,37 @@ class TimingService {
   }
 
   void deleteTimingPoint(LyricSnippet snippet, int characterPosition, Option option) {
-    int index = 0;
-    int position = 0;
-    while (index < snippet.sentenceSegments.length && position < characterPosition) {
-      position += snippet.sentenceSegments[index].wordLength;
-      index++;
+    if (characterPosition <= 0 || snippet.sentence.length <= characterPosition) {
+      throw TimingPointException("The character position is out of the valid range.");
     }
-    if (position != characterPosition) return;
-    snippet.sentenceSegments[index - 1].wordLength += snippet.sentenceSegments[index].wordLength;
-    snippet.sentenceSegments[index - 1].wordDuration += snippet.sentenceSegments[index].wordDuration;
-    snippet.sentenceSegments.removeAt(index);
+
+    int timingPointIndex = -1;
+    int charPositionSum = 0;
+    for (int index = 0; index < snippet.sentenceSegments.length; index++) {
+      charPositionSum += snippet.sentenceSegments[index].wordLength;
+      if (charPositionSum == characterPosition) {
+        timingPointIndex = index;
+        break;
+      }
+      if (charPositionSum > characterPosition) {
+        throw TimingPointException("There is not specified timing point.");
+      }
+    }
+    if (option == Option.former) {
+      int newLength = snippet.sentenceSegments[timingPointIndex].wordLength + snippet.sentenceSegments[timingPointIndex + 1].wordLength;
+      int newDuration = snippet.sentenceSegments[timingPointIndex].wordDuration + snippet.sentenceSegments[timingPointIndex + 1].wordDuration;
+      snippet.sentenceSegments.removeAt(timingPointIndex);
+      snippet.sentenceSegments[timingPointIndex] = SentenceSegment(newLength, newDuration);
+    } else {
+      timingPointIndex++;
+      if (snippet.sentenceSegments[timingPointIndex].wordLength != 0) {
+        throw TimingPointException("There is not specified timing point.");
+      }
+      int newLength = snippet.sentenceSegments[timingPointIndex + 1].wordLength;
+      int newDuration = snippet.sentenceSegments[timingPointIndex].wordDuration + snippet.sentenceSegments[timingPointIndex + 1].wordDuration;
+      snippet.sentenceSegments.removeAt(timingPointIndex);
+      snippet.sentenceSegments[timingPointIndex] = SentenceSegment(newLength, newDuration);
+    }
   }
 
   void pushUndoHistory(List<LyricSnippet> lyricSnippetList) {
