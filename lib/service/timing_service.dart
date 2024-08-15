@@ -15,6 +15,8 @@ class TimingService {
   Map<String, int> vocalistColorList = {};
   Map<String, List<String>> vocalistCombinationCorrespondence = {};
   List<LyricSnippet> lyricSnippetList = [];
+  List<int> sections = [];
+
   Future<void>? _loadLyricsFuture;
   int currentPosition = 0;
   int audioDuration = 180000;
@@ -90,6 +92,14 @@ class TimingService {
         final String rawLyricText = serializeLyric(lyricSnippetList);
         final File file = File(result.path);
         await file.writeAsString(rawLyricText);
+      }
+      if (signal is RequestAddSection) {
+        addSection(signal.seekPosition);
+        masterSubject.add(NotifySectionAdded(sections));
+      }
+      if (signal is RequestDeleteSection) {
+        deleteSection(signal.seekPosition);
+        masterSubject.add(NotifySectionDeleted(sections));
       }
       if (signal is RequestAddVocalist) {
         pushUndoHistory(lyricSnippetList);
@@ -198,6 +208,31 @@ class TimingService {
 
   List<LyricSnippet> getSnippetsWithVocalistName(String vocalistName) {
     return lyricSnippetList.where((snippet) => snippet.vocalist.name == vocalistName).toList();
+  }
+
+  void addSection(int seekPosition) {
+    if (!sections.contains(seekPosition)) {
+      sections.add(seekPosition);
+    }
+  }
+
+  void deleteSection(int seekPosition) {
+    int targetIndex = 0;
+    int minDistance = 3600000;
+    for (int index = 0; index < sections.length; index++) {
+      int distance = sections[index] - seekPosition;
+      if (distance < 0) {
+        distance = -distance;
+      }
+      if (distance < minDistance) {
+        minDistance = distance;
+        targetIndex = index;
+      }
+    }
+
+    if (minDistance < 5000) {
+      sections.removeAt(targetIndex);
+    }
   }
 
   void addVocalist(String vocalistName) {

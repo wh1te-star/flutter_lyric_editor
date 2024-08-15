@@ -77,6 +77,16 @@ class RequestExportLyric {
   RequestExportLyric({this.path = "", this.lyric = ""});
 }
 
+class RequestAddSection {
+  int seekPosition;
+  RequestAddSection(this.seekPosition);
+}
+
+class RequestDeleteSection {
+  int seekPosition;
+  RequestDeleteSection(this.seekPosition);
+}
+
 class RequestAddVocalist {
   String vocalistName;
   RequestAddVocalist(this.vocalistName);
@@ -110,6 +120,16 @@ class RequestToDeleteTimingPoint {
 enum Option {
   former,
   latter,
+}
+
+class NotifySectionAdded {
+  List<int> sections;
+  NotifySectionAdded(this.sections);
+}
+
+class NotifySectionDeleted {
+  List<int> sections;
+  NotifySectionDeleted(this.sections);
 }
 
 class NotifyTimingPointAdded {

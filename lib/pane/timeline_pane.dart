@@ -35,6 +35,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   Map<String, List<LyricSnippet>> snippetsForeachVocalist = {};
   Map<String, int> vocalistColorList = {};
   Map<String, List<String>> vocalistCombinationCorrespondence = {};
+  List<int> sections = [];
   LyricSnippetID cursorPosition = LyricSnippetID(Vocalist("", 0), 0);
   List<LyricSnippetID> selectingSnippet = [];
   List<String> selectingVocalist = [];
@@ -87,6 +88,10 @@ class _TimelinePaneState extends State<TimelinePane> {
         cursorPosition = snippetsForeachVocalist[snippetsForeachVocalist.keys.first]![0].id;
         vocalistColorList = signal.vocalistColorList;
         vocalistCombinationCorrespondence = signal.vocalistCombinationCorrespondence;
+        setState(() {});
+      }
+      if (signal is NotifySectionAdded || signal is NotifySectionDeleted) {
+        sections = List.from(signal.sections);
         setState(() {});
       }
       if (signal is RequestTimelineZoomIn) {
@@ -249,7 +254,7 @@ class _TimelinePaneState extends State<TimelinePane> {
                 scrollDirection: Axis.horizontal,
                 child: CustomPaint(
                   size: Size(audioDuration * intervalLength / intervalDuration, 800),
-                  painter: CurrentPositionIndicatorPainter(x: currentPosition * intervalLength / intervalDuration),
+                  painter: CurrentPositionIndicatorPainter(intervalLength, intervalDuration, currentPosition, sections),
                 ),
               ),
             ),
@@ -362,7 +367,7 @@ class _TimelinePaneState extends State<TimelinePane> {
     if (index == 0) {
       extent = 20.0;
     } else if (index <= snippetsForeachVocalist.length) {
-      final String vocalistName = snippetsForeachVocalist.entries.toList()[index-1].key;
+      final String vocalistName = snippetsForeachVocalist.entries.toList()[index - 1].key;
       final lanes = getLanes(snippetsForeachVocalist[vocalistName]!);
       extent = 60.0 * lanes;
     } else {
@@ -434,41 +439,38 @@ class _TimelinePaneState extends State<TimelinePane> {
         ),
       );
     } else {
-      return TableViewCell(
-
-  child: LayoutBuilder(
-        builder: (context, constraints){
+      return TableViewCell(child: LayoutBuilder(
+        builder: (context, constraints) {
           return GestureDetector(
-          onTapDown: (TapDownDetails details) {
-            if (selectingVocalist.contains(vocalistName)) {
-              selectingVocalist.remove(vocalistName);
-              masterSubject.add(NotifyDeselectingVocalist(vocalistName));
-            } else {
-              selectingVocalist.add(vocalistName);
-              masterSubject.add(NotifySelectingVocalist(vocalistName));
-            }
-            setState(() {});
-          },
-          onDoubleTap: () {
-            edittingVocalistIndex = index;
-            debugPrint("${index}");
-            textFieldFocusNode.requestFocus();
-            cursorBlinker.pauseCursorTimer();
-            masterSubject.add(RequestKeyboardShortcutEnable(false));
-            setState(() {});
-          },
-          child: CustomPaint(
-            painter: RectanglePainter(
-              rect: Rect.fromLTRB(0.0, 0.0, 155, constraints.maxHeight),
-              sentence: snippetsForeachVocalist.entries.toList()[index].value[0].vocalist.name,
-              color: Color(vocalistColorList[vocalistName]!),
-              isSelected: selectingVocalist.contains(vocalistName),
+            onTapDown: (TapDownDetails details) {
+              if (selectingVocalist.contains(vocalistName)) {
+                selectingVocalist.remove(vocalistName);
+                masterSubject.add(NotifyDeselectingVocalist(vocalistName));
+              } else {
+                selectingVocalist.add(vocalistName);
+                masterSubject.add(NotifySelectingVocalist(vocalistName));
+              }
+              setState(() {});
+            },
+            onDoubleTap: () {
+              edittingVocalistIndex = index;
+              debugPrint("${index}");
+              textFieldFocusNode.requestFocus();
+              cursorBlinker.pauseCursorTimer();
+              masterSubject.add(RequestKeyboardShortcutEnable(false));
+              setState(() {});
+            },
+            child: CustomPaint(
+              painter: RectanglePainter(
+                rect: Rect.fromLTRB(0.0, 0.0, 155, constraints.maxHeight),
+                sentence: snippetsForeachVocalist.entries.toList()[index].value[0].vocalist.name,
+                color: Color(vocalistColorList[vocalistName]!),
+                isSelected: selectingVocalist.contains(vocalistName),
+              ),
             ),
-          ),
-        );
-  },
-  )
-      );
+          );
+        },
+      ));
     }
   }
 

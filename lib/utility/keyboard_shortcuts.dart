@@ -38,6 +38,8 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
   int charCursorPosition = 0;
   Option cursorPositionOption = Option.former;
 
+  List<int> sections = [];
+
   bool textSelectMode = false;
   int selectedPosition = 0;
   LyricSnippetID selectedSnippetID = LyricSnippetID(Vocalist("", 0), 0);
@@ -73,6 +75,9 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
       if (signal is NotifySeekPosition) {
         seekPosition = signal.seekPosition;
       }
+      if (signal is NotifySectionAdded || signal is NotifySectionDeleted) {
+        sections = signal.sections;
+      }
       if (signal is NotifyCharCursorPosition) {
         charCursorPosition = signal.cursorPosition;
         cursorPositionOption = signal.option;
@@ -98,8 +103,10 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
         LogicalKeySet(LogicalKeyboardKey.keyJ): TextPaneCursorMoveDownIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyK): TextPaneCursorMoveUpIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyL): TextPaneCursorMoveRightIntent(),
-        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyK): TimelineZoomIn(),
-        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyJ): TimelineZoomOut(),
+        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyK): TimelineZoomIn(),
+        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyJ): TimelineZoomOut(),
+        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyA): AddSectionIntent(),
+        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyS): DeleteSectionIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyI): TimingPointAddIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyO): TimingPointDeleteIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyZ): SnippetDivideIntent(),
@@ -194,6 +201,16 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
         TimelineZoomOut: CallbackAction<TimelineZoomOut>(
           onInvoke: (TimelineZoomOut intent) => () {
             masterSubject.add(RequestTimelineZoomOut());
+          }(),
+        ),
+        AddSectionIntent: CallbackAction<AddSectionIntent>(
+          onInvoke: (AddSectionIntent intent) => () {
+            masterSubject.add(RequestAddSection(seekPosition));
+          }(),
+        ),
+        DeleteSectionIntent: CallbackAction<DeleteSectionIntent>(
+          onInvoke: (DeleteSectionIntent intent) => () {
+            masterSubject.add(RequestDeleteSection(seekPosition));
           }(),
         ),
         TimingPointAddIntent: CallbackAction<TimingPointAddIntent>(
@@ -304,6 +321,10 @@ class TextPaneCursorMoveRightIntent extends Intent {}
 class TimelineZoomIn extends Intent {}
 
 class TimelineZoomOut extends Intent {}
+
+class AddSectionIntent extends Intent {}
+
+class DeleteSectionIntent extends Intent {}
 
 class TimingPointAddIntent extends Intent {}
 
