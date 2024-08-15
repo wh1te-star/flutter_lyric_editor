@@ -1,22 +1,38 @@
 import 'package:flutter/foundation.dart';
 
+class LyricSnippetID {
+  int id;
+  LyricSnippetID(this.id);
+
+  @override
+  bool operator ==(Object other) {
+    if (other is LyricSnippetID) {
+      return id == other.id;
+    } else {
+      return false;
+    }
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  String toString() => 'LyricSnippetID($id)';
+}
+
 class LyricSnippet {
-  Vocalist vocalist;
-  int index;
+  VocalistID vocalistID;
   String sentence;
   int startTimestamp;
   List<SentenceSegment> sentenceSegments;
   late List<SentenceSegment> accumulatedSentenceSegments;
 
   LyricSnippet({
-    required this.vocalist,
-    required this.index,
+    required this.vocalistID,
     required this.sentence,
     required this.startTimestamp,
     required this.sentenceSegments,
   });
-
-  LyricSnippetID get id => LyricSnippetID(vocalist, index);
 
   int get endTimestamp {
     return startTimestamp + sentenceSegments.fold(0, (sum, current) => sum + current.wordDuration);
@@ -36,21 +52,14 @@ class LyricSnippet {
     return sentenceSegments.take(index + 1).fold(0, (sum, current) => sum + current.wordDuration);
   }
 
-  set id(LyricSnippetID id) {
-    vocalist = id.vocalist;
-    index = id.index;
-  }
-
   LyricSnippet copyWith({
-    Vocalist? vocalist,
-    int? index,
+    VocalistID? vocalistID,
     String? sentence,
     int? startTimestamp,
     List<SentenceSegment>? sentenceSegments,
   }) {
     return LyricSnippet(
-      vocalist: vocalist ?? this.vocalist,
-      index: index ?? this.index,
+      vocalistID: vocalistID ?? this.vocalistID,
       sentence: sentence ?? this.sentence,
       startTimestamp: startTimestamp ?? this.startTimestamp,
       sentenceSegments: sentenceSegments != null ? List<SentenceSegment>.from(sentenceSegments) : List<SentenceSegment>.from(this.sentenceSegments),
@@ -58,10 +67,30 @@ class LyricSnippet {
   }
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is LyricSnippet && runtimeType == other.runtimeType && vocalist == other.vocalist && index == other.index && sentence == other.sentence && startTimestamp == other.startTimestamp && listEquals(sentenceSegments, other.sentenceSegments);
+  bool operator ==(Object other) => identical(this, other) || other is LyricSnippet && runtimeType == other.runtimeType && vocalistID == other.vocalistID && sentence == other.sentence && startTimestamp == other.startTimestamp && listEquals(sentenceSegments, other.sentenceSegments);
 
   @override
-  int get hashCode => vocalist.hashCode ^ index.hashCode ^ sentence.hashCode ^ startTimestamp.hashCode ^ sentenceSegments.hashCode;
+  int get hashCode => vocalistID.hashCode ^ sentence.hashCode ^ startTimestamp.hashCode ^ sentenceSegments.hashCode;
+}
+
+class VocalistID {
+  int id;
+  VocalistID(this.id);
+
+  @override
+  bool operator ==(Object other) {
+    if (other is VocalistID) {
+      return id == other.id;
+    } else {
+      return false;
+    }
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  String toString() => 'VocalistID($id)';
 }
 
 class Vocalist {
@@ -79,18 +108,6 @@ class Vocalist {
 
   @override
   int get hashCode => name.hashCode ^ color.hashCode;
-}
-
-class VocalistCombination {
-  List<String> vocalistNames;
-
-  VocalistCombination(this.vocalistNames);
-
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is VocalistCombination && runtimeType == other.runtimeType && listEquals(vocalistNames..sort(), other.vocalistNames..sort());
-
-  @override
-  int get hashCode => vocalistNames.fold(0, (prev, element) => 31 * prev + element.hashCode);
 }
 
 class SentenceSegment {
@@ -114,25 +131,4 @@ class SentenceSegment {
   String toString() {
     return 'SentenceSegment(wordLength: $wordLength, wordDuration: $wordDuration)';
   }
-}
-
-class LyricSnippetID {
-  Vocalist vocalist;
-  int index;
-  LyricSnippetID(this.vocalist, this.index);
-
-  @override
-  bool operator ==(Object other) {
-    if (other is LyricSnippetID) {
-      return vocalist == other.vocalist && index == other.index;
-    } else {
-      return false;
-    }
-  }
-
-  @override
-  int get hashCode => vocalist.hashCode ^ index.hashCode;
-
-  @override
-  String toString() => 'LyricSnippetID($vocalist, $index)';
 }

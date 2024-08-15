@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
@@ -12,9 +13,11 @@ class TimingService {
   final BuildContext context;
   final PublishSubject<dynamic> masterSubject;
   String rawLyricText = "";
-  Map<String, int> vocalistColorList = {};
-  Map<String, List<String>> vocalistCombinationCorrespondence = {};
-  List<LyricSnippet> lyricSnippetList = [];
+
+  VocalistIDGenerator vocalistIDGenerator = VocalistIDGenerator();
+  LyricSnippetIDGenerator lyricSnippetIDGenerator = LyricSnippetIDGenerator();
+  Map<VocalistID, Vocalist> vocalistList = {};
+  Map<LyricSnippetID, LyricSnippet> lyricSnippetList = {};
   List<int> sections = [];
 
   Future<void>? _loadLyricsFuture;
@@ -39,19 +42,20 @@ class TimingService {
         if (file != null) {
           String rawText = await file.readAsString();
           String singlelineText = rawText.replaceAll("\n", "").replaceAll("\r", "");
+
+          VocalistID defaultVocalistID = vocalistIDGenerator.genID();
+          vocalistList.clear();
+          vocalistList[defaultVocalistID] = Vocalist(defaultVocalistName, 0xff777777);
+
           lyricSnippetList.clear();
-          lyricSnippetList.add(LyricSnippet(
-            vocalist: Vocalist(defaultVocalistName, 0),
-            index: 1,
+          lyricSnippetList[lyricSnippetIDGenerator.genID()] = LyricSnippet(
+            vocalistID: defaultVocalistID,
             sentence: singlelineText,
             startTimestamp: 0,
             sentenceSegments: [SentenceSegment(singlelineText.length, audioDuration)],
-          ));
+          );
 
-          vocalistColorList.clear();
-          vocalistColorList[defaultVocalistName] = 0xff777777;
-
-          masterSubject.add(NotifyLyricParsed(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
+          masterSubject.add(NotifyLyricParsed(lyricSnippetList, vocalistList));
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('No file selected')),
@@ -72,7 +76,7 @@ class TimingService {
           lyricSnippetList = parseLyric(rawLyricText);
 
           pushUndoHistory(lyricSnippetList);
-          masterSubject.add(NotifyLyricParsed(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
+          masterSubject.add(NotifyLyricParsed(lyricSnippetList, vocalistList, vocalistCombinationCorrespondence));
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('No file selected')),
@@ -105,20 +109,20 @@ class TimingService {
         pushUndoHistory(lyricSnippetList);
 
         addVocalist(signal.vocalistName);
-        masterSubject.add(NotifyVocalistAdded(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
+        masterSubject.add(NotifyVocalistAdded(lyricSnippetList, vocalistList, vocalistCombinationCorrespondence));
       }
       if (signal is RequestDeleteVocalist) {
         pushUndoHistory(lyricSnippetList);
 
         deleteVocalist(signal.vocalistName);
 
-        masterSubject.add(NotifyVocalistDeleted(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
+        masterSubject.add(NotifyVocalistDeleted(lyricSnippetList, vocalistList, vocalistCombinationCorrespondence));
       }
       if (signal is RequestChangeVocalistName) {
         pushUndoHistory(lyricSnippetList);
 
         changeVocalistName(signal.oldName, signal.newName);
-        masterSubject.add(NotifyVocalistNameChanged(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
+        masterSubject.add(NotifyVocalistNameChanged(lyricSnippetList, vocalistList, vocalistCombinationCorrespondence));
       }
       if (signal is RequestToAddTimingPoint) {
         LyricSnippet snippet = getSnippetWithID(signal.snippetID);
@@ -190,6 +194,10 @@ class TimingService {
     _loadLyricsFuture = loadLyrics();
   }
 
+  String uuidGen() {
+    return uuid.v4();
+  }
+
   List<LyricSnippet> translateIDsToSnippets(List<LyricSnippetID> ids) {
     return ids.map((id) => getSnippetWithID(id)).toList();
   }
@@ -236,12 +244,12 @@ class TimingService {
   }
 
   void addVocalist(String vocalistName) {
-    vocalistColorList[vocalistName] = 0xFF222222;
+    vocalistList[vocalistName] = 0xFF222222;
     lyricSnippetList.add(LyricSnippet(vocalist: Vocalist(vocalistName, 0), index: 0, sentence: "", startTimestamp: 0, sentenceSegments: [SentenceSegment(0, 1)]));
   }
 
   void deleteVocalist(String vocalistName) {
-    vocalistColorList.remove(vocalistName);
+    vocalistList.remove(vocalistName);
     lyricSnippetList.removeWhere((snippet) => snippet.vocalist.name == vocalistName);
   }
 
@@ -260,8 +268,8 @@ class TimingService {
 
     vocalistCombinationCorrespondence = updatedMap;
 
-    vocalistColorList[newName] = vocalistColorList[oldName]!;
-    vocalistColorList.remove(oldName);
+    vocalistList[newName] = vocalistList[oldName]!;
+    vocalistList.remove(oldName);
 
     getSnippetsWithVocalistName(oldName).forEach((LyricSnippet snippet) {
       snippet.vocalist = Vocalist(newName, 0);
@@ -274,7 +282,7 @@ class TimingService {
       masterSubject.add(NotifyLyricLoaded(rawLyricText));
 
       lyricSnippetList = parseLyric(rawLyricText);
-      masterSubject.add(NotifyLyricParsed(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
+      masterSubject.add(NotifyLyricParsed(lyricSnippetList, vocalistList, vocalistCombinationCorrespondence));
       //writeTranslatedXmlToFile();
     } catch (e) {
       debugPrint("Error loading lyrics: $e");
@@ -290,16 +298,16 @@ class TimingService {
     return (minutes * 60 + seconds) * 1000 + milliseconds;
   }
 
-  List<LyricSnippet> parseLyric(String rawLyricText) {
+  Map<LyricSnippetID, LyricSnippet> parseLyric(String rawLyricText) {
     final document = xml.XmlDocument.parse(rawLyricText);
 
-    final vocalistCombination = document.findAllElements('VocalistsColor');
+    final vocalistCombination = document.findAllElements('VocalistsList');
     for (var vocalistName in vocalistCombination) {
-      final colorElements = vocalistName.findElements('Color');
+      final colorElements = vocalistName.findElements('VocalistInfo');
       for (var colorElement in colorElements) {
         final name = colorElement.getAttribute('name')!;
         final color = int.parse(colorElement.getAttribute('color')!, radix: 16);
-        vocalistColorList[name] = color + 0xFF000000;
+        final vocalistID = vocalistList.vocalistList[name] = color + 0xFF000000;
 
         final vocalistNames = colorElement.findAllElements('Vocalist').map((e) => e.innerText).toList();
         if (vocalistNames.length >= 2) {
@@ -435,6 +443,18 @@ class TimingService {
     //String first30Chars = rawLyricText.substring(0, 30);
     //debugPrint(first30Chars);
   }
+
+  VocalistID getVocalistIDFromName(String name) {
+    final VocalistID defaultVocalistID = VocalistID(-1);
+    return vocalistList.keys.firstWhere((key) => vocalistList[key]!.name == name, orElse: () => defaultVocalistID);
+  }
+
+  /*
+  VocalistID getLyricSnippetIDFromName(String name) {
+    final VocalistID defaultVocalistID = VocalistID(-1);
+    return vocalistList.keys.firstWhere((key) => vocalistList[key]!.name == name, orElse: () => defaultVocalistID);
+  }
+  */
 
   List<LyricSnippet> getSnippetsAtCurrentSeekPosition() {
     return lyricSnippetList.where((snippet) {
@@ -667,7 +687,7 @@ class TimingService {
   void pushUndoHistory(List<LyricSnippet> lyricSnippetList) {
     List<LyricSnippet> copy = lyricSnippetList.map((snippet) {
       return LyricSnippet(
-        vocalist: Vocalist(snippet.vocalist.name, vocalistColorList[snippet.vocalist.name]!),
+        vocalist: Vocalist(snippet.vocalist.name, vocalistList[snippet.vocalist.name]!),
         index: snippet.index,
         sentence: snippet.sentence,
         startTimestamp: snippet.startTimestamp,

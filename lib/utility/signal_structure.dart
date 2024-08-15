@@ -222,10 +222,9 @@ class NotifyLyricLoaded {
 }
 
 class NotifyLyricParsed {
-  List<LyricSnippet> lyricSnippetList;
-  Map<String, int> vocalistColorList = {};
-  Map<String, List<String>> vocalistCombinationCorrespondence = {};
-  NotifyLyricParsed(this.lyricSnippetList, this.vocalistColorList, this.vocalistCombinationCorrespondence);
+  Map<LyricSnippetID, LyricSnippet> lyricSnippetList;
+  Map<VocalistID, Vocalist> vocalistList;
+  NotifyLyricParsed(this.lyricSnippetList, this.vocalistList);
 }
 
 class RequestMoveUpCharCursor {}

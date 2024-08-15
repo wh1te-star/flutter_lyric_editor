@@ -58,7 +58,7 @@ class _VideoPaneState extends State<VideoPane> {
       }
       if (signal is NotifyLyricParsed) {
         lyricSnippetTrack = assignTrackNumber(signal.lyricSnippetList);
-        vocalistColorList = signal.vocalistColorList;
+        vocalistColorList = signal.vocalistList;
         vocalistCombinationCorrespondence = signal.vocalistCombinationCorrespondence;
       }
       if (signal is NotifySnippetDivided || signal is NotifySnippetConcatenated || signal is NotifyUndo) {
