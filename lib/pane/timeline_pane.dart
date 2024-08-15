@@ -290,187 +290,53 @@ class _TimelinePaneState extends State<TimelinePane> {
     return Color.fromARGB(alpha, red, green, blue);
   }
 
+  int getLanes(List<LyricSnippet> lyricSnippetList) {
+    if (lyricSnippetList.isEmpty) return 1;
+    lyricSnippetList.sort((a, b) => a.startTimestamp.compareTo(b.startTimestamp));
+
+    int maxOverlap = 1;
+    int currentOverlap = 1;
+    int currentEndTime = lyricSnippetList[0].endTimestamp;
+
+    for (int i = 1; i < lyricSnippetList.length; ++i) {
+      int start = lyricSnippetList[i].startTimestamp;
+      int end = lyricSnippetList[i].endTimestamp;
+      if (start <= currentEndTime) {
+        currentOverlap++;
+      } else {
+        currentOverlap = 1;
+        currentEndTime = end;
+      }
+      if (currentOverlap > maxOverlap) {
+        maxOverlap = currentOverlap;
+      }
+    }
+
+    return maxOverlap;
+  }
+
   TableViewCell _buildCell(BuildContext context, TableVicinity vicinity) {
-    if (vicinity.row == 0 && vicinity.column == 0) {
-      return TableViewCell(
-        child: GestureDetector(
-          onTapDown: (TapDownDetails details) {
-            autoCurrentSelectMode = !autoCurrentSelectMode;
-            setState(() {});
-          },
-          child: CustomPaint(
-            painter: RectanglePainter(
-              rect: Rect.fromLTRB(1.0, -9.0, 154, 19),
-              sentence: "Auto Select Mode",
-              color: Colors.purpleAccent,
-              isSelected: autoCurrentSelectMode,
-            ),
-          ),
-        ),
-      );
-    }
     if (vicinity.row == 0) {
-      return TableViewCell(
-        child: CustomPaint(
-          painter: ScaleMark(intervalLength: intervalLength, majorMarkLength: majorMarkLength, midiumMarkLength: midiumMarkLength, minorMarkLength: minorMarkLength, intervalDuration: intervalDuration),
-        ),
-      );
-    }
-    if (vicinity.row == snippetsForeachVocalist.length + 1) {
       if (vicinity.column == 0) {
-        if (isAddVocalistInput != "") {
-          final TextEditingController controller = TextEditingController(text: "");
-          return TableViewCell(
-            child: TextField(
-              controller: controller,
-              focusNode: textFieldFocusNode,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) {
-                isAddVocalistInput = value;
-              },
-              onSubmitted: (value) {
-                if (value != "") {
-                  masterSubject.add(RequestAddVocalist(value));
-                  debugPrint("RequestAddVocalist ${value}");
-                }
-                isAddVocalistInput = "";
-                setState(() {});
-              },
-            ),
-          );
-        } else {
-          return TableViewCell(
-            child: GestureDetector(
-              onTapDown: (TapDownDetails details) {
-                isAddVocalistButtonSelected = true;
-                textFieldFocusNode.requestFocus();
-                cursorBlinker.restartCursorTimer();
-                masterSubject.add(RequestKeyboardShortcutEnable(false));
-                setState(() {});
-              },
-              onTapUp: (TapUpDetails details) {
-                isAddVocalistButtonSelected = false;
-                isAddVocalistInput = "input";
-                setState(() {});
-              },
-              child: CustomPaint(
-                painter: RectanglePainter(
-                  rect: Rect.fromLTRB(0.0, 0.0, 155, 40),
-                  sentence: "+",
-                  color: Colors.grey,
-                  isSelected: isAddVocalistButtonSelected,
-                ),
-              ),
-            ),
-          );
-        }
+        return cellFunctionButton();
       } else {
-        return const TableViewCell(
-            child: ColoredBox(
-          color: Colors.blueGrey,
-        ));
+        return cellScaleMark();
       }
-    }
-    int row = vicinity.row - 1;
-    final String vocalistName = snippetsForeachVocalist.entries.toList()[row].key;
-    if (vicinity.column == 0) {
-      if (edittingVocalistIndex == row) {
-        final TextEditingController controller = TextEditingController(text: vocalistName);
-        oldVocalistValue = vocalistName;
-        return TableViewCell(
-          child: TextField(
-            controller: controller,
-            focusNode: textFieldFocusNode,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-            ),
-            onSubmitted: (value) {
-              edittingVocalistIndex = -1;
-              if (value == "") {
-                masterSubject.add(RequestDeleteVocalist(oldVocalistValue));
-              } else if (oldVocalistValue != value) {
-                cursorBlinker.restartCursorTimer();
-                masterSubject.add(RequestChangeVocalistName(oldVocalistValue, value));
-              }
-              setState(() {});
-            },
-          ),
-        );
+    } else if (vicinity.row <= snippetsForeachVocalist.length) {
+      int index = vicinity.row - 1;
+      final String vocalistName = snippetsForeachVocalist.entries.toList()[index].key;
+      final lanes = getLanes(snippetsForeachVocalist[vocalistName]!);
+      if (vicinity.column == 0) {
+        return cellVocalistPanel(index);
       } else {
-        return TableViewCell(
-          child: GestureDetector(
-            onTapDown: (TapDownDetails details) {
-              if (selectingVocalist.contains(vocalistName)) {
-                selectingVocalist.remove(vocalistName);
-                masterSubject.add(NotifyDeselectingVocalist(vocalistName));
-              } else {
-                selectingVocalist.add(vocalistName);
-                masterSubject.add(NotifySelectingVocalist(vocalistName));
-              }
-              setState(() {});
-            },
-            onDoubleTap: () {
-              edittingVocalistIndex = row;
-              debugPrint("${row}");
-              textFieldFocusNode.requestFocus();
-              cursorBlinker.pauseCursorTimer();
-              masterSubject.add(RequestKeyboardShortcutEnable(false));
-              setState(() {});
-            },
-            child: CustomPaint(
-              painter: RectanglePainter(
-                rect: Rect.fromLTRB(0.0, 0.0, 155, 60),
-                sentence: snippetsForeachVocalist.entries.toList()[row].value[0].vocalist.name,
-                color: Color(vocalistColorList[vocalistName]!),
-                isSelected: selectingVocalist.contains(vocalistName),
-              ),
-            ),
-          ),
-        );
+        return cellSnippetTimeline(index);
       }
-    }
-    if (row < snippetsForeachVocalist.length) {
-      double topMargin = 10;
-      double bottomMargin = 5;
-      return TableViewCell(
-        child: GestureDetector(
-          onTapDown: (TapDownDetails details) {
-            Offset localPosition = details.localPosition;
-            final snippets = snippetsForeachVocalist.entries.toList()[row].value;
-            for (var snippet in snippets) {
-              final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
-              final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
-              if (snippet.startTimestamp <= touchedSeekPosition && touchedSeekPosition <= endtime) {
-                if (selectingSnippet.contains(snippet.id)) {
-                  selectingSnippet.remove(snippet.id);
-                } else {
-                  selectingSnippet.add(snippet.id);
-                }
-                masterSubject.add(NotifySelectingSnippets(selectingSnippet));
-              }
-            }
-            setState(() {});
-          },
-          child: CustomPaint(
-            painter: TimelinePainter(
-              snippets: snippetsForeachVocalist.entries.toList()[row].value,
-              selectingId: selectingSnippet,
-              intervalLength: intervalLength,
-              intervalDuration: intervalDuration,
-              topMargin: topMargin,
-              bottomMargin: bottomMargin,
-              color: Color(vocalistColorList[vocalistName]!),
-              cursorPosition: cursorBlinker.isCursorVisible ? cursorPosition : null,
-            ),
-          ),
-        ),
-      );
     } else {
-      return TableViewCell(
-        child: ColoredBox(color: Colors.white),
-      );
+      if (vicinity.column == 0) {
+        return cellAddVocalistButton(vicinity);
+      } else {
+        return cellAddVocalistButtonNeighbor();
+      }
     }
   }
 
@@ -514,6 +380,188 @@ class _TimelinePaneState extends State<TimelinePane> {
         ),
       ),
     );
+  }
+
+  TableViewCell cellFunctionButton() {
+    return TableViewCell(
+      child: GestureDetector(
+        onTapDown: (TapDownDetails details) {
+          autoCurrentSelectMode = !autoCurrentSelectMode;
+          setState(() {});
+        },
+        child: CustomPaint(
+          painter: RectanglePainter(
+            rect: Rect.fromLTRB(1.0, -9.0, 154, 19),
+            sentence: "Auto Select Mode",
+            color: Colors.purpleAccent,
+            isSelected: autoCurrentSelectMode,
+          ),
+        ),
+      ),
+    );
+  }
+
+  TableViewCell cellScaleMark() {
+    return TableViewCell(
+      child: CustomPaint(
+        painter: ScaleMark(intervalLength: intervalLength, majorMarkLength: majorMarkLength, midiumMarkLength: midiumMarkLength, minorMarkLength: minorMarkLength, intervalDuration: intervalDuration),
+      ),
+    );
+  }
+
+  TableViewCell cellVocalistPanel(int index) {
+    final String vocalistName = snippetsForeachVocalist.entries.toList()[index].key;
+    if (edittingVocalistIndex == index) {
+      final TextEditingController controller = TextEditingController(text: vocalistName);
+      oldVocalistValue = vocalistName;
+      return TableViewCell(
+        child: TextField(
+          controller: controller,
+          focusNode: textFieldFocusNode,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(),
+          ),
+          onSubmitted: (value) {
+            edittingVocalistIndex = -1;
+            if (value == "") {
+              masterSubject.add(RequestDeleteVocalist(oldVocalistValue));
+            } else if (oldVocalistValue != value) {
+              cursorBlinker.restartCursorTimer();
+              masterSubject.add(RequestChangeVocalistName(oldVocalistValue, value));
+            }
+            setState(() {});
+          },
+        ),
+      );
+    } else {
+      return TableViewCell(
+        child: GestureDetector(
+          onTapDown: (TapDownDetails details) {
+            if (selectingVocalist.contains(vocalistName)) {
+              selectingVocalist.remove(vocalistName);
+              masterSubject.add(NotifyDeselectingVocalist(vocalistName));
+            } else {
+              selectingVocalist.add(vocalistName);
+              masterSubject.add(NotifySelectingVocalist(vocalistName));
+            }
+            setState(() {});
+          },
+          onDoubleTap: () {
+            edittingVocalistIndex = index;
+            debugPrint("${index}");
+            textFieldFocusNode.requestFocus();
+            cursorBlinker.pauseCursorTimer();
+            masterSubject.add(RequestKeyboardShortcutEnable(false));
+            setState(() {});
+          },
+          child: CustomPaint(
+            painter: RectanglePainter(
+              rect: Rect.fromLTRB(0.0, 0.0, 155, 60),
+              sentence: snippetsForeachVocalist.entries.toList()[index].value[0].vocalist.name,
+              color: Color(vocalistColorList[vocalistName]!),
+              isSelected: selectingVocalist.contains(vocalistName),
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
+  TableViewCell cellSnippetTimeline(int index) {
+    final String vocalistName = snippetsForeachVocalist.entries.toList()[index].key;
+    double topMargin = 10;
+    double bottomMargin = 5;
+    return TableViewCell(
+      child: GestureDetector(
+        onTapDown: (TapDownDetails details) {
+          Offset localPosition = details.localPosition;
+          final snippets = snippetsForeachVocalist.entries.toList()[index].value;
+          for (var snippet in snippets) {
+            final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
+            final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
+            if (snippet.startTimestamp <= touchedSeekPosition && touchedSeekPosition <= endtime) {
+              if (selectingSnippet.contains(snippet.id)) {
+                selectingSnippet.remove(snippet.id);
+              } else {
+                selectingSnippet.add(snippet.id);
+              }
+              masterSubject.add(NotifySelectingSnippets(selectingSnippet));
+            }
+          }
+          setState(() {});
+        },
+        child: CustomPaint(
+          painter: TimelinePainter(
+            snippets: snippetsForeachVocalist.entries.toList()[index].value,
+            selectingId: selectingSnippet,
+            intervalLength: intervalLength,
+            intervalDuration: intervalDuration,
+            topMargin: topMargin,
+            bottomMargin: bottomMargin,
+            color: Color(vocalistColorList[vocalistName]!),
+            cursorPosition: cursorBlinker.isCursorVisible ? cursorPosition : null,
+          ),
+        ),
+      ),
+    );
+  }
+
+  TableViewCell cellAddVocalistButton(TableVicinity vicinity) {
+    if (isAddVocalistInput != "") {
+      final TextEditingController controller = TextEditingController(text: "");
+      return TableViewCell(
+        child: TextField(
+          controller: controller,
+          focusNode: textFieldFocusNode,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(),
+          ),
+          onChanged: (value) {
+            isAddVocalistInput = value;
+          },
+          onSubmitted: (value) {
+            if (value != "") {
+              masterSubject.add(RequestAddVocalist(value));
+              debugPrint("RequestAddVocalist ${value}");
+            }
+            isAddVocalistInput = "";
+            setState(() {});
+          },
+        ),
+      );
+    } else {
+      return TableViewCell(
+        child: GestureDetector(
+          onTapDown: (TapDownDetails details) {
+            isAddVocalistButtonSelected = true;
+            textFieldFocusNode.requestFocus();
+            cursorBlinker.restartCursorTimer();
+            masterSubject.add(RequestKeyboardShortcutEnable(false));
+            setState(() {});
+          },
+          onTapUp: (TapUpDetails details) {
+            isAddVocalistButtonSelected = false;
+            isAddVocalistInput = "input";
+            setState(() {});
+          },
+          child: CustomPaint(
+            painter: RectanglePainter(
+              rect: Rect.fromLTRB(0.0, 0.0, 155, 40),
+              sentence: "+",
+              color: Colors.grey,
+              isSelected: isAddVocalistButtonSelected,
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
+  TableViewCell cellAddVocalistButtonNeighbor() {
+    return const TableViewCell(
+        child: ColoredBox(
+      color: Colors.blueGrey,
+    ));
   }
 
   void _onFocusChange() {
