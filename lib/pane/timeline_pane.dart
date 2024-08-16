@@ -9,6 +9,7 @@ import 'package:lyric_editor/painter/rectangle_painter.dart';
 import 'package:lyric_editor/painter/scale_mark.dart';
 import 'package:lyric_editor/painter/timeline_painter.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
+import 'package:lyric_editor/utility/svg_icon.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
@@ -233,6 +234,7 @@ class _TimelinePaneState extends State<TimelinePane> {
         child: Stack(
           children: [
             ReorderableListView(
+              buildDefaultDragHandles: false,
               onReorder: onReorder,
               children: List.generate(vocalistColorList.length + 2, (index) {
                 return itemBuilder(context, index);
@@ -269,7 +271,23 @@ class _TimelinePaneState extends State<TimelinePane> {
       return Container(
         key: ValueKey('VocalistPanel_${index - 1}'),
         height: 60,
-        child: cellVocalistPanel(index - 1),
+        child: Row(
+          children: [
+            ReorderableDragStartListener(
+              index: index,
+              child: SvgIcon(
+                assetName: 'assets/drag_handle.svg',
+                iconColor: Colors.white,
+                backgroundColor: Colors.greenAccent,
+                width: 20,
+                height: 60,
+              ),
+            ),
+            Expanded(
+              child: Container(alignment: Alignment.topLeft, child: cellVocalistPanel(index - 1)),
+            ),
+          ],
+        ),
       );
     } else {
       return Container(
@@ -412,6 +430,7 @@ class _TimelinePaneState extends State<TimelinePane> {
               setState(() {});
             },
             child: CustomPaint(
+              size: Size(155, constraints.maxHeight),
               painter: RectanglePainter(
                 rect: Rect.fromLTRB(0.0, 0.0, 155, constraints.maxHeight),
                 sentence: snippetsForeachVocalist.entries.toList()[index].value[0].vocalist.name,
