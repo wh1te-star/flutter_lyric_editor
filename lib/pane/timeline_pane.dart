@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:lyric_editor/painter/current_position_indicator_painter.dart';
 import 'package:lyric_editor/painter/rectangle_painter.dart';
 import 'package:lyric_editor/painter/scale_mark.dart';
@@ -14,7 +15,6 @@ import 'package:lyric_editor/utility/svg_icon.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:two_dimensional_scrollables/two_dimensional_scrollables.dart';
 
 class TimelinePane extends StatefulWidget {
   final PublishSubject<dynamic> masterSubject;
@@ -31,8 +31,10 @@ class _TimelinePaneState extends State<TimelinePane> {
   final FocusNode focusNode;
   _TimelinePaneState(this.masterSubject, this.focusNode);
 
-  final ScrollableDetails verticalDetails = ScrollableDetails(direction: AxisDirection.down, controller: ScrollController());
-  final ScrollableDetails horizontalDetails = ScrollableDetails(direction: AxisDirection.right, controller: ScrollController());
+  LinkedScrollControllerGroup horizontalScrollController = LinkedScrollControllerGroup();
+  late ScrollController scaleMarkScrollController;
+  late List<ScrollController> snippetTimelineScrollController = [];
+  late ScrollController seekPositionScrollController;
 
   Map<String, List<LyricSnippet>> snippetsForeachVocalist = {};
   Map<String, int> vocalistColorList = {};
@@ -62,6 +64,13 @@ class _TimelinePaneState extends State<TimelinePane> {
     super.initState();
     textFieldFocusNode = FocusNode();
     textFieldFocusNode.addListener(_onFocusChange);
+
+    scaleMarkScrollController = horizontalScrollController.addAndGet();
+    for (int i = 0; i < 3; i++) {
+      snippetTimelineScrollController.add(horizontalScrollController.addAndGet());
+    }
+    seekPositionScrollController = horizontalScrollController.addAndGet();
+
     masterSubject.stream.listen((signal) {
       if (signal is NotifyAudioFileLoaded) {
         setState(() {
@@ -89,6 +98,14 @@ class _TimelinePaneState extends State<TimelinePane> {
         cursorPosition = snippetsForeachVocalist[snippetsForeachVocalist.keys.first]![0].id;
         vocalistColorList = signal.vocalistColorList;
         vocalistCombinationCorrespondence = signal.vocalistCombinationCorrespondence;
+
+        snippetTimelineScrollController.forEach((ScrollController controller) {
+          controller.dispose();
+        });
+        snippetTimelineScrollController.clear();
+        for (int i = 0; i < vocalistColorList.length; i++) {
+          snippetTimelineScrollController.add(horizontalScrollController.addAndGet());
+        }
         setState(() {});
       }
       if (signal is NotifySectionAdded || signal is NotifySectionDeleted) {
@@ -120,7 +137,7 @@ class _TimelinePaneState extends State<TimelinePane> {
         setState(() {});
       }
     });
-    horizontalDetails.controller!.addListener(_onHorizontalScroll);
+    //horizontalDetails.controller!.addListener(_onHorizontalScroll);
 
     cursorBlinker = CursorBlinker(
         blinkIntervalInMillisec: 1000,
@@ -257,9 +274,14 @@ class _TimelinePaneState extends State<TimelinePane> {
                     ),
                     borderLine,
                     Expanded(
-                      child: Container(
-                        height: 30,
-                        child: cellScaleMark(),
+                      child: SingleChildScrollView(
+                        controller: scaleMarkScrollController,
+                        scrollDirection: Axis.horizontal,
+                        child: Container(
+                          width: audioDuration * intervalLength / intervalDuration,
+                          height: 30,
+                          child: cellScaleMark(),
+                        ),
                       ),
                     ),
                   ],
@@ -280,7 +302,7 @@ class _TimelinePaneState extends State<TimelinePane> {
               child: Padding(
                 padding: const EdgeInsets.only(left: 160.0),
                 child: SingleChildScrollView(
-                  controller: horizontalDetails.controller,
+                  controller: seekPositionScrollController,
                   scrollDirection: Axis.horizontal,
                   child: CustomPaint(
                     size: Size(audioDuration * intervalLength / intervalDuration, 800),
@@ -338,9 +360,14 @@ class _TimelinePaneState extends State<TimelinePane> {
             ),
             borderLine,
             Expanded(
-              child: Container(
-                height: rowHeight,
-                child: cellSnippetTimeline(index),
+              child: SingleChildScrollView(
+                controller: snippetTimelineScrollController[index],
+                scrollDirection: Axis.horizontal,
+                child: Container(
+                  width: audioDuration * intervalLength / intervalDuration,
+                  height: rowHeight,
+                  child: cellSnippetTimeline(index),
+                ),
               ),
             ),
           ],
@@ -386,8 +413,11 @@ class _TimelinePaneState extends State<TimelinePane> {
 
   @override
   void dispose() {
-    horizontalDetails.controller!.removeListener(_onHorizontalScroll);
-    horizontalDetails.controller!.dispose();
+    scaleMarkScrollController.dispose();
+    snippetTimelineScrollController.forEach((ScrollController controller) {
+      controller.dispose();
+    });
+    seekPositionScrollController.dispose();
     super.dispose();
   }
 
