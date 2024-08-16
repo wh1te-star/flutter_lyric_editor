@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lyric_editor/utility/color_utilities.dart';
 
 class RectanglePainter extends CustomPainter {
   final Rect rect;
@@ -20,7 +21,7 @@ class RectanglePainter extends CustomPainter {
 
     final textSpan = TextSpan(
       text: sentence,
-      style: TextStyle(color: ThemeData.estimateBrightnessForColor(color) == Brightness.light ? Colors.black : Colors.white, fontSize: 16),
+      style: TextStyle(color: determineBlackOrWhite(color), fontSize: 16),
     );
     final textPainter = TextPainter(
       text: textSpan,
@@ -42,8 +43,8 @@ class RectanglePainter extends CustomPainter {
     textPainter.paint(canvas, offset);
 
     final double edgeWidth = 1.5;
-    final lighterColor = _adjustColorBrightness(color, 0.1);
-    final darkerColor = _adjustColorBrightness(color, -0.3);
+    final lighterColor = adjustColorBrightness(color, 0.1);
+    final darkerColor = adjustColorBrightness(color, -0.3);
     final borderRadius = 1.0;
     final leftInner = rect.left + borderRadius;
     final topInner = rect.top + borderRadius;
@@ -85,13 +86,6 @@ class RectanglePainter extends CustomPainter {
       canvas.drawPath(lighterPath, lighterPaint);
       canvas.drawPath(darkerPath, darkerPaint);
     }
-  }
-
-  Color _adjustColorBrightness(Color color, double factor) {
-    final hsl = HSLColor.fromColor(color);
-    final adjustedLightness = (hsl.lightness + factor).clamp(0.0, 1.0);
-    final hslAdjusted = hsl.withLightness(adjustedLightness);
-    return hslAdjusted.toColor();
   }
 
   @override

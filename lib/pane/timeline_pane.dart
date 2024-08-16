@@ -8,6 +8,7 @@ import 'package:lyric_editor/painter/current_position_indicator_painter.dart';
 import 'package:lyric_editor/painter/rectangle_painter.dart';
 import 'package:lyric_editor/painter/scale_mark.dart';
 import 'package:lyric_editor/painter/timeline_painter.dart';
+import 'package:lyric_editor/utility/color_utilities.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:lyric_editor/utility/svg_icon.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
@@ -222,6 +223,18 @@ class _TimelinePaneState extends State<TimelinePane> {
 
   @override
   Widget build(BuildContext context) {
+    final Widget borderLine = Container(
+      width: 5,
+      height: 30,
+      decoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(
+            color: Colors.black,
+            width: 5,
+          ),
+        ),
+      ),
+    );
     return Focus(
       focusNode: focusNode,
       child: GestureDetector(
@@ -233,12 +246,34 @@ class _TimelinePaneState extends State<TimelinePane> {
         },
         child: Stack(
           children: [
-            ReorderableListView(
-              buildDefaultDragHandles: false,
-              onReorder: onReorder,
-              children: List.generate(vocalistColorList.length + 2, (index) {
-                return itemBuilder(context, index);
-              }),
+            Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 155,
+                      height: 30,
+                      child: cellFunctionButton(),
+                    ),
+                    borderLine,
+                    Expanded(
+                      child: Container(
+                        height: 30,
+                        child: cellScaleMark(),
+                      ),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: ReorderableListView(
+                    buildDefaultDragHandles: false,
+                    onReorder: onReorder,
+                    children: List.generate(vocalistColorList.length + 1, (index) {
+                      return itemBuilder(context, index);
+                    }),
+                  ),
+                ),
+              ],
             ),
             IgnorePointer(
               ignoring: true,
@@ -261,39 +296,80 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   Widget itemBuilder(BuildContext context, int index) {
-    if (index == 0) {
-      return Container(
-        key: ValueKey('FunctionButton'),
-        height: 30,
-        child: cellFunctionButton(),
+    if (index < vocalistColorList.length) {
+      final int lanes = getLanes(snippetsForeachVocalist.values.toList()[index]);
+      final double rowHeight = 60.0 * lanes;
+      final Widget borderLine = Container(
+        width: 5,
+        height: rowHeight,
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(
+              color: Colors.black,
+              width: 5,
+            ),
+          ),
+        ),
       );
-    } else if (index <= vocalistColorList.length) {
+
+      final String vocalistName = snippetsForeachVocalist.keys.toList()[index];
+      final Color vocalistColor = Color(vocalistColorList[vocalistName]!);
+      final Color backgroundColor = adjustColorBrightness(vocalistColor, 0.3);
+
       return Container(
-        key: ValueKey('VocalistPanel_${index - 1}'),
-        height: 60,
+        key: ValueKey('VocalistPanel_${index}'),
+        height: rowHeight,
         child: Row(
           children: [
             ReorderableDragStartListener(
               index: index,
               child: SvgIcon(
                 assetName: 'assets/drag_handle.svg',
-                iconColor: Colors.white,
-                backgroundColor: Colors.greenAccent,
+                iconColor: determineBlackOrWhite(backgroundColor),
+                backgroundColor: backgroundColor,
                 width: 20,
-                height: 60,
+                height: rowHeight,
               ),
             ),
+            Container(
+              width: 135,
+              height: rowHeight,
+              child: Container(alignment: Alignment.topLeft, child: cellVocalistPanel(index)),
+            ),
+            borderLine,
             Expanded(
-              child: Container(alignment: Alignment.topLeft, child: cellVocalistPanel(index - 1)),
+              child: Container(
+                height: rowHeight,
+                child: cellSnippetTimeline(index),
+              ),
             ),
           ],
         ),
       );
     } else {
-      return Container(
-        key: ValueKey('AddVocalistButton'),
+      final Widget borderLine = Container(
+        width: 5,
         height: 40,
-        child: cellAddVocalistButton(),
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(
+              color: Colors.black,
+              width: 5,
+            ),
+          ),
+        ),
+      );
+      return Row(
+        key: ValueKey('AddVocalistButton'),
+        children: [
+          Container(
+            width: 155,
+            height: 40,
+            child: cellAddVocalistButton(),
+          ),
+          borderLine,
+          Expanded(child: cellAddVocalistButtonNeighbor()),
+        ],
       );
     }
   }
@@ -430,9 +506,9 @@ class _TimelinePaneState extends State<TimelinePane> {
               setState(() {});
             },
             child: CustomPaint(
-              size: Size(155, constraints.maxHeight),
+              size: Size(135, constraints.maxHeight),
               painter: RectanglePainter(
-                rect: Rect.fromLTRB(0.0, 0.0, 155, constraints.maxHeight),
+                rect: Rect.fromLTRB(0.0, 0.0, 135, constraints.maxHeight),
                 sentence: snippetsForeachVocalist.entries.toList()[index].value[0].vocalist.name,
                 color: Color(vocalistColorList[vocalistName]!),
                 isSelected: selectingVocalist.contains(vocalistName),

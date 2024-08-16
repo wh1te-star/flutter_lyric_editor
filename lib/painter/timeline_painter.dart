@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lyric_editor/utility/color_utilities.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/painter/rectangle_painter.dart';
 import 'package:lyric_editor/painter/triangle_painter.dart';
@@ -31,6 +32,11 @@ class TimelinePainter extends CustomPainter {
     int previousEndtime = 0;
     int currentLane = 0;
 
+    Color backgroundColor = adjustColorBrightness(color, 0.3);
+    Rect rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    Paint paint = Paint()..color = backgroundColor;
+    canvas.drawRect(rect, paint);
+
     snippets.forEach((LyricSnippet snippet) {
       if (snippet.sentence == "") return;
 
@@ -47,7 +53,6 @@ class TimelinePainter extends CustomPainter {
       final left = snippet.startTimestamp * intervalLength / intervalDuration;
       final right = endtime * intervalLength / intervalDuration;
       final rect = Rect.fromLTRB(left, top, right, bottom);
-
 
       final isSelected = selectingId.contains(snippet.id);
       final rectanglePainter = RectanglePainter(
