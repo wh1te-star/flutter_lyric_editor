@@ -41,7 +41,6 @@ class _TimelinePaneState extends State<TimelinePane> {
   List<String> selectingVocalist = [];
   int audioDuration = 60000;
   int currentPosition = 0;
-  final ScrollController currentPositionScroller = ScrollController();
   double intervalLength = 10.0;
   double majorMarkLength = 15.0;
   double midiumMarkLength = 11.0;
@@ -120,7 +119,6 @@ class _TimelinePaneState extends State<TimelinePane> {
       }
     });
     horizontalDetails.controller!.addListener(_onHorizontalScroll);
-    currentPositionScroller.addListener(_onHorizontalScroll);
 
     cursorBlinker = CursorBlinker(
         blinkIntervalInMillisec: 1000,
@@ -232,44 +230,70 @@ class _TimelinePaneState extends State<TimelinePane> {
             debugPrint("The timeline pane is focused");
           }
         },
-        child: Stack(children: [
-          TableView.builder(
-            verticalDetails: verticalDetails,
-            horizontalDetails: horizontalDetails,
-            diagonalDragBehavior: DiagonalDragBehavior.free,
-            cellBuilder: _buildCell,
-            columnCount: 2,
-            pinnedColumnCount: 1,
-            columnBuilder: _buildColumnSpan,
-            rowCount: snippetsForeachVocalist.length + 2,
-            pinnedRowCount: 1,
-            rowBuilder: _buildRowSpan,
-          ),
-          IgnorePointer(
-            ignoring: true,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 160.0),
-              child: SingleChildScrollView(
-                controller: currentPositionScroller,
-                scrollDirection: Axis.horizontal,
-                child: CustomPaint(
-                  size: Size(audioDuration * intervalLength / intervalDuration, 800),
-                  painter: CurrentPositionIndicatorPainter(intervalLength, intervalDuration, currentPosition, sections),
+        child: Stack(
+          children: [
+            ReorderableListView(
+              onReorder: onReorder,
+              children: List.generate(vocalistColorList.length + 2, (index) {
+                return itemBuilder(context, index);
+              }),
+            ),
+            IgnorePointer(
+              ignoring: true,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 160.0),
+                child: SingleChildScrollView(
+                  controller: horizontalDetails.controller,
+                  scrollDirection: Axis.horizontal,
+                  child: CustomPaint(
+                    size: Size(audioDuration * intervalLength / intervalDuration, 800),
+                    painter: CurrentPositionIndicatorPainter(intervalLength, intervalDuration, currentPosition, sections),
+                  ),
                 ),
               ),
             ),
-          ),
-        ]),
+          ],
+        ),
       ),
     );
+  }
+
+  Widget itemBuilder(BuildContext context, int index) {
+    if (index == 0) {
+      return Container(
+        key: ValueKey('FunctionButton'),
+        height: 30,
+        child: cellFunctionButton(),
+      );
+    } else if (index <= vocalistColorList.length) {
+      return Container(
+        key: ValueKey('VocalistPanel_${index - 1}'),
+        height: 60,
+        child: cellVocalistPanel(index - 1),
+      );
+    } else {
+      return Container(
+        key: ValueKey('AddVocalistButton'),
+        height: 40,
+        child: cellAddVocalistButton(),
+      );
+    }
+  }
+
+  void onReorder(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > vocalistColorList.length) newIndex = vocalistColorList.length;
+      if (oldIndex < vocalistColorList.length && newIndex <= vocalistColorList.length) {
+        final item = vocalistColorList.remove("abc");
+        //vocalistColorList.insert(newIndex > oldIndex ? newIndex - 1 : newIndex, item);
+      }
+    });
   }
 
   @override
   void dispose() {
     horizontalDetails.controller!.removeListener(_onHorizontalScroll);
-    currentPositionScroller.removeListener(_onHorizontalScroll);
     horizontalDetails.controller!.dispose();
-    currentPositionScroller.dispose();
     super.dispose();
   }
 
@@ -320,126 +344,53 @@ class _TimelinePaneState extends State<TimelinePane> {
     return maxOverlap;
   }
 
-  TableViewCell _buildCell(BuildContext context, TableVicinity vicinity) {
-    if (vicinity.row == 0) {
-      if (vicinity.column == 0) {
-        return cellFunctionButton();
-      } else {
-        return cellScaleMark();
-      }
-    } else if (vicinity.row <= snippetsForeachVocalist.length) {
-      int index = vicinity.row - 1;
-      if (vicinity.column == 0) {
-        return cellVocalistPanel(index);
-      } else {
-        return cellSnippetTimeline(index);
-      }
-    } else {
-      if (vicinity.column == 0) {
-        return cellAddVocalistButton(vicinity);
-      } else {
-        return cellAddVocalistButtonNeighbor();
-      }
-    }
-  }
-
-  TableSpan _buildColumnSpan(int index) {
-    double extent = 0;
-    if (index == 0) {
-      extent = 160;
-    } else {
-      extent = audioDuration * intervalLength / intervalDuration;
-    }
-    return TableSpan(
-        extent: FixedTableSpanExtent(extent),
-        foregroundDecoration: TableSpanDecoration(
-          border: TableSpanBorder(
-            trailing: BorderSide(
-              width: (index == 0) ? 5 : 1,
-              color: Colors.black,
-            ),
-          ),
-        ));
-  }
-
-  TableSpan _buildRowSpan(int index) {
-    late final extent;
-    if (index == 0) {
-      extent = 20.0;
-    } else if (index <= snippetsForeachVocalist.length) {
-      final String vocalistName = snippetsForeachVocalist.entries.toList()[index - 1].key;
-      final lanes = getLanes(snippetsForeachVocalist[vocalistName]!);
-      extent = 60.0 * lanes;
-    } else {
-      extent = 40.0;
-    }
-    return TableSpan(
-      extent: FixedTableSpanExtent(extent),
-      padding: index == 0 ? TableSpanPadding(leading: 10.0) : null,
-      foregroundDecoration: const TableSpanDecoration(
-        border: TableSpanBorder(
-          trailing: BorderSide(
-            width: 1,
-            color: Colors.black,
-          ),
-        ),
-      ),
-    );
-  }
-
-  TableViewCell cellFunctionButton() {
-    return TableViewCell(
-      child: GestureDetector(
-        onTapDown: (TapDownDetails details) {
-          autoCurrentSelectMode = !autoCurrentSelectMode;
-          setState(() {});
-        },
-        child: CustomPaint(
-          painter: RectanglePainter(
-            rect: Rect.fromLTRB(1.0, -9.0, 154, 19),
-            sentence: "Auto Select Mode",
-            color: Colors.purpleAccent,
-            isSelected: autoCurrentSelectMode,
-          ),
-        ),
-      ),
-    );
-  }
-
-  TableViewCell cellScaleMark() {
-    return TableViewCell(
+  Widget cellFunctionButton() {
+    return GestureDetector(
+      onTapDown: (TapDownDetails details) {
+        autoCurrentSelectMode = !autoCurrentSelectMode;
+        setState(() {});
+      },
       child: CustomPaint(
-        painter: ScaleMark(intervalLength: intervalLength, majorMarkLength: majorMarkLength, midiumMarkLength: midiumMarkLength, minorMarkLength: minorMarkLength, intervalDuration: intervalDuration),
+        painter: RectanglePainter(
+          rect: Rect.fromLTRB(0.0, 0.0, 155, 30),
+          sentence: "Auto Select Mode",
+          color: Colors.purpleAccent,
+          isSelected: autoCurrentSelectMode,
+        ),
       ),
     );
   }
 
-  TableViewCell cellVocalistPanel(int index) {
+  Widget cellScaleMark() {
+    return CustomPaint(
+      painter: ScaleMark(intervalLength: intervalLength, majorMarkLength: majorMarkLength, midiumMarkLength: midiumMarkLength, minorMarkLength: minorMarkLength, intervalDuration: intervalDuration),
+    );
+  }
+
+  Widget cellVocalistPanel(int index) {
     final String vocalistName = snippetsForeachVocalist.entries.toList()[index].key;
     if (edittingVocalistIndex == index) {
       final TextEditingController controller = TextEditingController(text: vocalistName);
       oldVocalistValue = vocalistName;
-      return TableViewCell(
-        child: TextField(
-          controller: controller,
-          focusNode: textFieldFocusNode,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(),
-          ),
-          onSubmitted: (value) {
-            edittingVocalistIndex = -1;
-            if (value == "") {
-              masterSubject.add(RequestDeleteVocalist(oldVocalistValue));
-            } else if (oldVocalistValue != value) {
-              cursorBlinker.restartCursorTimer();
-              masterSubject.add(RequestChangeVocalistName(oldVocalistValue, value));
-            }
-            setState(() {});
-          },
+      return TextField(
+        controller: controller,
+        focusNode: textFieldFocusNode,
+        decoration: InputDecoration(
+          border: OutlineInputBorder(),
         ),
+        onSubmitted: (value) {
+          edittingVocalistIndex = -1;
+          if (value == "") {
+            masterSubject.add(RequestDeleteVocalist(oldVocalistValue));
+          } else if (oldVocalistValue != value) {
+            cursorBlinker.restartCursorTimer();
+            masterSubject.add(RequestChangeVocalistName(oldVocalistValue, value));
+          }
+          setState(() {});
+        },
       );
     } else {
-      return TableViewCell(child: LayoutBuilder(
+      return LayoutBuilder(
         builder: (context, constraints) {
           return GestureDetector(
             onTapDown: (TapDownDetails details) {
@@ -470,105 +421,98 @@ class _TimelinePaneState extends State<TimelinePane> {
             ),
           );
         },
-      ));
+      );
     }
   }
 
-  TableViewCell cellSnippetTimeline(int index) {
+  Widget cellSnippetTimeline(int index) {
     final String vocalistName = snippetsForeachVocalist.entries.toList()[index].key;
     double topMargin = 10;
     double bottomMargin = 5;
-    return TableViewCell(
-      child: GestureDetector(
-        onTapDown: (TapDownDetails details) {
-          Offset localPosition = details.localPosition;
-          final snippets = snippetsForeachVocalist.entries.toList()[index].value;
-          for (var snippet in snippets) {
-            final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
-            final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
-            if (snippet.startTimestamp <= touchedSeekPosition && touchedSeekPosition <= endtime) {
-              if (selectingSnippet.contains(snippet.id)) {
-                selectingSnippet.remove(snippet.id);
-              } else {
-                selectingSnippet.add(snippet.id);
-              }
-              masterSubject.add(NotifySelectingSnippets(selectingSnippet));
+    return GestureDetector(
+      onTapDown: (TapDownDetails details) {
+        Offset localPosition = details.localPosition;
+        final snippets = snippetsForeachVocalist.entries.toList()[index].value;
+        for (var snippet in snippets) {
+          final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
+          final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
+          if (snippet.startTimestamp <= touchedSeekPosition && touchedSeekPosition <= endtime) {
+            if (selectingSnippet.contains(snippet.id)) {
+              selectingSnippet.remove(snippet.id);
+            } else {
+              selectingSnippet.add(snippet.id);
             }
+            masterSubject.add(NotifySelectingSnippets(selectingSnippet));
           }
-          setState(() {});
-        },
-        child: CustomPaint(
-          painter: TimelinePainter(
-            snippets: snippetsForeachVocalist.entries.toList()[index].value,
-            selectingId: selectingSnippet,
-            intervalLength: intervalLength,
-            intervalDuration: intervalDuration,
-            topMargin: topMargin,
-            bottomMargin: bottomMargin,
-            color: Color(vocalistColorList[vocalistName]!),
-            cursorPosition: cursorBlinker.isCursorVisible ? cursorPosition : null,
-          ),
+        }
+        setState(() {});
+      },
+      child: CustomPaint(
+        painter: TimelinePainter(
+          snippets: snippetsForeachVocalist.entries.toList()[index].value,
+          selectingId: selectingSnippet,
+          intervalLength: intervalLength,
+          intervalDuration: intervalDuration,
+          topMargin: topMargin,
+          bottomMargin: bottomMargin,
+          color: Color(vocalistColorList[vocalistName]!),
+          cursorPosition: cursorBlinker.isCursorVisible ? cursorPosition : null,
         ),
       ),
     );
   }
 
-  TableViewCell cellAddVocalistButton(TableVicinity vicinity) {
+  Widget cellAddVocalistButton() {
     if (isAddVocalistInput != "") {
       final TextEditingController controller = TextEditingController(text: "");
-      return TableViewCell(
-        child: TextField(
-          controller: controller,
-          focusNode: textFieldFocusNode,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(),
-          ),
-          onChanged: (value) {
-            isAddVocalistInput = value;
-          },
-          onSubmitted: (value) {
-            if (value != "") {
-              masterSubject.add(RequestAddVocalist(value));
-              debugPrint("RequestAddVocalist ${value}");
-            }
-            isAddVocalistInput = "";
-            setState(() {});
-          },
+      return TextField(
+        controller: controller,
+        focusNode: textFieldFocusNode,
+        decoration: InputDecoration(
+          border: OutlineInputBorder(),
         ),
+        onChanged: (value) {
+          isAddVocalistInput = value;
+        },
+        onSubmitted: (value) {
+          if (value != "") {
+            masterSubject.add(RequestAddVocalist(value));
+            debugPrint("RequestAddVocalist ${value}");
+          }
+          isAddVocalistInput = "";
+          setState(() {});
+        },
       );
     } else {
-      return TableViewCell(
-        child: GestureDetector(
-          onTapDown: (TapDownDetails details) {
-            isAddVocalistButtonSelected = true;
-            textFieldFocusNode.requestFocus();
-            cursorBlinker.restartCursorTimer();
-            masterSubject.add(RequestKeyboardShortcutEnable(false));
-            setState(() {});
-          },
-          onTapUp: (TapUpDetails details) {
-            isAddVocalistButtonSelected = false;
-            isAddVocalistInput = "input";
-            setState(() {});
-          },
-          child: CustomPaint(
-            painter: RectanglePainter(
-              rect: Rect.fromLTRB(0.0, 0.0, 155, 40),
-              sentence: "+",
-              color: Colors.grey,
-              isSelected: isAddVocalistButtonSelected,
-            ),
+      return GestureDetector(
+        onTapDown: (TapDownDetails details) {
+          isAddVocalistButtonSelected = true;
+          textFieldFocusNode.requestFocus();
+          cursorBlinker.restartCursorTimer();
+          masterSubject.add(RequestKeyboardShortcutEnable(false));
+          setState(() {});
+        },
+        onTapUp: (TapUpDetails details) {
+          isAddVocalistButtonSelected = false;
+          isAddVocalistInput = "input";
+          setState(() {});
+        },
+        child: CustomPaint(
+          painter: RectanglePainter(
+            rect: Rect.fromLTRB(0.0, 0.0, 155, 40),
+            sentence: "+",
+            color: Colors.grey,
+            isSelected: isAddVocalistButtonSelected,
           ),
         ),
       );
     }
   }
 
-  TableViewCell cellAddVocalistButtonNeighbor() {
-    return const TableViewCell(
-        child: ColoredBox(
+  Widget cellAddVocalistButtonNeighbor() {
+    return const ColoredBox(
       color: Colors.blueGrey,
-    ));
+    );
   }
 
   void _onFocusChange() {
@@ -585,10 +529,10 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   void _onHorizontalScroll() {
-    if (horizontalDetails.controller!.hasClients && currentPositionScroller.hasClients) {
-      if (horizontalDetails.controller!.offset != currentPositionScroller.offset) {
-        currentPositionScroller.jumpTo(horizontalDetails.controller!.offset);
-      }
+    /*
+    if (horizontalDetails.controller!.hasClients) {
+      currentPositionScroller.jumpTo(horizontalDetails.controller!.offset);
     }
+*/
   }
 }

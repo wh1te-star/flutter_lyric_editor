@@ -293,9 +293,9 @@ class TimingService {
   List<LyricSnippet> parseLyric(String rawLyricText) {
     final document = xml.XmlDocument.parse(rawLyricText);
 
-    final vocalistCombination = document.findAllElements('VocalistsColor');
+    final vocalistCombination = document.findAllElements('VocalistsList');
     for (var vocalistName in vocalistCombination) {
-      final colorElements = vocalistName.findElements('Color');
+      final colorElements = vocalistName.findElements('VocalistInfo');
       for (var colorElement in colorElements) {
         final name = colorElement.getAttribute('name')!;
         final color = int.parse(colorElement.getAttribute('color')!, radix: 16);
