@@ -37,7 +37,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   List<DateTime> panTimestamps = [];
 
   Map<String, List<LyricSnippet>> snippetsForeachVocalist = {};
-  Map<String, int> vocalistColorList = {};
+  Map<String, int> vocalistColorMap = {};
   Map<String, List<String>> vocalistCombinationCorrespondence = {};
   List<int> sections = [];
   LyricSnippetID cursorPosition = LyricSnippetID(Vocalist("", 0), 0);
@@ -93,14 +93,14 @@ class _TimelinePaneState extends State<TimelinePane> {
       if (signal is NotifyLyricParsed || signal is NotifyVocalistAdded || signal is NotifyVocalistDeleted || signal is NotifyVocalistNameChanged) {
         snippetsForeachVocalist = groupBy(signal.lyricSnippetList, (LyricSnippet snippet) => snippet.vocalist.name);
         cursorPosition = snippetsForeachVocalist[snippetsForeachVocalist.keys.first]![0].id;
-        vocalistColorList = signal.vocalistColorList;
+        vocalistColorMap = signal.vocalistColorList;
         vocalistCombinationCorrespondence = signal.vocalistCombinationCorrespondence;
 
         snippetTimelineScrollController.forEach((ScrollController controller) {
           controller.dispose();
         });
         snippetTimelineScrollController.clear();
-        for (int i = 0; i < vocalistColorList.length; i++) {
+        for (int i = 0; i < vocalistColorMap.length; i++) {
           snippetTimelineScrollController.add(horizontalScrollController.addAndGet());
         }
 
@@ -352,7 +352,7 @@ class _TimelinePaneState extends State<TimelinePane> {
                     buildDefaultDragHandles: false,
                     scrollController: verticalScrollController,
                     onReorder: onReorder,
-                    children: List.generate(vocalistColorList.length + 1, (index) {
+                    children: List.generate(vocalistColorMap.length + 1, (index) {
                       return itemBuilder(context, index);
                     }),
                   ),
@@ -380,7 +380,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   Widget itemBuilder(BuildContext context, int index) {
-    if (index < vocalistColorList.length) {
+    if (index < vocalistColorMap.length) {
       final int lanes = getLanes(snippetsForeachVocalist.values.toList()[index]);
       final double rowHeight = 60.0 * lanes;
       final Widget borderLine = Container(
@@ -397,7 +397,7 @@ class _TimelinePaneState extends State<TimelinePane> {
       );
 
       final String vocalistName = snippetsForeachVocalist.keys.toList()[index];
-      final Color vocalistColor = Color(vocalistColorList[vocalistName]!);
+      final Color vocalistColor = Color(vocalistColorMap[vocalistName]!);
       final Color backgroundColor = adjustColorBrightness(vocalistColor, 0.3);
 
       return Container(
@@ -464,12 +464,22 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   void onReorder(int oldIndex, int newIndex) {
+if (newIndex > snippetsForeachVocalist.length) {
+  newIndex = snippetsForeachVocalist.length;
+}
+
+if (oldIndex < snippetsForeachVocalist.length && newIndex <= vocalistColorMap.length) {
+  final key = snippetsForeachVocalist.keys.elementAt(oldIndex);
+  final value = snippetsForeachVocalist.remove(key)!;
+
+  final entries = snippetsForeachVocalist.entries.toList();
+  entries.insert(newIndex > oldIndex ? newIndex - 1 : newIndex, MapEntry(key, value));
+
+  snippetsForeachVocalist
+    ..clear()
+    ..addEntries(entries);
+}
     setState(() {
-      if (newIndex > vocalistColorList.length) newIndex = vocalistColorList.length;
-      if (oldIndex < vocalistColorList.length && newIndex <= vocalistColorList.length) {
-        final item = vocalistColorList.remove("abc");
-        //vocalistColorList.insert(newIndex > oldIndex ? newIndex - 1 : newIndex, item);
-      }
     });
   }
 
@@ -603,7 +613,7 @@ class _TimelinePaneState extends State<TimelinePane> {
               painter: RectanglePainter(
                 rect: Rect.fromLTRB(0.0, 0.0, 135, constraints.maxHeight),
                 sentence: snippetsForeachVocalist.entries.toList()[index].value[0].vocalist.name,
-                color: Color(vocalistColorList[vocalistName]!),
+                color: Color(vocalistColorMap[vocalistName]!),
                 isSelected: selectingVocalist.contains(vocalistName),
                 borderLineWidth: 1.0,
               ),
@@ -642,7 +652,7 @@ class _TimelinePaneState extends State<TimelinePane> {
           selectingId: selectingSnippet,
           intervalLength: intervalLength,
           intervalDuration: intervalDuration,
-          color: Color(vocalistColorList[vocalistName]!),
+          color: Color(vocalistColorMap[vocalistName]!),
           frameThickness: 3.0,
           topMargin: topMargin,
           bottomMargin: bottomMargin,
