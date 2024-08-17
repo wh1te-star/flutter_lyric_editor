@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:lyric_editor/painter/current_position_indicator_painter.dart';
 import 'package:lyric_editor/painter/rectangle_painter.dart';
@@ -8,6 +9,7 @@ import 'package:lyric_editor/painter/scale_mark.dart';
 import 'package:lyric_editor/painter/timeline_painter.dart';
 import 'package:lyric_editor/utility/color_utilities.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
+import 'package:lyric_editor/utility/dialogbox_utility.dart';
 import 'package:lyric_editor/utility/svg_icon.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
@@ -53,9 +55,11 @@ class _TimelinePaneState extends State<TimelinePane> {
   double minorMarkLength = 8.0;
   int intervalDuration = 1000;
   bool autoCurrentSelectMode = true;
+
+  TextEditingController textFieldController = TextEditingController();
+  FocusNode textFieldFocusNode = FocusNode();
   int edittingVocalistIndex = -1;
   String oldVocalistValue = "";
-  late FocusNode textFieldFocusNode;
   bool isAddVocalistButtonSelected = false;
   String isAddVocalistInput = "";
 
@@ -64,8 +68,6 @@ class _TimelinePaneState extends State<TimelinePane> {
   @override
   void initState() {
     super.initState();
-    textFieldFocusNode = FocusNode();
-    textFieldFocusNode.addListener(_onFocusChange);
 
     scaleMarkScrollController = horizontalScrollController.addAndGet();
     seekPositionScrollController = horizontalScrollController.addAndGet();
@@ -423,11 +425,11 @@ class _TimelinePaneState extends State<TimelinePane> {
             GestureDetector(
               onTapDown: (details) {
                 isDragging = true;
-                      setState(() {});
+                setState(() {});
               },
               onTapUp: (details) {
                 isDragging = false;
-                      setState(() {});
+                setState(() {});
               },
               child: ReorderableDragStartListener(
                 index: index,
@@ -514,6 +516,9 @@ class _TimelinePaneState extends State<TimelinePane> {
       controller.dispose();
     });
     seekPositionScrollController.dispose();
+
+    textFieldController.dispose();
+    textFieldFocusNode.dispose();
     super.dispose();
   }
 
@@ -595,7 +600,6 @@ class _TimelinePaneState extends State<TimelinePane> {
       oldVocalistValue = vocalistName;
       return TextField(
         controller: controller,
-        focusNode: textFieldFocusNode,
         decoration: InputDecoration(
           border: OutlineInputBorder(),
         ),
@@ -625,11 +629,12 @@ class _TimelinePaneState extends State<TimelinePane> {
               setState(() {});
             },
             onDoubleTap: () {
-              edittingVocalistIndex = index;
-              debugPrint("${index}");
-              textFieldFocusNode.requestFocus();
-              cursorBlinker.pauseCursorTimer();
-              masterSubject.add(RequestKeyboardShortcutEnable(false));
+            if (textFieldFocusNode.hasFocus) {
+              textFieldFocusNode.unfocus();
+            }
+    FocusScope.of(context).requestFocus(FocusNode());
+              textFieldController.text = vocalistName;
+              displayDialog(context, textFieldController, textFieldFocusNode);
               setState(() {});
             },
             child: CustomPaint(
@@ -687,77 +692,33 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   Widget cellAddVocalistButton() {
-    if (isAddVocalistInput != "") {
-      final TextEditingController controller = TextEditingController(text: "");
-      return TextField(
-        controller: controller,
-        focusNode: textFieldFocusNode,
-        decoration: InputDecoration(
-          border: OutlineInputBorder(),
+    return GestureDetector(
+      onTapDown: (TapDownDetails details) {
+        isAddVocalistButtonSelected = true;
+        cursorBlinker.restartCursorTimer();
+        masterSubject.add(RequestKeyboardShortcutEnable(false));
+        setState(() {});
+      },
+      onTapUp: (TapUpDetails details) {
+        isAddVocalistButtonSelected = false;
+        isAddVocalistInput = "input";
+        setState(() {});
+      },
+      child: CustomPaint(
+        painter: RectanglePainter(
+          rect: Rect.fromLTRB(0.0, 0.0, 155, 40),
+          sentence: "+",
+          color: Colors.grey,
+          isSelected: isAddVocalistButtonSelected,
+          borderLineWidth: 1.0,
         ),
-        onChanged: (value) {
-          isAddVocalistInput = value;
-        },
-        onSubmitted: (value) {
-          if (value != "") {
-            masterSubject.add(RequestAddVocalist(value));
-            debugPrint("RequestAddVocalist ${value}");
-          }
-          isAddVocalistInput = "";
-          setState(() {});
-        },
-      );
-    } else {
-      return GestureDetector(
-        onTapDown: (TapDownDetails details) {
-          isAddVocalistButtonSelected = true;
-          textFieldFocusNode.requestFocus();
-          cursorBlinker.restartCursorTimer();
-          masterSubject.add(RequestKeyboardShortcutEnable(false));
-          setState(() {});
-        },
-        onTapUp: (TapUpDetails details) {
-          isAddVocalistButtonSelected = false;
-          isAddVocalistInput = "input";
-          setState(() {});
-        },
-        child: CustomPaint(
-          painter: RectanglePainter(
-            rect: Rect.fromLTRB(0.0, 0.0, 155, 40),
-            sentence: "+",
-            color: Colors.grey,
-            isSelected: isAddVocalistButtonSelected,
-            borderLineWidth: 1.0,
-          ),
-        ),
-      );
-    }
+      ),
+    );
   }
 
   Widget cellAddVocalistButtonNeighbor() {
     return const ColoredBox(
       color: Colors.blueGrey,
     );
-  }
-
-  void _onFocusChange() {
-    if (!textFieldFocusNode.hasFocus) {
-      edittingVocalistIndex = -1;
-      isAddVocalistInput = "";
-      cursorBlinker.restartCursorTimer();
-      masterSubject.add(RequestKeyboardShortcutEnable(true));
-      debugPrint("release the text field focus.");
-      setState(() {});
-    } else {
-      debugPrint("enable the text field focus.");
-    }
-  }
-
-  void _onHorizontalScroll() {
-    /*
-    if (horizontalDetails.controller!.hasClients) {
-      currentPositionScroller.jumpTo(horizontalDetails.controller!.offset);
-    }
-*/
   }
 }
