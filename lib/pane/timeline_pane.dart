@@ -33,8 +33,10 @@ class _TimelinePaneState extends State<TimelinePane> {
   late ScrollController scaleMarkScrollController;
   late List<ScrollController> snippetTimelineScrollController = [];
   late ScrollController seekPositionScrollController;
+
   List<Offset> panDeltas = [];
   List<DateTime> panTimestamps = [];
+  bool isDragging = false;
 
   Map<String, List<LyricSnippet>> snippetsForeachVocalist = {};
   Map<String, int> vocalistColorMap = {};
@@ -352,6 +354,14 @@ class _TimelinePaneState extends State<TimelinePane> {
                     buildDefaultDragHandles: false,
                     scrollController: verticalScrollController,
                     onReorder: onReorder,
+                    onReorderStart: (index) {
+                      isDragging = true;
+                      setState(() {});
+                    },
+                    onReorderEnd: (index) {
+                      isDragging = false;
+                      setState(() {});
+                    },
                     children: List.generate(vocalistColorMap.length + 1, (index) {
                       return itemBuilder(context, index);
                     }),
@@ -381,8 +391,13 @@ class _TimelinePaneState extends State<TimelinePane> {
 
   Widget itemBuilder(BuildContext context, int index) {
     if (index < vocalistColorMap.length) {
-      final int lanes = getLanes(snippetsForeachVocalist.values.toList()[index]);
-      final double rowHeight = 60.0 * lanes;
+      late final double rowHeight;
+      if (isDragging) {
+        rowHeight = 20;
+      } else {
+        final int lanes = getLanes(snippetsForeachVocalist.values.toList()[index]);
+        rowHeight = 60.0 * lanes;
+      }
       final Widget borderLine = Container(
         width: 5,
         height: rowHeight,
@@ -405,14 +420,24 @@ class _TimelinePaneState extends State<TimelinePane> {
         height: rowHeight,
         child: Row(
           children: [
-            ReorderableDragStartListener(
-              index: index,
-              child: SvgIcon(
-                assetName: 'assets/drag_handle.svg',
-                iconColor: determineBlackOrWhite(backgroundColor),
-                backgroundColor: vocalistColor,
-                width: 20,
-                height: rowHeight,
+            GestureDetector(
+              onTapDown: (details) {
+                isDragging = true;
+                      setState(() {});
+              },
+              onTapUp: (details) {
+                isDragging = false;
+                      setState(() {});
+              },
+              child: ReorderableDragStartListener(
+                index: index,
+                child: SvgIcon(
+                  assetName: 'assets/drag_handle.svg',
+                  iconColor: determineBlackOrWhite(backgroundColor),
+                  backgroundColor: vocalistColor,
+                  width: 20,
+                  height: rowHeight,
+                ),
               ),
             ),
             Container(
@@ -464,23 +489,22 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   void onReorder(int oldIndex, int newIndex) {
-if (newIndex > snippetsForeachVocalist.length) {
-  newIndex = snippetsForeachVocalist.length;
-}
+    if (newIndex > snippetsForeachVocalist.length) {
+      newIndex = snippetsForeachVocalist.length;
+    }
 
-if (oldIndex < snippetsForeachVocalist.length && newIndex <= vocalistColorMap.length) {
-  final key = snippetsForeachVocalist.keys.elementAt(oldIndex);
-  final value = snippetsForeachVocalist.remove(key)!;
+    if (oldIndex < snippetsForeachVocalist.length && newIndex <= vocalistColorMap.length) {
+      final key = snippetsForeachVocalist.keys.elementAt(oldIndex);
+      final value = snippetsForeachVocalist.remove(key)!;
 
-  final entries = snippetsForeachVocalist.entries.toList();
-  entries.insert(newIndex > oldIndex ? newIndex - 1 : newIndex, MapEntry(key, value));
+      final entries = snippetsForeachVocalist.entries.toList();
+      entries.insert(newIndex > oldIndex ? newIndex - 1 : newIndex, MapEntry(key, value));
 
-  snippetsForeachVocalist
-    ..clear()
-    ..addEntries(entries);
-}
-    setState(() {
-    });
+      snippetsForeachVocalist
+        ..clear()
+        ..addEntries(entries);
+    }
+    setState(() {});
   }
 
   @override
