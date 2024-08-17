@@ -37,6 +37,8 @@ class _TimelinePaneState extends State<TimelinePane> {
   late ScrollController scaleMarkScrollController;
   late List<ScrollController> snippetTimelineScrollController = [];
   late ScrollController seekPositionScrollController;
+  List<Offset> panDeltas = [];
+  List<DateTime> panTimestamps = [];
 
   Map<String, List<LyricSnippet>> snippetsForeachVocalist = {};
   Map<String, int> vocalistColorList = {};
@@ -259,8 +261,22 @@ class _TimelinePaneState extends State<TimelinePane> {
       focusNode: focusNode,
       child: Listener(
         onPointerPanZoomUpdate: (PointerPanZoomUpdateEvent event) {
-          debugPrint('trackpad scrolled ${event.panDelta}');
           double horizontalOffsetLimit = scaleMarkScrollController.position.maxScrollExtent;
+          double verticalOffsetLimit = verticalScrollController.position.maxScrollExtent;
+
+          debugPrint('trackpad scrolled ${event.panDelta}');
+
+          // Store the delta and timestamp
+          panDeltas.add(event.panDelta);
+          panTimestamps.add(DateTime.now());
+
+          // Keep only the last few values for velocity calculation
+          if (panDeltas.length > 5) {
+            panDeltas.removeAt(0);
+            panTimestamps.removeAt(0);
+          }
+
+          // Horizontal Scrolling
           double nextHorizontalOffset = horizontalScrollController.offset - event.panDelta.dx;
           if (nextHorizontalOffset < 0) {
             nextHorizontalOffset = 0;
@@ -269,7 +285,7 @@ class _TimelinePaneState extends State<TimelinePane> {
           }
           horizontalScrollController.jumpTo(nextHorizontalOffset);
 
-          double verticalOffsetLimit = verticalScrollController.position.maxScrollExtent;
+          // Vertical Scrolling
           double nextVerticalOffset = verticalScrollController.offset - event.panDelta.dy;
           if (nextVerticalOffset < 0) {
             nextVerticalOffset = 0;
@@ -277,6 +293,51 @@ class _TimelinePaneState extends State<TimelinePane> {
             nextVerticalOffset = verticalOffsetLimit;
           }
           verticalScrollController.jumpTo(nextVerticalOffset);
+        },
+        onPointerPanZoomEnd: (PointerPanZoomEndEvent event) {
+          double horizontalOffsetLimit = scaleMarkScrollController.position.maxScrollExtent;
+          double verticalOffsetLimit = verticalScrollController.position.maxScrollExtent;
+          debugPrint('trackpad pan ended');
+
+          // Calculate velocity
+          if (panDeltas.isNotEmpty && panTimestamps.isNotEmpty) {
+            final int count = panDeltas.length;
+            final Duration duration = panTimestamps.last.difference(panTimestamps.first);
+            final Offset totalDelta = panDeltas.reduce((a, b) => a + b);
+
+            final double velocityX = totalDelta.dx / duration.inMilliseconds * 1000;
+            final double velocityY = totalDelta.dy / duration.inMilliseconds * 1000;
+
+            // Horizontal Scrolling with Inertia
+            double nextHorizontalOffset = horizontalScrollController.offset - velocityX * 0.1;
+            if (nextHorizontalOffset < 0) {
+              nextHorizontalOffset = 0;
+            } else if (nextHorizontalOffset > horizontalOffsetLimit) {
+              nextHorizontalOffset = horizontalOffsetLimit;
+            }
+            horizontalScrollController.animateTo(
+              nextHorizontalOffset,
+              duration: Duration(milliseconds: 500),
+              curve: Curves.decelerate,
+            );
+
+            // Vertical Scrolling with Inertia
+            double nextVerticalOffset = verticalScrollController.offset - velocityY * 0.1;
+            if (nextVerticalOffset < 0) {
+              nextVerticalOffset = 0;
+            } else if (nextVerticalOffset > verticalOffsetLimit) {
+              nextVerticalOffset = verticalOffsetLimit;
+            }
+            verticalScrollController.animateTo(
+              nextVerticalOffset,
+              duration: Duration(milliseconds: 500),
+              curve: Curves.decelerate,
+            );
+          }
+
+          // Clear stored deltas and timestamps
+          panDeltas.clear();
+          panTimestamps.clear();
         },
         child: Stack(
           children: [
