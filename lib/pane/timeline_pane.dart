@@ -639,6 +639,9 @@ class _TimelinePaneState extends State<TimelinePane> {
               for (int i = 0; i < oldVocalistNames.length; i++) {
                 String oldName = oldVocalistNames[i];
                 String newName = newVocalistNames[i];
+                if(newName == ""){
+                  masterSubject.add(RequestDeleteVocalist(oldName));
+                }else 
                 if (oldName != newName) {
                   masterSubject.add(RequestChangeVocalistName(oldName, newName));
                 }
