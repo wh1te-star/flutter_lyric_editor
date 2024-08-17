@@ -100,12 +100,20 @@ class _TimelinePaneState extends State<TimelinePane> {
         vocalistColorMap = signal.vocalistColorList;
         vocalistCombinationCorrespondence = signal.vocalistCombinationCorrespondence;
 
-        snippetTimelineScrollController.forEach((ScrollController controller) {
-          controller.dispose();
-        });
-        snippetTimelineScrollController.clear();
-        for (int i = 0; i < vocalistColorMap.length; i++) {
+        if (signal is NotifyLyricParsed) {
+          snippetTimelineScrollController.forEach((ScrollController controller) {
+            controller.dispose();
+          });
+          snippetTimelineScrollController.clear();
+          for (int i = 0; i < vocalistColorMap.length; i++) {
+            snippetTimelineScrollController.add(horizontalScrollController.addAndGet());
+          }
+        }
+        if (signal is NotifyVocalistAdded) {
           snippetTimelineScrollController.add(horizontalScrollController.addAndGet());
+        }
+        if (signal is NotifyVocalistDeleted) {
+          //snippetTimelineScrollController.removeAt(horizontalScrollController.);
         }
 
         setState(() {});
@@ -258,8 +266,6 @@ class _TimelinePaneState extends State<TimelinePane> {
       focusNode: focusNode,
       child: Listener(
         onPointerPanZoomUpdate: (PointerPanZoomUpdateEvent event) {
-          debugPrint('trackpad scrolled ${event.panDelta}');
-
           double horizontalOffsetLimit = scaleMarkScrollController.position.maxScrollExtent;
           double verticalOffsetLimit = verticalScrollController.position.maxScrollExtent;
 
@@ -269,13 +275,13 @@ class _TimelinePaneState extends State<TimelinePane> {
             panDeltas.removeAt(0);
             panTimestamps.removeAt(0);
           }
-          double nextHorizontalOffset = horizontalScrollController.offset - event.panDelta.dx;
+          double nextHorizontalOffset = scaleMarkScrollController.offset - event.panDelta.dx;
           if (nextHorizontalOffset < 0) {
             nextHorizontalOffset = 0;
           } else if (nextHorizontalOffset > horizontalOffsetLimit) {
             nextHorizontalOffset = horizontalOffsetLimit;
           }
-          horizontalScrollController.jumpTo(nextHorizontalOffset);
+          scaleMarkScrollController.jumpTo(nextHorizontalOffset);
 
           double nextVerticalOffset = verticalScrollController.offset - event.panDelta.dy;
           if (nextVerticalOffset < 0) {
@@ -288,7 +294,6 @@ class _TimelinePaneState extends State<TimelinePane> {
         onPointerPanZoomEnd: (PointerPanZoomEndEvent event) {
           double horizontalOffsetLimit = scaleMarkScrollController.position.maxScrollExtent;
           double verticalOffsetLimit = verticalScrollController.position.maxScrollExtent;
-          debugPrint('trackpad pan ended');
 
           if (panDeltas.isNotEmpty && panTimestamps.isNotEmpty) {
             final int count = panDeltas.length;
@@ -298,13 +303,13 @@ class _TimelinePaneState extends State<TimelinePane> {
             final double velocityX = totalDelta.dx / duration.inMilliseconds * 1000;
             final double velocityY = totalDelta.dy / duration.inMilliseconds * 1000;
 
-            double nextHorizontalOffset = horizontalScrollController.offset - velocityX * 0.1;
+            double nextHorizontalOffset = scaleMarkScrollController.offset - velocityX * 0.1;
             if (nextHorizontalOffset < 0) {
               nextHorizontalOffset = 0;
             } else if (nextHorizontalOffset > horizontalOffsetLimit) {
               nextHorizontalOffset = horizontalOffsetLimit;
             }
-            horizontalScrollController.animateTo(
+            scaleMarkScrollController.animateTo(
               nextHorizontalOffset,
               duration: Duration(milliseconds: 500),
               curve: Curves.decelerate,
@@ -393,11 +398,12 @@ class _TimelinePaneState extends State<TimelinePane> {
 
   Widget itemBuilder(BuildContext context, int index) {
     if (index < vocalistColorMap.length) {
+      final String vocalistName = vocalistColorMap.keys.toList()[index];
       late final double rowHeight;
-      if (isDragging) {
+      if (isDragging || snippetsForeachVocalist[vocalistName] == null) {
         rowHeight = 20;
       } else {
-        final int lanes = getLanes(snippetsForeachVocalist.values.toList()[index]);
+        final int lanes = getLanes(snippetsForeachVocalist[vocalistName]!);
         rowHeight = 60.0 * lanes;
       }
       final Widget borderLine = Container(
@@ -413,7 +419,6 @@ class _TimelinePaneState extends State<TimelinePane> {
         ),
       );
 
-      final String vocalistName = snippetsForeachVocalist.keys.toList()[index];
       final Color vocalistColor = Color(vocalistColorMap[vocalistName]!);
       final Color backgroundColor = adjustColorBrightness(vocalistColor, 0.3);
 
@@ -491,18 +496,18 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   void onReorder(int oldIndex, int newIndex) {
-    if (newIndex > snippetsForeachVocalist.length) {
-      newIndex = snippetsForeachVocalist.length;
+    if (newIndex > vocalistColorMap.length) {
+      newIndex = vocalistColorMap.length;
     }
 
-    if (oldIndex < snippetsForeachVocalist.length && newIndex <= vocalistColorMap.length) {
-      final key = snippetsForeachVocalist.keys.elementAt(oldIndex);
-      final value = snippetsForeachVocalist.remove(key)!;
+    if (oldIndex < vocalistColorMap.length && newIndex <= vocalistColorMap.length) {
+      final key = vocalistColorMap.keys.elementAt(oldIndex);
+      final value = vocalistColorMap.remove(key)!;
 
-      final entries = snippetsForeachVocalist.entries.toList();
+      final entries = vocalistColorMap.entries.toList();
       entries.insert(newIndex > oldIndex ? newIndex - 1 : newIndex, MapEntry(key, value));
 
-      snippetsForeachVocalist
+      vocalistColorMap
         ..clear()
         ..addEntries(entries);
     }
@@ -594,7 +599,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   Widget cellVocalistPanel(int index) {
-    final String vocalistName = snippetsForeachVocalist.entries.toList()[index].key;
+    final String vocalistName = vocalistColorMap.keys.toList()[index];
     if (edittingVocalistIndex == index) {
       final TextEditingController controller = TextEditingController(text: vocalistName);
       oldVocalistValue = vocalistName;
@@ -628,20 +633,22 @@ class _TimelinePaneState extends State<TimelinePane> {
               }
               setState(() {});
             },
-            onDoubleTap: () {
-            if (textFieldFocusNode.hasFocus) {
-              textFieldFocusNode.unfocus();
-            }
-    FocusScope.of(context).requestFocus(FocusNode());
-              textFieldController.text = vocalistName;
-              displayDialog(context, textFieldController, textFieldFocusNode);
-              setState(() {});
+            onDoubleTap: () async {
+              List<String> oldVocalistNames = vocalistName.split(", ");
+              List<String> newVocalistNames = await displayDialog(context, oldVocalistNames);
+              for (int i = 0; i < oldVocalistNames.length; i++) {
+                String oldName = oldVocalistNames[i];
+                String newName = newVocalistNames[i];
+                if (oldName != newName) {
+                  masterSubject.add(RequestChangeVocalistName(oldName, newName));
+                }
+              }
             },
             child: CustomPaint(
               size: Size(135, constraints.maxHeight),
               painter: RectanglePainter(
                 rect: Rect.fromLTRB(0.0, 0.0, 135, constraints.maxHeight),
-                sentence: snippetsForeachVocalist.entries.toList()[index].value[0].vocalist.name,
+                sentence: vocalistName,
                 color: Color(vocalistColorMap[vocalistName]!),
                 isSelected: selectingVocalist.contains(vocalistName),
                 borderLineWidth: 1.0,
@@ -654,13 +661,13 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   Widget cellSnippetTimeline(int index) {
-    final String vocalistName = snippetsForeachVocalist.entries.toList()[index].key;
+    final String vocalistName = vocalistColorMap.keys.toList()[index];
+    final snippets = snippetsForeachVocalist.containsKey(vocalistName) ? snippetsForeachVocalist[vocalistName]! : [LyricSnippet(vocalist: Vocalist("", 0), index: 0, sentence: "", startTimestamp: 0, sentenceSegments: [SentenceSegment(1, 1)])];
     double topMargin = 10;
     double bottomMargin = 5;
     return GestureDetector(
       onTapDown: (TapDownDetails details) {
         Offset localPosition = details.localPosition;
-        final snippets = snippetsForeachVocalist.entries.toList()[index].value;
         for (var snippet in snippets) {
           final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
           final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
@@ -677,7 +684,7 @@ class _TimelinePaneState extends State<TimelinePane> {
       },
       child: CustomPaint(
         painter: TimelinePainter(
-          snippets: snippetsForeachVocalist.entries.toList()[index].value,
+          snippets: snippets,
           selectingId: selectingSnippet,
           intervalLength: intervalLength,
           intervalDuration: intervalDuration,
@@ -695,14 +702,22 @@ class _TimelinePaneState extends State<TimelinePane> {
     return GestureDetector(
       onTapDown: (TapDownDetails details) {
         isAddVocalistButtonSelected = true;
+        /*
         cursorBlinker.restartCursorTimer();
         masterSubject.add(RequestKeyboardShortcutEnable(false));
+      */
         setState(() {});
       },
       onTapUp: (TapUpDetails details) {
         isAddVocalistButtonSelected = false;
+        /*
         isAddVocalistInput = "input";
+      */
         setState(() {});
+      },
+      onTap: () async {
+        String newVocalistName = (await displayDialog(context, [""]))[0];
+        masterSubject.add(RequestAddVocalist(newVocalistName));
       },
       child: CustomPaint(
         painter: RectanglePainter(

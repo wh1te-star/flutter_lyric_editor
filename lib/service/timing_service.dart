@@ -237,7 +237,6 @@ class TimingService {
 
   void addVocalist(String vocalistName) {
     vocalistColorList[vocalistName] = 0xFF222222;
-    lyricSnippetList.add(LyricSnippet(vocalist: Vocalist(vocalistName, 0), index: 0, sentence: "", startTimestamp: 0, sentenceSegments: [SentenceSegment(0, 1)]));
   }
 
   void deleteVocalist(String vocalistName) {

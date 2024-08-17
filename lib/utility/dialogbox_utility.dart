@@ -1,9 +1,40 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-void displayDialog(BuildContext context, TextEditingController controller, FocusNode node) {
-  node.requestFocus();
-  showDialog(
+Future<List<String>> displayDialog(BuildContext context, List<String> texts) async {
+  List<FocusNode> focusNodes = [];
+  List<TextEditingController> controllers = [];
+  List<Widget> textFields = [];
+  texts.forEach((String text) {
+    FocusNode node = FocusNode();
+    focusNodes.add(node);
+
+    TextEditingController controller = TextEditingController();
+    controllers.add(controller);
+
+    controller.text = text;
+    textFields.add(
+      TextField(
+        controller: controller,
+        focusNode: node,
+      ),
+    );
+  });
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    focusNodes[0].requestFocus();
+  });
+
+  List<String> resultTexts = [];
+  void extractControllerTexts() {
+    for (var controller in controllers) {
+      resultTexts.add(controller.text);
+      debugPrint(controller.text);
+    }
+  }
+
+  await showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
@@ -13,17 +44,16 @@ void displayDialog(BuildContext context, TextEditingController controller, Focus
           onKeyEvent: (KeyEvent event) {
             if (event is KeyDownEvent) {
               if (event.logicalKey == LogicalKeyboardKey.enter) {
-                print('Text entered: ${controller.text}');
+                extractControllerTexts();
                 Navigator.of(context).pop();
               } else if (event.logicalKey == LogicalKeyboardKey.escape) {
                 Navigator.of(context).pop();
               }
             }
           },
-          child: TextField(
-            controller: controller,
-            focusNode: node,
-            decoration: InputDecoration(hintText: "Type something here"),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: textFields,
           ),
         ),
         actions: <Widget>[
@@ -37,12 +67,21 @@ void displayDialog(BuildContext context, TextEditingController controller, Focus
           TextButton(
             child: Text('OK'),
             onPressed: () {
-              debugPrint('Text entered: ${controller.text}');
+              extractControllerTexts();
               Navigator.of(context).pop();
             },
           ),
         ],
       );
     },
-  ).then((_) {});
+  );
+
+  focusNodes.forEach((FocusNode node) {
+    node.dispose();
+  });
+  controllers.forEach((TextEditingController controller) {
+    controller.dispose();
+  });
+
+  return resultTexts;
 }
