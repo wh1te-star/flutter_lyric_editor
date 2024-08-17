@@ -257,74 +257,79 @@ class _TimelinePaneState extends State<TimelinePane> {
     );
     return Focus(
       focusNode: focusNode,
-      child:  Listener(
-      onPointerPanZoomUpdate: (PointerPanZoomUpdateEvent event) {
-        debugPrint('trackpad scrolled ${event.panDelta}');
-        horizontalScrollController
-            .jumpTo(horizontalScrollController.offset - event.panDelta.dx);
-        verticalScrollController
-            .jumpTo(verticalScrollController.offset - event.panDelta.dy);
-      },
-          child: GestureDetector(
-        onTapDown: (TapDownDetails details) {
-          if (!textFieldFocusNode.hasFocus) {
-            focusNode.requestFocus();
-            debugPrint("The timeline pane is focused");
+      child: Listener(
+        onPointerPanZoomUpdate: (PointerPanZoomUpdateEvent event) {
+          debugPrint('trackpad scrolled ${event.panDelta}');
+          double horizontalOffsetLimit = scaleMarkScrollController.position.maxScrollExtent;
+          double nextHorizontalOffset = horizontalScrollController.offset - event.panDelta.dx;
+          if (nextHorizontalOffset < 0) {
+            nextHorizontalOffset = 0;
+          } else if (nextHorizontalOffset > horizontalOffsetLimit) {
+            nextHorizontalOffset = horizontalOffsetLimit;
           }
+          horizontalScrollController.jumpTo(nextHorizontalOffset);
+
+          double verticalOffsetLimit = verticalScrollController.position.maxScrollExtent;
+          double nextVerticalOffset = verticalScrollController.offset - event.panDelta.dy;
+          if (nextVerticalOffset < 0) {
+            nextVerticalOffset = 0;
+          } else if (nextVerticalOffset > verticalOffsetLimit) {
+            nextVerticalOffset = verticalOffsetLimit;
+          }
+          verticalScrollController.jumpTo(nextVerticalOffset);
         },
-        child:Stack(
-            children: [
-              Column(
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 155,
-                        height: 30,
-                        child: cellFunctionButton(),
-                      ),
-                      borderLine,
-                      Expanded(
-                        child: SingleChildScrollView(
-                          controller: scaleMarkScrollController,
-                          scrollDirection: Axis.horizontal,
-                          child: Container(
-                            width: audioDuration * intervalLength / intervalDuration,
-                            height: 30,
-                            child: cellScaleMark(),
-                          ),
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 155,
+                      height: 30,
+                      child: cellFunctionButton(),
+                    ),
+                    borderLine,
+                    Expanded(
+                      child: SingleChildScrollView(
+                        controller: scaleMarkScrollController,
+                        scrollDirection: Axis.horizontal,
+                        child: Container(
+                          width: audioDuration * intervalLength / intervalDuration,
+                          height: 30,
+                          child: cellScaleMark(),
                         ),
                       ),
-                    ],
-                  ),
-                  Expanded(
-                    child: ReorderableListView(
-                      buildDefaultDragHandles: false,
-                      scrollController: verticalScrollController,
-                      onReorder: onReorder,
-                      children: List.generate(vocalistColorList.length + 1, (index) {
-                        return itemBuilder(context, index);
-                      }),
                     ),
+                  ],
+                ),
+                Expanded(
+                  child: ReorderableListView(
+                    buildDefaultDragHandles: false,
+                    scrollController: verticalScrollController,
+                    onReorder: onReorder,
+                    children: List.generate(vocalistColorList.length + 1, (index) {
+                      return itemBuilder(context, index);
+                    }),
                   ),
-                ],
-              ),
-              IgnorePointer(
-                ignoring: true,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 160.0),
-                  child: SingleChildScrollView(
-                    controller: seekPositionScrollController,
-                    scrollDirection: Axis.horizontal,
-                    child: CustomPaint(
-                      size: Size(audioDuration * intervalLength / intervalDuration, 800),
-                      painter: CurrentPositionIndicatorPainter(intervalLength, intervalDuration, currentPosition, sections),
-                    ),
+                ),
+              ],
+            ),
+            IgnorePointer(
+              ignoring: true,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 160.0),
+                child: SingleChildScrollView(
+                  controller: seekPositionScrollController,
+                  scrollDirection: Axis.horizontal,
+                  child: CustomPaint(
+                    size: Size(audioDuration * intervalLength / intervalDuration, 800),
+                    painter: CurrentPositionIndicatorPainter(intervalLength, intervalDuration, currentPosition, sections),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
