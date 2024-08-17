@@ -56,10 +56,11 @@ class _VideoPaneState extends State<VideoPane> {
           scrollController.jumpTo(getScrollOffsetFromSeekPosition(currentSeekPosition));
         }
       }
-      if (signal is NotifyLyricParsed) {
+      if (signal is NotifyLyricParsed || signal is NotifyVocalistAdded || signal is NotifyVocalistDeleted || signal is NotifyVocalistNameChanged) {
         lyricSnippetTrack = assignTrackNumber(signal.lyricSnippetList);
         vocalistColorList = signal.vocalistColorList;
         vocalistCombinationCorrespondence = signal.vocalistCombinationCorrespondence;
+        lyricSnippetTrack = assignTrackNumber(signal.lyricSnippetList);
       }
       if (signal is NotifySnippetDivided || signal is NotifySnippetConcatenated || signal is NotifyUndo) {
         lyricSnippetTrack = assignTrackNumber(signal.lyricSnippetList);

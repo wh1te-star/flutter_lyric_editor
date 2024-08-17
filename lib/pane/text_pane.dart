@@ -78,6 +78,13 @@ class _TextPaneState extends State<TextPane> {
         maxLanes = getMaxTracks(lyricSnippets);
       }
 
+      if (signal is NotifyVocalistAdded || signal is NotifyVocalistDeleted || signal is NotifyVocalistNameChanged) {
+        lyricSnippets = signal.lyricSnippetList;
+        lyricAppearance = List.filled(lyricSnippets.length, '');
+        updateLyricAppearance();
+        maxLanes = getMaxTracks(lyricSnippets);
+      }
+
       if (signal is RequestMoveDownCharCursor) {
         moveDownCursor();
         masterSubject.add(NotifyCharCursorPosition(cursorCharPosition, cursorPositionOption));
