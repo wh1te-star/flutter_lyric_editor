@@ -410,7 +410,7 @@ class _TimelinePaneState extends State<TimelinePane> {
               child: SvgIcon(
                 assetName: 'assets/drag_handle.svg',
                 iconColor: determineBlackOrWhite(backgroundColor),
-                backgroundColor: backgroundColor,
+                backgroundColor: vocalistColor,
                 width: 20,
                 height: rowHeight,
               ),
@@ -542,6 +542,7 @@ class _TimelinePaneState extends State<TimelinePane> {
           sentence: "Auto Select Mode",
           color: Colors.purpleAccent,
           isSelected: autoCurrentSelectMode,
+          borderLineWidth: 1.0,
         ),
       ),
     );
@@ -604,6 +605,7 @@ class _TimelinePaneState extends State<TimelinePane> {
                 sentence: snippetsForeachVocalist.entries.toList()[index].value[0].vocalist.name,
                 color: Color(vocalistColorList[vocalistName]!),
                 isSelected: selectingVocalist.contains(vocalistName),
+                borderLineWidth: 1.0,
               ),
             ),
           );
@@ -640,9 +642,10 @@ class _TimelinePaneState extends State<TimelinePane> {
           selectingId: selectingSnippet,
           intervalLength: intervalLength,
           intervalDuration: intervalDuration,
+          color: Color(vocalistColorList[vocalistName]!),
+          frameThickness: 3.0,
           topMargin: topMargin,
           bottomMargin: bottomMargin,
-          color: Color(vocalistColorList[vocalistName]!),
           cursorPosition: cursorBlinker.isCursorVisible ? cursorPosition : null,
         ),
       ),
@@ -690,6 +693,7 @@ class _TimelinePaneState extends State<TimelinePane> {
             sentence: "+",
             color: Colors.grey,
             isSelected: isAddVocalistButtonSelected,
+            borderLineWidth: 1.0,
           ),
         ),
       );

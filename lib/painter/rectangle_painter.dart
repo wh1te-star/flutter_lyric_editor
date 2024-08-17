@@ -6,12 +6,14 @@ class RectanglePainter extends CustomPainter {
   final String sentence;
   final Color color;
   final bool isSelected;
+  final double borderLineWidth;
 
   RectanglePainter({
     required this.rect,
     required this.sentence,
     required this.color,
     required this.isSelected,
+    required this.borderLineWidth,
   });
 
   @override
@@ -42,14 +44,13 @@ class RectanglePainter extends CustomPainter {
 
     textPainter.paint(canvas, offset);
 
-    final double edgeWidth = 1.5;
+    final double strokeLineWidth = 1.0;
     final lighterColor = adjustColorBrightness(color, 0.1);
     final darkerColor = adjustColorBrightness(color, -0.3);
-    final borderRadius = 1.0;
-    final leftInner = rect.left + borderRadius;
-    final topInner = rect.top + borderRadius;
-    final rightInner = rect.right - borderRadius;
-    final bottomInner = rect.bottom - borderRadius;
+    final leftInner = rect.left + borderLineWidth;
+    final topInner = rect.top + borderLineWidth;
+    final rightInner = rect.right - borderLineWidth;
+    final bottomInner = rect.bottom - borderLineWidth;
 
     final lighterPath = Path()
       ..moveTo(rect.left, rect.top)
@@ -62,8 +63,8 @@ class RectanglePainter extends CustomPainter {
 
     final lighterPaint = Paint()
       ..color = lighterColor
-      ..strokeWidth = edgeWidth
-      ..style = PaintingStyle.stroke;
+      ..strokeWidth = strokeLineWidth
+      ..style = PaintingStyle.fill;
 
     final darkerPath = Path()
       ..moveTo(rect.right, rect.bottom)
@@ -76,8 +77,8 @@ class RectanglePainter extends CustomPainter {
 
     final darkerPaint = Paint()
       ..color = darkerColor
-      ..strokeWidth = edgeWidth
-      ..style = PaintingStyle.stroke;
+      ..strokeWidth = strokeLineWidth
+      ..style = PaintingStyle.fill;
 
     if (isSelected) {
       canvas.drawPath(lighterPath, darkerPaint);

@@ -9,9 +9,10 @@ class TimelinePainter extends CustomPainter {
   final List<LyricSnippetID> selectingId;
   final double intervalLength;
   final int intervalDuration;
+  final Color color;
+  final double frameThickness;
   final double topMargin;
   final double bottomMargin;
-  final Color color;
   final LyricSnippetID? cursorPosition;
 
   TimelinePainter({
@@ -19,9 +20,10 @@ class TimelinePainter extends CustomPainter {
     required this.selectingId,
     required this.intervalLength,
     required this.intervalDuration,
+    required this.color,
+    required this.frameThickness,
     required this.topMargin,
     required this.bottomMargin,
-    required this.color,
     this.cursorPosition,
   });
 
@@ -32,8 +34,18 @@ class TimelinePainter extends CustomPainter {
     int previousEndtime = 0;
     int currentLane = 0;
 
+    final frameRect = Rect.fromLTRB(0.0, 0.0, size.width, size.height);
+    final frameRectanglePainter = RectanglePainter(
+      rect: frameRect,
+      sentence: "",
+      color: Colors.grey,
+      isSelected: true,
+      borderLineWidth: frameThickness,
+    );
+    frameRectanglePainter.paint(canvas, size);
+
     Color backgroundColor = adjustColorBrightness(color, 0.3);
-    Rect rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    Rect rect = Rect.fromLTRB(frameThickness, frameThickness, size.width - frameThickness, size.height - frameThickness);
     Paint paint = Paint()..color = backgroundColor;
     canvas.drawRect(rect, paint);
 
@@ -60,6 +72,7 @@ class TimelinePainter extends CustomPainter {
         sentence: snippet.sentence,
         color: color,
         isSelected: isSelected,
+        borderLineWidth: 2.0,
       );
       rectanglePainter.paint(canvas, size);
 
