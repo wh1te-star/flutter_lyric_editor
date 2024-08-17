@@ -1,10 +1,6 @@
-import 'dart:async';
-import 'dart:ui';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:lyric_editor/painter/current_position_indicator_painter.dart';
 import 'package:lyric_editor/painter/rectangle_painter.dart';
@@ -70,9 +66,6 @@ class _TimelinePaneState extends State<TimelinePane> {
     textFieldFocusNode.addListener(_onFocusChange);
 
     scaleMarkScrollController = horizontalScrollController.addAndGet();
-    for (int i = 0; i < 3; i++) {
-      snippetTimelineScrollController.add(horizontalScrollController.addAndGet());
-    }
     seekPositionScrollController = horizontalScrollController.addAndGet();
 
     masterSubject.stream.listen((signal) {
@@ -261,22 +254,17 @@ class _TimelinePaneState extends State<TimelinePane> {
       focusNode: focusNode,
       child: Listener(
         onPointerPanZoomUpdate: (PointerPanZoomUpdateEvent event) {
+          debugPrint('trackpad scrolled ${event.panDelta}');
+
           double horizontalOffsetLimit = scaleMarkScrollController.position.maxScrollExtent;
           double verticalOffsetLimit = verticalScrollController.position.maxScrollExtent;
 
-          debugPrint('trackpad scrolled ${event.panDelta}');
-
-          // Store the delta and timestamp
           panDeltas.add(event.panDelta);
           panTimestamps.add(DateTime.now());
-
-          // Keep only the last few values for velocity calculation
           if (panDeltas.length > 5) {
             panDeltas.removeAt(0);
             panTimestamps.removeAt(0);
           }
-
-          // Horizontal Scrolling
           double nextHorizontalOffset = horizontalScrollController.offset - event.panDelta.dx;
           if (nextHorizontalOffset < 0) {
             nextHorizontalOffset = 0;
@@ -285,7 +273,6 @@ class _TimelinePaneState extends State<TimelinePane> {
           }
           horizontalScrollController.jumpTo(nextHorizontalOffset);
 
-          // Vertical Scrolling
           double nextVerticalOffset = verticalScrollController.offset - event.panDelta.dy;
           if (nextVerticalOffset < 0) {
             nextVerticalOffset = 0;
@@ -299,7 +286,6 @@ class _TimelinePaneState extends State<TimelinePane> {
           double verticalOffsetLimit = verticalScrollController.position.maxScrollExtent;
           debugPrint('trackpad pan ended');
 
-          // Calculate velocity
           if (panDeltas.isNotEmpty && panTimestamps.isNotEmpty) {
             final int count = panDeltas.length;
             final Duration duration = panTimestamps.last.difference(panTimestamps.first);
@@ -308,7 +294,6 @@ class _TimelinePaneState extends State<TimelinePane> {
             final double velocityX = totalDelta.dx / duration.inMilliseconds * 1000;
             final double velocityY = totalDelta.dy / duration.inMilliseconds * 1000;
 
-            // Horizontal Scrolling with Inertia
             double nextHorizontalOffset = horizontalScrollController.offset - velocityX * 0.1;
             if (nextHorizontalOffset < 0) {
               nextHorizontalOffset = 0;
@@ -321,7 +306,6 @@ class _TimelinePaneState extends State<TimelinePane> {
               curve: Curves.decelerate,
             );
 
-            // Vertical Scrolling with Inertia
             double nextVerticalOffset = verticalScrollController.offset - velocityY * 0.1;
             if (nextVerticalOffset < 0) {
               nextVerticalOffset = 0;
@@ -335,7 +319,6 @@ class _TimelinePaneState extends State<TimelinePane> {
             );
           }
 
-          // Clear stored deltas and timestamps
           panDeltas.clear();
           panTimestamps.clear();
         },
