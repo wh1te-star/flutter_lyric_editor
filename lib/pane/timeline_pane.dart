@@ -101,8 +101,8 @@ class _TimelinePaneState extends State<TimelinePane> {
         cursorPosition = snippetsForeachVocalist[snippetsForeachVocalist.keys.first]![0].id;
 
         List<LyricSnippetID> currentSelectingSnippet = getSnippetsAtCurrentSeekPosition();
-          selectingSnippet = currentSelectingSnippet;
-          masterSubject.add(NotifySelectingSnippets(selectingSnippet));
+        selectingSnippet = currentSelectingSnippet;
+        masterSubject.add(NotifySelectingSnippets(selectingSnippet));
 
         if (signal is NotifyLyricParsed) {
           snippetTimelineScrollController.forEach((ScrollController controller) {
@@ -643,10 +643,9 @@ class _TimelinePaneState extends State<TimelinePane> {
               for (int i = 0; i < oldVocalistNames.length; i++) {
                 String oldName = oldVocalistNames[i];
                 String newName = newVocalistNames[i];
-                if(newName == ""){
+                if (newName == "") {
                   masterSubject.add(RequestDeleteVocalist(oldName));
-                }else 
-                if (oldName != newName) {
+                } else if (oldName != newName) {
                   masterSubject.add(RequestChangeVocalistName(oldName, newName));
                 }
               }
@@ -669,7 +668,11 @@ class _TimelinePaneState extends State<TimelinePane> {
 
   Widget cellSnippetTimeline(int index) {
     final String vocalistName = vocalistColorMap.keys.toList()[index];
-    final snippets = snippetsForeachVocalist.containsKey(vocalistName) ? snippetsForeachVocalist[vocalistName]! : [LyricSnippet(vocalist: Vocalist("", 0), index: 0, sentence: "", startTimestamp: 0, sentenceSegments: [SentenceSegment(1, 1)])];
+    final snippets = snippetsForeachVocalist.containsKey(vocalistName)
+        ? snippetsForeachVocalist[vocalistName]!
+        : [
+            LyricSnippet(vocalist: Vocalist("", 0), index: 0, sentence: "", startTimestamp: 0, sentenceSegments: [SentenceSegment(1, 1)])
+          ];
     double topMargin = 10;
     double bottomMargin = 5;
     return GestureDetector(
@@ -685,6 +688,17 @@ class _TimelinePaneState extends State<TimelinePane> {
               selectingSnippet.add(snippet.id);
             }
             masterSubject.add(NotifySelectingSnippets(selectingSnippet));
+          }
+        }
+        setState(() {});
+      },
+      onDoubleTapDown: (TapDownDetails details) async {
+        Offset localPosition = details.localPosition;
+        for (var snippet in snippets) {
+          final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
+          final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
+          if (snippet.startTimestamp <= touchedSeekPosition && touchedSeekPosition <= endtime) {
+              List<String> sentence = await displayDialog(context, [snippet.sentence]);
           }
         }
         setState(() {});
