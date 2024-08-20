@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
-import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'utility/appbar_menu.dart';
 import 'service/music_player_service.dart';
@@ -13,16 +12,7 @@ import 'pane/timeline_pane.dart';
 import 'pane/adjustable_pane_border.dart';
 
 void main() {
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider<MusicPlayerService>(
-          create: (context) => MusicPlayerService(),
-        ),
-      ],
-      child: MyApp(),
-    ),
-  );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -66,6 +56,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   double LeftUpperPaneWidth = 100;
   double LeftUpperPaneHeight = 100;
 
+  late MusicPlayerService musicPlayerService;
   late TimingService lyricService;
   late FocusNode videoPaneFocusNode;
   late FocusNode textPaneFocusNode;
@@ -82,6 +73,7 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   void initState() {
     super.initState();
 
+    musicPlayerService = MusicPlayerService(masterSubject: masterSubject, context: context);
     lyricService = TimingService(masterSubject: masterSubject, context: context);
     videoPaneFocusNode = FocusNode();
     textPaneFocusNode = FocusNode();
@@ -135,6 +127,9 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
       }
     });
 
+    musicPlayerService.initAudio('assets/09 ウェルカムティーフレンド.mp3');
+    musicPlayerService.play();
+
     lyricService.printLyric();
 
     //loadText();
@@ -155,10 +150,6 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
     exactHeight = screenHeight * MediaQuery.of(context).devicePixelRatio;
     LeftUpperPaneWidth = screenWidth * 1.0 / 3.0;
     LeftUpperPaneHeight = screenHeight * 2.0 / 3.0;
-
-    final musicPlayerService = Provider.of<MusicPlayerService>(context);
-    musicPlayerService.initAudio('assets/09 ウェルカムティーフレンド.mp3');
-    musicPlayerService.play();
   }
 
   @override

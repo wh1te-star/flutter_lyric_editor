@@ -2,9 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
-import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'string_resource.dart';
 import 'package:file_selector/file_selector.dart';
@@ -39,7 +37,7 @@ AppBar buildAppBarWithMenu(BuildContext context, PublishSubject<dynamic> masterS
           onChanged: (String? newValue) {
             switch (newValue) {
               case StringResource.fileMenuOpenAudio:
-                openAudio(context);
+                masterSubject.add(RequestInitAudio());
                 break;
 
               case StringResource.fileMenuCreateNewLyric:
@@ -74,25 +72,4 @@ AppBar buildAppBarWithMenu(BuildContext context, PublishSubject<dynamic> masterS
       ],
     ),
   );
-}
-
-void openAudio(BuildContext context) async {
-  final musicPlayerProvider = Provider.of<MusicPlayerService>(context, listen: false);
-        final XTypeGroup typeGroup = XTypeGroup(
-          label: 'audio',
-          extensions: ['mp3', 'wav', 'flac'],
-          mimeTypes: ['audio/mpeg', 'audio/x-wav', 'audio/flac'],
-        );
-        final XFile? file = await openFile(acceptedTypeGroups: [typeGroup]);
-
-        if (file != null) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Selected file: ${file.name}'),
-          ));
-          musicPlayerProvider.initAudio(file.path);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('No file selected')),
-          );
-        }
 }

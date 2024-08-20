@@ -5,12 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lyric_editor/pane/video_pane.dart';
-import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:lyric_editor/utility/sorted_list.dart';
-import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:tuple/tuple.dart';
 
@@ -34,6 +32,8 @@ class _TextPaneState extends State<TextPane> {
   //static const String sectionChar = '\n\n';
 
   late CursorBlinker cursorBlinker;
+
+  int seekPosition = 0;
 
   int maxLanes = 0;
   double lineHeight = 20;
@@ -106,6 +106,11 @@ class _TextPaneState extends State<TextPane> {
         selectingSnippets = signal.snippetIDs;
       }
 
+      if (signal is NotifySeekPosition) {
+        seekPosition = signal.seekPosition;
+        updateCursorIfNeed();
+      }
+
       if (signal is RequestToEnterTextSelectMode) {
         TextSelectMode = true;
         selectionBasePosition = cursorCharPosition;
@@ -118,10 +123,6 @@ class _TextPaneState extends State<TextPane> {
         cursorCharPosition = getSnippetWithID(cursorLinePosition).sentence.length;
       }
       setState(() {});
-    });
-
-    Provider.of<MusicPlayerService>(context).addListener(() {
-      updateCursorIfNeed();
     });
 
     cursorBlinker = CursorBlinker(
@@ -262,7 +263,6 @@ class _TextPaneState extends State<TextPane> {
     List<LyricSnippetID> beforeSnippetIndexes = [];
     List<LyricSnippetID> currentSnippetIndexes = [];
     List<LyricSnippetID> afterSnippetIndexes = [];
-    int seekPosition = Provider.of<MusicPlayerService>(context).seekPosition;
     lyricSnippets.forEach((LyricSnippet snippet) {
       int start = snippet.startTimestamp;
       int end = snippet.endTimestamp;
