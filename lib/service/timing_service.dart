@@ -245,6 +245,39 @@ class TimingService {
   }
 
   void changeVocalistName(String oldName, String newName) {
+    Map<String, int> updatedVocalistColorList = {};
+
+    vocalistColorList.forEach((key, value) {
+      if (vocalistCombinationCorrespondence.containsKey(key)) {
+        List<String> vocalistNames = vocalistCombinationCorrespondence[key]!;
+        if (vocalistNames.contains(oldName)) {
+          int index = vocalistNames.indexWhere((String name) {
+            return name == oldName;
+          });
+          vocalistNames[index] = newName;
+          String newCombinationName = vocalistNames.join(", ");
+          vocalistCombinationCorrespondence[newCombinationName] = vocalistNames;
+          vocalistCombinationCorrespondence.remove(key);
+
+          updatedVocalistColorList[newCombinationName] = value;
+          getSnippetsWithVocalistName(key).forEach((LyricSnippet snippet) {
+            snippet.vocalist = Vocalist(newCombinationName, 0);
+          });
+        } else {
+          updatedVocalistColorList[key] = value;
+        }
+      } else if (key == oldName) {
+        updatedVocalistColorList[newName] = value;
+        getSnippetsWithVocalistName(key).forEach((LyricSnippet snippet) {
+          snippet.vocalist = Vocalist(newName, 0);
+        });
+      } else {
+        updatedVocalistColorList[key] = value;
+      }
+    });
+
+    vocalistColorList = updatedVocalistColorList;
+
     Map<String, List<String>> updatedMap = {};
 
     vocalistCombinationCorrespondence.forEach((String key, List<String> value) {
@@ -259,12 +292,11 @@ class TimingService {
 
     vocalistCombinationCorrespondence = updatedMap;
 
-    vocalistColorList[newName] = vocalistColorList[oldName]!;
-    vocalistColorList.remove(oldName);
-
     getSnippetsWithVocalistName(oldName).forEach((LyricSnippet snippet) {
       snippet.vocalist = Vocalist(newName, 0);
     });
+
+    assignIndex(lyricSnippetList);
   }
 
   Future<void> loadLyrics() async {

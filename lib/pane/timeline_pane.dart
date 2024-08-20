@@ -95,10 +95,14 @@ class _TimelinePaneState extends State<TimelinePane> {
         setState(() {});
       }
       if (signal is NotifyLyricParsed || signal is NotifyVocalistAdded || signal is NotifyVocalistDeleted || signal is NotifyVocalistNameChanged) {
-        snippetsForeachVocalist = groupBy(signal.lyricSnippetList, (LyricSnippet snippet) => snippet.vocalist.name);
-        cursorPosition = snippetsForeachVocalist[snippetsForeachVocalist.keys.first]![0].id;
         vocalistColorMap = signal.vocalistColorList;
         vocalistCombinationCorrespondence = signal.vocalistCombinationCorrespondence;
+        snippetsForeachVocalist = groupBy(signal.lyricSnippetList, (LyricSnippet snippet) => snippet.vocalist.name);
+        cursorPosition = snippetsForeachVocalist[snippetsForeachVocalist.keys.first]![0].id;
+
+        List<LyricSnippetID> currentSelectingSnippet = getSnippetsAtCurrentSeekPosition();
+          selectingSnippet = currentSelectingSnippet;
+          masterSubject.add(NotifySelectingSnippets(selectingSnippet));
 
         if (signal is NotifyLyricParsed) {
           snippetTimelineScrollController.forEach((ScrollController controller) {
