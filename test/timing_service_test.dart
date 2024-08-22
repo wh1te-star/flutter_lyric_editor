@@ -15,7 +15,6 @@ Matcher throwsExceptionWithMessageContaining(String substring) {
 
 void main() {
   group('Timing point test.', () {
-
     late MockBuildContext mockContext;
     late PublishSubject<dynamic> masterSubject;
     late TimingService timingService;
@@ -337,7 +336,6 @@ void main() {
   });
 
   group('Edit sentence test.', () {
-
     late MockBuildContext mockContext;
     late PublishSubject<dynamic> masterSubject;
     late TimingService timingService;
@@ -347,11 +345,9 @@ void main() {
       sentence: "abcdefghijklmnopqrst",
       startTimestamp: 2000,
       sentenceSegments: [
-        SentenceSegment(3, 300),
+        SentenceSegment(3, 400),
         SentenceSegment(2, 100),
-        SentenceSegment(6, 700),
-        SentenceSegment(4, 500),
-        SentenceSegment(5, 600),
+        SentenceSegment(2, 200),
       ],
     );
     final dataSetSnippet2 = LyricSnippet(
@@ -377,22 +373,14 @@ void main() {
       timingService = TimingService(masterSubject: masterSubject, context: mockContext);
     });
 
-    test('Test to add a timing point to a snippet No.1', () {
-      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
-      final int characterPosition = 7;
-      final int seekPosition = 2450;
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 300),
-        SentenceSegment(2, 100),
-        SentenceSegment(2, 50),
-        SentenceSegment(4, 650),
-        SentenceSegment(4, 500),
-        SentenceSegment(5, 600),
-      ];
+    test('Test to make index translation.', () {
+      final String oldSentence = "abcbdab";
+      final String newSentence = "bdcab";
+      final List<int> expectedIndexTranslation = [0, 0, 1, 3, 3, 3, 4, 5];
 
-      timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
+      final List<int> resultIndexTranslation = timingService.getIndexTranslation(oldSentence, newSentence);
 
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(resultIndexTranslation, expectedIndexTranslation);
     });
 
     test('Test the seek position is not valid', () {

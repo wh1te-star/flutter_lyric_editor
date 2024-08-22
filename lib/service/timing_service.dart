@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
@@ -694,10 +695,52 @@ class TimingService {
       snippet.sentenceSegments[timingPointIndex] = SentenceSegment(newLength, newDuration);
     }
   }
-  
-  void editSentence(LyricSnippet snippet, String newSentence){
-    
+
+  void editSentence(LyricSnippet snippet, String newSentence) {}
+
+List<int> getIndexTranslation(String oldSentence, String newSentence) {
+  int m = oldSentence.length;
+  int n = newSentence.length;
+
+  List<List<int>> lcs = List.generate(m + 1, (_) => List.filled(n + 1, 0));
+
+  for (int i = 1; i <= m; i++) {
+    for (int j = 1; j <= n; j++) {
+      if (oldSentence[i - 1] == newSentence[j - 1]) {
+        lcs[i][j] = lcs[i - 1][j - 1] + 1;
+      } else {
+        lcs[i][j] = max(lcs[i - 1][j], lcs[i][j - 1]);
+      }
+    }
   }
+
+  List<int> indexTranslation = List.filled(m + 1, 0);
+  int i = m, j = n;
+
+  while (i > 0 && j > 0) {
+    if (oldSentence[i - 1] == newSentence[j - 1]) {
+      indexTranslation[i] = j;
+      i--;
+      j--;
+    } else if (lcs[i - 1][j] >= lcs[i][j - 1]) {
+      i--;
+    } else {
+      j--;
+    }
+  }
+
+  for (int k = 0; k <= m; k++) {
+    if (indexTranslation[k] == 0) {
+      if (k == 0) {
+        indexTranslation[k] = 0;
+      } else {
+        indexTranslation[k] = indexTranslation[k - 1];
+      }
+    }
+  }
+
+  return indexTranslation;
+}
 
   void pushUndoHistory(List<LyricSnippet> lyricSnippetList) {
     List<LyricSnippet> copy = lyricSnippetList.map((snippet) {
