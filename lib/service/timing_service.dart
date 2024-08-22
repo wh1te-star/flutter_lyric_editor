@@ -694,6 +694,10 @@ class TimingService {
       snippet.sentenceSegments[timingPointIndex] = SentenceSegment(newLength, newDuration);
     }
   }
+  
+  void editSentence(LyricSnippet snippet, String newSentence){
+    
+  }
 
   void pushUndoHistory(List<LyricSnippet> lyricSnippetList) {
     List<LyricSnippet> copy = lyricSnippetList.map((snippet) {

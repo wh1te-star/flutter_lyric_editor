@@ -14,8 +14,7 @@ Matcher throwsExceptionWithMessageContaining(String substring) {
 }
 
 void main() {
-  group('TimingService', () {
-    TestWidgetsFlutterBinding.ensureInitialized();
+  group('Timing point test.', () {
 
     late MockBuildContext mockContext;
     late PublishSubject<dynamic> masterSubject;
@@ -47,6 +46,8 @@ void main() {
         SentenceSegment(2, 200),
       ],
     );
+
+    TestWidgetsFlutterBinding.ensureInitialized();
 
     setUp(() {
       mockContext = MockBuildContext();
@@ -333,6 +334,73 @@ void main() {
 
       expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
     });
+  });
 
+  group('Edit sentence test.', () {
+
+    late MockBuildContext mockContext;
+    late PublishSubject<dynamic> masterSubject;
+    late TimingService timingService;
+    final dataSetSnippet1 = LyricSnippet(
+      vocalist: Vocalist("sample vocalist name", Colors.black.value),
+      index: 0,
+      sentence: "abcdefghijklmnopqrst",
+      startTimestamp: 2000,
+      sentenceSegments: [
+        SentenceSegment(3, 300),
+        SentenceSegment(2, 100),
+        SentenceSegment(6, 700),
+        SentenceSegment(4, 500),
+        SentenceSegment(5, 600),
+      ],
+    );
+    final dataSetSnippet2 = LyricSnippet(
+      vocalist: Vocalist("sample vocalist name", Colors.black.value),
+      index: 0,
+      sentence: "abcdefghijklmnopqrs",
+      startTimestamp: 5000,
+      sentenceSegments: [
+        SentenceSegment(3, 400),
+        SentenceSegment(2, 300),
+        SentenceSegment(7, 700),
+        SentenceSegment(0, 100),
+        SentenceSegment(5, 600),
+        SentenceSegment(2, 200),
+      ],
+    );
+
+    TestWidgetsFlutterBinding.ensureInitialized();
+
+    setUp(() {
+      mockContext = MockBuildContext();
+      masterSubject = PublishSubject<dynamic>();
+      timingService = TimingService(masterSubject: masterSubject, context: mockContext);
+    });
+
+    test('Test to add a timing point to a snippet No.1', () {
+      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final int characterPosition = 7;
+      final int seekPosition = 2450;
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(3, 300),
+        SentenceSegment(2, 100),
+        SentenceSegment(2, 50),
+        SentenceSegment(4, 650),
+        SentenceSegment(4, 500),
+        SentenceSegment(5, 600),
+      ];
+
+      timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
+
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
+    test('Test the seek position is not valid', () {
+      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final characterPosition = 8;
+      final seekPosition = 2300;
+
+      expect(() => timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition), throwsExceptionWithMessageContaining("not valid"));
+    });
   });
 }
