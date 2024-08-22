@@ -373,10 +373,40 @@ void main() {
       timingService = TimingService(masterSubject: masterSubject, context: mockContext);
     });
 
-    test('Test to make index translation.', () {
-      final String oldSentence = "abcbdab";
-      final String newSentence = "bdcab";
-      final List<int> expectedIndexTranslation = [0, 0, 1, 3, 3, 3, 4, 5];
+    test('Test the index translation when deleting a word.', () {
+      final String oldSentence = "abcde";
+      final String newSentence = "abce";
+      final List<int> expectedIndexTranslation = [0, 1, 2, 3, 3, 4];
+
+      final List<int> resultIndexTranslation = timingService.getIndexTranslation(oldSentence, newSentence);
+
+      expect(resultIndexTranslation, expectedIndexTranslation);
+    });
+
+    test('Test the index translation when adding a word.', () {
+      final String oldSentence = "abcde";
+      final String newSentence = "abcdxxe";
+      final List<int> expectedIndexTranslation = [0, 1, 2, 3, 4, 7];
+
+      final List<int> resultIndexTranslation = timingService.getIndexTranslation(oldSentence, newSentence);
+
+      expect(resultIndexTranslation, expectedIndexTranslation);
+    });
+
+    test('Test the index translation when editting a word. No.1', () {
+      final String oldSentence = "abcde";
+      final String newSentence = "abcxxe";
+      final List<int> expectedIndexTranslation = [0, 1, 2, 3, 5, 6];
+
+      final List<int> resultIndexTranslation = timingService.getIndexTranslation(oldSentence, newSentence);
+
+      expect(resultIndexTranslation, expectedIndexTranslation);
+    });
+
+    test('Test the index translation when editting a word. No.2', () {
+      final String oldSentence = "abcde";
+      final String newSentence = "axyzwze";
+      final List<int> expectedIndexTranslation = [0, 1, -1, -1, 6, 7];
 
       final List<int> resultIndexTranslation = timingService.getIndexTranslation(oldSentence, newSentence);
 
