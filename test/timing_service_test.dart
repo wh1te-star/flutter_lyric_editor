@@ -378,7 +378,7 @@ void main() {
       final String newSentence = "abce";
       final List<int> expectedIndexTranslation = [0, 1, 2, 3, 3, 4];
 
-      final List<int> resultIndexTranslation = timingService.getIndexTranslation(oldSentence, newSentence);
+      final List<int> resultIndexTranslation = timingService.getCharPositionTranslation(oldSentence, newSentence);
 
       expect(resultIndexTranslation, expectedIndexTranslation);
     });
@@ -388,7 +388,7 @@ void main() {
       final String newSentence = "abcdxxe";
       final List<int> expectedIndexTranslation = [0, 1, 2, 3, 4, 7];
 
-      final List<int> resultIndexTranslation = timingService.getIndexTranslation(oldSentence, newSentence);
+      final List<int> resultIndexTranslation = timingService.getCharPositionTranslation(oldSentence, newSentence);
 
       expect(resultIndexTranslation, expectedIndexTranslation);
     });
@@ -398,7 +398,7 @@ void main() {
       final String newSentence = "abcxxe";
       final List<int> expectedIndexTranslation = [0, 1, 2, 3, 5, 6];
 
-      final List<int> resultIndexTranslation = timingService.getIndexTranslation(oldSentence, newSentence);
+      final List<int> resultIndexTranslation = timingService.getCharPositionTranslation(oldSentence, newSentence);
 
       expect(resultIndexTranslation, expectedIndexTranslation);
     });
@@ -408,7 +408,7 @@ void main() {
       final String newSentence = "axyzwze";
       final List<int> expectedIndexTranslation = [0, 1, -1, -1, 6, 7];
 
-      final List<int> resultIndexTranslation = timingService.getIndexTranslation(oldSentence, newSentence);
+      final List<int> resultIndexTranslation = timingService.getCharPositionTranslation(oldSentence, newSentence);
 
       expect(resultIndexTranslation, expectedIndexTranslation);
     });

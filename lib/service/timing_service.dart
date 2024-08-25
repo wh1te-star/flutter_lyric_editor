@@ -696,9 +696,16 @@ class TimingService {
     }
   }
 
-  void editSentence(LyricSnippet snippet, String newSentence) {}
+  void editSentence(LyricSnippet snippet, String newSentence) {
+    List<int> charPositionTranslation = getCharPositionTranslation(snippet.sentence, newSentence);
+    int currentWordPosition = 0;
+    for (int index = 0; index < snippet.sentenceSegments.length; index++) {
+      currentWordPosition += snippet.sentenceSegments[index].wordLength;
+      snippet.sentenceSegments[index].wordLength = charPositionTranslation[currentWordPosition];
+    }
+  }
 
-  List<int> getIndexTranslation(String oldSentence, String newSentence) {
+  List<int> getCharPositionTranslation(String oldSentence, String newSentence) {
     int oldLength = oldSentence.length;
     int newLength = newSentence.length;
 
@@ -720,7 +727,7 @@ class TimingService {
     while (i > 0 && j > 0) {
       if (oldSentence[i - 1] == newSentence[j - 1]) {
         indexTranslation[i] = j;
-          indexTranslation[i - 1] = j - 1;
+        indexTranslation[i - 1] = j - 1;
         i--;
         j--;
       } else if (lcsMap[i - 1][j] >= lcsMap[i][j - 1]) {
