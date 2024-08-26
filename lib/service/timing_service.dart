@@ -698,11 +698,14 @@ class TimingService {
 
   void editSentence(LyricSnippet snippet, String newSentence) {
     List<int> charPositionTranslation = getCharPositionTranslation(snippet.sentence, newSentence);
-    int currentWordPosition = 0;
+    int wordPosition = 0;
+    int translatedWordPosition = 0;
     for (int index = 0; index < snippet.sentenceSegments.length; index++) {
-      currentWordPosition += snippet.sentenceSegments[index].wordLength;
-      snippet.sentenceSegments[index].wordLength = charPositionTranslation[currentWordPosition];
+      translatedWordPosition += charPositionTranslation[wordPosition];
+      wordPosition += snippet.sentenceSegments[index].wordLength;
+      snippet.sentenceSegments[index].wordLength += translatedWordPosition - wordPosition;
     }
+    snippet.sentence = newSentence;
   }
 
   List<int> getCharPositionTranslation(String oldSentence, String newSentence) {

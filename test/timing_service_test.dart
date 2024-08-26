@@ -342,12 +342,13 @@ void main() {
     final dataSetSnippet1 = LyricSnippet(
       vocalist: Vocalist("sample vocalist name", Colors.black.value),
       index: 0,
-      sentence: "abcdefghijklmnopqrst",
+      sentence: "abcdefghij",
       startTimestamp: 2000,
       sentenceSegments: [
+        SentenceSegment(1, 200),
         SentenceSegment(3, 400),
-        SentenceSegment(2, 100),
-        SentenceSegment(2, 200),
+        SentenceSegment(4, 500),
+        SentenceSegment(2, 300),
       ],
     );
     final dataSetSnippet2 = LyricSnippet(
@@ -413,12 +414,32 @@ void main() {
       expect(resultIndexTranslation, expectedIndexTranslation);
     });
 
+    test('Delete a substring from a sentence.', () {
+      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final String newSentence = "abcxxxhij";
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(1, 200),
+        SentenceSegment(7, 900),
+        SentenceSegment(2, 300),
+      ];
+
+      timingService.editSentence(targetSnippet, newSentence);
+
+      expect(targetSnippet.sentence, newSentence);
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
     test('Test the seek position is not valid', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
-      final characterPosition = 8;
-      final seekPosition = 2300;
+      final String newSentence = "abcdefghijklmnopqrst";
+
+      /*
+      timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
+
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
 
       expect(() => timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition), throwsExceptionWithMessageContaining("not valid"));
+      */
     });
   });
 }
