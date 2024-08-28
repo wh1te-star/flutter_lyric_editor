@@ -335,7 +335,7 @@ void main() {
     });
   });
 
-  group('Edit sentence test.', () {
+ group('Edit sentence test.', () {
     late MockBuildContext mockContext;
     late PublishSubject<dynamic> masterSubject;
     late TimingService timingService;
@@ -354,14 +354,16 @@ void main() {
     final dataSetSnippet2 = LyricSnippet(
       vocalist: Vocalist("sample vocalist name", Colors.black.value),
       index: 0,
-      sentence: "abcdefghijklmnopqrs",
+      sentence: "abcdefghijkl",
       startTimestamp: 5000,
       sentenceSegments: [
         SentenceSegment(3, 400),
-        SentenceSegment(2, 300),
-        SentenceSegment(7, 700),
+        SentenceSegment(1, 300),
         SentenceSegment(0, 100),
-        SentenceSegment(5, 600),
+        SentenceSegment(3, 500),
+        SentenceSegment(1, 100),
+        SentenceSegment(2, 300),
+        SentenceSegment(0, 100),
         SentenceSegment(2, 200),
       ],
     );
@@ -414,7 +416,7 @@ void main() {
       expect(resultIndexTranslation, expectedIndexTranslation);
     });
 
-    test('Test to edit a substring from a sentence.', () {
+    test('Test to edit a substring from a sentence. No.1', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final String newSentence = "abcxxxhij";
       final List<SentenceSegment> expectedSentenceSegments = [
@@ -429,7 +431,7 @@ void main() {
       expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
     });
 
-    test('Test to delete a substring from a sentence.', () {
+    test('Test to delete a substring from a sentence. No.1', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final String newSentence = "abchij";
       final List<SentenceSegment> expectedSentenceSegments = [
@@ -444,7 +446,7 @@ void main() {
       expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
     });
 
-    test('Test to add a string to a sentence.', () {
+    test('Test to add a string to a sentence. No.1', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final String newSentence = "abcdefgxxhij";
       final List<SentenceSegment> expectedSentenceSegments = [
@@ -460,8 +462,55 @@ void main() {
       expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
     });
 
-    test('Test the seek position is not valid', () {
+    test('Test to edit a substring from a sentence. No.2 (Edit just a segment)', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final String newSentence = "abcdxxxij";
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(1, 200),
+        SentenceSegment(3, 400),
+        SentenceSegment(3, 500),
+        SentenceSegment(2, 300),
+      ];
+
+      timingService.editSentence(targetSnippet, newSentence);
+
+      expect(targetSnippet.sentence, newSentence);
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
+    test('Test to delete a substring from a sentence. No.2 (Delete just a segment)', () {
+      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final String newSentence = "abcdij";
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(1, 200),
+        SentenceSegment(3, 400),
+        SentenceSegment(0, 500),
+        SentenceSegment(2, 300),
+      ];
+
+      timingService.editSentence(targetSnippet, newSentence);
+
+      expect(targetSnippet.sentence, newSentence);
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
+    test('Test to add a string to a sentence. No.2 (Add a string at the same position of a timing point)', () {
+      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final String newSentence = "abcdxxefghij";
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(1, 200),
+        SentenceSegment(3, 400),
+        SentenceSegment(6, 500),
+        SentenceSegment(2, 300),
+      ];
+
+      timingService.editSentence(targetSnippet, newSentence);
+
+      expect(targetSnippet.sentence, newSentence);
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
+    test('Test the seek position is not valid', () {
       final String newSentence = "abcdefghijklmnopqrst";
 
       /*

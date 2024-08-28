@@ -53,7 +53,9 @@ class LyricSnippet {
       index: index ?? this.index,
       sentence: sentence ?? this.sentence,
       startTimestamp: startTimestamp ?? this.startTimestamp,
-      sentenceSegments: sentenceSegments != null ? List<SentenceSegment>.from(sentenceSegments) : List<SentenceSegment>.from(this.sentenceSegments),
+      sentenceSegments: sentenceSegments != null
+          ? sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList()
+          : this.sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList(),
     );
   }
 
