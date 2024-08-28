@@ -414,12 +414,43 @@ void main() {
       expect(resultIndexTranslation, expectedIndexTranslation);
     });
 
-    test('Delete a substring from a sentence.', () {
+    test('Test to edit a substring from a sentence.', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final String newSentence = "abcxxxhij";
       final List<SentenceSegment> expectedSentenceSegments = [
         SentenceSegment(1, 200),
         SentenceSegment(6, 900),
+        SentenceSegment(2, 300),
+      ];
+
+      timingService.editSentence(targetSnippet, newSentence);
+
+      expect(targetSnippet.sentence, newSentence);
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
+    test('Test to delete a substring from a sentence.', () {
+      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final String newSentence = "abchij";
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(1, 200),
+        SentenceSegment(3, 900),
+        SentenceSegment(2, 300),
+      ];
+
+      timingService.editSentence(targetSnippet, newSentence);
+
+      expect(targetSnippet.sentence, newSentence);
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
+    test('Test to add a string to a sentence.', () {
+      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final String newSentence = "abcdefgxxhij";
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(1, 200),
+        SentenceSegment(3, 400),
+        SentenceSegment(6, 500),
         SentenceSegment(2, 300),
       ];
 
