@@ -698,13 +698,42 @@ class TimingService {
 
   void editSentence(LyricSnippet snippet, String newSentence) {
     List<int> charPositionTranslation = getCharPositionTranslation(snippet.sentence, newSentence);
-    int wordPosition = 0;
-    int translatedWordPosition = 0;
+    int charPosition = 0;
+    List<int> allCharPosition = [0];
     for (int index = 0; index < snippet.sentenceSegments.length; index++) {
-      translatedWordPosition += charPositionTranslation[wordPosition];
-      wordPosition += snippet.sentenceSegments[index].wordLength;
-      snippet.sentenceSegments[index].wordLength += translatedWordPosition - wordPosition;
+      charPosition += snippet.sentenceSegments[index].wordLength;
+      allCharPosition.add(charPosition);
     }
+
+    allCharPosition.forEach((int currentCharPosition) {
+      if (charPositionTranslation[currentCharPosition] == -1) {
+        try {
+          deleteTimingPoint(snippet, currentCharPosition, Option.former);
+        } catch (TimingPointException) {
+          debugPrint(e.toString());
+        }
+        try {
+          deleteTimingPoint(snippet, currentCharPosition, Option.latter);
+        } catch (TimingPointException) {
+          debugPrint(e.toString());
+        }
+      }
+    });
+
+    charPosition = 0;
+    allCharPosition.clear();
+    allCharPosition.add(0);
+    for (int index = 0; index < snippet.sentenceSegments.length; index++) {
+      charPosition += snippet.sentenceSegments[index].wordLength;
+      allCharPosition.add(charPosition);
+    }
+
+    for (int index = 0; index < snippet.sentenceSegments.length; index++) {
+      int leftCharPosition = charPositionTranslation[allCharPosition[index]];
+      int rightCharPosition = charPositionTranslation[allCharPosition[index + 1]];
+      snippet.sentenceSegments[index].wordLength = rightCharPosition - leftCharPosition;
+    }
+
     snippet.sentence = newSentence;
   }
 

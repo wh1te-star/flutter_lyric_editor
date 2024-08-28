@@ -419,7 +419,7 @@ void main() {
       final String newSentence = "abcxxxhij";
       final List<SentenceSegment> expectedSentenceSegments = [
         SentenceSegment(1, 200),
-        SentenceSegment(7, 900),
+        SentenceSegment(6, 900),
         SentenceSegment(2, 300),
       ];
 
