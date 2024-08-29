@@ -94,7 +94,7 @@ class _TimelinePaneState extends State<TimelinePane> {
         snippetsForeachVocalist = groupBy(signal.lyricSnippetList, (LyricSnippet snippet) => snippet.vocalist.name);
         setState(() {});
       }
-      if (signal is NotifyLyricParsed || signal is NotifyVocalistAdded || signal is NotifyVocalistDeleted || signal is NotifyVocalistNameChanged) {
+      if (signal is NotifyLyricParsed || signal is NotifyVocalistAdded || signal is NotifyVocalistDeleted || signal is NotifyVocalistNameChanged || signal is NotifySnippetSentenceChanged) {
         vocalistColorMap = signal.vocalistColorList;
         vocalistCombinationCorrespondence = signal.vocalistCombinationCorrespondence;
         snippetsForeachVocalist = groupBy(signal.lyricSnippetList, (LyricSnippet snippet) => snippet.vocalist.name);
@@ -698,7 +698,8 @@ class _TimelinePaneState extends State<TimelinePane> {
           final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
           final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
           if (snippet.startTimestamp <= touchedSeekPosition && touchedSeekPosition <= endtime) {
-              List<String> sentence = await displayDialog(context, [snippet.sentence]);
+            List<String> sentence = await displayDialog(context, [snippet.sentence]);
+            masterSubject.add(RequestChangeSnippetSentence(snippet.id, sentence[0]));
           }
         }
         setState(() {});

@@ -78,7 +78,7 @@ class _TextPaneState extends State<TextPane> {
         maxLanes = getMaxTracks(lyricSnippets);
       }
 
-      if (signal is NotifyVocalistAdded || signal is NotifyVocalistDeleted || signal is NotifyVocalistNameChanged) {
+      if (signal is NotifyVocalistAdded || signal is NotifyVocalistDeleted || signal is NotifyVocalistNameChanged || signal is NotifySnippetSentenceChanged) {
         lyricSnippets = signal.lyricSnippetList;
         lyricAppearance = List.filled(lyricSnippets.length, '');
         updateLyricAppearance();

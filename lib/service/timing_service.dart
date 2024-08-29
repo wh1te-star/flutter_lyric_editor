@@ -121,6 +121,13 @@ class TimingService {
         changeVocalistName(signal.oldName, signal.newName);
         masterSubject.add(NotifyVocalistNameChanged(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
       }
+      if (signal is RequestChangeSnippetSentence) {
+        pushUndoHistory(lyricSnippetList);
+
+LyricSnippet snippet= getSnippetWithID(signal.snippetID);
+        editSentence(snippet, signal.newSentence);
+        masterSubject.add(NotifySnippetSentenceChanged(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
+      }
       if (signal is RequestToAddTimingPoint) {
         LyricSnippet snippet = getSnippetWithID(signal.snippetID);
         try {
@@ -743,7 +750,7 @@ class TimingService {
     List<SentenceSegment> result = [];
     int accumulatedSum = 0;
 
-    for (var sentenceSegment in snippet.sentenceSegments) {
+    snippet.sentenceSegments.forEach((SentenceSegment sentenceSegment) {
       if (sentenceSegment.wordLength == 0) {
         accumulatedSum += sentenceSegment.wordDuration;
       } else {
@@ -753,7 +760,7 @@ class TimingService {
         }
         result.add(sentenceSegment);
       }
-    }
+    });
 
     if (accumulatedSum != 0) {
       result.add(SentenceSegment(0, accumulatedSum));

@@ -3,85 +3,113 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 Future<List<String>> displayDialog(BuildContext context, List<String> texts) async {
-  List<FocusNode> focusNodes = [];
-  List<TextEditingController> controllers = [];
-  List<Widget> textFields = [];
-  texts.forEach((String text) {
-    FocusNode node = FocusNode();
-    focusNodes.add(node);
+  return await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return _TextFieldDialog(texts: texts);
+    },
+  );
+}
 
-    TextEditingController controller = TextEditingController();
-    controllers.add(controller);
+class _TextFieldDialog extends StatefulWidget {
+  final List<String> texts;
 
-    controller.text = text;
-    textFields.add(
-      TextField(
-        controller: controller,
-        focusNode: node,
-      ),
-    );
-  });
+  _TextFieldDialog({required this.texts});
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    focusNodes[0].requestFocus();
-  });
+  @override
+  __TextFieldDialogState createState() => __TextFieldDialogState();
+}
 
-  List<String> resultTexts = [];
-  void extractControllerTexts() {
+class __TextFieldDialogState extends State<_TextFieldDialog> {
+  late List<FocusNode> focusNodes;
+  late List<TextEditingController> controllers;
+  late List<Widget> textFields;
+
+  @override
+  void initState() {
+    super.initState();
+    focusNodes = [];
+    controllers = [];
+    textFields = [];
+
+    for (String text in widget.texts) {
+      FocusNode node = FocusNode();
+      focusNodes.add(node);
+
+      TextEditingController controller = TextEditingController();
+      controllers.add(controller);
+
+      controller.text = text;
+      textFields.add(
+        TextField(
+          controller: controller,
+          focusNode: node,
+        ),
+      );
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      focusNodes[0].requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    for (var node in focusNodes) {
+      node.dispose();
+    }
+    for (var controller in controllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  void extractControllerTexts(List<String> resultTexts) {
     for (var controller in controllers) {
       resultTexts.add(controller.text);
       debugPrint(controller.text);
     }
   }
 
-  await showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Enter your text'),
-        content: KeyboardListener(
-          focusNode: FocusNode(),
-          onKeyEvent: (KeyEvent event) {
-            if (event is KeyDownEvent) {
-              if (event.logicalKey == LogicalKeyboardKey.enter) {
-                extractControllerTexts();
-                Navigator.of(context).pop();
-              } else if (event.logicalKey == LogicalKeyboardKey.escape) {
-                Navigator.of(context).pop();
-              }
+  @override
+  Widget build(BuildContext context) {
+    List<String> resultTexts = [];
+
+    return AlertDialog(
+      title: const Text('Enter your text'),
+      content: KeyboardListener(
+        focusNode: FocusNode(),
+        onKeyEvent: (KeyEvent event) {
+          if (event is KeyDownEvent) {
+            if (event.logicalKey == LogicalKeyboardKey.enter) {
+              extractControllerTexts(resultTexts);
+              Navigator.of(context).pop(resultTexts);
+            } else if (event.logicalKey == LogicalKeyboardKey.escape) {
+              Navigator.of(context).pop();
             }
-          },
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: textFields,
-          ),
+          }
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: textFields,
         ),
-        actions: <Widget>[
-          TextButton(
-            child: Text('Cancel'),
-            onPressed: () {
-              debugPrint('Input cancelled.');
-              Navigator.of(context).pop();
-            },
-          ),
-          TextButton(
-            child: Text('OK'),
-            onPressed: () {
-              extractControllerTexts();
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
-
-  focusNodes.forEach((FocusNode node) {
-    node.dispose();
-  });
-  controllers.forEach((TextEditingController controller) {
-    controller.dispose();
-  });
-
-  return resultTexts;
+      ),
+      actions: <Widget>[
+        TextButton(
+          child: const Text('Cancel'),
+          onPressed: () {
+            debugPrint('Input cancelled.');
+            Navigator.of(context).pop();
+          },
+        ),
+        TextButton(
+          child: const Text('OK'),
+          onPressed: () {
+            extractControllerTexts(resultTexts);
+            Navigator.of(context).pop(resultTexts);
+          },
+        ),
+      ],
+    );
+  }
 }

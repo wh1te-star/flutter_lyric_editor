@@ -103,6 +103,12 @@ class RequestChangeVocalistName {
   RequestChangeVocalistName(this.oldName, this.newName);
 }
 
+class RequestChangeSnippetSentence {
+  LyricSnippetID snippetID;
+  String newSentence;
+  RequestChangeSnippetSentence(this.snippetID, this.newSentence);
+}
+
 class RequestToAddTimingPoint {
   LyricSnippetID snippetID;
   int characterPosition;
@@ -161,6 +167,13 @@ class NotifyVocalistNameChanged {
   Map<String, int> vocalistColorList = {};
   Map<String, List<String>> vocalistCombinationCorrespondence = {};
   NotifyVocalistNameChanged(this.lyricSnippetList, this.vocalistColorList, this.vocalistCombinationCorrespondence);
+}
+
+class NotifySnippetSentenceChanged {
+  List<LyricSnippet> lyricSnippetList;
+  Map<String, int> vocalistColorList = {};
+  Map<String, List<String>> vocalistCombinationCorrespondence = {};
+  NotifySnippetSentenceChanged(this.lyricSnippetList, this.vocalistColorList, this.vocalistCombinationCorrespondence);
 }
 
 class RequestUndo {}
