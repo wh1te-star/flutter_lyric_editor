@@ -734,7 +734,32 @@ class TimingService {
       snippet.sentenceSegments[index].wordLength = rightCharPosition - leftCharPosition;
     }
 
+    integrate2OrMoreTimingPoints(snippet);
+
     snippet.sentence = newSentence;
+  }
+
+  void integrate2OrMoreTimingPoints(LyricSnippet snippet) {
+    List<SentenceSegment> result = [];
+    int accumulatedSum = 0;
+
+    for (var sentenceSegment in snippet.sentenceSegments) {
+      if (sentenceSegment.wordLength == 0) {
+        accumulatedSum += sentenceSegment.wordDuration;
+      } else {
+        if (accumulatedSum != 0) {
+          result.add(SentenceSegment(0, accumulatedSum));
+          accumulatedSum = 0;
+        }
+        result.add(sentenceSegment);
+      }
+    }
+
+    if (accumulatedSum != 0) {
+      result.add(SentenceSegment(0, accumulatedSum));
+    }
+
+    snippet.sentenceSegments = result;
   }
 
   List<int> getCharPositionTranslation(String oldSentence, String newSentence) {

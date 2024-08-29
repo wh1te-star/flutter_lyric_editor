@@ -335,7 +335,7 @@ void main() {
     });
   });
 
- group('Edit sentence test.', () {
+  group('Edit sentence test.', () {
     late MockBuildContext mockContext;
     late PublishSubject<dynamic> masterSubject;
     late TimingService timingService;
@@ -502,6 +502,117 @@ void main() {
         SentenceSegment(3, 400),
         SentenceSegment(6, 500),
         SentenceSegment(2, 300),
+      ];
+
+      timingService.editSentence(targetSnippet, newSentence);
+
+      expect(targetSnippet.sentence, newSentence);
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
+    test('Test to edit a substring from a sentence. No.3', () {
+      final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
+      final String newSentence = "abxxxghijkl";
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(6, 1300),
+        SentenceSegment(1, 100),
+        SentenceSegment(2, 300),
+        SentenceSegment(0, 100),
+        SentenceSegment(2, 200),
+      ];
+
+      timingService.editSentence(targetSnippet, newSentence);
+
+      expect(targetSnippet.sentence, newSentence);
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
+    test('Test to delete a substring from a sentence. No.3', () {
+      final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
+      final String newSentence = "abghijkl";
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(3, 1300),
+        SentenceSegment(1, 100),
+        SentenceSegment(2, 300),
+        SentenceSegment(0, 100),
+        SentenceSegment(2, 200),
+      ];
+
+      timingService.editSentence(targetSnippet, newSentence);
+
+      expect(targetSnippet.sentence, newSentence);
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
+    test('Test to add a string from a sentence. No.3', () {
+      final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
+      final String newSentence = "abcdxxxefghijkl";
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(3, 400),
+        SentenceSegment(1, 300),
+        SentenceSegment(0, 100),
+        SentenceSegment(6, 500),
+        SentenceSegment(1, 100),
+        SentenceSegment(2, 300),
+        SentenceSegment(0, 100),
+        SentenceSegment(2, 200),
+      ];
+
+      timingService.editSentence(targetSnippet, newSentence);
+
+      expect(targetSnippet.sentence, newSentence);
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
+    test('Test to edit a substring from a sentence. No.4 (Edit just a segment)', () {
+      final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
+      final String newSentence = "abcdxxhijkl";
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(3, 400),
+        SentenceSegment(1, 300),
+        SentenceSegment(0, 100),
+        SentenceSegment(2, 500),
+        SentenceSegment(1, 100),
+        SentenceSegment(2, 300),
+        SentenceSegment(0, 100),
+        SentenceSegment(2, 200),
+      ];
+
+      timingService.editSentence(targetSnippet, newSentence);
+
+      expect(targetSnippet.sentence, newSentence);
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
+    test('Test to delete a substring from a sentence. No.4 (Delete just a segment)', () {
+      final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
+      final String newSentence = "abcdhijkl";
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(3, 400),
+        SentenceSegment(1, 300),
+        SentenceSegment(0, 600),
+        SentenceSegment(1, 100),
+        SentenceSegment(2, 300),
+        SentenceSegment(0, 100),
+        SentenceSegment(2, 200),
+      ];
+
+      timingService.editSentence(targetSnippet, newSentence);
+
+      expect(targetSnippet.sentence, newSentence);
+      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+    });
+
+    test('Test to delete a substring from a sentence. No.5 (Delete just some segment)', () {
+      final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
+      final String newSentence = "abcdijkl";
+      final List<SentenceSegment> expectedSentenceSegments = [
+        SentenceSegment(3, 400),
+        SentenceSegment(1, 300),
+        SentenceSegment(0, 700),
+        SentenceSegment(2, 300),
+        SentenceSegment(0, 100),
+        SentenceSegment(2, 200),
       ];
 
       timingService.editSentence(targetSnippet, newSentence);
