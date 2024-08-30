@@ -34,7 +34,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   LinkedScrollControllerGroup horizontalScrollController = LinkedScrollControllerGroup();
   late ScrollController scaleMarkScrollController;
   late ScrollController seekPositionScrollController;
-  late List<ScrollController> snippetTimelineScrollController;
+  late Map<String, ScrollController> snippetTimelineScrollController;
 
   List<Offset> panDeltas = [];
   List<DateTime> panTimestamps = [];
@@ -71,7 +71,7 @@ class _TimelinePaneState extends State<TimelinePane> {
 
     scaleMarkScrollController = horizontalScrollController.addAndGet();
     seekPositionScrollController = horizontalScrollController.addAndGet();
-    snippetTimelineScrollController = [];
+    snippetTimelineScrollController = {};
 
     masterSubject.stream.listen((signal) {
       if (signal is NotifyAudioFileLoaded) {
@@ -105,17 +105,7 @@ class _TimelinePaneState extends State<TimelinePane> {
         selectingSnippet = currentSelectingSnippet;
         masterSubject.add(NotifySelectingSnippets(selectingSnippet));
 
-        if (signal is NotifyLyricParsed) {
-          disposeAllHorizontalControllers();
-          renewHorizontalControllers(vocalistColorMap.length);
-        }
-        if (signal is NotifyVocalistAdded) {
-          snippetTimelineScrollController.add(horizontalScrollController.addAndGet());
-        }
-        if (signal is NotifyVocalistDeleted) {
-          disposeAllHorizontalControllers();
-          renewHorizontalControllers(vocalistColorMap.length);
-        }
+        updateScrollControllers();
 
         setState(() {});
       }
@@ -157,16 +147,22 @@ class _TimelinePaneState extends State<TimelinePane> {
         });
   }
 
-  void disposeAllHorizontalControllers() {
-    for (var controller in snippetTimelineScrollController) {
-      controller.dispose();
+  void updateScrollControllers() {
+    /*
+    for (var entry in snippetTimelineScrollController.entries) {
+      var vocalistName = entry.key;
+      var scrollController = entry.value;
+      if (!vocalistColorMap.containsKey(vocalistName)) {
+        scrollController.dispose();
+      }
     }
-    snippetTimelineScrollController.clear();
-  }
+    */
 
-  void renewHorizontalControllers(int count) {
-    for (int i = 0; i < count; i++) {
-      snippetTimelineScrollController.add(horizontalScrollController.addAndGet());
+    for (var entry in vocalistColorMap.entries) {
+      var vocalistName = entry.key;
+      if (!snippetTimelineScrollController.containsKey(vocalistName)) {
+        snippetTimelineScrollController[vocalistName] = horizontalScrollController.addAndGet();
+      }
     }
   }
 
@@ -472,8 +468,8 @@ class _TimelinePaneState extends State<TimelinePane> {
             borderLine,
             Expanded(
               child: SingleChildScrollView(
-                key: ValueKey("Reorderable List Item ${vocalistName}-${index}"),
-                controller: snippetTimelineScrollController[index],
+                key: ValueKey("Reorderable List Item ${vocalistName}"),
+                controller: snippetTimelineScrollController[vocalistName],
                 scrollDirection: Axis.horizontal,
                 child: Container(
                   width: audioDuration * intervalLength / intervalDuration,
@@ -535,7 +531,7 @@ class _TimelinePaneState extends State<TimelinePane> {
   @override
   void dispose() {
     scaleMarkScrollController.dispose();
-    snippetTimelineScrollController.forEach((ScrollController controller) {
+    snippetTimelineScrollController.forEach((vocalistName, controller) {
       controller.dispose();
     });
     seekPositionScrollController.dispose();
