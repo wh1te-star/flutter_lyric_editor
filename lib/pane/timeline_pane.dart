@@ -33,8 +33,8 @@ class _TimelinePaneState extends State<TimelinePane> {
   ScrollController verticalScrollController = ScrollController();
   LinkedScrollControllerGroup horizontalScrollController = LinkedScrollControllerGroup();
   late ScrollController scaleMarkScrollController;
-  late List<ScrollController> snippetTimelineScrollController = [];
   late ScrollController seekPositionScrollController;
+  late List<ScrollController> snippetTimelineScrollController;
 
   List<Offset> panDeltas = [];
   List<DateTime> panTimestamps = [];
@@ -71,6 +71,7 @@ class _TimelinePaneState extends State<TimelinePane> {
 
     scaleMarkScrollController = horizontalScrollController.addAndGet();
     seekPositionScrollController = horizontalScrollController.addAndGet();
+    snippetTimelineScrollController = [];
 
     masterSubject.stream.listen((signal) {
       if (signal is NotifyAudioFileLoaded) {
@@ -105,19 +106,15 @@ class _TimelinePaneState extends State<TimelinePane> {
         masterSubject.add(NotifySelectingSnippets(selectingSnippet));
 
         if (signal is NotifyLyricParsed) {
-          snippetTimelineScrollController.forEach((ScrollController controller) {
-            controller.dispose();
-          });
-          snippetTimelineScrollController.clear();
-          for (int i = 0; i < vocalistColorMap.length; i++) {
-            snippetTimelineScrollController.add(horizontalScrollController.addAndGet());
-          }
+          disposeAllHorizontalControllers();
+          renewHorizontalControllers(vocalistColorMap.length);
         }
         if (signal is NotifyVocalistAdded) {
           snippetTimelineScrollController.add(horizontalScrollController.addAndGet());
         }
         if (signal is NotifyVocalistDeleted) {
-          //snippetTimelineScrollController.removeAt(horizontalScrollController.);
+          disposeAllHorizontalControllers();
+          renewHorizontalControllers(vocalistColorMap.length);
         }
 
         setState(() {});
@@ -158,6 +155,19 @@ class _TimelinePaneState extends State<TimelinePane> {
         onTick: () {
           setState(() {});
         });
+  }
+
+  void disposeAllHorizontalControllers() {
+    for (var controller in snippetTimelineScrollController) {
+      controller.dispose();
+    }
+    snippetTimelineScrollController.clear();
+  }
+
+  void renewHorizontalControllers(int count) {
+    for (int i = 0; i < count; i++) {
+      snippetTimelineScrollController.add(horizontalScrollController.addAndGet());
+    }
   }
 
   void zoomIn() {
@@ -349,6 +359,7 @@ class _TimelinePaneState extends State<TimelinePane> {
                     borderLine,
                     Expanded(
                       child: SingleChildScrollView(
+                        key: ValueKey("Scale Mark"),
                         controller: scaleMarkScrollController,
                         scrollDirection: Axis.horizontal,
                         child: Container(
@@ -362,6 +373,7 @@ class _TimelinePaneState extends State<TimelinePane> {
                 ),
                 Expanded(
                   child: ReorderableListView(
+                    key: ValueKey("Reorderable List Vertical"),
                     buildDefaultDragHandles: false,
                     scrollController: verticalScrollController,
                     onReorder: onReorder,
@@ -385,6 +397,7 @@ class _TimelinePaneState extends State<TimelinePane> {
               child: Padding(
                 padding: const EdgeInsets.only(left: 160.0),
                 child: SingleChildScrollView(
+                  key: ValueKey("Seek Position"),
                   controller: seekPositionScrollController,
                   scrollDirection: Axis.horizontal,
                   child: CustomPaint(
@@ -459,6 +472,7 @@ class _TimelinePaneState extends State<TimelinePane> {
             borderLine,
             Expanded(
               child: SingleChildScrollView(
+                key: ValueKey("Reorderable List Item ${vocalistName}-${index}"),
                 controller: snippetTimelineScrollController[index],
                 scrollDirection: Axis.horizontal,
                 child: Container(
