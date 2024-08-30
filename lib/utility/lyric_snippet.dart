@@ -123,18 +123,4 @@ class LyricSnippetID {
   int index;
   LyricSnippetID(this.vocalist, this.index);
 
-  @override
-  bool operator ==(Object other) {
-    if (other is LyricSnippetID) {
-      return vocalist == other.vocalist && index == other.index;
-    } else {
-      return false;
-    }
-  }
-
-  @override
-  int get hashCode => vocalist.hashCode ^ index.hashCode;
-
-  @override
-  String toString() => 'LyricSnippetID($vocalist, $index)';
 }
