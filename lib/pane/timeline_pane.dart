@@ -147,24 +147,22 @@ class _TimelinePaneState extends State<TimelinePane> {
         });
   }
 
-  void updateScrollControllers() {
-    /*
-    for (var entry in snippetTimelineScrollController.entries) {
-      var vocalistName = entry.key;
-      var scrollController = entry.value;
-      if (!vocalistColorMap.containsKey(vocalistName)) {
-        scrollController.dispose();
-      }
+void updateScrollControllers() {
+  snippetTimelineScrollController.removeWhere((vocalistName, scrollController) {
+    if (!vocalistColorMap.containsKey(vocalistName)) {
+      scrollController.dispose();
+      return true;
     }
-    */
+    return false;
+  });
 
-    for (var entry in vocalistColorMap.entries) {
-      var vocalistName = entry.key;
-      if (!snippetTimelineScrollController.containsKey(vocalistName)) {
-        snippetTimelineScrollController[vocalistName] = horizontalScrollController.addAndGet();
-      }
+  for (var entry in vocalistColorMap.entries) {
+    var vocalistName = entry.key;
+    if (!snippetTimelineScrollController.containsKey(vocalistName)) {
+      snippetTimelineScrollController[vocalistName] = horizontalScrollController.addAndGet();
     }
   }
+}
 
   void zoomIn() {
     intervalDuration = intervalDuration * 2;
