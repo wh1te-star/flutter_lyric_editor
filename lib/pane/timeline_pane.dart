@@ -184,18 +184,7 @@ class _TimelinePaneState extends State<TimelinePane> {
       }
     }
 
-    return LyricSnippet(
-      id: SnippetID(0),
-      vocalist: Vocalist(
-        id: VocalistID(0),
-        name: "",
-        color: 0,
-      ),
-      index: 0,
-      sentence: "",
-      startTimestamp: 0,
-      sentenceSegments: [],
-    );
+    return LyricSnippet.emptySnippet;
   }
 
   int getSnippetIndexWithID(SnippetID id) {

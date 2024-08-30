@@ -236,12 +236,31 @@ class _VideoPaneState extends State<VideoPane> {
     if (vocalistColorList.containsKey(snippet.vocalist.name)) {
       fontColor = Color(vocalistColorList[snippet.vocalist.name]!);
     }
-    return Expanded(
-      child: CustomPaint(
-        painter: getColorHilightedText(snippet, currentSeekPosition, fontFamily, fontColor),
-        size: Size(double.infinity, double.infinity),
+    if (snippet.sentence == "") {
+      return Expanded(
+        child: CustomPaint(
+          painter: PartialTextPainter(
+        text: "",
+        start: 0,
+        end: 0,
+        percent: 0.0,
+        fontFamily: fontFamily,
+        fontSize: 40,
+        fontBaseColor: fontColor,
+        firstOutlineWidth: 2,
+        secondOutlineWidth: 4,
       ),
-    );
+          size: Size(double.infinity, double.infinity),
+        ),
+      );
+    } else {
+      return Expanded(
+        child: CustomPaint(
+          painter: getColorHilightedText(snippet, currentSeekPosition, fontFamily, fontColor),
+          size: Size(double.infinity, double.infinity),
+        ),
+      );
+    }
   }
 
   @override
@@ -250,25 +269,13 @@ class _VideoPaneState extends State<VideoPane> {
     List<LyricSnippetTrack> currentSnippets = getSnippetsAtCurrentSeekPosition();
 
     if (displayMode == DisplayMode.appearDissappear) {
-      LyricSnippet emptySnippet = LyricSnippet(
-        id: SnippetID(0),
-        vocalist: Vocalist(
-          id: VocalistID(0),
-          name: "",
-          color: 0,
-        ),
-        index: 0,
-        sentence: "",
-        startTimestamp: currentSeekPosition,
-        sentenceSegments: [SentenceSegment(1, 1)],
-      );
       List<Widget> content = List<Widget>.generate(maxLanes, (index) => Container());
 
       for (int i = 0; i < maxLanes; i++) {
         LyricSnippet targetSnippet = currentSnippets
             .firstWhere(
               (LyricSnippetTrack snippet) => snippet.trackNumber == i,
-              orElse: () => LyricSnippetTrack(emptySnippet, i),
+              orElse: () => LyricSnippetTrack(LyricSnippet.emptySnippet, i),
             )
             .lyricSnippet;
         content[i] = outlinedText(targetSnippet, fontFamily);

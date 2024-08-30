@@ -30,6 +30,21 @@ class LyricSnippet {
     return sentenceSegments.take(index + 1).fold(0, (sum, current) => sum + current.wordLength);
   }
 
+  static LyricSnippet get emptySnippet {
+    return LyricSnippet(
+      id: SnippetID(0),
+      vocalist: Vocalist(
+        id: VocalistID(0),
+        name: "",
+        color: 0,
+      ),
+      index: 0,
+      sentence: "",
+      startTimestamp: 0,
+      sentenceSegments: [],
+    );
+  }
+
   int seekPosition(int index) {
     if (index < 0 || index >= sentenceSegments.length) {
       throw RangeError('Index ${index} is out of bounds for sentenceSegments with length ${sentenceSegments.length}');
@@ -38,7 +53,7 @@ class LyricSnippet {
   }
 
   LyricSnippet copyWith({
-      SnippetID? id,
+    SnippetID? id,
     Vocalist? vocalist,
     int? index,
     String? sentence,
