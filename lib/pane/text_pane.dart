@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lyric_editor/pane/video_pane.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
+import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:lyric_editor/utility/sorted_list.dart';
@@ -40,16 +41,16 @@ class _TextPaneState extends State<TextPane> {
   List<LyricSnippet> lyricSnippets = [];
   List<String> lyricAppearance = [];
 
-  LyricSnippetID cursorLinePosition = LyricSnippetID(Vocalist("", 0), 0);
+  SnippetID cursorLinePosition = SnippetID(0);
   int cursorCharPosition = 0;
   int cursorCharPositionRestore = 0;
   Option cursorPositionOption = Option.former;
 
-  List<LyricSnippetID> selectingSnippets = [];
+  List<SnippetID> selectingSnippets = [];
 
   List<List<int>> timingPointsForEachLine = [];
 
-  List<LyricSnippetID> highlightingSnippetsIDs = [];
+  List<SnippetID> highlightingSnippetsIDs = [];
 
   SortedMap<int, String> sentenceSegmentMap = SortedMap<int, String>();
   SortedMap<int, String> sectionPointMap = SortedMap<int, String>();
@@ -139,11 +140,11 @@ class _TextPaneState extends State<TextPane> {
         });
   }
 
-  int getSnippetIndexWithID(LyricSnippetID id) {
+  int getSnippetIndexWithID(SnippetID id) {
     return lyricSnippets.indexWhere((snippet) => snippet.id == id);
   }
 
-  LyricSnippet getSnippetWithID(LyricSnippetID id) {
+  LyricSnippet getSnippetWithID(SnippetID id) {
     return lyricSnippets.firstWhere((snippet) => snippet.id == id);
   }
 
@@ -266,10 +267,10 @@ class _TextPaneState extends State<TextPane> {
     }
   }
 
-  Tuple3<List<LyricSnippetID>, List<LyricSnippetID>, List<LyricSnippetID>> getSnippetIDsAtCurrentSeekPosition() {
-    List<LyricSnippetID> beforeSnippetIndexes = [];
-    List<LyricSnippetID> currentSnippetIndexes = [];
-    List<LyricSnippetID> afterSnippetIndexes = [];
+  Tuple3<List<SnippetID>, List<SnippetID>, List<SnippetID>> getSnippetIDsAtCurrentSeekPosition() {
+    List<SnippetID> beforeSnippetIndexes = [];
+    List<SnippetID> currentSnippetIndexes = [];
+    List<SnippetID> afterSnippetIndexes = [];
     lyricSnippets.forEach((LyricSnippet snippet) {
       int start = snippet.startTimestamp;
       int end = snippet.endTimestamp;
@@ -309,7 +310,7 @@ class _TextPaneState extends State<TextPane> {
     return maxLanes;
   }
 
-  List<int> getIndexFromIDs(List<LyricSnippetID> lyricSnippetIDs) {
+  List<int> getIndexFromIDs(List<SnippetID> lyricSnippetIDs) {
     List<int> indexes = [];
     for (int i = 0; i < lyricSnippets.length; i++) {
       if (lyricSnippetIDs.contains(lyricSnippets[i].id)) {
@@ -336,9 +337,9 @@ class _TextPaneState extends State<TextPane> {
 
   Widget lyricListWidget() {
     final indexesTuple = getSnippetIDsAtCurrentSeekPosition();
-    late List<LyricSnippetID> beforeSnippetIDs;
-    late List<LyricSnippetID> currentSnippetIDs;
-    late List<LyricSnippetID> afterSnippetIDs;
+    late List<SnippetID> beforeSnippetIDs;
+    late List<SnippetID> currentSnippetIDs;
+    late List<SnippetID> afterSnippetIDs;
     if (selectingSnippets.isEmpty) {
       beforeSnippetIDs = indexesTuple.item1;
       currentSnippetIDs = indexesTuple.item2;
@@ -400,7 +401,7 @@ class _TextPaneState extends State<TextPane> {
     );
   }
 
-  Widget highlightedLyricItem(String lyrics, LyricSnippetID snippetID, int charIndex) {
+  Widget highlightedLyricItem(String lyrics, SnippetID snippetID, int charIndex) {
     int sentenceSegmentsBeforeCursor = 0;
     int lineIndex = getSnippetIndexWithID(snippetID);
     List<int> currentLinesentenceSegment = timingPointsForEachLine[lineIndex];

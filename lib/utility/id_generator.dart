@@ -21,9 +21,9 @@ class SnippetID {
 class SnippetIdGenerator {
   int id = 0;
 
-  VocalistID idGen() {
+  SnippetID idGen() {
     id += 1;
-    return VocalistID(id);
+    return SnippetID(id);
   }
 }
 

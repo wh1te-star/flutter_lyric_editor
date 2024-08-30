@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
+import 'package:lyric_editor/utility/id_generator.dart';
 
 class LyricSnippet {
+  SnippetID id;
   Vocalist vocalist;
   int index;
   String sentence;
@@ -9,14 +11,13 @@ class LyricSnippet {
   late List<SentenceSegment> accumulatedSentenceSegments;
 
   LyricSnippet({
+    required this.id,
     required this.vocalist,
     required this.index,
     required this.sentence,
     required this.startTimestamp,
     required this.sentenceSegments,
   });
-
-  LyricSnippetID get id => LyricSnippetID(vocalist, index);
 
   int get endTimestamp {
     return startTimestamp + sentenceSegments.fold(0, (sum, current) => sum + current.wordDuration);
@@ -36,12 +37,8 @@ class LyricSnippet {
     return sentenceSegments.take(index + 1).fold(0, (sum, current) => sum + current.wordDuration);
   }
 
-  set id(LyricSnippetID id) {
-    vocalist = id.vocalist;
-    index = id.index;
-  }
-
   LyricSnippet copyWith({
+      SnippetID? id,
     Vocalist? vocalist,
     int? index,
     String? sentence,
@@ -49,13 +46,12 @@ class LyricSnippet {
     List<SentenceSegment>? sentenceSegments,
   }) {
     return LyricSnippet(
+      id: id ?? this.id,
       vocalist: vocalist ?? this.vocalist,
       index: index ?? this.index,
       sentence: sentence ?? this.sentence,
       startTimestamp: startTimestamp ?? this.startTimestamp,
-      sentenceSegments: sentenceSegments != null
-          ? sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList()
-          : this.sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList(),
+      sentenceSegments: sentenceSegments != null ? sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList() : this.sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList(),
     );
   }
 
@@ -67,9 +63,14 @@ class LyricSnippet {
 }
 
 class Vocalist {
+  VocalistID id;
   String name;
   int color;
-  Vocalist(this.name, this.color);
+  Vocalist({
+    required this.id,
+    required this.name,
+    required this.color,
+  });
 
   @override
   bool operator ==(Object other) {
@@ -116,11 +117,4 @@ class SentenceSegment {
   String toString() {
     return 'SentenceSegment(wordLength: $wordLength, wordDuration: $wordDuration)';
   }
-}
-
-class LyricSnippetID {
-  Vocalist vocalist;
-  int index;
-  LyricSnippetID(this.vocalist, this.index);
-
 }

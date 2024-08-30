@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
@@ -32,7 +33,7 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
 
   bool enable = true;
 
-  List<LyricSnippetID> selectingSnippetIDs = [];
+  List<SnippetID> selectingSnippetIDs = [];
   List<String> selectingVocalist = [];
   int seekPosition = 0;
   int charCursorPosition = 0;
@@ -42,7 +43,7 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
 
   bool textSelectMode = false;
   int selectedPosition = 0;
-  LyricSnippetID selectedSnippetID = LyricSnippetID(Vocalist("", 0), 0);
+  SnippetID selectedSnippetID = SnippetID(0);
 
   _KeyboardShortcutsState({
     required this.masterSubject,
@@ -136,14 +137,14 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
         ),
         SnippetStartMoveIntent: CallbackAction<SnippetStartMoveIntent>(
           onInvoke: (SnippetStartMoveIntent intent) => () {
-            selectingSnippetIDs.forEach((LyricSnippetID id) {
+            selectingSnippetIDs.forEach((SnippetID id) {
               masterSubject.add(RequestSnippetMove(id, SnippetEdge.start, true));
             });
           }(),
         ),
         SnippetEndMoveIntent: CallbackAction<SnippetEndMoveIntent>(
           onInvoke: (SnippetEndMoveIntent intent) => () {
-            selectingSnippetIDs.forEach((LyricSnippetID id) {
+            selectingSnippetIDs.forEach((SnippetID id) {
               masterSubject.add(RequestSnippetMove(id, SnippetEdge.end, false));
             });
           }(),
@@ -215,14 +216,14 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
         ),
         TimingPointAddIntent: CallbackAction<TimingPointAddIntent>(
           onInvoke: (TimingPointAddIntent intent) => () {
-            selectingSnippetIDs.forEach((LyricSnippetID id) {
+            selectingSnippetIDs.forEach((SnippetID id) {
               masterSubject.add(RequestToAddTimingPoint(id, charCursorPosition, seekPosition));
             });
           }(),
         ),
         TimingPointDeleteIntent: CallbackAction<TimingPointDeleteIntent>(
           onInvoke: (TimingPointDeleteIntent intent) => () {
-            selectingSnippetIDs.forEach((LyricSnippetID id) {
+            selectingSnippetIDs.forEach((SnippetID id) {
               masterSubject.add(RequestToDeleteTimingPoint(
                 id,
                 charCursorPosition,

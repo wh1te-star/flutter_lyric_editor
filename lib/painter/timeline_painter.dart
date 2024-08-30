@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/utility/color_utilities.dart';
+import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/painter/rectangle_painter.dart';
 import 'package:lyric_editor/painter/triangle_painter.dart';
 
 class TimelinePainter extends CustomPainter {
   final List<LyricSnippet> snippets;
-  final List<LyricSnippetID> selectingId;
+  final List<SnippetID> selectingId;
   final double intervalLength;
   final int intervalDuration;
   final Color color;
   final double frameThickness;
   final double topMargin;
   final double bottomMargin;
-  final LyricSnippetID? cursorPosition;
+  final SnippetID? cursorPosition;
 
   TimelinePainter({
     required this.snippets,

@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
@@ -17,6 +18,8 @@ class TimingService {
   Map<String, List<String>> vocalistCombinationCorrespondence = {};
   List<LyricSnippet> lyricSnippetList = [];
   List<int> sections = [];
+  SnippetIdGenerator snippetIdGenerator = SnippetIdGenerator();
+  VocalistIdGenerator vocalistIdGenerator = VocalistIdGenerator();
 
   Future<void>? _loadLyricsFuture;
   int currentPosition = 0;
@@ -42,7 +45,12 @@ class TimingService {
           String singlelineText = rawText.replaceAll("\n", "").replaceAll("\r", "");
           lyricSnippetList.clear();
           lyricSnippetList.add(LyricSnippet(
-            vocalist: Vocalist(defaultVocalistName, 0),
+            id: snippetIdGenerator.idGen(),
+            vocalist: Vocalist(
+              id: vocalistIdGenerator.idGen(),
+              name: defaultVocalistName,
+              color: 0,
+            ),
             index: 1,
             sentence: singlelineText,
             startTimestamp: 0,
@@ -124,7 +132,7 @@ class TimingService {
       if (signal is RequestChangeSnippetSentence) {
         pushUndoHistory(lyricSnippetList);
 
-LyricSnippet snippet= getSnippetWithID(signal.snippetID);
+        LyricSnippet snippet = getSnippetWithID(signal.snippetID);
         editSentence(snippet, signal.newSentence);
         masterSubject.add(NotifySnippetSentenceChanged(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
       }
@@ -198,19 +206,19 @@ LyricSnippet snippet= getSnippetWithID(signal.snippetID);
     _loadLyricsFuture = loadLyrics();
   }
 
-  List<LyricSnippet> translateIDsToSnippets(List<LyricSnippetID> ids) {
+  List<LyricSnippet> translateIDsToSnippets(List<SnippetID> ids) {
     return ids.map((id) => getSnippetWithID(id)).toList();
   }
 
-  int getSnippetIndexWithID(LyricSnippetID id) {
+  int getSnippetIndexWithID(SnippetID id) {
     return lyricSnippetList.indexWhere((snippet) => snippet.id == id);
   }
 
-  LyricSnippet getSnippetWithID(LyricSnippetID id) {
+  LyricSnippet getSnippetWithID(SnippetID id) {
     return lyricSnippetList.firstWhere((snippet) => snippet.id == id);
   }
 
-  void removeSnippetWithID(LyricSnippetID id) {
+  void removeSnippetWithID(SnippetID id) {
     lyricSnippetList.removeWhere((snippet) => snippet.id == id);
   }
 
@@ -269,7 +277,11 @@ LyricSnippet snippet= getSnippetWithID(signal.snippetID);
 
           updatedVocalistColorList[newCombinationName] = value;
           getSnippetsWithVocalistName(key).forEach((LyricSnippet snippet) {
-            snippet.vocalist = Vocalist(newCombinationName, 0);
+            snippet.vocalist = Vocalist(
+              id: snippet.vocalist.id,
+              name: newCombinationName,
+              color: 0,
+            );
           });
         } else {
           updatedVocalistColorList[key] = value;
@@ -277,7 +289,11 @@ LyricSnippet snippet= getSnippetWithID(signal.snippetID);
       } else if (key == oldName) {
         updatedVocalistColorList[newName] = value;
         getSnippetsWithVocalistName(key).forEach((LyricSnippet snippet) {
-          snippet.vocalist = Vocalist(newName, 0);
+          snippet.vocalist = Vocalist(
+            id: snippet.vocalist.id,
+            name: newName,
+            color: 0,
+          );
         });
       } else {
         updatedVocalistColorList[key] = value;
@@ -301,7 +317,11 @@ LyricSnippet snippet= getSnippetWithID(signal.snippetID);
     vocalistCombinationCorrespondence = updatedMap;
 
     getSnippetsWithVocalistName(oldName).forEach((LyricSnippet snippet) {
-      snippet.vocalist = Vocalist(newName, 0);
+      snippet.vocalist = Vocalist(
+        id: snippet.vocalist.id,
+        name: newName,
+        color: 0,
+      );
     });
 
     assignIndex(lyricSnippetList);
@@ -364,7 +384,12 @@ LyricSnippet snippet= getSnippetWithID(signal.snippetID);
         sentence += word;
       }
       snippets.add(LyricSnippet(
-        vocalist: Vocalist(vocalistName, 123456),
+        id: snippetIdGenerator.idGen(),
+        vocalist: Vocalist(
+          id: vocalistIdGenerator.idGen(),
+          name: vocalistName,
+          color: 123456,
+        ),
         index: 0,
         sentence: sentence,
         startTimestamp: startTime,
@@ -495,6 +520,7 @@ LyricSnippet snippet= getSnippetWithID(signal.snippetID);
       int snippetDuration = currentPosition - lyricSnippetList[index].startTimestamp;
       newSnippets.add(
         LyricSnippet(
+          id: snippetIdGenerator.idGen(),
           vocalist: vocalist,
           index: 0,
           sentence: beforeString,
@@ -507,6 +533,7 @@ LyricSnippet snippet= getSnippetWithID(signal.snippetID);
       int snippetDuration = lyricSnippetList[index].endTimestamp - lyricSnippetList[index].startTimestamp - currentPosition - snippetMargin;
       newSnippets.add(
         LyricSnippet(
+          id: snippetIdGenerator.idGen(),
           vocalist: vocalist,
           index: 0,
           sentence: afterString,
@@ -807,7 +834,12 @@ LyricSnippet snippet= getSnippetWithID(signal.snippetID);
   void pushUndoHistory(List<LyricSnippet> lyricSnippetList) {
     List<LyricSnippet> copy = lyricSnippetList.map((snippet) {
       return LyricSnippet(
-        vocalist: Vocalist(snippet.vocalist.name, vocalistColorList[snippet.vocalist.name]!),
+        id: snippet.id,
+        vocalist: Vocalist(
+          id: snippet.vocalist.id,
+          name: snippet.vocalist.name,
+          color: vocalistColorList[snippet.vocalist.name]!,
+        ),
         index: snippet.index,
         sentence: snippet.sentence,
         startTimestamp: snippet.startTimestamp,

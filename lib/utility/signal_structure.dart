@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/sorted_list.dart';
 
@@ -104,20 +105,20 @@ class RequestChangeVocalistName {
 }
 
 class RequestChangeSnippetSentence {
-  LyricSnippetID snippetID;
+  SnippetID snippetID;
   String newSentence;
   RequestChangeSnippetSentence(this.snippetID, this.newSentence);
 }
 
 class RequestToAddTimingPoint {
-  LyricSnippetID snippetID;
+  SnippetID snippetID;
   int characterPosition;
   int seekPosition;
   RequestToAddTimingPoint(this.snippetID, this.characterPosition, this.seekPosition);
 }
 
 class RequestToDeleteTimingPoint {
-  LyricSnippetID snippetID;
+  SnippetID snippetID;
   int characterPosition;
   Option option = Option.former;
   RequestToDeleteTimingPoint(this.snippetID, this.characterPosition, {this.option = Option.former});
@@ -184,7 +185,7 @@ class NotifyUndo {
 }
 
 class NotifySelectingSnippets {
-  List<LyricSnippetID> snippetIDs;
+  List<SnippetID> snippetIDs;
   NotifySelectingSnippets(this.snippetIDs);
 }
 
@@ -199,7 +200,7 @@ class NotifyDeselectingVocalist {
 }
 
 class NotifyCurrentSnippets {
-  List<LyricSnippetID> currentSnippets;
+  List<SnippetID> currentSnippets;
   NotifyCurrentSnippets(this.currentSnippets);
 }
 
@@ -220,7 +221,7 @@ class NotifyCharCursorPosition {
 }
 
 class NotifyLineCursorPosition {
-  LyricSnippetID cursorSnippetID;
+  SnippetID cursorSnippetID;
   NotifyLineCursorPosition(this.cursorSnippetID);
 }
 
@@ -268,13 +269,13 @@ class RequestToExitTextSelectMode {}
 class RequestSwitchDisplayMode {}
 
 class RequestDivideSnippet {
-  LyricSnippetID snippetID;
+  SnippetID snippetID;
   int charPos;
   RequestDivideSnippet(this.snippetID, this.charPos);
 }
 
 class RequestConcatenateSnippet {
-  List<LyricSnippetID> snippetIDs;
+  List<SnippetID> snippetIDs;
   RequestConcatenateSnippet(this.snippetIDs);
 }
 
@@ -294,7 +295,7 @@ enum SnippetEdge {
 }
 
 class RequestSnippetMove {
-  LyricSnippetID id;
+  SnippetID id;
   SnippetEdge snippetEdge;
   bool holdLength;
   RequestSnippetMove(this.id, this.snippetEdge, this.holdLength);

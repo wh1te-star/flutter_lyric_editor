@@ -10,6 +10,7 @@ import 'package:lyric_editor/painter/timeline_painter.dart';
 import 'package:lyric_editor/utility/color_utilities.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:lyric_editor/utility/dialogbox_utility.dart';
+import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/svg_icon.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
@@ -44,8 +45,8 @@ class _TimelinePaneState extends State<TimelinePane> {
   Map<String, int> vocalistColorMap = {};
   Map<String, List<String>> vocalistCombinationCorrespondence = {};
   List<int> sections = [];
-  LyricSnippetID cursorPosition = LyricSnippetID(Vocalist("", 0), 0);
-  List<LyricSnippetID> selectingSnippet = [];
+  SnippetID cursorPosition = SnippetID(0);
+  List<SnippetID> selectingSnippet = [];
   List<String> selectingVocalist = [];
   int audioDuration = 60000;
   int currentPosition = 0;
@@ -80,7 +81,7 @@ class _TimelinePaneState extends State<TimelinePane> {
         });
       }
       if (signal is NotifySeekPosition) {
-        List<LyricSnippetID> currentSelectingSnippet = getSnippetsAtCurrentSeekPosition();
+        List<SnippetID> currentSelectingSnippet = getSnippetsAtCurrentSeekPosition();
         masterSubject.add(NotifyCurrentSnippets(currentSelectingSnippet));
 
         if (autoCurrentSelectMode) {
@@ -101,7 +102,7 @@ class _TimelinePaneState extends State<TimelinePane> {
         snippetsForeachVocalist = groupBy(signal.lyricSnippetList, (LyricSnippet snippet) => snippet.vocalist.name);
         cursorPosition = snippetsForeachVocalist[snippetsForeachVocalist.keys.first]![0].id;
 
-        List<LyricSnippetID> currentSelectingSnippet = getSnippetsAtCurrentSeekPosition();
+        List<SnippetID> currentSelectingSnippet = getSnippetsAtCurrentSeekPosition();
         selectingSnippet = currentSelectingSnippet;
         masterSubject.add(NotifySelectingSnippets(selectingSnippet));
 
@@ -147,22 +148,22 @@ class _TimelinePaneState extends State<TimelinePane> {
         });
   }
 
-void updateScrollControllers() {
-  snippetTimelineScrollController.removeWhere((vocalistName, scrollController) {
-    if (!vocalistColorMap.containsKey(vocalistName)) {
-      scrollController.dispose();
-      return true;
-    }
-    return false;
-  });
+  void updateScrollControllers() {
+    snippetTimelineScrollController.removeWhere((vocalistName, scrollController) {
+      if (!vocalistColorMap.containsKey(vocalistName)) {
+        scrollController.dispose();
+        return true;
+      }
+      return false;
+    });
 
-  for (var entry in vocalistColorMap.entries) {
-    var vocalistName = entry.key;
-    if (!snippetTimelineScrollController.containsKey(vocalistName)) {
-      snippetTimelineScrollController[vocalistName] = horizontalScrollController.addAndGet();
+    for (var entry in vocalistColorMap.entries) {
+      var vocalistName = entry.key;
+      if (!snippetTimelineScrollController.containsKey(vocalistName)) {
+        snippetTimelineScrollController[vocalistName] = horizontalScrollController.addAndGet();
+      }
     }
   }
-}
 
   void zoomIn() {
     intervalDuration = intervalDuration * 2;
@@ -172,12 +173,43 @@ void updateScrollControllers() {
     intervalDuration = intervalDuration ~/ 2;
   }
 
-  LyricSnippet getSnippetWithID(LyricSnippetID id) {
-    return snippetsForeachVocalist[id.vocalist.name]!.firstWhere((snippet) => snippet.id == id);
+  LyricSnippet getSnippetWithID(SnippetID id) {
+    for (var entry in snippetsForeachVocalist.entries) {
+      List<LyricSnippet> snippets = entry.value;
+
+      for (var snippet in snippets) {
+        if (snippet.id == id) {
+          return snippet;
+        }
+      }
+    }
+
+    return LyricSnippet(
+      id: SnippetID(0),
+      vocalist: Vocalist(
+        id: VocalistID(0),
+        name: "",
+        color: 0,
+      ),
+      index: 0,
+      sentence: "",
+      startTimestamp: 0,
+      sentenceSegments: [],
+    );
   }
 
-  int getSnippetIndexWithID(LyricSnippetID id) {
-    return snippetsForeachVocalist[id.vocalist.name]!.indexWhere((snippet) => snippet.id == id);
+  int getSnippetIndexWithID(SnippetID id) {
+    for (var entry in snippetsForeachVocalist.entries) {
+      List<LyricSnippet> snippets = entry.value;
+
+      for (int i = 0; i < snippets.length; i++) {
+        if (snippets[i].id == id) {
+          return i;
+        }
+      }
+    }
+
+    return -1;
   }
 
   LyricSnippet getNearSnippetFromSeekPosition(String vocalistName, int targetSeekPosition) {
@@ -223,6 +255,7 @@ void updateScrollControllers() {
   }
 
   void moveLeftCursor() {
+    /*
     LyricSnippetID nextCursorPosition = cursorPosition;
     nextCursorPosition.index--;
     if (nextCursorPosition.index >= 0) {
@@ -230,9 +263,11 @@ void updateScrollControllers() {
       cursorPosition = nextCursorPosition;
       cursorBlinker.restartCursorTimer();
     }
+    */
   }
 
   void moveRightCursor() {
+    /*
     LyricSnippetID nextCursorPosition = cursorPosition;
     nextCursorPosition.index++;
     if (nextCursorPosition.index < snippetsForeachVocalist[cursorPosition.vocalist.name]!.length) {
@@ -240,20 +275,25 @@ void updateScrollControllers() {
       cursorPosition = nextCursorPosition;
       cursorBlinker.restartCursorTimer();
     }
+    */
   }
 
   void moveUpCursor() {
+    /*
     String upperVocalist = getPreviousVocalist(cursorPosition.vocalist.name)!;
     LyricSnippet snippet = getSnippetWithID(cursorPosition);
     int targetSeekPosition = (snippet.startTimestamp + snippet.endTimestamp) ~/ 2;
     cursorPosition = getNearSnippetFromSeekPosition(upperVocalist, targetSeekPosition).id;
+    */
   }
 
   void moveDownCursor() {
+    /*
     String upperVocalist = getNextVocalist(cursorPosition.vocalist.name)!;
     LyricSnippet snippet = getSnippetWithID(cursorPosition);
     int targetSeekPosition = (snippet.startTimestamp + snippet.endTimestamp) ~/ 2;
     cursorPosition = getNearSnippetFromSeekPosition(upperVocalist, targetSeekPosition).id;
+    */
   }
 
   @override
@@ -539,8 +579,8 @@ void updateScrollControllers() {
     super.dispose();
   }
 
-  List<LyricSnippetID> getSnippetsAtCurrentSeekPosition() {
-    List<LyricSnippetID> currentSnippet = [];
+  List<SnippetID> getSnippetsAtCurrentSeekPosition() {
+    List<SnippetID> currentSnippet = [];
     snippetsForeachVocalist.forEach((vocalist, snippets) {
       for (var snippet in snippets) {
         final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
@@ -679,7 +719,17 @@ void updateScrollControllers() {
     final snippets = snippetsForeachVocalist.containsKey(vocalistName)
         ? snippetsForeachVocalist[vocalistName]!
         : [
-            LyricSnippet(vocalist: Vocalist("", 0), index: 0, sentence: "", startTimestamp: 0, sentenceSegments: [SentenceSegment(1, 1)])
+            LyricSnippet(
+                id: SnippetID(0),
+                vocalist: Vocalist(
+                  id: VocalistID(0),
+                  name: "",
+                  color: 0,
+                ),
+                index: 0,
+                sentence: "",
+                startTimestamp: 0,
+                sentenceSegments: [SentenceSegment(1, 1)]),
           ];
     double topMargin = 10;
     double bottomMargin = 5;

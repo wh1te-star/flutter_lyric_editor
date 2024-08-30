@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/painter/partial_text_painter.dart';
+import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
@@ -74,7 +75,7 @@ class _VideoPaneState extends State<VideoPane> {
 
   String defaultText = "Video Pane";
 
-  LyricSnippetTrack getLyricSnippetWithID(LyricSnippetID id) {
+  LyricSnippetTrack getLyricSnippetWithID(SnippetID id) {
     return lyricSnippetTrack.firstWhere((snippet) => snippet.lyricSnippet.id == id);
   }
 
@@ -249,7 +250,18 @@ class _VideoPaneState extends State<VideoPane> {
     List<LyricSnippetTrack> currentSnippets = getSnippetsAtCurrentSeekPosition();
 
     if (displayMode == DisplayMode.appearDissappear) {
-      LyricSnippet emptySnippet = LyricSnippet(vocalist: Vocalist("", 0), index: 0, sentence: "", startTimestamp: currentSeekPosition, sentenceSegments: [SentenceSegment(1, 1)]);
+      LyricSnippet emptySnippet = LyricSnippet(
+        id: SnippetID(0),
+        vocalist: Vocalist(
+          id: VocalistID(0),
+          name: "",
+          color: 0,
+        ),
+        index: 0,
+        sentence: "",
+        startTimestamp: currentSeekPosition,
+        sentenceSegments: [SentenceSegment(1, 1)],
+      );
       List<Widget> content = List<Widget>.generate(maxLanes, (index) => Container());
 
       for (int i = 0; i < maxLanes; i++) {
