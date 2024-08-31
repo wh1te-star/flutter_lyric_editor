@@ -31,19 +31,17 @@ class VideoPaneProvider with ChangeNotifier {
 }
 
 class VideoPane extends ConsumerStatefulWidget {
-  final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
 
-  VideoPane({required this.masterSubject, required this.focusNode}) : super(key: Key('VideoPane'));
+  VideoPane({required this.focusNode}) : super(key: Key('VideoPane'));
 
   @override
-  _VideoPaneState createState() => _VideoPaneState(masterSubject, focusNode);
+  _VideoPaneState createState() => _VideoPaneState(focusNode);
 }
 
 class _VideoPaneState extends ConsumerState<VideoPane> {
-  final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
-  _VideoPaneState(this.masterSubject, this.focusNode);
+  _VideoPaneState(this.focusNode);
   int startBulge = 1000;
   int endBulge = 1000;
   List<LyricSnippetTrack> lyricSnippetTrack = [];

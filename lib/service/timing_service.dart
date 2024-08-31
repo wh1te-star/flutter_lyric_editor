@@ -17,11 +17,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final timingMasterProvider = ChangeNotifierProvider((ref) {
   final musicPlayerService = ref.read(musicPlayerMasterProvider);
-  return TimingService(masterSubject: masterSubject, musicPlayerProvider: musicPlayerService);
+  return TimingService(musicPlayerProvider: musicPlayerService);
 });
 
 class TimingService extends ChangeNotifier {
-  final PublishSubject<dynamic> masterSubject;
   final MusicPlayerService musicPlayerProvider;
 
   List<LyricSnippet> lyricSnippetList = [];
@@ -38,7 +37,6 @@ class TimingService extends ChangeNotifier {
   String defaultVocalistName = "vocalist 1";
 
   TimingService({
-    required this.masterSubject,
     required this.musicPlayerProvider,
   }) {
     _loadLyricsFuture = loadExampleLyrics();

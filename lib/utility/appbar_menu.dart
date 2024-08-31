@@ -11,7 +11,6 @@ import 'package:file_selector/file_selector.dart';
 
 AppBar buildAppBarWithMenu(
   BuildContext context,
-  PublishSubject<dynamic> masterSubject,
   MusicPlayerService musicPlayerService,
   TimingService timingService,
 ) {
@@ -44,19 +43,19 @@ AppBar buildAppBarWithMenu(
           onChanged: (String? newValue) {
             switch (newValue) {
               case StringResource.fileMenuOpenAudio:
-                openAudio(context, masterSubject, musicPlayerService);
+                openAudio(context, musicPlayerService);
                 break;
 
               case StringResource.fileMenuCreateNewLyric:
-                createNewLyric(context, masterSubject, timingService);
+                createNewLyric(context, timingService);
                 break;
 
               case StringResource.fileMenuOpenLyric:
-                openLyric(context, masterSubject, timingService);
+                openLyric(context, timingService);
                 break;
 
               case StringResource.fileMenuExportLyric:
-                exportLyric(context, masterSubject, timingService);
+                exportLyric(context, timingService);
                 break;
 
               default:
@@ -81,7 +80,7 @@ AppBar buildAppBarWithMenu(
   );
 }
 
-void openAudio(BuildContext context, PublishSubject<dynamic> masterSubject, MusicPlayerService musicPlayerSerivce) async {
+void openAudio(BuildContext context, MusicPlayerService musicPlayerSerivce) async {
   final XTypeGroup typeGroup = XTypeGroup(
     label: 'audio',
     extensions: ['mp3', 'wav', 'flac'],
@@ -101,7 +100,7 @@ void openAudio(BuildContext context, PublishSubject<dynamic> masterSubject, Musi
   }
 }
 
-void createNewLyric(BuildContext context, PublishSubject<dynamic> masterSubject, TimingService timingService) async {
+void createNewLyric(BuildContext context, TimingService timingService) async {
   final XFile? file = await openFile(acceptedTypeGroups: [
     XTypeGroup(
       label: 'text',
@@ -120,7 +119,7 @@ void createNewLyric(BuildContext context, PublishSubject<dynamic> masterSubject,
   }
 }
 
-void openLyric(BuildContext context, PublishSubject<dynamic> masterSubject, TimingService timingService) async {
+void openLyric(BuildContext context, TimingService timingService) async {
   final XFile? file = await openFile(acceptedTypeGroups: [
     XTypeGroup(
       label: 'xlrc',
@@ -139,7 +138,7 @@ void openLyric(BuildContext context, PublishSubject<dynamic> masterSubject, Timi
   }
 }
 
-void exportLyric(BuildContext context, PublishSubject<dynamic> masterSubject, TimingService timingService) async {
+void exportLyric(BuildContext context, TimingService timingService) async {
   const String fileName = 'example.xlrc';
   final FileSaveLocation? result = await getSaveLocation(suggestedName: fileName);
   if (result == null) {

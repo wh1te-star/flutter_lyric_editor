@@ -16,7 +16,6 @@ Matcher throwsExceptionWithMessageContaining(String substring) {
 void main() {
   group('Timing point test.', () {
     late MockBuildContext mockContext;
-    late PublishSubject<dynamic> masterSubject;
     late TimingService timingService;
     final dataSetSnippet1 = LyricSnippet(
       vocalist: Vocalist("sample vocalist name", Colors.black.value),

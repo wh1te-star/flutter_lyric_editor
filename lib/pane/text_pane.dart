@@ -20,11 +20,10 @@ import 'package:tuple/tuple.dart';
 final textPaneMasterProvider = ChangeNotifierProvider((ref) {
   final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
   final TimingService timingService = ref.read(timingMasterProvider);
-  return TextPaneProvider(masterSubject: masterSubject, musicPlayerProvider: musicPlayerService, timingService: timingService);
+  return TextPaneProvider(musicPlayerProvider: musicPlayerService, timingService: timingService);
 });
 
 class TextPaneProvider with ChangeNotifier {
-  final PublishSubject<dynamic> masterSubject;
   final MusicPlayerService musicPlayerProvider;
   final TimingService timingService;
 
@@ -41,7 +40,6 @@ class TextPaneProvider with ChangeNotifier {
   int maxLanes = 0;
 
   TextPaneProvider({
-    required this.masterSubject,
     required this.musicPlayerProvider,
     required this.timingService,
   }) {
@@ -237,17 +235,15 @@ class TextPaneProvider with ChangeNotifier {
 }
 
 class TextPane extends ConsumerStatefulWidget {
-  final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
 
-  TextPane({required this.masterSubject, required this.focusNode}) : super(key: Key('TextPane'));
+  TextPane({required this.focusNode}) : super(key: Key('TextPane'));
 
   @override
-  _TextPaneState createState() => _TextPaneState(masterSubject, focusNode);
+  _TextPaneState createState() => _TextPaneState(focusNode);
 }
 
 class _TextPaneState extends ConsumerState<TextPane> {
-  final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
 
   static const String cursorChar = '\xa0';
@@ -264,7 +260,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
   int selectionBasePosition = 0;
 
-  _TextPaneState(this.masterSubject, this.focusNode);
+  _TextPaneState(this.focusNode);
 
   @override
   void initState() {

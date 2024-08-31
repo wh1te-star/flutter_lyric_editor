@@ -27,14 +27,12 @@ class KeyboardShortcutsNotifier with ChangeNotifier {
 }
 
 class KeyboardShortcuts extends ConsumerStatefulWidget {
-  final PublishSubject<dynamic> masterSubject;
   final Widget child;
   final FocusNode videoPaneFocusNode;
   final FocusNode textPaneFocusNode;
   final FocusNode timelinePaneFocusNode;
 
   KeyboardShortcuts({
-    required this.masterSubject,
     required this.child,
     required this.videoPaneFocusNode,
     required this.textPaneFocusNode,
@@ -42,11 +40,10 @@ class KeyboardShortcuts extends ConsumerStatefulWidget {
   });
 
   @override
-  _KeyboardShortcutsState createState() => _KeyboardShortcutsState(masterSubject: this.masterSubject, child: this.child, videoPaneFocusNode: this.videoPaneFocusNode, textPaneFocusNode: this.textPaneFocusNode, timelinePaneFocusNode: this.timelinePaneFocusNode);
+  _KeyboardShortcutsState createState() => _KeyboardShortcutsState(child: this.child, videoPaneFocusNode: this.videoPaneFocusNode, textPaneFocusNode: this.textPaneFocusNode, timelinePaneFocusNode: this.timelinePaneFocusNode);
 }
 
 class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
-  final PublishSubject<dynamic> masterSubject;
   final Widget child;
   final FocusNode videoPaneFocusNode;
   final FocusNode textPaneFocusNode;
@@ -61,7 +58,6 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
   bool enable = true;
 
   _KeyboardShortcutsState({
-    required this.masterSubject,
     required this.child,
     required this.videoPaneFocusNode,
     required this.textPaneFocusNode,
@@ -71,15 +67,6 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
   @override
   void initState() {
     super.initState();
-
-    widget.masterSubject.stream.listen((signal) {
-      if (signal is RequestKeyboardShortcutEnable) {
-        enable = signal.enable;
-        debugPrint("enable: ${enable}");
-        setState(() {});
-        NotifyKeyboardShortcutEnable(enable);
-      }
-    });
   }
 
   Map<LogicalKeySet, Intent> get shortcuts => {
@@ -227,7 +214,6 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         SnippetDivideIntent: CallbackAction<SnippetDivideIntent>(
           onInvoke: (SnippetDivideIntent intent) => () {
             timingService.divideSnippet(timelinePaneProvider.selectingSnippets[0], textPaneProvider.cursorCharPosition);
-            //masterSubject.add(RequestToExitTextSelectMode());
           }(),
         ),
         SnippetConcatenateIntent: CallbackAction<SnippetConcatenateIntent>(

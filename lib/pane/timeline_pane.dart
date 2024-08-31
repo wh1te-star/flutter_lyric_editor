@@ -23,11 +23,10 @@ import 'package:rxdart/rxdart.dart';
 final timelinePaneMasterProvider = ChangeNotifierProvider((ref) {
   final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
   final TimingService timingService = ref.read(timingMasterProvider);
-  return TimelinePaneProvider(masterSubject: masterSubject, musicPlayerProvider: musicPlayerService, timingService: timingService);
+  return TimelinePaneProvider(musicPlayerProvider: musicPlayerService, timingService: timingService);
 });
 
 class TimelinePaneProvider with ChangeNotifier {
-  final PublishSubject<dynamic> masterSubject;
   final MusicPlayerService musicPlayerProvider;
   final TimingService timingService;
 
@@ -43,7 +42,6 @@ class TimelinePaneProvider with ChangeNotifier {
   bool autoCurrentSelectMode = true;
 
   TimelinePaneProvider({
-    required this.masterSubject,
     required this.musicPlayerProvider,
     required this.timingService,
   }) {
@@ -132,19 +130,17 @@ class TimelinePaneProvider with ChangeNotifier {
 }
 
 class TimelinePane extends ConsumerStatefulWidget {
-  final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
 
-  TimelinePane({required this.masterSubject, required this.focusNode}) : super(key: Key('TimelinePane'));
+  TimelinePane({required this.focusNode}) : super(key: Key('TimelinePane'));
 
   @override
-  _TimelinePaneState createState() => _TimelinePaneState(masterSubject, focusNode);
+  _TimelinePaneState createState() => _TimelinePaneState(focusNode);
 }
 
 class _TimelinePaneState extends ConsumerState<TimelinePane> {
-  final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
-  _TimelinePaneState(this.masterSubject, this.focusNode);
+  _TimelinePaneState(this.focusNode);
 
   ScrollController verticalScrollController = ScrollController();
   LinkedScrollControllerGroup horizontalScrollController = LinkedScrollControllerGroup();
@@ -806,10 +802,6 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     return GestureDetector(
       onTapDown: (TapDownDetails details) {
         isAddVocalistButtonSelected = true;
-        /*
-        cursorBlinker.restartCursorTimer();
-        masterSubject.add(RequestKeyboardShortcutEnable(false));
-      */
         setState(() {});
       },
       onTapUp: (TapUpDetails details) {

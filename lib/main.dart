@@ -13,8 +13,6 @@ import 'pane/timeline_pane.dart';
 import 'pane/adjustable_pane_border.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final masterSubject = PublishSubject<dynamic>();
-
 void main() {
   runApp(ProviderScope(child: MyApp()));
 }
@@ -31,30 +29,26 @@ class MyApp extends ConsumerWidget {
           title: Builder(
             builder: (BuildContext context) => buildAppBarWithMenu(
               context,
-              masterSubject,
               musicPlayerService,
               timingService,
             ),
           ),
         ),
-        body: AdjustablePaneLayout(masterSubject: masterSubject),
+        body: AdjustablePaneLayout(),
       ),
     );
   }
 }
 
 class AdjustablePaneLayout extends ConsumerStatefulWidget {
-  final PublishSubject<dynamic> masterSubject;
-
-  AdjustablePaneLayout({required this.masterSubject}) : super(key: Key('Main'));
+  AdjustablePaneLayout() : super(key: Key('Main'));
 
   @override
-  _AdjustablePaneLayoutState createState() => _AdjustablePaneLayoutState(masterSubject);
+  _AdjustablePaneLayoutState createState() => _AdjustablePaneLayoutState();
 }
 
 class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
-  final PublishSubject<dynamic> masterSubject;
-  _AdjustablePaneLayoutState(this.masterSubject);
+  _AdjustablePaneLayoutState();
 
   double screenWidth = 0.0;
   double screenHeight = 0.0;
@@ -84,20 +78,19 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
     super.initState();
 
     musicPlayerService = ref.read(musicPlayerMasterProvider);
-    timingService = TimingService(masterSubject: masterSubject, musicPlayerProvider: musicPlayerService);
+    timingService = TimingService(
+      musicPlayerProvider: musicPlayerService,
+    );
     videoPaneFocusNode = FocusNode();
     textPaneFocusNode = FocusNode();
     timelinePaneFocusNode = FocusNode();
     videoPane = VideoPane(
-      masterSubject: masterSubject,
       focusNode: videoPaneFocusNode,
     );
     textPane = TextPane(
-      masterSubject: masterSubject,
       focusNode: textPaneFocusNode,
     );
     timelinePane = TimelinePane(
-      masterSubject: masterSubject,
       focusNode: timelinePaneFocusNode,
     );
     videoTextBorder = AdjustablePaneBorder(
@@ -131,12 +124,6 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
           });
         });
 
-    masterSubject.listen((signal) {
-      if (signal is NotifyVideoPaneWidthLimit) {
-        videoPaneWidthlimit = signal.widthLimit;
-      }
-    });
-
     musicPlayerService.initAudio('assets/09 ウェルカムティーフレンド.mp3');
     musicPlayerService.play();
 
@@ -163,7 +150,6 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
   @override
   Widget build(BuildContext context) {
     return KeyboardShortcuts(
-      masterSubject: masterSubject,
       videoPaneFocusNode: videoPaneFocusNode,
       textPaneFocusNode: textPaneFocusNode,
       timelinePaneFocusNode: timelinePaneFocusNode,
