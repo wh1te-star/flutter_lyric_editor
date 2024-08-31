@@ -51,7 +51,6 @@ class TimingService {
               name: defaultVocalistName,
               color: 0,
             ),
-            index: 1,
             sentence: singlelineText,
             startTimestamp: 0,
             sentenceSegments: [SentenceSegment(singlelineText.length, audioDuration)],
@@ -199,7 +198,6 @@ class TimingService {
 
       if (signal is RequestUndo) {
         lyricSnippetList = popUndoHistory();
-        assignIndex(lyricSnippetList);
         masterSubject.add(NotifyUndo(lyricSnippetList));
       }
     });
@@ -323,8 +321,6 @@ class TimingService {
         color: 0,
       );
     });
-
-    assignIndex(lyricSnippetList);
   }
 
   Future<void> loadLyrics() async {
@@ -390,14 +386,11 @@ class TimingService {
           name: vocalistName,
           color: 123456,
         ),
-        index: 0,
         sentence: sentence,
         startTimestamp: startTime,
         sentenceSegments: sentenceSegments,
       ));
     }
-
-    assignIndex(snippets);
 
     return snippets;
   }
@@ -426,21 +419,6 @@ class TimingService {
 
     final document = builder.buildDocument();
     return document.toXmlString(pretty: true, indent: '  ');
-  }
-
-  void assignIndex(List<LyricSnippet> snippets) {
-    Map<Vocalist, int> idMap = {};
-
-    snippets.sort((LyricSnippet a, LyricSnippet b) => a.startTimestamp.compareTo(b.startTimestamp));
-    snippets.forEach((LyricSnippet snippet) {
-      Vocalist vocalist = snippet.vocalist;
-      if (!idMap.containsKey(vocalist)) {
-        idMap[vocalist] = 1;
-      } else {
-        idMap[vocalist] = idMap[vocalist]! + 1;
-      }
-      snippet.index = idMap[vocalist]!;
-    });
   }
 
   Future<void> writeTranslatedXmlToFile() async {
@@ -522,7 +500,6 @@ class TimingService {
         LyricSnippet(
           id: snippetIdGenerator.idGen(),
           vocalist: vocalist,
-          index: 0,
           sentence: beforeString,
           startTimestamp: lyricSnippetList[index].startTimestamp,
           sentenceSegments: [SentenceSegment(beforeString.length, snippetDuration)],
@@ -535,7 +512,6 @@ class TimingService {
         LyricSnippet(
           id: snippetIdGenerator.idGen(),
           vocalist: vocalist,
-          index: 0,
           sentence: afterString,
           startTimestamp: currentPosition + snippetMargin,
           sentenceSegments: [SentenceSegment(afterString.length, snippetDuration)],
@@ -545,7 +521,6 @@ class TimingService {
     if (newSnippets.isNotEmpty) {
       lyricSnippetList.removeAt(index);
       lyricSnippetList.insertAll(index, newSnippets);
-      assignIndex(lyricSnippetList);
       masterSubject.add(NotifySnippetDivided(lyricSnippetList));
     }
   }
@@ -573,7 +548,6 @@ class TimingService {
         removeSnippetWithID(rightSnippet.id);
       }
     });
-    assignIndex(lyricSnippetList);
     masterSubject.add(NotifySnippetConcatenated(lyricSnippetList));
   }
 
@@ -840,7 +814,6 @@ class TimingService {
           name: snippet.vocalist.name,
           color: vocalistColorList[snippet.vocalist.name]!,
         ),
-        index: snippet.index,
         sentence: snippet.sentence,
         startTimestamp: snippet.startTimestamp,
         sentenceSegments: snippet.sentenceSegments.map((point) {

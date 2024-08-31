@@ -20,7 +20,6 @@ void main() {
     late TimingService timingService;
     final dataSetSnippet1 = LyricSnippet(
       vocalist: Vocalist("sample vocalist name", Colors.black.value),
-      index: 0,
       sentence: "abcdefghijklmnopqrst",
       startTimestamp: 2000,
       sentenceSegments: [

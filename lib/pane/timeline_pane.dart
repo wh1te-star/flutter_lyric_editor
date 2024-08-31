@@ -715,7 +715,6 @@ class _TimelinePaneState extends State<TimelinePane> {
                   name: "",
                   color: 0,
                 ),
-                index: 0,
                 sentence: "",
                 startTimestamp: 0,
                 sentenceSegments: [SentenceSegment(1, 1)]),

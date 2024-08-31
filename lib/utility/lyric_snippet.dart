@@ -4,7 +4,6 @@ import 'package:lyric_editor/utility/id_generator.dart';
 class LyricSnippet {
   SnippetID id;
   Vocalist vocalist;
-  int index;
   String sentence;
   int startTimestamp;
   List<SentenceSegment> sentenceSegments;
@@ -13,7 +12,6 @@ class LyricSnippet {
   LyricSnippet({
     required this.id,
     required this.vocalist,
-    required this.index,
     required this.sentence,
     required this.startTimestamp,
     required this.sentenceSegments,
@@ -38,7 +36,6 @@ class LyricSnippet {
         name: "",
         color: 0,
       ),
-      index: 0,
       sentence: "",
       startTimestamp: 0,
       sentenceSegments: [],
@@ -55,7 +52,6 @@ class LyricSnippet {
   LyricSnippet copyWith({
     SnippetID? id,
     Vocalist? vocalist,
-    int? index,
     String? sentence,
     int? startTimestamp,
     List<SentenceSegment>? sentenceSegments,
@@ -63,7 +59,6 @@ class LyricSnippet {
     return LyricSnippet(
       id: id ?? this.id,
       vocalist: vocalist ?? this.vocalist,
-      index: index ?? this.index,
       sentence: sentence ?? this.sentence,
       startTimestamp: startTimestamp ?? this.startTimestamp,
       sentenceSegments: sentenceSegments != null ? sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList() : this.sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList(),
@@ -71,10 +66,10 @@ class LyricSnippet {
   }
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is LyricSnippet && runtimeType == other.runtimeType && vocalist == other.vocalist && index == other.index && sentence == other.sentence && startTimestamp == other.startTimestamp && listEquals(sentenceSegments, other.sentenceSegments);
+  bool operator ==(Object other) => identical(this, other) || other is LyricSnippet && runtimeType == other.runtimeType && vocalist == other.vocalist && sentence == other.sentence && startTimestamp == other.startTimestamp && listEquals(sentenceSegments, other.sentenceSegments);
 
   @override
-  int get hashCode => vocalist.hashCode ^ index.hashCode ^ sentence.hashCode ^ startTimestamp.hashCode ^ sentenceSegments.hashCode;
+  int get hashCode => vocalist.hashCode ^ sentence.hashCode ^ startTimestamp.hashCode ^ sentenceSegments.hashCode;
 }
 
 class Vocalist {
