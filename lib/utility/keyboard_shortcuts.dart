@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
+import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:rxdart/rxdart.dart';
@@ -49,6 +50,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
   final FocusNode timelinePaneFocusNode;
 
   late final MusicPlayerService musicPlayerProvider = ref.watch(musicPlayerMasterProvider.notifier);
+  late final TimingService timingService = ref.watch(timingMasterProvider.notifier);
 
   bool enable = true;
 
@@ -90,9 +92,6 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
       }
       if (signal is NotifyDeselectingVocalist) {
         selectingVocalist.remove(signal.vocalistName);
-      }
-      if (signal is NotifySectionAdded || signal is NotifySectionDeleted) {
-        sections = signal.sections;
       }
       if (signal is NotifyCharCursorPosition) {
         charCursorPosition = signal.cursorPosition;
@@ -153,14 +152,14 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         SnippetStartMoveIntent: CallbackAction<SnippetStartMoveIntent>(
           onInvoke: (SnippetStartMoveIntent intent) => () {
             selectingSnippetIDs.forEach((SnippetID id) {
-              masterSubject.add(RequestSnippetMove(id, SnippetEdge.start, true));
+              timingService.manipulateSnippet(id, SnippetEdge.start, false);
             });
           }(),
         ),
         SnippetEndMoveIntent: CallbackAction<SnippetEndMoveIntent>(
           onInvoke: (SnippetEndMoveIntent intent) => () {
             selectingSnippetIDs.forEach((SnippetID id) {
-              masterSubject.add(RequestSnippetMove(id, SnippetEdge.end, false));
+              timingService.manipulateSnippet(id, SnippetEdge.end, false);
             });
           }(),
         ),
@@ -191,7 +190,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         UndoIntent: CallbackAction<UndoIntent>(
           onInvoke: (UndoIntent intent) => () {
-            masterSubject.add(RequestUndo());
+            timingService.undo();
           }(),
         ),
         TextPaneCursorMoveDownIntent: CallbackAction<TextPaneCursorMoveDownIntent>(
@@ -222,42 +221,39 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         AddSectionIntent: CallbackAction<AddSectionIntent>(
           onInvoke: (AddSectionIntent intent) => () {
             int seekPosition = musicPlayerProvider.seekPosition;
-            masterSubject.add(RequestAddSection(seekPosition));
+            timingService.addSection(seekPosition);
           }(),
         ),
         DeleteSectionIntent: CallbackAction<DeleteSectionIntent>(
           onInvoke: (DeleteSectionIntent intent) => () {
             int seekPosition = musicPlayerProvider.seekPosition;
-            masterSubject.add(RequestDeleteSection(seekPosition));
+            timingService.deleteSection(seekPosition);
           }(),
         ),
         TimingPointAddIntent: CallbackAction<TimingPointAddIntent>(
           onInvoke: (TimingPointAddIntent intent) => () {
             int seekPosition = musicPlayerProvider.seekPosition;
             selectingSnippetIDs.forEach((SnippetID id) {
-              masterSubject.add(RequestToAddTimingPoint(id, charCursorPosition, seekPosition));
+              timingService.addTimingPoint(id, charCursorPosition, seekPosition);
             });
           }(),
         ),
         TimingPointDeleteIntent: CallbackAction<TimingPointDeleteIntent>(
           onInvoke: (TimingPointDeleteIntent intent) => () {
             selectingSnippetIDs.forEach((SnippetID id) {
-              masterSubject.add(RequestToDeleteTimingPoint(
-                id,
-                charCursorPosition,
-              ));
+              timingService.deleteTimingPoint(id, charCursorPosition);
             });
           }(),
         ),
         SnippetDivideIntent: CallbackAction<SnippetDivideIntent>(
           onInvoke: (SnippetDivideIntent intent) => () {
-            masterSubject.add(RequestDivideSnippet(selectedSnippetID, charCursorPosition));
+            timingService.divideSnippet(selectedSnippetID, charCursorPosition);
             //masterSubject.add(RequestToExitTextSelectMode());
           }(),
         ),
         SnippetConcatenateIntent: CallbackAction<SnippetConcatenateIntent>(
           onInvoke: (SnippetConcatenateIntent intent) => () {
-            masterSubject.add(RequestConcatenateSnippet(selectingSnippetIDs));
+            timingService.concatenateSnippets(selectingSnippetIDs);
           }(),
         ),
         DisplayModeSwitchIntent: CallbackAction<DisplayModeSwitchIntent>(

@@ -13,9 +13,10 @@ import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:xml/xml.dart' as xml;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final timingMasterProvider = ChangeNotifierProvider((ref) {
-  final musicPlayerService = ref.watch(musicPlayerMasterProvider);
+  final musicPlayerService = ref.read(musicPlayerMasterProvider);
   return TimingService(masterSubject: masterSubject, musicPlayerProvider: musicPlayerService);
 });
 
@@ -31,9 +32,6 @@ class TimingService extends ChangeNotifier {
   VocalistIdGenerator vocalistIdGenerator = VocalistIdGenerator();
 
   Future<void>? _loadLyricsFuture;
-  int currentPosition = 0;
-  int audioDuration = 180000;
-
   List<List<LyricSnippet>> undoHistory = [];
 
   String defaultVocalistName = "vocalist 1";
@@ -42,146 +40,42 @@ class TimingService extends ChangeNotifier {
     required this.masterSubject,
     required this.musicPlayerProvider,
   }) {
-    masterSubject.stream.listen((signal) async {
-      if (signal is RequestInitLyric) {
-        initLyric(signal.lyric);
-      }
-      if (signal is RequestLoadLyric) {
-      loadLyric(signal.lyric);
-      }
-      if (signal is RequestExportLyric) {
-      exportLyric(signal.path);
-      }
-      if (signal is RequestAddSection) {
-        addSection(signal.seekPosition);
-        masterSubject.add(NotifySectionAdded(sections));
-      }
-      if (signal is RequestDeleteSection) {
-        deleteSection(signal.seekPosition);
-        masterSubject.add(NotifySectionDeleted(sections));
-      }
-      if (signal is RequestAddVocalist) {
-        pushUndoHistory(lyricSnippetList);
-
-        addVocalist(signal.vocalistName);
-        masterSubject.add(NotifyVocalistAdded(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
-      }
-      if (signal is RequestDeleteVocalist) {
-        pushUndoHistory(lyricSnippetList);
-
-        deleteVocalist(signal.vocalistName);
-
-        masterSubject.add(NotifyVocalistDeleted(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
-      }
-      if (signal is RequestChangeVocalistName) {
-        pushUndoHistory(lyricSnippetList);
-
-        changeVocalistName(signal.oldName, signal.newName);
-        masterSubject.add(NotifyVocalistNameChanged(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
-      }
-      if (signal is RequestChangeSnippetSentence) {
-        pushUndoHistory(lyricSnippetList);
-
-        LyricSnippet snippet = getSnippetWithID(signal.snippetID);
-        editSentence(snippet, signal.newSentence);
-        masterSubject.add(NotifySnippetSentenceChanged(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
-      }
-      if (signal is RequestToAddTimingPoint) {
-        LyricSnippet snippet = getSnippetWithID(signal.snippetID);
-        try {
-          addTimingPoint(snippet, signal.characterPosition, signal.seekPosition);
-        } catch (e) {
-          debugPrint(e.toString());
-        }
-        masterSubject.add(NotifyTimingPointAdded(lyricSnippetList));
-      }
-      if (signal is RequestToDeleteTimingPoint) {
-        LyricSnippet snippet = getSnippetWithID(signal.snippetID);
-        try {
-          deleteTimingPoint(snippet, signal.characterPosition, signal.option);
-        } catch (e) {
-          debugPrint(e.toString());
-        }
-        masterSubject.add(NotifyTimingPointDeleted(lyricSnippetList));
-      }
-
-      if (signal is RequestDivideSnippet) {
-        int index = getSnippetIndexWithID(signal.snippetID);
-        divideSnippet(index, signal.charPos, currentPosition);
-      }
-      if (signal is RequestConcatenateSnippet) {
-        List<LyricSnippet> snippets = translateIDsToSnippets(signal.snippetIDs);
-        concatenateSnippets(snippets);
-      }
-      if (signal is RequestSnippetMove) {
-        pushUndoHistory(lyricSnippetList);
-
-        LyricSnippet snippet = getSnippetWithID(signal.id);
-        if (signal.holdLength) {
-          if (signal.snippetEdge == SnippetEdge.start) {
-            moveSnippet(snippet, snippet.startTimestamp - currentPosition);
-          } else {
-            moveSnippet(snippet, currentPosition - snippet.endTimestamp);
-          }
-        } else {
-          if (signal.snippetEdge == SnippetEdge.start) {
-            if (currentPosition < snippet.startTimestamp) {
-              extendSnippet(snippet, SnippetEdge.start, snippet.startTimestamp - currentPosition);
-            } else if (snippet.startTimestamp < currentPosition) {
-              shortenSnippet(snippet, SnippetEdge.start, currentPosition - snippet.startTimestamp);
-            }
-          } else {
-            if (currentPosition < snippet.endTimestamp) {
-              shortenSnippet(snippet, SnippetEdge.end, snippet.endTimestamp - currentPosition);
-            } else if (snippet.endTimestamp < currentPosition) {
-              extendSnippet(snippet, SnippetEdge.end, currentPosition - snippet.endTimestamp);
-            }
-          }
-        }
-        masterSubject.add(NotifySnippetMove(lyricSnippetList));
-      }
-
-      if (signal is RequestUndo) {
-        lyricSnippetList = popUndoHistory();
-        masterSubject.add(NotifyUndo(lyricSnippetList));
-      }
-    });
     _loadLyricsFuture = loadExampleLyrics();
   }
-  
-  void initLyric(String rawText){
-          String singlelineText = rawText.replaceAll("\n", "").replaceAll("\r", "");
-          lyricSnippetList.clear();
-          lyricSnippetList.add(LyricSnippet(
-            id: snippetIdGenerator.idGen(),
-            vocalist: Vocalist(
-              id: vocalistIdGenerator.idGen(),
-              name: defaultVocalistName,
-              color: 0,
-            ),
-            sentence: singlelineText,
-            startTimestamp: 0,
-            sentenceSegments: [SentenceSegment(singlelineText.length, audioDuration)],
-          ));
 
-          vocalistColorList.clear();
-          vocalistColorList[defaultVocalistName] = 0xff777777;
+  void initLyric(String rawText) {
+    int audioDuration = musicPlayerProvider.audioDuration;
+    String singlelineText = rawText.replaceAll("\n", "").replaceAll("\r", "");
+    lyricSnippetList.clear();
+    lyricSnippetList.add(LyricSnippet(
+      id: snippetIdGenerator.idGen(),
+      vocalist: Vocalist(
+        id: vocalistIdGenerator.idGen(),
+        name: defaultVocalistName,
+        color: 0,
+      ),
+      sentence: singlelineText,
+      startTimestamp: 0,
+      sentenceSegments: [SentenceSegment(singlelineText.length, audioDuration)],
+    ));
 
-          masterSubject.add(NotifyLyricParsed(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
+    vocalistColorList.clear();
+    vocalistColorList[defaultVocalistName] = 0xff777777;
+
+    notifyListeners();
   }
-  
-  void loadLyric(String rawLyricText){
-          lyricSnippetList = parseLyric(rawLyricText);
 
-          pushUndoHistory(lyricSnippetList);
-          masterSubject.add(NotifyLyricParsed(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
+  void loadLyric(String rawLyricText) {
+    lyricSnippetList = parseLyric(rawLyricText);
+
+    pushUndoHistory(lyricSnippetList);
+    notifyListeners();
   }
-  
-  void exportLyric(String path)async{
-        final String rawLyricText = serializeLyric(lyricSnippetList);
-        final File file = File(path);
-        await file.writeAsString(rawLyricText);
 
+  void exportLyric(String path) async {
+    final String rawLyricText = serializeLyric(lyricSnippetList);
+    final File file = File(path);
+    await file.writeAsString(rawLyricText);
   }
 
   List<LyricSnippet> translateIDsToSnippets(List<SnippetID> ids) {
@@ -205,12 +99,18 @@ class TimingService extends ChangeNotifier {
   }
 
   void addSection(int seekPosition) {
+    pushUndoHistory(lyricSnippetList);
+
     if (!sections.contains(seekPosition)) {
       sections.add(seekPosition);
     }
+
+    notifyListeners();
   }
 
   void deleteSection(int seekPosition) {
+    pushUndoHistory(lyricSnippetList);
+
     int targetIndex = 0;
     int minDistance = 3600000;
     for (int index = 0; index < sections.length; index++) {
@@ -227,18 +127,30 @@ class TimingService extends ChangeNotifier {
     if (minDistance < 5000) {
       sections.removeAt(targetIndex);
     }
+
+    notifyListeners();
   }
 
   void addVocalist(String vocalistName) {
+    pushUndoHistory(lyricSnippetList);
+
     vocalistColorList[vocalistName] = 0xFF222222;
+
+    notifyListeners();
   }
 
   void deleteVocalist(String vocalistName) {
+    pushUndoHistory(lyricSnippetList);
+
     vocalistColorList.remove(vocalistName);
     lyricSnippetList.removeWhere((snippet) => snippet.vocalist.name == vocalistName);
+
+    notifyListeners();
   }
 
   void changeVocalistName(String oldName, String newName) {
+    pushUndoHistory(lyricSnippetList);
+
     Map<String, int> updatedVocalistColorList = {};
 
     vocalistColorList.forEach((key, value) {
@@ -301,15 +213,16 @@ class TimingService extends ChangeNotifier {
         color: 0,
       );
     });
+
+    notifyListeners();
   }
 
   Future<void> loadExampleLyrics() async {
     try {
       rawLyricText = await rootBundle.loadString('assets/ウェルカムティーフレンド.xlrc');
-      masterSubject.add(NotifyLyricLoaded(rawLyricText));
 
       lyricSnippetList = parseLyric(rawLyricText);
-      masterSubject.add(NotifyLyricParsed(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
+      notifyListeners();
       //writeTranslatedXmlToFile();
     } catch (e) {
       debugPrint("Error loading lyrics: $e");
@@ -459,53 +372,60 @@ class TimingService extends ChangeNotifier {
   }
 
   List<LyricSnippet> getSnippetsAtCurrentSeekPosition() {
+    int seekPosition = musicPlayerProvider.seekPosition;
     return lyricSnippetList.where((snippet) {
       final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
-      return snippet.startTimestamp < currentPosition && currentPosition < endtime;
+      return snippet.startTimestamp < seekPosition && seekPosition < endtime;
     }).toList();
   }
 
-  void divideSnippet(int index, int charPosition, int seekPosition) {
-    if (index == -1) {
-      return;
-    }
+  void divideSnippet(SnippetID snippetID, int charPosition) {
+    pushUndoHistory(lyricSnippetList);
+
+    LyricSnippet snippet = getSnippetWithID(snippetID);
+    int seekPosition = musicPlayerProvider.seekPosition;
     int snippetMargin = 100;
-    String beforeString = lyricSnippetList[index].sentence.substring(0, charPosition);
-    String afterString = lyricSnippetList[index].sentence.substring(charPosition);
-    Vocalist vocalist = lyricSnippetList[index].vocalist;
+    String beforeString = snippet.sentence.substring(0, charPosition);
+    String afterString = snippet.sentence.substring(charPosition);
+    Vocalist vocalist = snippet.vocalist;
     List<LyricSnippet> newSnippets = [];
     if (beforeString.isNotEmpty) {
-      int snippetDuration = currentPosition - lyricSnippetList[index].startTimestamp;
+      int snippetDuration = seekPosition - snippet.startTimestamp;
       newSnippets.add(
         LyricSnippet(
           id: snippetIdGenerator.idGen(),
           vocalist: vocalist,
           sentence: beforeString,
-          startTimestamp: lyricSnippetList[index].startTimestamp,
+          startTimestamp: snippet.startTimestamp,
           sentenceSegments: [SentenceSegment(beforeString.length, snippetDuration)],
         ),
       );
     }
     if (afterString.isNotEmpty) {
-      int snippetDuration = lyricSnippetList[index].endTimestamp - lyricSnippetList[index].startTimestamp - currentPosition - snippetMargin;
+      int snippetDuration = snippet.endTimestamp - snippet.startTimestamp - seekPosition - snippetMargin;
       newSnippets.add(
         LyricSnippet(
           id: snippetIdGenerator.idGen(),
           vocalist: vocalist,
           sentence: afterString,
-          startTimestamp: currentPosition + snippetMargin,
+          startTimestamp: seekPosition + snippetMargin,
           sentenceSegments: [SentenceSegment(afterString.length, snippetDuration)],
         ),
       );
     }
     if (newSnippets.isNotEmpty) {
-      lyricSnippetList.removeAt(index);
-      lyricSnippetList.insertAll(index, newSnippets);
-      masterSubject.add(NotifySnippetDivided(lyricSnippetList));
+      lyricSnippetList.removeWhere((snippet) => snippet.id == snippetID);
+      lyricSnippetList.addAll(newSnippets);
     }
+
+    notifyListeners();
   }
 
-  void concatenateSnippets(List<LyricSnippet> snippets) {
+  void concatenateSnippets(List<SnippetID> snippetIDs) {
+    pushUndoHistory(lyricSnippetList);
+
+    List<LyricSnippet> snippets = translateIDsToSnippets(snippetIDs);
+
     Map<Vocalist, List<LyricSnippet>> snippetsForeachVocalist = groupBy(
       snippets,
       (LyricSnippet snippet) => snippet.vocalist,
@@ -528,7 +448,38 @@ class TimingService extends ChangeNotifier {
         removeSnippetWithID(rightSnippet.id);
       }
     });
-    masterSubject.add(NotifySnippetConcatenated(lyricSnippetList));
+
+    notifyListeners();
+  }
+
+  void manipulateSnippet(SnippetID snippetID, SnippetEdge snippetEdge, bool holdLength) {
+    pushUndoHistory(lyricSnippetList);
+
+    int seekPosition = musicPlayerProvider.seekPosition;
+    LyricSnippet snippet = getSnippetWithID(snippetID);
+    if (holdLength) {
+      if (snippetEdge == SnippetEdge.start) {
+        moveSnippet(snippet, snippet.startTimestamp - seekPosition);
+      } else {
+        moveSnippet(snippet, seekPosition - snippet.endTimestamp);
+      }
+    } else {
+      if (snippetEdge == SnippetEdge.start) {
+        if (seekPosition < snippet.startTimestamp) {
+          extendSnippet(snippet, SnippetEdge.start, snippet.startTimestamp - seekPosition);
+        } else if (snippet.startTimestamp < seekPosition) {
+          shortenSnippet(snippet, SnippetEdge.start, seekPosition - snippet.startTimestamp);
+        }
+      } else {
+        if (seekPosition < snippet.endTimestamp) {
+          shortenSnippet(snippet, SnippetEdge.end, snippet.endTimestamp - seekPosition);
+        } else if (snippet.endTimestamp < seekPosition) {
+          extendSnippet(snippet, SnippetEdge.end, seekPosition - snippet.endTimestamp);
+        }
+      }
+    }
+
+    notifyListeners();
   }
 
   void moveSnippet(LyricSnippet snippet, int shiftDuration) {
@@ -569,7 +520,11 @@ class TimingService extends ChangeNotifier {
     }
   }
 
-  void addTimingPoint(LyricSnippet snippet, int characterPosition, int seekPosition) {
+  void addTimingPoint(SnippetID snippetID, int characterPosition, int seekPosition) {
+    pushUndoHistory(lyricSnippetList);
+
+    LyricSnippet snippet = getSnippetWithID(snippetID);
+
     if (characterPosition <= 0 || snippet.sentence.length <= characterPosition) {
       throw TimingPointException("The char position is out of the valid range.");
     }
@@ -648,9 +603,14 @@ class TimingService extends ChangeNotifier {
         snippet.sentenceSegments.insert(timingPointIndex, SentenceSegment(latterLength, latterDuration));
       }
     }
+
+    notifyListeners();
   }
 
-  void deleteTimingPoint(LyricSnippet snippet, int characterPosition, Option option) {
+  void deleteTimingPoint(SnippetID snippetID, int characterPosition, {Option option = Option.former}) {
+    pushUndoHistory(lyricSnippetList);
+
+    LyricSnippet snippet = getSnippetWithID(snippetID);
     if (characterPosition <= 0 || snippet.sentence.length <= characterPosition) {
       throw TimingPointException("The character position is out of the valid range.");
     }
@@ -682,9 +642,14 @@ class TimingService extends ChangeNotifier {
       snippet.sentenceSegments.removeAt(timingPointIndex);
       snippet.sentenceSegments[timingPointIndex] = SentenceSegment(newLength, newDuration);
     }
+
+    notifyListeners();
   }
 
-  void editSentence(LyricSnippet snippet, String newSentence) {
+  void editSentence(SnippetID snippetID, String newSentence) {
+    pushUndoHistory(lyricSnippetList);
+
+    LyricSnippet snippet = getSnippetWithID(snippetID);
     List<int> charPositionTranslation = getCharPositionTranslation(snippet.sentence, newSentence);
     int charPosition = 0;
     List<int> allCharPosition = [0];
@@ -696,12 +661,12 @@ class TimingService extends ChangeNotifier {
     allCharPosition.forEach((int currentCharPosition) {
       if (charPositionTranslation[currentCharPosition] == -1) {
         try {
-          deleteTimingPoint(snippet, currentCharPosition, Option.former);
+          deleteTimingPoint(snippetID, currentCharPosition, option: Option.former);
         } catch (TimingPointException) {
           debugPrint(e.toString());
         }
         try {
-          deleteTimingPoint(snippet, currentCharPosition, Option.latter);
+          deleteTimingPoint(snippetID, currentCharPosition, option: Option.latter);
         } catch (TimingPointException) {
           debugPrint(e.toString());
         }
@@ -725,6 +690,8 @@ class TimingService extends ChangeNotifier {
     integrate2OrMoreTimingPoints(snippet);
 
     snippet.sentence = newSentence;
+
+    notifyListeners();
   }
 
   void integrate2OrMoreTimingPoints(LyricSnippet snippet) {
@@ -783,6 +750,12 @@ class TimingService extends ChangeNotifier {
     }
 
     return indexTranslation;
+  }
+
+  void undo() {
+    lyricSnippetList = popUndoHistory();
+
+    notifyListeners();
   }
 
   void pushUndoHistory(List<LyricSnippet> lyricSnippetList) {

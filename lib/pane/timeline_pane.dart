@@ -9,6 +9,7 @@ import 'package:lyric_editor/painter/rectangle_painter.dart';
 import 'package:lyric_editor/painter/scale_mark.dart';
 import 'package:lyric_editor/painter/timeline_painter.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
+import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/color_utilities.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:lyric_editor/utility/dialogbox_utility.dart';
@@ -45,9 +46,6 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   bool isDragging = false;
 
   Map<String, List<LyricSnippet>> snippetsForeachVocalist = {};
-  Map<String, int> vocalistColorMap = {};
-  Map<String, List<String>> vocalistCombinationCorrespondence = {};
-  List<int> sections = [];
   SnippetID cursorPosition = SnippetID(0);
   List<SnippetID> selectingSnippet = [];
   List<String> selectingVocalist = [];
@@ -75,7 +73,10 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     seekPositionScrollController = horizontalScrollController.addAndGet();
     snippetTimelineScrollController = {};
 
-    ref.read(musicPlayerMasterProvider).addListener(() {
+    final musicPlayerService = ref.read(musicPlayerMasterProvider);
+    final timingService = ref.read(timingMasterProvider);
+
+    musicPlayerService.addListener(() {
       List<SnippetID> currentSelectingSnippet = getSnippetsAtCurrentSeekPosition();
       masterSubject.add(NotifyCurrentSnippets(currentSelectingSnippet));
 
@@ -85,29 +86,21 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
       }
       setState(() {});
     });
+
+    timingService.addListener(() {
+      final List<LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
+      snippetsForeachVocalist = groupBy(lyricSnippetList, (LyricSnippet snippet) => snippet.vocalist.name);
+      cursorPosition = snippetsForeachVocalist[snippetsForeachVocalist.keys.first]![0].id;
+
+      List<SnippetID> currentSelectingSnippet = getSnippetsAtCurrentSeekPosition();
+      selectingSnippet = currentSelectingSnippet;
+      masterSubject.add(NotifySelectingSnippets(selectingSnippet));
+
+      updateScrollControllers();
+
+      setState(() {});
+    });
     masterSubject.stream.listen((signal) {
-      if (signal is NotifySnippetMove || signal is NotifySnippetDivided || signal is NotifySnippetConcatenated || signal is NotifyUndo) {
-        snippetsForeachVocalist = groupBy(signal.lyricSnippetList, (LyricSnippet snippet) => snippet.vocalist.name);
-        setState(() {});
-      }
-      if (signal is NotifyLyricParsed || signal is NotifyVocalistAdded || signal is NotifyVocalistDeleted || signal is NotifyVocalistNameChanged || signal is NotifySnippetSentenceChanged) {
-        vocalistColorMap = signal.vocalistColorList;
-        vocalistCombinationCorrespondence = signal.vocalistCombinationCorrespondence;
-        snippetsForeachVocalist = groupBy(signal.lyricSnippetList, (LyricSnippet snippet) => snippet.vocalist.name);
-        cursorPosition = snippetsForeachVocalist[snippetsForeachVocalist.keys.first]![0].id;
-
-        List<SnippetID> currentSelectingSnippet = getSnippetsAtCurrentSeekPosition();
-        selectingSnippet = currentSelectingSnippet;
-        masterSubject.add(NotifySelectingSnippets(selectingSnippet));
-
-        updateScrollControllers();
-
-        setState(() {});
-      }
-      if (signal is NotifySectionAdded || signal is NotifySectionDeleted) {
-        sections = List.from(signal.sections);
-        setState(() {});
-      }
       if (signal is RequestTimelineZoomIn) {
         zoomIn();
         setState(() {});
@@ -143,6 +136,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   void updateScrollControllers() {
+    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorList;
     snippetTimelineScrollController.removeWhere((vocalistName, scrollController) {
       if (!vocalistColorMap.containsKey(vocalistName)) {
         scrollController.dispose();
@@ -294,8 +288,11 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
       ),
     );
 
-    int audioDuration = ref.read(musicPlayerMasterProvider).audioDuration;
-    int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
+    final int audioDuration = ref.read(musicPlayerMasterProvider).audioDuration;
+    final int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
+
+    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorList;
+          final TimingService timingService = ref.read(timingMasterProvider);
     return Focus(
       focusNode: focusNode,
       child: Listener(
@@ -422,7 +419,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                   scrollDirection: Axis.horizontal,
                   child: CustomPaint(
                     size: Size(audioDuration * intervalLength / intervalDuration, 800),
-                    painter: CurrentPositionIndicatorPainter(intervalLength, intervalDuration, seekPosition, sections),
+                    painter: CurrentPositionIndicatorPainter(intervalLength, intervalDuration, seekPosition, timingService.sections),
                   ),
                 ),
               ),
@@ -434,6 +431,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   Widget itemBuilder(BuildContext context, int index) {
+    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorList;
     if (index < vocalistColorMap.length) {
       final String vocalistName = vocalistColorMap.keys.toList()[index];
       late final double rowHeight;
@@ -535,6 +533,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   void onReorder(int oldIndex, int newIndex) {
+    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorList;
     if (newIndex > vocalistColorMap.length) {
       newIndex = vocalistColorMap.length;
     }
@@ -639,6 +638,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   Widget cellVocalistPanel(int index) {
+    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorList;
     final String vocalistName = vocalistColorMap.keys.toList()[index];
     if (edittingVocalistIndex == index) {
       final TextEditingController controller = TextEditingController(text: vocalistName);
@@ -650,11 +650,12 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
         ),
         onSubmitted: (value) {
           edittingVocalistIndex = -1;
+          final TimingService timingService = ref.read(timingMasterProvider);
           if (value == "") {
-            masterSubject.add(RequestDeleteVocalist(oldVocalistValue));
+            timingService.deleteVocalist(oldVocalistValue);
           } else if (oldVocalistValue != value) {
             cursorBlinker.restartCursorTimer();
-            masterSubject.add(RequestChangeVocalistName(oldVocalistValue, value));
+            timingService.changeVocalistName(oldVocalistValue, value);
           }
           setState(() {});
         },
@@ -679,10 +680,11 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
               for (int i = 0; i < oldVocalistNames.length; i++) {
                 String oldName = oldVocalistNames[i];
                 String newName = newVocalistNames[i];
+                final TimingService timingService = ref.read(timingMasterProvider);
                 if (newName == "") {
-                  masterSubject.add(RequestDeleteVocalist(oldName));
+                  timingService.deleteVocalist(oldName);
                 } else if (oldName != newName) {
-                  masterSubject.add(RequestChangeVocalistName(oldName, newName));
+                  timingService.changeVocalistName(oldName, newName);
                 }
               }
             },
@@ -703,6 +705,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   Widget cellSnippetTimeline(int index) {
+    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorList;
     final String vocalistName = vocalistColorMap.keys.toList()[index];
     final snippets = snippetsForeachVocalist.containsKey(vocalistName)
         ? snippetsForeachVocalist[vocalistName]!
@@ -744,7 +747,8 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
           final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
           if (snippet.startTimestamp <= touchedSeekPosition && touchedSeekPosition <= endtime) {
             List<String> sentence = await displayDialog(context, [snippet.sentence]);
-            masterSubject.add(RequestChangeSnippetSentence(snippet.id, sentence[0]));
+            final TimingService timingService = ref.read(timingMasterProvider);
+            timingService.editSentence(snippet.id, sentence[0]);
           }
         }
         setState(() {});
@@ -784,7 +788,8 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
       },
       onTap: () async {
         String newVocalistName = (await displayDialog(context, [""]))[0];
-        masterSubject.add(RequestAddVocalist(newVocalistName));
+        final TimingService timingService = ref.read(timingMasterProvider);
+        timingService.addVocalist(newVocalistName);
       },
       child: CustomPaint(
         painter: RectanglePainter(

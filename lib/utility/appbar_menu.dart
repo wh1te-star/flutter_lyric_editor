@@ -9,7 +9,12 @@ import 'package:rxdart/rxdart.dart';
 import 'string_resource.dart';
 import 'package:file_selector/file_selector.dart';
 
-AppBar buildAppBarWithMenu(BuildContext context, PublishSubject<dynamic> masterSubject, MusicPlayerService musicPlayerService) {
+AppBar buildAppBarWithMenu(
+  BuildContext context,
+  PublishSubject<dynamic> masterSubject,
+  MusicPlayerService musicPlayerService,
+  TimingService timingService,
+) {
   return AppBar(
     title: Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -43,15 +48,15 @@ AppBar buildAppBarWithMenu(BuildContext context, PublishSubject<dynamic> masterS
                 break;
 
               case StringResource.fileMenuCreateNewLyric:
-                createNewLyric(context, masterSubject);
+                createNewLyric(context, masterSubject, timingService);
                 break;
 
               case StringResource.fileMenuOpenLyric:
-                openLyric(context, masterSubject);
+                openLyric(context, masterSubject, timingService);
                 break;
 
               case StringResource.fileMenuExportLyric:
-                exportLyric(context, masterSubject);
+                exportLyric(context, masterSubject, timingService);
                 break;
 
               default:
@@ -96,7 +101,7 @@ void openAudio(BuildContext context, PublishSubject<dynamic> masterSubject, Musi
   }
 }
 
-void createNewLyric(BuildContext context, PublishSubject<dynamic> masterSubject) async {
+void createNewLyric(BuildContext context, PublishSubject<dynamic> masterSubject, TimingService timingService) async {
   final XFile? file = await openFile(acceptedTypeGroups: [
     XTypeGroup(
       label: 'text',
@@ -107,7 +112,7 @@ void createNewLyric(BuildContext context, PublishSubject<dynamic> masterSubject)
 
   if (file != null) {
     String rawText = await file.readAsString();
-    masterSubject.add(RequestInitLyric(lyric: rawText));
+    timingService.initLyric(rawText);
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('No file selected')),
@@ -115,7 +120,7 @@ void createNewLyric(BuildContext context, PublishSubject<dynamic> masterSubject)
   }
 }
 
-void openLyric(BuildContext context, PublishSubject<dynamic> masterSubject) async {
+void openLyric(BuildContext context, PublishSubject<dynamic> masterSubject, TimingService timingService) async {
   final XFile? file = await openFile(acceptedTypeGroups: [
     XTypeGroup(
       label: 'xlrc',
@@ -126,7 +131,7 @@ void openLyric(BuildContext context, PublishSubject<dynamic> masterSubject) asyn
 
   if (file != null) {
     String rawLyricText = await file.readAsString();
-    masterSubject.add(RequestLoadLyric(lyric: rawLyricText));
+    timingService.loadLyric(rawLyricText);
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('No file selected')),
@@ -134,7 +139,7 @@ void openLyric(BuildContext context, PublishSubject<dynamic> masterSubject) asyn
   }
 }
 
-void exportLyric(BuildContext context, PublishSubject<dynamic> masterSubject) async {
+void exportLyric(BuildContext context, PublishSubject<dynamic> masterSubject, TimingService timingService) async {
   const String fileName = 'example.xlrc';
   final FileSaveLocation? result = await getSaveLocation(suggestedName: fileName);
   if (result == null) {
@@ -143,5 +148,5 @@ void exportLyric(BuildContext context, PublishSubject<dynamic> masterSubject) as
     );
     return;
   }
-  masterSubject.add(RequestExportLyric(path: result.path));
+  timingService.exportLyric(result.path);
 }

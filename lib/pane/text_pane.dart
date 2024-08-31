@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/pane/video_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
+import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
@@ -38,7 +39,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
   int maxLanes = 0;
   double lineHeight = 20;
-  List<LyricSnippet> lyricSnippets = [];
   List<String> lyricAppearance = [];
 
   SnippetID cursorLinePosition = SnippetID(0);
@@ -64,32 +64,23 @@ class _TextPaneState extends ConsumerState<TextPane> {
   void initState() {
     super.initState();
 
-    ref.read(musicPlayerMasterProvider).addListener(() {
+    final musicPlayerService = ref.read(musicPlayerMasterProvider);
+    final timingService = ref.read(timingMasterProvider);
+
+    musicPlayerService.addListener(() {
       updateCursorIfNeed();
+      setState(() {});
+    });
+
+    timingService.addListener(() {
+      List<LyricSnippet> lyricSnippets = timingService.lyricSnippetList;
+      lyricAppearance = List.filled(lyricSnippets.length, '');
+      updateLyricAppearance();
+      maxLanes = getMaxTracks(lyricSnippets);
+      setState(() {});
     });
 
     masterSubject.stream.listen((signal) {
-      if (signal is NotifyLyricParsed || signal is NotifySnippetDivided || signal is NotifySnippetConcatenated || signal is NotifyUndo) {
-        lyricSnippets = signal.lyricSnippetList;
-        lyricAppearance = List.filled(lyricSnippets.length, '');
-        updateLyricAppearance();
-        maxLanes = getMaxTracks(lyricSnippets);
-      }
-
-      if (signal is NotifyTimingPointAdded || signal is NotifyTimingPointDeleted) {
-        lyricSnippets = signal.lyricSnippetList;
-        lyricAppearance = List.filled(lyricSnippets.length, '');
-        updateLyricAppearance();
-        maxLanes = getMaxTracks(lyricSnippets);
-      }
-
-      if (signal is NotifyVocalistAdded || signal is NotifyVocalistDeleted || signal is NotifyVocalistNameChanged || signal is NotifySnippetSentenceChanged) {
-        lyricSnippets = signal.lyricSnippetList;
-        lyricAppearance = List.filled(lyricSnippets.length, '');
-        updateLyricAppearance();
-        maxLanes = getMaxTracks(lyricSnippets);
-      }
-
       if (signal is RequestMoveDownCharCursor) {
         moveDownCursor();
         masterSubject.add(NotifyCharCursorPosition(cursorCharPosition, cursorPositionOption));
@@ -125,7 +116,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
       if (signal is RequestToExitTextSelectMode) {
         TextSelectMode = false;
-        lyricAppearance = List.filled(lyricSnippets.length, '');
+        lyricAppearance = List.filled(timingService.lyricSnippetList.length, '');
         updateLyricAppearance();
         cursorCharPosition = getSnippetWithID(cursorLinePosition).sentence.length;
       }
@@ -140,11 +131,13 @@ class _TextPaneState extends ConsumerState<TextPane> {
   }
 
   int getSnippetIndexWithID(SnippetID id) {
-    return lyricSnippets.indexWhere((snippet) => snippet.id == id);
+    final List<LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
+    return lyricSnippetList.indexWhere((snippet) => snippet.id == id);
   }
 
   LyricSnippet getSnippetWithID(SnippetID id) {
-    return lyricSnippets.firstWhere((snippet) => snippet.id == id);
+    final List<LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
+    return lyricSnippetList.firstWhere((snippet) => snippet.id == id);
   }
 
   int countOccurrences(List<int> list, int number) {
@@ -152,7 +145,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
   }
 
   void updateLyricAppearance() {
-    timingPointsForEachLine = lyricSnippets.map((snippet) => snippet.sentenceSegments.take(snippet.sentenceSegments.length - 1).map((sentenceSegmentMap) => sentenceSegmentMap.wordLength).fold<List<int>>([], (acc, pos) => acc..add((acc.isEmpty ? 0 : acc.last) + pos))).toList();
+    final List<LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
+    timingPointsForEachLine = lyricSnippetList.map((snippet) => snippet.sentenceSegments.take(snippet.sentenceSegments.length - 1).map((sentenceSegmentMap) => sentenceSegmentMap.wordLength).fold<List<int>>([], (acc, pos) => acc..add((acc.isEmpty ? 0 : acc.last) + pos))).toList();
     for (int index = 0; index < timingPointsForEachLine.length; index++) {
       Map<int, String> timingPointsForEachLineMap = {};
       for (int i = 0; i < timingPointsForEachLine[index].length; i++) {
@@ -163,7 +157,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
           timingPointsForEachLineMap[key] = timingPointChar;
         }
       }
-      lyricAppearance[index] = InsertChars(lyricSnippets[index].sentence, timingPointsForEachLineMap);
+      lyricAppearance[index] = InsertChars(lyricSnippetList[index].sentence, timingPointsForEachLineMap);
     }
   }
 
@@ -267,12 +261,13 @@ class _TextPaneState extends ConsumerState<TextPane> {
   }
 
   Tuple3<List<SnippetID>, List<SnippetID>, List<SnippetID>> getSnippetIDsAtCurrentSeekPosition() {
-    int seekPosition= ref.watch(musicPlayerMasterProvider).seekPosition;
+    int seekPosition = ref.watch(musicPlayerMasterProvider).seekPosition;
+    final List<LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
 
     List<SnippetID> beforeSnippetIndexes = [];
     List<SnippetID> currentSnippetIndexes = [];
     List<SnippetID> afterSnippetIndexes = [];
-    lyricSnippets.forEach((LyricSnippet snippet) {
+    lyricSnippetList.forEach((LyricSnippet snippet) {
       int start = snippet.startTimestamp;
       int end = snippet.endTimestamp;
       if (seekPosition < start) {
@@ -312,9 +307,10 @@ class _TextPaneState extends ConsumerState<TextPane> {
   }
 
   List<int> getIndexFromIDs(List<SnippetID> lyricSnippetIDs) {
+    final List<LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
     List<int> indexes = [];
-    for (int i = 0; i < lyricSnippets.length; i++) {
-      if (lyricSnippetIDs.contains(lyricSnippets[i].id)) {
+    for (int i = 0; i < lyricSnippetList.length; i++) {
+      if (lyricSnippetIDs.contains(lyricSnippetList[i].id)) {
         indexes.add(i);
       }
     }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/painter/partial_text_painter.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
+import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
@@ -27,8 +28,6 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
   int startBulge = 1000;
   int endBulge = 1000;
   List<LyricSnippetTrack> lyricSnippetTrack = [];
-  Map<String, int> vocalistColorList = {};
-  Map<String, List<String>> vocalistCombinationCorrespondence = {};
 
   DisplayMode displayMode = DisplayMode.verticalScroll;
   ScrollController scrollController = ScrollController();
@@ -42,13 +41,20 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     super.initState();
     scrollController.addListener(_onScroll);
 
-    ref.read(musicPlayerMasterProvider).addListener(() {
+    final musicPlayerService = ref.read(musicPlayerMasterProvider);
+    final timingService = ref.read(timingMasterProvider);
+
+    musicPlayerService.addListener(() {
       final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
       int seekPosition = musicPlayerService.seekPosition;
       bool isPlaying = musicPlayerService.isPlaying;
       if (displayMode == DisplayMode.verticalScroll && isPlaying) {
         scrollController.jumpTo(getScrollOffsetFromSeekPosition(seekPosition));
       }
+    });
+
+    timingService.addListener(() {
+      lyricSnippetTrack = assignTrackNumber(timingService.lyricSnippetList);
     });
 
     masterSubject.stream.listen((signal) {
@@ -58,18 +64,6 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
         } else {
           displayMode = DisplayMode.appearDissappear;
         }
-      }
-      if (signal is NotifyLyricParsed || signal is NotifyVocalistAdded || signal is NotifyVocalistDeleted || signal is NotifyVocalistNameChanged || signal is NotifySnippetSentenceChanged) {
-        lyricSnippetTrack = assignTrackNumber(signal.lyricSnippetList);
-        vocalistColorList = signal.vocalistColorList;
-        vocalistCombinationCorrespondence = signal.vocalistCombinationCorrespondence;
-        lyricSnippetTrack = assignTrackNumber(signal.lyricSnippetList);
-      }
-      if (signal is NotifySnippetDivided || signal is NotifySnippetConcatenated || signal is NotifyUndo) {
-        lyricSnippetTrack = assignTrackNumber(signal.lyricSnippetList);
-      }
-      if (signal is NotifyTimingPointAdded || signal is NotifyTimingPointDeleted) {
-        lyricSnippetTrack = assignTrackNumber(signal.lyricSnippetList);
       }
       setState(() {});
     });
@@ -238,6 +232,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
   Widget outlinedText(LyricSnippet snippet, String fontFamily) {
     int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
     Color fontColor = Color(0);
+    final Map<String, int> vocalistColorList = ref.read(timingMasterProvider).vocalistColorList;
     if (vocalistColorList.containsKey(snippet.vocalist.name)) {
       fontColor = Color(vocalistColorList[snippet.vocalist.name]!);
     }
@@ -272,6 +267,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
   Widget build(BuildContext context) {
     MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     int seekPosition = musicPlayerService.seekPosition;
+    final Map<String, int> vocalistColorList = ref.read(timingMasterProvider).vocalistColorList;
 
     String fontFamily = "Times New Roman";
     List<LyricSnippetTrack> currentSnippets = getSnippetsAtCurrentSeekPosition();

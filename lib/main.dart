@@ -23,6 +23,7 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final musicPlayerService = ref.read(musicPlayerMasterProvider);
+    final TimingService timingService = ref.read(timingMasterProvider);
 
     return MaterialApp(
       home: Scaffold(
@@ -32,6 +33,7 @@ class MyApp extends ConsumerWidget {
               context,
               masterSubject,
               musicPlayerService,
+              timingService,
             ),
           ),
         ),
@@ -65,7 +67,7 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
   double LeftUpperPaneHeight = 100;
 
   late MusicPlayerService musicPlayerService;
-  late TimingService lyricService;
+  late TimingService timingService;
   late FocusNode videoPaneFocusNode;
   late FocusNode textPaneFocusNode;
   late FocusNode timelinePaneFocusNode;
@@ -82,7 +84,7 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
     super.initState();
 
     musicPlayerService = ref.read(musicPlayerMasterProvider);
-    lyricService = TimingService(masterSubject: masterSubject, musicPlayerProvider: musicPlayerService);
+    timingService = TimingService(masterSubject: masterSubject, musicPlayerProvider: musicPlayerService);
     videoPaneFocusNode = FocusNode();
     textPaneFocusNode = FocusNode();
     timelinePaneFocusNode = FocusNode();
@@ -138,15 +140,13 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
     musicPlayerService.initAudio('assets/09 ウェルカムティーフレンド.mp3');
     musicPlayerService.play();
 
-    lyricService.printLyric();
-
     //loadText();
   }
 
   void loadText() async {
     String filePath = 'assets/ウェルカムティーフレンド.txt';
     String rawText = await rootBundle.loadString(filePath);
-    masterSubject.add(RequestInitLyric(lyric: rawText));
+    timingService.initLyric(rawText);
   }
 
   @override
