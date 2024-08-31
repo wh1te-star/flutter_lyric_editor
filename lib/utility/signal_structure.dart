@@ -38,29 +38,10 @@ class NotifyCurrentSnippets {
   NotifyCurrentSnippets(this.currentSnippets);
 }
 
-class NotifyCharCursorPosition {
-  int cursorPosition;
-  Option option;
-  NotifyCharCursorPosition(this.cursorPosition, this.option);
-}
-
-class NotifyLineCursorPosition {
-  SnippetID cursorSnippetID;
-  NotifyLineCursorPosition(this.cursorSnippetID);
-}
-
 class NotifyVideoPaneWidthLimit {
   double widthLimit;
   NotifyVideoPaneWidthLimit(this.widthLimit);
 }
-
-class RequestMoveUpCharCursor {}
-
-class RequestMoveDownCharCursor {}
-
-class RequestMoveLeftCharCursor {}
-
-class RequestMoveRightCharCursor {}
 
 class RequestTimelineZoomIn {}
 

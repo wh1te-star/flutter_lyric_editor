@@ -136,7 +136,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   void updateScrollControllers() {
-    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorList;
+    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
     snippetTimelineScrollController.removeWhere((vocalistName, scrollController) {
       if (!vocalistColorMap.containsKey(vocalistName)) {
         scrollController.dispose();
@@ -291,8 +291,8 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final int audioDuration = ref.read(musicPlayerMasterProvider).audioDuration;
     final int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
 
-    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorList;
-          final TimingService timingService = ref.read(timingMasterProvider);
+    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
+    final TimingService timingService = ref.read(timingMasterProvider);
     return Focus(
       focusNode: focusNode,
       child: Listener(
@@ -431,7 +431,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   Widget itemBuilder(BuildContext context, int index) {
-    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorList;
+    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
     if (index < vocalistColorMap.length) {
       final String vocalistName = vocalistColorMap.keys.toList()[index];
       late final double rowHeight;
@@ -533,7 +533,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   void onReorder(int oldIndex, int newIndex) {
-    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorList;
+    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
     if (newIndex > vocalistColorMap.length) {
       newIndex = vocalistColorMap.length;
     }
@@ -638,7 +638,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   Widget cellVocalistPanel(int index) {
-    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorList;
+    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
     final String vocalistName = vocalistColorMap.keys.toList()[index];
     if (edittingVocalistIndex == index) {
       final TextEditingController controller = TextEditingController(text: vocalistName);
@@ -705,7 +705,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   Widget cellSnippetTimeline(int index) {
-    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorList;
+    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
     final String vocalistName = vocalistColorMap.keys.toList()[index];
     final snippets = snippetsForeachVocalist.containsKey(vocalistName)
         ? snippetsForeachVocalist[vocalistName]!

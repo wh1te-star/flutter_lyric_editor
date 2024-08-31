@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lyric_editor/pane/text_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
@@ -51,6 +52,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
 
   late final MusicPlayerService musicPlayerProvider = ref.watch(musicPlayerMasterProvider.notifier);
   late final TimingService timingService = ref.watch(timingMasterProvider.notifier);
+  late final TextPaneProvider textPaneProvider = ref.watch(textPaneMasterProvider.notifier);
 
   bool enable = true;
 
@@ -92,13 +94,6 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
       }
       if (signal is NotifyDeselectingVocalist) {
         selectingVocalist.remove(signal.vocalistName);
-      }
-      if (signal is NotifyCharCursorPosition) {
-        charCursorPosition = signal.cursorPosition;
-        cursorPositionOption = signal.option;
-      }
-      if (signal is NotifyLineCursorPosition) {
-        selectedSnippetID = signal.cursorSnippetID;
       }
     });
   }
@@ -183,29 +178,29 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             musicPlayerProvider.speedDown(0.1);
           }(),
         ),
-        TextPaneCursorMoveLeftIntent: CallbackAction<TextPaneCursorMoveLeftIntent>(
-          onInvoke: (TextPaneCursorMoveLeftIntent intent) => () {
-            masterSubject.add(RequestMoveLeftCharCursor());
-          }(),
-        ),
         UndoIntent: CallbackAction<UndoIntent>(
           onInvoke: (UndoIntent intent) => () {
             timingService.undo();
           }(),
         ),
+        TextPaneCursorMoveLeftIntent: CallbackAction<TextPaneCursorMoveLeftIntent>(
+          onInvoke: (TextPaneCursorMoveLeftIntent intent) => () {
+            textPaneProvider.moveLeftCursor();
+          }(),
+        ),
         TextPaneCursorMoveDownIntent: CallbackAction<TextPaneCursorMoveDownIntent>(
           onInvoke: (TextPaneCursorMoveDownIntent intent) => () {
-            masterSubject.add(RequestMoveDownCharCursor());
+            textPaneProvider.moveDownCursor();
           }(),
         ),
         TextPaneCursorMoveUpIntent: CallbackAction<TextPaneCursorMoveUpIntent>(
           onInvoke: (TextPaneCursorMoveUpIntent intent) => () {
-            masterSubject.add(RequestMoveUpCharCursor());
+            textPaneProvider.moveUpCursor();
           }(),
         ),
         TextPaneCursorMoveRightIntent: CallbackAction<TextPaneCursorMoveRightIntent>(
           onInvoke: (TextPaneCursorMoveRightIntent intent) => () {
-            masterSubject.add(RequestMoveRightCharCursor());
+            textPaneProvider.moveRightCursor();
           }(),
         ),
         TimelineZoomIn: CallbackAction<TimelineZoomIn>(

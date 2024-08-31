@@ -23,11 +23,12 @@ final timingMasterProvider = ChangeNotifierProvider((ref) {
 class TimingService extends ChangeNotifier {
   final PublishSubject<dynamic> masterSubject;
   final MusicPlayerService musicPlayerProvider;
-  String rawLyricText = "";
-  Map<String, int> vocalistColorList = {};
-  Map<String, List<String>> vocalistCombinationCorrespondence = {};
+
   List<LyricSnippet> lyricSnippetList = [];
+  Map<String, int> vocalistColorMap = {};
   List<int> sections = [];
+  Map<String, List<String>> vocalistCombinationCorrespondence = {};
+
   SnippetIdGenerator snippetIdGenerator = SnippetIdGenerator();
   VocalistIdGenerator vocalistIdGenerator = VocalistIdGenerator();
 
@@ -59,8 +60,8 @@ class TimingService extends ChangeNotifier {
       sentenceSegments: [SentenceSegment(singlelineText.length, audioDuration)],
     ));
 
-    vocalistColorList.clear();
-    vocalistColorList[defaultVocalistName] = 0xff777777;
+    vocalistColorMap.clear();
+    vocalistColorMap[defaultVocalistName] = 0xff777777;
 
     notifyListeners();
   }
@@ -134,7 +135,7 @@ class TimingService extends ChangeNotifier {
   void addVocalist(String vocalistName) {
     pushUndoHistory(lyricSnippetList);
 
-    vocalistColorList[vocalistName] = 0xFF222222;
+    vocalistColorMap[vocalistName] = 0xFF222222;
 
     notifyListeners();
   }
@@ -142,7 +143,7 @@ class TimingService extends ChangeNotifier {
   void deleteVocalist(String vocalistName) {
     pushUndoHistory(lyricSnippetList);
 
-    vocalistColorList.remove(vocalistName);
+    vocalistColorMap.remove(vocalistName);
     lyricSnippetList.removeWhere((snippet) => snippet.vocalist.name == vocalistName);
 
     notifyListeners();
@@ -153,7 +154,7 @@ class TimingService extends ChangeNotifier {
 
     Map<String, int> updatedVocalistColorList = {};
 
-    vocalistColorList.forEach((key, value) {
+    vocalistColorMap.forEach((key, value) {
       if (vocalistCombinationCorrespondence.containsKey(key)) {
         List<String> vocalistNames = vocalistCombinationCorrespondence[key]!;
         if (vocalistNames.contains(oldName)) {
@@ -190,7 +191,7 @@ class TimingService extends ChangeNotifier {
       }
     });
 
-    vocalistColorList = updatedVocalistColorList;
+    vocalistColorMap = updatedVocalistColorList;
 
     Map<String, List<String>> updatedMap = {};
 
@@ -219,7 +220,7 @@ class TimingService extends ChangeNotifier {
 
   Future<void> loadExampleLyrics() async {
     try {
-      rawLyricText = await rootBundle.loadString('assets/ウェルカムティーフレンド.xlrc');
+      String rawLyricText = await rootBundle.loadString('assets/ウェルカムティーフレンド.xlrc');
 
       lyricSnippetList = parseLyric(rawLyricText);
       notifyListeners();
@@ -247,7 +248,7 @@ class TimingService extends ChangeNotifier {
       for (var colorElement in colorElements) {
         final name = colorElement.getAttribute('name')!;
         final color = int.parse(colorElement.getAttribute('color')!, radix: 16);
-        vocalistColorList[name] = color + 0xFF000000;
+        vocalistColorMap[name] = color + 0xFF000000;
 
         final vocalistNames = colorElement.findAllElements('Vocalist').map((e) => e.innerText).toList();
         if (vocalistNames.length >= 2) {
@@ -765,7 +766,7 @@ class TimingService extends ChangeNotifier {
         vocalist: Vocalist(
           id: snippet.vocalist.id,
           name: snippet.vocalist.name,
-          color: vocalistColorList[snippet.vocalist.name]!,
+          color: vocalistColorMap[snippet.vocalist.name]!,
         ),
         sentence: snippet.sentence,
         startTimestamp: snippet.startTimestamp,

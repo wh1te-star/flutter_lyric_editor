@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lyric_editor/main.dart';
 import 'package:lyric_editor/pane/video_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
@@ -16,29 +17,17 @@ import 'package:lyric_editor/utility/sorted_list.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:tuple/tuple.dart';
 
-class TextPane extends ConsumerStatefulWidget {
+final textPaneMasterProvider = ChangeNotifierProvider((ref) {
+  final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
+  final TimingService timingService = ref.read(timingMasterProvider);
+  return TextPaneProvider(masterSubject: masterSubject, musicPlayerProvider: musicPlayerService, timingService: timingService);
+});
+
+class TextPaneProvider with ChangeNotifier {
   final PublishSubject<dynamic> masterSubject;
-  final FocusNode focusNode;
+  final MusicPlayerService musicPlayerProvider;
+  final TimingService timingService;
 
-  TextPane({required this.masterSubject, required this.focusNode}) : super(key: Key('TextPane'));
-
-  @override
-  _TextPaneState createState() => _TextPaneState(masterSubject, focusNode);
-}
-
-class _TextPaneState extends ConsumerState<TextPane> {
-  final PublishSubject<dynamic> masterSubject;
-  final FocusNode focusNode;
-
-  static const String cursorChar = '\xa0';
-  static const String timingPointChar = '|';
-  static const String linefeedChar = '\n';
-  //static const String sectionChar = '\n\n';
-
-  late CursorBlinker cursorBlinker;
-
-  int maxLanes = 0;
-  double lineHeight = 20;
   List<String> lyricAppearance = [];
 
   SnippetID cursorLinePosition = SnippetID(0);
@@ -46,119 +35,25 @@ class _TextPaneState extends ConsumerState<TextPane> {
   int cursorCharPositionRestore = 0;
   Option cursorPositionOption = Option.former;
 
-  List<SnippetID> selectingSnippets = [];
-
-  List<List<int>> timingPointsForEachLine = [];
-
   List<SnippetID> highlightingSnippetsIDs = [];
+  List<List<int>> timingPointsForEachLine = [];
+  static const String timingPointChar = '|';
+  int maxLanes = 0;
 
-  SortedMap<int, String> sentenceSegmentMap = SortedMap<int, String>();
-  SortedMap<int, String> sectionPointMap = SortedMap<int, String>();
-
-  bool TextSelectMode = false;
-  int selectionBasePosition = 0;
-
-  _TextPaneState(this.masterSubject, this.focusNode);
-
-  @override
-  void initState() {
-    super.initState();
-
-    final musicPlayerService = ref.read(musicPlayerMasterProvider);
-    final timingService = ref.read(timingMasterProvider);
-
-    musicPlayerService.addListener(() {
+  TextPaneProvider({
+    required this.masterSubject,
+    required this.musicPlayerProvider,
+    required this.timingService,
+  }) {
+    musicPlayerProvider.addListener(() {
       updateCursorIfNeed();
-      setState(() {});
     });
-
     timingService.addListener(() {
       List<LyricSnippet> lyricSnippets = timingService.lyricSnippetList;
       lyricAppearance = List.filled(lyricSnippets.length, '');
       updateLyricAppearance();
       maxLanes = getMaxTracks(lyricSnippets);
-      setState(() {});
     });
-
-    masterSubject.stream.listen((signal) {
-      if (signal is RequestMoveDownCharCursor) {
-        moveDownCursor();
-        masterSubject.add(NotifyCharCursorPosition(cursorCharPosition, cursorPositionOption));
-        masterSubject.add(NotifyLineCursorPosition(cursorLinePosition));
-      }
-
-      if (signal is RequestMoveUpCharCursor) {
-        moveUpCursor();
-        masterSubject.add(NotifyCharCursorPosition(cursorCharPosition, cursorPositionOption));
-        masterSubject.add(NotifyLineCursorPosition(cursorLinePosition));
-      }
-
-      if (signal is RequestMoveLeftCharCursor) {
-        moveLeftCursor();
-        masterSubject.add(NotifyCharCursorPosition(cursorCharPosition, cursorPositionOption));
-        masterSubject.add(NotifyLineCursorPosition(cursorLinePosition));
-      }
-
-      if (signal is RequestMoveRightCharCursor) {
-        moveRightCursor();
-        masterSubject.add(NotifyCharCursorPosition(cursorCharPosition, cursorPositionOption));
-        masterSubject.add(NotifyLineCursorPosition(cursorLinePosition));
-      }
-
-      if (signal is NotifySelectingSnippets) {
-        selectingSnippets = signal.snippetIDs;
-      }
-
-      if (signal is RequestToEnterTextSelectMode) {
-        TextSelectMode = true;
-        selectionBasePosition = cursorCharPosition;
-      }
-
-      if (signal is RequestToExitTextSelectMode) {
-        TextSelectMode = false;
-        lyricAppearance = List.filled(timingService.lyricSnippetList.length, '');
-        updateLyricAppearance();
-        cursorCharPosition = getSnippetWithID(cursorLinePosition).sentence.length;
-      }
-      setState(() {});
-    });
-
-    cursorBlinker = CursorBlinker(
-        blinkIntervalInMillisec: 1000,
-        onTick: () {
-          setState(() {});
-        });
-  }
-
-  int getSnippetIndexWithID(SnippetID id) {
-    final List<LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
-    return lyricSnippetList.indexWhere((snippet) => snippet.id == id);
-  }
-
-  LyricSnippet getSnippetWithID(SnippetID id) {
-    final List<LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
-    return lyricSnippetList.firstWhere((snippet) => snippet.id == id);
-  }
-
-  int countOccurrences(List<int> list, int number) {
-    return list.where((element) => element == number).length;
-  }
-
-  void updateLyricAppearance() {
-    final List<LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
-    timingPointsForEachLine = lyricSnippetList.map((snippet) => snippet.sentenceSegments.take(snippet.sentenceSegments.length - 1).map((sentenceSegmentMap) => sentenceSegmentMap.wordLength).fold<List<int>>([], (acc, pos) => acc..add((acc.isEmpty ? 0 : acc.last) + pos))).toList();
-    for (int index = 0; index < timingPointsForEachLine.length; index++) {
-      Map<int, String> timingPointsForEachLineMap = {};
-      for (int i = 0; i < timingPointsForEachLine[index].length; i++) {
-        int key = timingPointsForEachLine[index][i];
-        if (timingPointsForEachLineMap.containsKey(key)) {
-          timingPointsForEachLineMap[key] = timingPointsForEachLineMap[key]! + timingPointChar;
-        } else {
-          timingPointsForEachLineMap[key] = timingPointChar;
-        }
-      }
-      lyricAppearance[index] = InsertChars(lyricSnippetList[index].sentence, timingPointsForEachLineMap);
-    }
   }
 
   void updateCursorIfNeed() {
@@ -174,111 +69,55 @@ class _TextPaneState extends ConsumerState<TextPane> {
         cursorCharPosition = nextSnippet.sentence.length;
       }
 
-      cursorBlinker.restartCursorTimer();
+      //cursorBlinker.restartCursorTimer();
     }
   }
 
-  void moveUpCursor() {
-    int highlightSnippetsIndex = highlightingSnippetsIDs.indexWhere((id) => id == cursorLinePosition);
-    if (highlightSnippetsIndex > 0) {
-      cursorPositionOption = Option.former;
-
-      cursorLinePosition = highlightingSnippetsIDs[highlightSnippetsIndex - 1];
-      LyricSnippet nextSnippet = getSnippetWithID(cursorLinePosition);
-
-      if (cursorCharPositionRestore != 0) {
-        cursorCharPosition = cursorCharPositionRestore;
-      }
-      if (cursorCharPosition > nextSnippet.sentence.length) {
-        cursorCharPositionRestore = cursorCharPosition;
-        cursorCharPosition = nextSnippet.sentence.length;
-      }
-
-      cursorBlinker.restartCursorTimer();
-      debugPrint("K key: LineCursor: ${cursorLinePosition}, CharCursor: ${cursorCharPosition}_${cursorPositionOption}");
-    }
+  LyricSnippet getSnippetWithID(SnippetID id) {
+    final List<LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
+    return lyricSnippetList.firstWhere((snippet) => snippet.id == id);
   }
 
-  void moveDownCursor() {
-    int highlightSnippetsIndex = highlightingSnippetsIDs.indexWhere((id) => id == cursorLinePosition);
-    if (highlightSnippetsIndex < highlightingSnippetsIDs.length - 1) {
-      cursorPositionOption = Option.former;
-
-      cursorLinePosition = highlightingSnippetsIDs[highlightSnippetsIndex + 1];
-      LyricSnippet nextSnippet = getSnippetWithID(cursorLinePosition);
-
-      if (cursorCharPositionRestore != 0) {
-        cursorCharPosition = cursorCharPositionRestore;
-      }
-      if (cursorCharPosition > nextSnippet.sentence.length) {
-        cursorCharPositionRestore = cursorCharPosition;
-        cursorCharPosition = nextSnippet.sentence.length;
-      }
-
-      cursorBlinker.restartCursorTimer();
-      debugPrint("J key: LineCursor: ${cursorLinePosition}, CharCursor: ${cursorCharPosition}_${cursorPositionOption}");
-    }
+  int getSnippetIndexWithID(SnippetID id) {
+    final List<LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
+    return lyricSnippetList.indexWhere((snippet) => snippet.id == id);
   }
 
-  void moveLeftCursor() {
-    if (cursorCharPosition > 0) {
-      cursorCharPositionRestore = 0;
-
-      int snippetIndex = getSnippetIndexWithID(cursorLinePosition);
-      if (cursorPositionOption == Option.former) {
-        cursorCharPosition--;
-        if (countOccurrences(timingPointsForEachLine[snippetIndex], cursorCharPosition) >= 2) {
-          cursorPositionOption = Option.latter;
-        }
-      } else {
-        cursorPositionOption = Option.former;
-      }
-
-      cursorBlinker.restartCursorTimer();
-      debugPrint("H key: LineCursor: ${cursorLinePosition}, CharCursor: ${cursorCharPosition}_${cursorPositionOption}");
-    }
+  int countOccurrences(List<int> list, int number) {
+    return list.where((element) => element == number).length;
   }
 
-  void moveRightCursor() {
-    if (cursorCharPosition < getSnippetWithID(cursorLinePosition).sentence.length) {
-      cursorCharPositionRestore = 0;
-
-      int snippetIndex = getSnippetIndexWithID(cursorLinePosition);
-      if (cursorPositionOption == Option.former) {
-        if (countOccurrences(timingPointsForEachLine[snippetIndex], cursorCharPosition) >= 2) {
-          cursorPositionOption = Option.latter;
+  void updateLyricAppearance() {
+    final List<LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
+    timingPointsForEachLine = lyricSnippetList.map((snippet) => snippet.sentenceSegments.take(snippet.sentenceSegments.length - 1).map((sentenceSegmentMap) => sentenceSegmentMap.wordLength).fold<List<int>>([], (acc, pos) => acc..add((acc.isEmpty ? 0 : acc.last) + pos))).toList();
+    for (int index = 0; index < timingPointsForEachLine.length; index++) {
+      Map<int, String> timingPointsForEachLineMap = {};
+      for (int i = 0; i < timingPointsForEachLine[index].length; i++) {
+        int key = timingPointsForEachLine[index][i];
+        if (timingPointsForEachLineMap.containsKey(key)) {
+          timingPointsForEachLineMap[key] = timingPointsForEachLineMap[key]! + timingPointChar;
         } else {
-          cursorCharPosition++;
+          timingPointsForEachLineMap[key] = timingPointChar;
         }
-      } else {
-        cursorCharPosition++;
-        cursorPositionOption = Option.former;
       }
-
-      cursorBlinker.restartCursorTimer();
-      debugPrint("L key: LineCursor: ${cursorLinePosition}, CharCursor: ${cursorCharPosition}_${cursorPositionOption}");
+      lyricAppearance[index] = insertChars(lyricSnippetList[index].sentence, timingPointsForEachLineMap);
     }
+
+      notifyListeners();
   }
 
-  Tuple3<List<SnippetID>, List<SnippetID>, List<SnippetID>> getSnippetIDsAtCurrentSeekPosition() {
-    int seekPosition = ref.watch(musicPlayerMasterProvider).seekPosition;
-    final List<LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
+  String insertChars(String originalString, Map<int, String> charPositions) {
+    List<MapEntry<int, String>> sortedCharPositions = charPositions.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+    String resultString = "";
+    int previousPosition = 0;
 
-    List<SnippetID> beforeSnippetIndexes = [];
-    List<SnippetID> currentSnippetIndexes = [];
-    List<SnippetID> afterSnippetIndexes = [];
-    lyricSnippetList.forEach((LyricSnippet snippet) {
-      int start = snippet.startTimestamp;
-      int end = snippet.endTimestamp;
-      if (seekPosition < start) {
-        beforeSnippetIndexes.add(snippet.id);
-      } else if (seekPosition < end) {
-        currentSnippetIndexes.add(snippet.id);
-      } else {
-        afterSnippetIndexes.add(snippet.id);
-      }
-    });
-    return Tuple3(beforeSnippetIndexes, currentSnippetIndexes, afterSnippetIndexes);
+    for (MapEntry<int, String> entry in sortedCharPositions) {
+      resultString += originalString.substring(previousPosition, entry.key) + entry.value;
+      previousPosition = entry.key;
+    }
+    resultString += originalString.substring(previousPosition);
+
+    return resultString;
   }
 
   int getMaxTracks(List<LyricSnippet> lyricSnippetList) {
@@ -304,6 +143,197 @@ class _TextPaneState extends ConsumerState<TextPane> {
       }
     }
     return maxLanes;
+  }
+
+  void moveUpCursor() {
+    int highlightSnippetsIndex = highlightingSnippetsIDs.indexWhere((id) => id == cursorLinePosition);
+    if (highlightSnippetsIndex > 0) {
+      cursorPositionOption = Option.former;
+
+      cursorLinePosition = highlightingSnippetsIDs[highlightSnippetsIndex - 1];
+      LyricSnippet nextSnippet = getSnippetWithID(cursorLinePosition);
+
+      if (cursorCharPositionRestore != 0) {
+        cursorCharPosition = cursorCharPositionRestore;
+      }
+      if (cursorCharPosition > nextSnippet.sentence.length) {
+        cursorCharPositionRestore = cursorCharPosition;
+        cursorCharPosition = nextSnippet.sentence.length;
+      }
+
+      //cursorBlinker.restartCursorTimer();
+      debugPrint("K key: LineCursor: ${cursorLinePosition}, CharCursor: ${cursorCharPosition}_${cursorPositionOption}");
+
+      notifyListeners();
+    }
+  }
+
+  void moveDownCursor() {
+    int highlightSnippetsIndex = highlightingSnippetsIDs.indexWhere((id) => id == cursorLinePosition);
+    if (highlightSnippetsIndex < highlightingSnippetsIDs.length - 1) {
+      cursorPositionOption = Option.former;
+
+      cursorLinePosition = highlightingSnippetsIDs[highlightSnippetsIndex + 1];
+      LyricSnippet nextSnippet = getSnippetWithID(cursorLinePosition);
+
+      if (cursorCharPositionRestore != 0) {
+        cursorCharPosition = cursorCharPositionRestore;
+      }
+      if (cursorCharPosition > nextSnippet.sentence.length) {
+        cursorCharPositionRestore = cursorCharPosition;
+        cursorCharPosition = nextSnippet.sentence.length;
+      }
+
+      //cursorBlinker.restartCursorTimer();
+      debugPrint("J key: LineCursor: ${cursorLinePosition}, CharCursor: ${cursorCharPosition}_${cursorPositionOption}");
+
+      notifyListeners();
+    }
+  }
+
+  void moveLeftCursor() {
+    if (cursorCharPosition > 0) {
+      cursorCharPositionRestore = 0;
+
+      int snippetIndex = getSnippetIndexWithID(cursorLinePosition);
+      if (cursorPositionOption == Option.former) {
+        cursorCharPosition--;
+        if (countOccurrences(timingPointsForEachLine[snippetIndex], cursorCharPosition) >= 2) {
+          cursorPositionOption = Option.latter;
+        }
+      } else {
+        cursorPositionOption = Option.former;
+      }
+
+      //cursorBlinker.restartCursorTimer();
+      debugPrint("H key: LineCursor: ${cursorLinePosition}, CharCursor: ${cursorCharPosition}_${cursorPositionOption}");
+
+      notifyListeners();
+    }
+  }
+
+  void moveRightCursor() {
+    if (cursorCharPosition < getSnippetWithID(cursorLinePosition).sentence.length) {
+      cursorCharPositionRestore = 0;
+
+      int snippetIndex = getSnippetIndexWithID(cursorLinePosition);
+      if (cursorPositionOption == Option.former) {
+        if (countOccurrences(timingPointsForEachLine[snippetIndex], cursorCharPosition) >= 2) {
+          cursorPositionOption = Option.latter;
+        } else {
+          cursorCharPosition++;
+        }
+      } else {
+        cursorCharPosition++;
+        cursorPositionOption = Option.former;
+      }
+
+      //cursorBlinker.restartCursorTimer();
+      debugPrint("L key: LineCursor: ${cursorLinePosition}, CharCursor: ${cursorCharPosition}_${cursorPositionOption}");
+
+      notifyListeners();
+    }
+  }
+}
+
+class TextPane extends ConsumerStatefulWidget {
+  final PublishSubject<dynamic> masterSubject;
+  final FocusNode focusNode;
+
+  TextPane({required this.masterSubject, required this.focusNode}) : super(key: Key('TextPane'));
+
+  @override
+  _TextPaneState createState() => _TextPaneState(masterSubject, focusNode);
+}
+
+class _TextPaneState extends ConsumerState<TextPane> {
+  final PublishSubject<dynamic> masterSubject;
+  final FocusNode focusNode;
+
+  static const String cursorChar = '\xa0';
+  //static const String sectionChar = '\n\n';
+
+  late CursorBlinker cursorBlinker;
+
+  double lineHeight = 20;
+
+  List<SnippetID> selectingSnippets = [];
+
+  SortedMap<int, String> sentenceSegmentMap = SortedMap<int, String>();
+  SortedMap<int, String> sectionPointMap = SortedMap<int, String>();
+
+  int selectionBasePosition = 0;
+
+  _TextPaneState(this.masterSubject, this.focusNode);
+
+  @override
+  void initState() {
+    super.initState();
+
+    final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
+    final TimingService timingService = ref.read(timingMasterProvider);
+    final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
+
+    musicPlayerService.addListener(() {
+      setState(() {});
+    });
+
+    timingService.addListener(() {
+      setState(() {});
+    });
+
+    textPaneProvider.addListener(() {
+      setState(() {});
+    });
+
+    masterSubject.stream.listen((signal) {
+      if (signal is NotifySelectingSnippets) {
+        selectingSnippets = signal.snippetIDs;
+      }
+
+      setState(() {});
+    });
+
+    cursorBlinker = CursorBlinker(
+        blinkIntervalInMillisec: 1000,
+        onTick: () {
+          setState(() {});
+        });
+  }
+
+  LyricSnippet getSnippetWithID(SnippetID id) {
+    final List<LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
+    return lyricSnippetList.firstWhere((snippet) => snippet.id == id);
+  }
+
+  int getSnippetIndexWithID(SnippetID id) {
+    final List<LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
+    return lyricSnippetList.indexWhere((snippet) => snippet.id == id);
+  }
+
+  int countOccurrences(List<int> list, int number) {
+    return list.where((element) => element == number).length;
+  }
+
+  Tuple3<List<SnippetID>, List<SnippetID>, List<SnippetID>> getSnippetIDsAtCurrentSeekPosition() {
+    int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
+    final List<LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
+
+    List<SnippetID> beforeSnippetIndexes = [];
+    List<SnippetID> currentSnippetIndexes = [];
+    List<SnippetID> afterSnippetIndexes = [];
+    lyricSnippetList.forEach((LyricSnippet snippet) {
+      int start = snippet.startTimestamp;
+      int end = snippet.endTimestamp;
+      if (seekPosition < start) {
+        beforeSnippetIndexes.add(snippet.id);
+      } else if (seekPosition < end) {
+        currentSnippetIndexes.add(snippet.id);
+      } else {
+        afterSnippetIndexes.add(snippet.id);
+      }
+    });
+    return Tuple3(beforeSnippetIndexes, currentSnippetIndexes, afterSnippetIndexes);
   }
 
   List<int> getIndexFromIDs(List<SnippetID> lyricSnippetIDs) {
@@ -333,6 +363,12 @@ class _TextPaneState extends ConsumerState<TextPane> {
   }
 
   Widget lyricListWidget() {
+    final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
+    final List<String> lyricAppearance = textPaneProvider.lyricAppearance;
+    final int maxLanes = textPaneProvider.maxLanes;
+    final SnippetID cursorLinePosition = textPaneProvider.cursorLinePosition;
+    final int cursorCharPosition = textPaneProvider.cursorCharPosition;
+
     final indexesTuple = getSnippetIDsAtCurrentSeekPosition();
     late List<SnippetID> beforeSnippetIDs;
     late List<SnippetID> currentSnippetIDs;
@@ -346,7 +382,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
       currentSnippetIDs = selectingSnippets;
       afterSnippetIDs = indexesTuple.item3;
     }
-    highlightingSnippetsIDs = currentSnippetIDs;
+    textPaneProvider.highlightingSnippetsIDs = currentSnippetIDs;
 
     late double height;
     if (selectingSnippets.length < maxLanes) {
@@ -399,6 +435,10 @@ class _TextPaneState extends ConsumerState<TextPane> {
   }
 
   Widget highlightedLyricItem(String lyrics, SnippetID snippetID, int charIndex) {
+    final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
+    final Option cursorPositionOption = textPaneProvider.cursorPositionOption;
+    final List<List<int>> timingPointsForEachLine = textPaneProvider.timingPointsForEachLine;
+
     int sentenceSegmentsBeforeCursor = 0;
     int lineIndex = getSnippetIndexWithID(snippetID);
     List<int> currentLinesentenceSegment = timingPointsForEachLine[lineIndex];
@@ -434,6 +474,9 @@ class _TextPaneState extends ConsumerState<TextPane> {
   }
 
   Widget highlightedLyricItemSelectionMode(String lyrics, int lineIndex, int charIndex) {
+    final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
+    final int cursorCharPosition = textPaneProvider.cursorCharPosition;
+
     String beforeSelect = lyrics.substring(0, selectionBasePosition);
     String selecting = lyrics.substring(selectionBasePosition, cursorCharPosition);
     String afterSelect = lyrics.substring(cursorCharPosition);
@@ -472,19 +515,5 @@ class _TextPaneState extends ConsumerState<TextPane> {
       charPositions[entry.key] = entry.value;
     }
     return charPositions;
-  }
-
-  String InsertChars(String originalString, Map<int, String> charPositions) {
-    List<MapEntry<int, String>> sortedCharPositions = charPositions.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
-    String resultString = "";
-    int previousPosition = 0;
-
-    for (MapEntry<int, String> entry in sortedCharPositions) {
-      resultString += originalString.substring(previousPosition, entry.key) + entry.value;
-      previousPosition = entry.key;
-    }
-    resultString += originalString.substring(previousPosition);
-
-    return resultString;
   }
 }
