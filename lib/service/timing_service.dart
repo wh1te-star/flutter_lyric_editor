@@ -19,9 +19,8 @@ class TimingService extends ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
 
   Map<SnippetID, LyricSnippet> lyricSnippetList = {};
-  Map<String, int> vocalistColorMap = {};
+  Map<VocalistID, Vocalist> vocalistColorMap = {};
   List<int> sections = [];
-  Map<String, List<String>> vocalistCombinationCorrespondence = {};
 
   SnippetIdGenerator snippetIdGenerator = SnippetIdGenerator();
   VocalistIdGenerator vocalistIdGenerator = VocalistIdGenerator();
@@ -29,7 +28,8 @@ class TimingService extends ChangeNotifier {
   Future<void>? _loadLyricsFuture;
   List<Map<SnippetID, LyricSnippet>> undoHistory = [];
 
-  String defaultVocalistName = "vocalist 1";
+  String defaultVocalistName = "Vocalist Name";
+  String vocalistNameSeparator = ", ";
 
   TimingService({
     required this.musicPlayerProvider,
@@ -39,21 +39,18 @@ class TimingService extends ChangeNotifier {
 
   void initLyric(String rawText) {
     int audioDuration = musicPlayerProvider.audioDuration;
+
+    vocalistColorMap.clear();
+    vocalistColorMap[vocalistIdGenerator.idGen()] = Vocalist(name: defaultVocalistName, color: 0xff777777);
+
     String singlelineText = rawText.replaceAll("\n", "").replaceAll("\r", "");
     lyricSnippetList.clear();
     lyricSnippetList[snippetIdGenerator.idGen()] = LyricSnippet(
-      vocalist: Vocalist(
-        id: vocalistIdGenerator.idGen(),
-        name: defaultVocalistName,
-        color: 0,
-      ),
+      vocalistID: vocalistColorMap.keys.first,
       sentence: singlelineText,
       startTimestamp: 0,
       sentenceSegments: [SentenceSegment(singlelineText.length, audioDuration)],
     );
-
-    vocalistColorMap.clear();
-    vocalistColorMap[defaultVocalistName] = 0xff777777;
 
     notifyListeners();
   }
@@ -75,6 +72,40 @@ class TimingService extends ChangeNotifier {
     return ids.map((id) => getSnippetWithID(id)).toList();
   }
 
+  bool isBitTrue(VocalistID targetID, VocalistID singleID) {
+    return (targetID.id & singleID.id) != 0;
+  }
+
+  String generateVocalistCombinationNameFromID(VocalistID vocalistID) {
+    int signalBitID = 1;
+    String vocalistName = vocalistNameSeparator;
+    while (signalBitID > vocalistID.id) {
+      if (isBitTrue(vocalistID, VocalistID(signalBitID))) {
+        vocalistName += vocalistNameSeparator;
+        vocalistName += vocalistColorMap[signalBitID]!.name;
+      }
+    }
+
+    vocalistName = vocalistName.substring(vocalistNameSeparator.length);
+    return vocalistName;
+  }
+
+  VocalistID getVocalistIDWithName(String vocalistName) {
+    final entry = vocalistColorMap.entries.firstWhere(
+      (entry) => entry.value.name == vocalistName,
+      orElse: () => throw Exception('Vocalist not found'),
+    );
+    return entry.key;
+  }
+
+  Vocalist getVocalistWithName(String vocalistName) {
+    final entry = vocalistColorMap.entries.firstWhere(
+      (entry) => entry.value.name == vocalistName,
+      orElse: () => throw Exception('Vocalist not found'),
+    );
+    return entry.value;
+  }
+
   LyricSnippet getSnippetWithID(SnippetID id) {
     return lyricSnippetList[id]!;
   }
@@ -84,7 +115,7 @@ class TimingService extends ChangeNotifier {
   }
 
   List<LyricSnippet> getSnippetsWithVocalistName(String vocalistName) {
-    return lyricSnippetList.values.where((snippet) => snippet.vocalist.name == vocalistName).toList();
+    return lyricSnippetList.values.where((snippet) => vocalistColorMap[snippet.vocalistID]!.name == vocalistName).toList();
   }
 
   void addSection(int seekPosition) {
@@ -123,7 +154,7 @@ class TimingService extends ChangeNotifier {
   void addVocalist(String vocalistName) {
     pushUndoHistory(lyricSnippetList);
 
-    vocalistColorMap[vocalistName] = 0xFF222222;
+    vocalistColorMap[vocalistIdGenerator.idGen()] = Vocalist(name: vocalistName, color: 0xFF222222);
 
     notifyListeners();
   }
@@ -132,78 +163,22 @@ class TimingService extends ChangeNotifier {
     pushUndoHistory(lyricSnippetList);
 
     vocalistColorMap.remove(vocalistName);
-    lyricSnippetList.removeWhere((id, snippet) => snippet.vocalist.name == vocalistName);
+    lyricSnippetList.removeWhere((id, snippet) => vocalistColorMap[snippet.vocalistID]!.name == vocalistName);
 
     notifyListeners();
   }
 
   void changeVocalistName(String oldName, String newName) {
-    pushUndoHistory(lyricSnippetList);
+    VocalistID vocalistID = getVocalistIDWithName(oldName);
+    vocalistColorMap[vocalistID]!.name = newName;
 
-    Map<String, int> updatedVocalistColorList = {};
-
-    vocalistColorMap.forEach((key, value) {
-      if (vocalistCombinationCorrespondence.containsKey(key)) {
-        List<String> vocalistNames = vocalistCombinationCorrespondence[key]!;
-        if (vocalistNames.contains(oldName)) {
-          int index = vocalistNames.indexWhere((String name) {
-            return name == oldName;
-          });
-          vocalistNames[index] = newName;
-          String newCombinationName = vocalistNames.join(", ");
-          vocalistCombinationCorrespondence[newCombinationName] = vocalistNames;
-          vocalistCombinationCorrespondence.remove(key);
-
-          updatedVocalistColorList[newCombinationName] = value;
-          getSnippetsWithVocalistName(key).forEach((LyricSnippet snippet) {
-            snippet.vocalist = Vocalist(
-              id: snippet.vocalist.id,
-              name: newCombinationName,
-              color: 0,
-            );
-          });
-        } else {
-          updatedVocalistColorList[key] = value;
-        }
-      } else if (key == oldName) {
-        updatedVocalistColorList[newName] = value;
-        getSnippetsWithVocalistName(key).forEach((LyricSnippet snippet) {
-          snippet.vocalist = Vocalist(
-            id: snippet.vocalist.id,
-            name: newName,
-            color: 0,
-          );
-        });
-      } else {
-        updatedVocalistColorList[key] = value;
+    for (MapEntry<VocalistID, Vocalist> entry in vocalistColorMap.entries) {
+      VocalistID id = entry.key;
+      Vocalist vocalist = entry.value;
+      if (isBitTrue(id, vocalistID)) {
+        vocalist.name = generateVocalistCombinationNameFromID(vocalistID);
       }
-    });
-
-    vocalistColorMap = updatedVocalistColorList;
-
-    Map<String, List<String>> updatedMap = {};
-
-    vocalistCombinationCorrespondence.forEach((String key, List<String> value) {
-      int index = value.indexOf(oldName);
-      if (index != -1) {
-        value[index] = newName;
-        updatedMap[value.join(", ")] = value;
-      } else {
-        updatedMap[key] = value;
-      }
-    });
-
-    vocalistCombinationCorrespondence = updatedMap;
-
-    getSnippetsWithVocalistName(oldName).forEach((LyricSnippet snippet) {
-      snippet.vocalist = Vocalist(
-        id: snippet.vocalist.id,
-        name: newName,
-        color: 0,
-      );
-    });
-
-    notifyListeners();
+    }
   }
 
   Future<void> loadExampleLyrics() async {
@@ -236,11 +211,16 @@ class TimingService extends ChangeNotifier {
       for (var colorElement in colorElements) {
         final name = colorElement.getAttribute('name')!;
         final color = int.parse(colorElement.getAttribute('color')!, radix: 16);
-        vocalistColorMap[name] = color + 0xFF000000;
 
         final vocalistNames = colorElement.findAllElements('Vocalist').map((e) => e.innerText).toList();
-        if (vocalistNames.length >= 2) {
-          vocalistCombinationCorrespondence[name] = vocalistNames;
+        if (vocalistNames.length == 1) {
+        vocalistColorMap[vocalistIdGenerator.idGen()] = Vocalist(name: name, color: color + 0xFF000000);
+        }else{
+          int combinationID = 0;
+          for (String vocalistName in vocalistNames){
+            combinationID += getVocalistIDWithName(vocalistName).id;
+          }
+        vocalistColorMap[VocalistID(combinationID)] = Vocalist(name: name, color: color + 0xFF000000);
         }
       }
     }
@@ -262,11 +242,7 @@ class TimingService extends ChangeNotifier {
         sentence += word;
       }
       snippets[snippetIdGenerator.idGen()] = LyricSnippet(
-        vocalist: Vocalist(
-          id: vocalistIdGenerator.idGen(),
-          name: vocalistName,
-          color: 123456,
-        ),
+        vocalistID: getVocalistIDWithName(vocalistName),
         sentence: sentence,
         startTimestamp: startTime,
         sentenceSegments: sentenceSegments,
@@ -282,7 +258,7 @@ class TimingService extends ChangeNotifier {
     builder.element('Lyrics', nest: () {
       for (var snippet in lyricSnippetList.values) {
         builder.element('LineTimestamp', attributes: {
-          'vocalistName': snippet.vocalist.name,
+          'vocalistName': vocalistColorMap[snippet.vocalistID]!.name,
           'startTime': _formatTimestamp(snippet.startTimestamp),
         }, nest: () {
           int characterPosition = 0;
@@ -308,7 +284,7 @@ class TimingService extends ChangeNotifier {
     builder.element('Lyrics', nest: () {
       for (var snippet in lyricSnippetList.values) {
         builder.element('LineTimestamp', attributes: {
-          'vocalistName': snippet.vocalist.name,
+          'vocalistName': vocalistColorMap[snippet.vocalistID]!.name,
           'startTime': _formatTimestamp(snippet.startTimestamp),
         }, nest: () {
           int characterPosition = 0;
@@ -375,12 +351,12 @@ class TimingService extends ChangeNotifier {
     int snippetMargin = 100;
     String beforeString = snippet.sentence.substring(0, charPosition);
     String afterString = snippet.sentence.substring(charPosition);
-    Vocalist vocalist = snippet.vocalist;
+    VocalistID vocalistID = snippet.vocalistID;
     Map<SnippetID, LyricSnippet> newSnippets = {};
     if (beforeString.isNotEmpty) {
       int snippetDuration = seekPosition - snippet.startTimestamp;
       newSnippets[snippetIdGenerator.idGen()] = LyricSnippet(
-        vocalist: vocalist,
+        vocalistID: vocalistID,
         sentence: beforeString,
         startTimestamp: snippet.startTimestamp,
         sentenceSegments: [SentenceSegment(beforeString.length, snippetDuration)],
@@ -389,7 +365,7 @@ class TimingService extends ChangeNotifier {
     if (afterString.isNotEmpty) {
       int snippetDuration = snippet.endTimestamp - snippet.startTimestamp - seekPosition - snippetMargin;
       newSnippets[snippetIdGenerator.idGen()] = LyricSnippet(
-        vocalist: vocalist,
+        vocalistID: vocalistID,
         sentence: afterString,
         startTimestamp: seekPosition + snippetMargin,
         sentenceSegments: [SentenceSegment(afterString.length, snippetDuration)],
@@ -408,9 +384,16 @@ class TimingService extends ChangeNotifier {
 
     List<LyricSnippet> snippets = translateIDsToSnippets(snippetIDs);
 
-    Map<Vocalist, List<LyricSnippet>> snippetsForeachVocalist = groupBy(
-      snippets,
-      (LyricSnippet snippet) => snippet.vocalist,
+    Map<VocalistID, List<LyricSnippet>> snippetsForeachVocalist = groupBy(
+      lyricSnippetList.entries,
+      (MapEntry<SnippetID, LyricSnippet> entry) {
+        return entry.value.vocalistID;
+      },
+    ).map(
+      (vocalistID, snippets) => MapEntry(
+        vocalistID,
+        snippets.map((entry) => entry.value).toList(),
+      ),
     );
     snippetsForeachVocalist.forEach((vocalist, vocalistSnippets) {
       vocalistSnippets.sort((a, b) => a.startTimestamp.compareTo(b.startTimestamp));
@@ -746,11 +729,7 @@ class TimingService extends ChangeNotifier {
       return MapEntry(
         id,
         LyricSnippet(
-          vocalist: Vocalist(
-            id: snippet.vocalist.id,
-            name: snippet.vocalist.name,
-            color: snippet.vocalist.color,
-          ),
+          vocalistID: snippet.vocalistID!,
           sentence: snippet.sentence,
           startTimestamp: snippet.startTimestamp,
           sentenceSegments: snippet.sentenceSegments.map((point) {

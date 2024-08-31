@@ -28,7 +28,7 @@ class TimelinePaneProvider with ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
   final TimingService timingService;
 
-  Map<String, Map<SnippetID, LyricSnippet>> snippetsForeachVocalist = {};
+  Map<VocalistID, Map<SnippetID, LyricSnippet>> snippetsForeachVocalist = {};
   SnippetID cursorPosition = SnippetID(0);
   List<SnippetID> selectingSnippets = [];
   List<String> selectingVocalist = [];
@@ -56,16 +56,16 @@ class TimelinePaneProvider with ChangeNotifier {
       snippetsForeachVocalist = groupBy(
         lyricSnippetList.entries,
         (MapEntry<SnippetID, LyricSnippet> entry) {
-          return entry.value.vocalist.name;
+          return entry.value.vocalistID;
         },
       ).map(
-        (vocalist, snippets) => MapEntry(
-          vocalist,
+        (VocalistID vocalistID, List<MapEntry<SnippetID, LyricSnippet>> snippets) => MapEntry(
+          vocalistID,
           {for (var entry in snippets) entry.key: entry.value},
         ),
       );
 
-    cursorPosition = timingService.lyricSnippetList.keys.first;
+      cursorPosition = timingService.lyricSnippetList.keys.first;
       List<SnippetID> currentSelectingSnippet = getSnippetsAtCurrentSeekPosition();
       selectingSnippets = currentSelectingSnippet;
       notifyListeners();
@@ -154,7 +154,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   LinkedScrollControllerGroup horizontalScrollController = LinkedScrollControllerGroup();
   late ScrollController scaleMarkScrollController;
   late ScrollController seekPositionScrollController;
-  late Map<String, ScrollController> snippetTimelineScrollController;
+  late Map<VocalistID, ScrollController> snippetTimelineScrollController;
 
   List<Offset> panDeltas = [];
   List<DateTime> panTimestamps = [];
@@ -198,7 +198,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   void updateScrollControllers() {
-    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
+    final Map<VocalistID, Vocalist> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
     snippetTimelineScrollController.removeWhere((vocalistName, scrollController) {
       if (!vocalistColorMap.containsKey(vocalistName)) {
         scrollController.dispose();
@@ -223,6 +223,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   LyricSnippet getNearSnippetFromSeekPosition(String vocalistName, int targetSeekPosition) {
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
     List<LyricSnippet> snippets = timelinePaneProvider.snippetsForeachVocalist[vocalistName]!.values.toList();
+    /*
     for (int index = 0; index < snippets.length; index++) {
       int snippetStart = snippets[index].startTimestamp;
       int snippetEnd = snippets[index].endTimestamp;
@@ -242,26 +243,31 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
         return snippets[index];
       }
     }
+    */
     return snippets.last;
   }
 
   String? getNextVocalist(String currentVocalist) {
+    /*
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
-    List<String> vocalists = timelinePaneProvider.snippetsForeachVocalist.keys.toList();
+    List<VocalistID> vocalists = timelinePaneProvider.snippetsForeachVocalist.keys.toList();
     int currentIndex = vocalists.indexOf(currentVocalist);
     if (currentIndex != -1 && currentIndex < vocalists.length - 1) {
       return vocalists[currentIndex + 1];
     }
+    */
     return null;
   }
 
   String? getPreviousVocalist(String currentVocalist) {
+    /*
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
     List<String> vocalists = timelinePaneProvider.snippetsForeachVocalist.keys.toList();
     int currentIndex = vocalists.indexOf(currentVocalist);
     if (currentIndex > 0) {
       return vocalists[currentIndex - 1];
     }
+    */
     return null;
   }
 
@@ -286,7 +292,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
 
     final int audioDuration = musicPlayerService.audioDuration;
     final int seekPosition = musicPlayerService.seekPosition;
-    final Map<String, int> vocalistColorMap = timingService.vocalistColorMap;
+    final Map<VocalistID, Vocalist> vocalistColorMap = timingService.vocalistColorMap;
     final double intervalLength = timelinePaneProvider.intervalLength;
     final int intervalDuration = timelinePaneProvider.intervalDuration;
 
@@ -433,22 +439,23 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
 
     final int audioDuration = musicPlayerService.audioDuration;
-    final Map<String, int> vocalistColorMap = timingService.vocalistColorMap;
+    final Map<VocalistID, Vocalist> vocalistColorMap = timingService.vocalistColorMap;
     final double intervalLength = timelinePaneProvider.intervalLength;
     final int intervalDuration = timelinePaneProvider.intervalDuration;
 
-    final Map<String, Map<SnippetID, LyricSnippet>> snippetsForeachVocalist = timelinePaneProvider.snippetsForeachVocalist;
+    final Map<VocalistID, Map<SnippetID, LyricSnippet>> snippetsForeachVocalist = timelinePaneProvider.snippetsForeachVocalist;
     if (index < vocalistColorMap.length) {
-      final String vocalistName = vocalistColorMap.keys.toList()[index];
+      final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
+      final String vocalistName = vocalistColorMap.values.toList()[index].name;
 
-      final Color vocalistColor = Color(vocalistColorMap[vocalistName]!);
+      final Color vocalistColor = Color(vocalistColorMap[vocalistID]!.color);
       final Color backgroundColor = adjustColorBrightness(vocalistColor, 0.3);
 
       late final double rowHeight;
-      if (isDragging || snippetsForeachVocalist[vocalistName] == null) {
+      if (isDragging || snippetsForeachVocalist[vocalistID] == null) {
         rowHeight = 20;
       } else {
-        final int lanes = getLanes(snippetsForeachVocalist[vocalistName]!.values.toList());
+        final int lanes = getLanes(snippetsForeachVocalist[vocalistID]!.values.toList());
         rowHeight = 60.0 * lanes;
       }
       final Widget borderLine = Container(
@@ -539,7 +546,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   void onReorder(int oldIndex, int newIndex) {
-    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
+    final Map<VocalistID, Vocalist> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
     if (newIndex > vocalistColorMap.length) {
       newIndex = vocalistColorMap.length;
     }
@@ -646,8 +653,9 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   Widget cellVocalistPanel(int index) {
-    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
-    final String vocalistName = vocalistColorMap.keys.toList()[index];
+    final Map<VocalistID, Vocalist> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
+    final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
+    final String vocalistName = vocalistColorMap.values.toList()[index].name;
     if (edittingVocalistIndex == index) {
       final TextEditingController controller = TextEditingController(text: vocalistName);
       oldVocalistValue = vocalistName;
@@ -702,7 +710,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
               painter: RectanglePainter(
                 rect: Rect.fromLTRB(0.0, 0.0, 135, constraints.maxHeight),
                 sentence: vocalistName,
-                color: Color(vocalistColorMap[vocalistName]!),
+                color: Color(vocalistColorMap[vocalistID]!.color),
                 isSelected: selectingVocalist.contains(vocalistName),
                 borderLineWidth: 1.0,
               ),
@@ -717,15 +725,15 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     final TimingService timingService = ref.read(timingMasterProvider);
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
-    final Map<String, Map<SnippetID, LyricSnippet>> snippetsForeachVocalist = timelinePaneProvider.snippetsForeachVocalist;
+    final Map<VocalistID, Map<SnippetID, LyricSnippet>> snippetsForeachVocalist = timelinePaneProvider.snippetsForeachVocalist;
     final List<SnippetID> selectingSnippets = timelinePaneProvider.selectingSnippets;
     final double intervalLength = timelinePaneProvider.intervalLength;
     final int intervalDuration = timelinePaneProvider.intervalDuration;
     final SnippetID cursorPosition = timelinePaneProvider.cursorPosition;
 
-    final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
-    final String vocalistName = vocalistColorMap.keys.toList()[index];
-    final Map<SnippetID, LyricSnippet> snippets = snippetsForeachVocalist.containsKey(vocalistName) ? snippetsForeachVocalist[vocalistName]! : {};
+    final Map<VocalistID, Vocalist> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
+    final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
+    final Map<SnippetID, LyricSnippet> snippets = snippetsForeachVocalist.containsKey(vocalistID) ? snippetsForeachVocalist[vocalistID]! : {};
     double topMargin = 10;
     double bottomMargin = 5;
     return GestureDetector(
@@ -773,7 +781,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
           selectingId: selectingSnippets,
           intervalLength: intervalLength,
           intervalDuration: intervalDuration,
-          color: Color(vocalistColorMap[vocalistName]!),
+          color: Color(vocalistColorMap[vocalistID]!.color),
           frameThickness: 3.0,
           topMargin: topMargin,
           bottomMargin: bottomMargin,

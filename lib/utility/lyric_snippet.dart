@@ -2,14 +2,14 @@ import 'package:flutter/foundation.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 
 class LyricSnippet {
-  Vocalist vocalist;
+  VocalistID vocalistID;
   String sentence;
   int startTimestamp;
   List<SentenceSegment> sentenceSegments;
   late List<SentenceSegment> accumulatedSentenceSegments;
 
   LyricSnippet({
-    required this.vocalist,
+    required this.vocalistID,
     required this.sentence,
     required this.startTimestamp,
     required this.sentenceSegments,
@@ -28,11 +28,7 @@ class LyricSnippet {
 
   static LyricSnippet get emptySnippet {
     return LyricSnippet(
-      vocalist: Vocalist(
-        id: VocalistID(0),
-        name: "",
-        color: 0,
-      ),
+      vocalistID: VocalistID(0),
       sentence: "",
       startTimestamp: 0,
       sentenceSegments: [],
@@ -47,13 +43,13 @@ class LyricSnippet {
   }
 
   LyricSnippet copyWith({
-    Vocalist? vocalist,
+    VocalistID? vocalistID,
     String? sentence,
     int? startTimestamp,
     List<SentenceSegment>? sentenceSegments,
   }) {
     return LyricSnippet(
-      vocalist: vocalist ?? this.vocalist,
+      vocalistID: vocalistID ?? this.vocalistID,
       sentence: sentence ?? this.sentence,
       startTimestamp: startTimestamp ?? this.startTimestamp,
       sentenceSegments: sentenceSegments != null ? sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList() : this.sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList(),
@@ -61,18 +57,16 @@ class LyricSnippet {
   }
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is LyricSnippet && runtimeType == other.runtimeType && vocalist == other.vocalist && sentence == other.sentence && startTimestamp == other.startTimestamp && listEquals(sentenceSegments, other.sentenceSegments);
+  bool operator ==(Object other) => identical(this, other) || other is LyricSnippet && runtimeType == other.runtimeType && vocalistID == other.vocalistID && sentence == other.sentence && startTimestamp == other.startTimestamp && listEquals(sentenceSegments, other.sentenceSegments);
 
   @override
-  int get hashCode => vocalist.hashCode ^ sentence.hashCode ^ startTimestamp.hashCode ^ sentenceSegments.hashCode;
+  int get hashCode => vocalistID.hashCode ^ sentence.hashCode ^ startTimestamp.hashCode ^ sentenceSegments.hashCode;
 }
 
 class Vocalist {
-  VocalistID id;
   String name;
   int color;
   Vocalist({
-    required this.id,
     required this.name,
     required this.color,
   });

@@ -235,9 +235,9 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
   Widget outlinedText(LyricSnippet snippet, String fontFamily) {
     int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
     Color fontColor = Color(0);
-    final Map<String, int> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap;
-    if (vocalistColorList.containsKey(snippet.vocalist.name)) {
-      fontColor = Color(vocalistColorList[snippet.vocalist.name]!);
+    final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap;
+    if (vocalistColorList.containsKey(snippet.vocalistID)) {
+      fontColor = Color(vocalistColorList[snippet.vocalistID]!.color);
     }
     if (snippet.sentence == "") {
       return Expanded(
@@ -270,7 +270,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
   Widget build(BuildContext context) {
     MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     int seekPosition = musicPlayerService.seekPosition;
-    final Map<String, int> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap;
+    final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap;
 
     String fontFamily = "Times New Roman";
     List<LyricSnippetTrack> currentSnippets = getSnippetsAtCurrentSeekPosition();
@@ -312,8 +312,8 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       lyricSnippetTrack.forEach((LyricSnippetTrack trackSnippet) {
         LyricSnippet snippet = trackSnippet.lyricSnippet;
         Color fontColor = Color(0);
-        if (vocalistColorList.containsKey(snippet.vocalist.name)) {
-          fontColor = Color(vocalistColorList[snippet.vocalist.name]!);
+        if (vocalistColorList.containsKey(snippet.vocalistID)) {
+          fontColor = Color(vocalistColorList[snippet.vocalistID]!.color);
         }
         columnSnippets.add(
           CustomPaint(
