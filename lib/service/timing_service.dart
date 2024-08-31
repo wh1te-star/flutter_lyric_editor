@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
-import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:xml/xml.dart' as xml;
 
 final timingMasterProvider = ChangeNotifierProvider((ref) {
@@ -756,4 +755,14 @@ class TimingPointException implements Exception {
 
   @override
   String toString() => 'TimingPointException: $message';
+}
+
+enum Option {
+  former,
+  latter,
+}
+
+enum SnippetEdge {
+  start,
+  end,
 }
