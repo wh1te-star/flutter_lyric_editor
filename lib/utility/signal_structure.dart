@@ -13,53 +13,6 @@ class NotifyKeyboardShortcutEnable {
   NotifyKeyboardShortcutEnable(this.enable);
 }
 
-class RequestInitAudio {
-  String path;
-  RequestInitAudio({this.path = ""});
-}
-
-class RequestPlayPause {}
-
-class NotifyAudioFileLoaded {
-  int millisec;
-  NotifyAudioFileLoaded(this.millisec);
-}
-
-class RequestSeek {
-  final int seekPosition;
-  RequestSeek(this.seekPosition);
-}
-
-class RequestRewind {
-  int millisec;
-  RequestRewind(this.millisec);
-}
-
-class RequestForward {
-  int millisec;
-  RequestForward(this.millisec);
-}
-
-class RequestVolumeUp {
-  double value;
-  RequestVolumeUp(this.value);
-}
-
-class RequestVolumeDown {
-  double value;
-  RequestVolumeDown(this.value);
-}
-
-class RequestSpeedUp {
-  double rate;
-  RequestSpeedUp(this.rate);
-}
-
-class RequestSpeedDown {
-  double rate;
-  RequestSpeedDown(this.rate);
-}
-
 class RequestInitLyric {
   String path;
   String lyric;
@@ -202,16 +155,6 @@ class NotifyDeselectingVocalist {
 class NotifyCurrentSnippets {
   List<SnippetID> currentSnippets;
   NotifyCurrentSnippets(this.currentSnippets);
-}
-
-class NotifyIsPlaying {
-  bool isPlaying;
-  NotifyIsPlaying(this.isPlaying);
-}
-
-class NotifySeekPosition {
-  int seekPosition;
-  NotifySeekPosition(this.seekPosition);
 }
 
 class NotifyCharCursorPosition {

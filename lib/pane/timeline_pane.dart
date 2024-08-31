@@ -2,11 +2,13 @@ import 'package:collection/collection.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:lyric_editor/painter/current_position_indicator_painter.dart';
 import 'package:lyric_editor/painter/rectangle_painter.dart';
 import 'package:lyric_editor/painter/scale_mark.dart';
 import 'package:lyric_editor/painter/timeline_painter.dart';
+import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/utility/color_utilities.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:lyric_editor/utility/dialogbox_utility.dart';
@@ -14,9 +16,10 @@ import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/svg_icon.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
+import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 
-class TimelinePane extends StatefulWidget {
+class TimelinePane extends ConsumerStatefulWidget {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
 
@@ -26,7 +29,7 @@ class TimelinePane extends StatefulWidget {
   _TimelinePaneState createState() => _TimelinePaneState(masterSubject, focusNode);
 }
 
-class _TimelinePaneState extends State<TimelinePane> {
+class _TimelinePaneState extends ConsumerState<TimelinePane> {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
   _TimelinePaneState(this.masterSubject, this.focusNode);
@@ -48,8 +51,6 @@ class _TimelinePaneState extends State<TimelinePane> {
   SnippetID cursorPosition = SnippetID(0);
   List<SnippetID> selectingSnippet = [];
   List<String> selectingVocalist = [];
-  int audioDuration = 60000;
-  int currentPosition = 0;
   double intervalLength = 10.0;
   double majorMarkLength = 15.0;
   double midiumMarkLength = 11.0;
@@ -74,24 +75,17 @@ class _TimelinePaneState extends State<TimelinePane> {
     seekPositionScrollController = horizontalScrollController.addAndGet();
     snippetTimelineScrollController = {};
 
-    masterSubject.stream.listen((signal) {
-      if (signal is NotifyAudioFileLoaded) {
-        setState(() {
-          audioDuration = signal.millisec;
-        });
-      }
-      if (signal is NotifySeekPosition) {
-        List<SnippetID> currentSelectingSnippet = getSnippetsAtCurrentSeekPosition();
-        masterSubject.add(NotifyCurrentSnippets(currentSelectingSnippet));
+    ref.read(musicPlayerMasterProvider).addListener(() {
+      List<SnippetID> currentSelectingSnippet = getSnippetsAtCurrentSeekPosition();
+      masterSubject.add(NotifyCurrentSnippets(currentSelectingSnippet));
 
-        if (autoCurrentSelectMode) {
-          selectingSnippet = currentSelectingSnippet;
-          masterSubject.add(NotifySelectingSnippets(selectingSnippet));
-        }
-        setState(() {
-          currentPosition = signal.seekPosition;
-        });
+      if (autoCurrentSelectMode) {
+        selectingSnippet = currentSelectingSnippet;
+        masterSubject.add(NotifySelectingSnippets(selectingSnippet));
       }
+      setState(() {});
+    });
+    masterSubject.stream.listen((signal) {
       if (signal is NotifySnippetMove || signal is NotifySnippetDivided || signal is NotifySnippetConcatenated || signal is NotifyUndo) {
         snippetsForeachVocalist = groupBy(signal.lyricSnippetList, (LyricSnippet snippet) => snippet.vocalist.name);
         setState(() {});
@@ -299,6 +293,9 @@ class _TimelinePaneState extends State<TimelinePane> {
         ),
       ),
     );
+
+    int audioDuration = ref.read(musicPlayerMasterProvider).audioDuration;
+    int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
     return Focus(
       focusNode: focusNode,
       child: Listener(
@@ -425,7 +422,7 @@ class _TimelinePaneState extends State<TimelinePane> {
                   scrollDirection: Axis.horizontal,
                   child: CustomPaint(
                     size: Size(audioDuration * intervalLength / intervalDuration, 800),
-                    painter: CurrentPositionIndicatorPainter(intervalLength, intervalDuration, currentPosition, sections),
+                    painter: CurrentPositionIndicatorPainter(intervalLength, intervalDuration, seekPosition, sections),
                   ),
                 ),
               ),
@@ -462,6 +459,7 @@ class _TimelinePaneState extends State<TimelinePane> {
       final Color vocalistColor = Color(vocalistColorMap[vocalistName]!);
       final Color backgroundColor = adjustColorBrightness(vocalistColor, 0.3);
 
+      int audioDuration = ref.read(musicPlayerMasterProvider).audioDuration;
       return Container(
         key: ValueKey('VocalistPanel_${index}'),
         height: rowHeight,
@@ -569,11 +567,12 @@ class _TimelinePaneState extends State<TimelinePane> {
   }
 
   List<SnippetID> getSnippetsAtCurrentSeekPosition() {
+    int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
     List<SnippetID> currentSnippet = [];
     snippetsForeachVocalist.forEach((vocalist, snippets) {
       for (var snippet in snippets) {
         final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
-        if (snippet.startTimestamp <= currentPosition && currentPosition <= endtime) {
+        if (snippet.startTimestamp <= seekPosition && seekPosition <= endtime) {
           currentSnippet.add(snippet.id);
         }
       }

@@ -4,15 +4,24 @@ import 'package:collection/collection.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lyric_editor/main.dart';
+import 'package:lyric_editor/service/music_player_service.dart';
+import 'package:lyric_editor/utility/appbar_menu.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:xml/xml.dart' as xml;
 
-class TimingService {
-  final BuildContext context;
+final timingMasterProvider = ChangeNotifierProvider((ref) {
+  final musicPlayerService = ref.watch(musicPlayerMasterProvider);
+  return TimingService(masterSubject: masterSubject, musicPlayerProvider: musicPlayerService);
+});
+
+class TimingService extends ChangeNotifier {
   final PublishSubject<dynamic> masterSubject;
+  final MusicPlayerService musicPlayerProvider;
   String rawLyricText = "";
   Map<String, int> vocalistColorList = {};
   Map<String, List<String>> vocalistCombinationCorrespondence = {};
@@ -29,77 +38,19 @@ class TimingService {
 
   String defaultVocalistName = "vocalist 1";
 
-  TimingService({required this.masterSubject, required this.context}) {
+  TimingService({
+    required this.masterSubject,
+    required this.musicPlayerProvider,
+  }) {
     masterSubject.stream.listen((signal) async {
       if (signal is RequestInitLyric) {
-        final XFile? file = await openFile(acceptedTypeGroups: [
-          XTypeGroup(
-            label: 'text',
-            extensions: ['txt'],
-            mimeTypes: ['text/plain'],
-          )
-        ]);
-
-        if (file != null) {
-          String rawText = await file.readAsString();
-          String singlelineText = rawText.replaceAll("\n", "").replaceAll("\r", "");
-          lyricSnippetList.clear();
-          lyricSnippetList.add(LyricSnippet(
-            id: snippetIdGenerator.idGen(),
-            vocalist: Vocalist(
-              id: vocalistIdGenerator.idGen(),
-              name: defaultVocalistName,
-              color: 0,
-            ),
-            sentence: singlelineText,
-            startTimestamp: 0,
-            sentenceSegments: [SentenceSegment(singlelineText.length, audioDuration)],
-          ));
-
-          vocalistColorList.clear();
-          vocalistColorList[defaultVocalistName] = 0xff777777;
-
-          masterSubject.add(NotifyLyricParsed(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('No file selected')),
-          );
-        }
+        initLyric(signal.lyric);
       }
       if (signal is RequestLoadLyric) {
-        final XFile? file = await openFile(acceptedTypeGroups: [
-          XTypeGroup(
-            label: 'xlrc',
-            extensions: ['xlrc'],
-            mimeTypes: ['application/xml'],
-          )
-        ]);
-
-        if (file != null) {
-          rawLyricText = await file.readAsString();
-          lyricSnippetList = parseLyric(rawLyricText);
-
-          pushUndoHistory(lyricSnippetList);
-          masterSubject.add(NotifyLyricParsed(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('No file selected')),
-          );
-        }
+      loadLyric(signal.lyric);
       }
       if (signal is RequestExportLyric) {
-        const String fileName = 'example.xlrc';
-        final FileSaveLocation? result = await getSaveLocation(suggestedName: fileName);
-        if (result == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('No file selected')),
-          );
-          return;
-        }
-
-        final String rawLyricText = serializeLyric(lyricSnippetList);
-        final File file = File(result.path);
-        await file.writeAsString(rawLyricText);
+      exportLyric(signal.path);
       }
       if (signal is RequestAddSection) {
         addSection(signal.seekPosition);
@@ -153,12 +104,6 @@ class TimingService {
         }
         masterSubject.add(NotifyTimingPointDeleted(lyricSnippetList));
       }
-      if (signal is NotifySeekPosition) {
-        currentPosition = signal.seekPosition;
-      }
-      if (signal is NotifyAudioFileLoaded) {
-        audioDuration = signal.millisec;
-      }
 
       if (signal is RequestDivideSnippet) {
         int index = getSnippetIndexWithID(signal.snippetID);
@@ -201,7 +146,42 @@ class TimingService {
         masterSubject.add(NotifyUndo(lyricSnippetList));
       }
     });
-    _loadLyricsFuture = loadLyrics();
+    _loadLyricsFuture = loadExampleLyrics();
+  }
+  
+  void initLyric(String rawText){
+          String singlelineText = rawText.replaceAll("\n", "").replaceAll("\r", "");
+          lyricSnippetList.clear();
+          lyricSnippetList.add(LyricSnippet(
+            id: snippetIdGenerator.idGen(),
+            vocalist: Vocalist(
+              id: vocalistIdGenerator.idGen(),
+              name: defaultVocalistName,
+              color: 0,
+            ),
+            sentence: singlelineText,
+            startTimestamp: 0,
+            sentenceSegments: [SentenceSegment(singlelineText.length, audioDuration)],
+          ));
+
+          vocalistColorList.clear();
+          vocalistColorList[defaultVocalistName] = 0xff777777;
+
+          masterSubject.add(NotifyLyricParsed(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
+  }
+  
+  void loadLyric(String rawLyricText){
+          lyricSnippetList = parseLyric(rawLyricText);
+
+          pushUndoHistory(lyricSnippetList);
+          masterSubject.add(NotifyLyricParsed(lyricSnippetList, vocalistColorList, vocalistCombinationCorrespondence));
+  }
+  
+  void exportLyric(String path)async{
+        final String rawLyricText = serializeLyric(lyricSnippetList);
+        final File file = File(path);
+        await file.writeAsString(rawLyricText);
+
   }
 
   List<LyricSnippet> translateIDsToSnippets(List<SnippetID> ids) {
@@ -323,7 +303,7 @@ class TimingService {
     });
   }
 
-  Future<void> loadLyrics() async {
+  Future<void> loadExampleLyrics() async {
     try {
       rawLyricText = await rootBundle.loadString('assets/ウェルカムティーフレンド.xlrc');
       masterSubject.add(NotifyLyricLoaded(rawLyricText));

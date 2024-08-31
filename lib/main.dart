@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
@@ -10,21 +11,28 @@ import 'pane/video_pane.dart';
 import 'pane/text_pane.dart';
 import 'pane/timeline_pane.dart';
 import 'pane/adjustable_pane_border.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final masterSubject = PublishSubject<dynamic>();
 
 void main() {
-  runApp(MyApp());
+  runApp(ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
-  final masterSubject = PublishSubject<dynamic>();
-
+class MyApp extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final musicPlayerService = ref.read(musicPlayerMasterProvider);
+
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
           title: Builder(
-            builder: (BuildContext context) => buildAppBarWithMenu(context, masterSubject),
+            builder: (BuildContext context) => buildAppBarWithMenu(
+              context,
+              masterSubject,
+              musicPlayerService,
+            ),
           ),
         ),
         body: AdjustablePaneLayout(masterSubject: masterSubject),
@@ -33,7 +41,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class AdjustablePaneLayout extends StatefulWidget {
+class AdjustablePaneLayout extends ConsumerStatefulWidget {
   final PublishSubject<dynamic> masterSubject;
 
   AdjustablePaneLayout({required this.masterSubject}) : super(key: Key('Main'));
@@ -42,7 +50,7 @@ class AdjustablePaneLayout extends StatefulWidget {
   _AdjustablePaneLayoutState createState() => _AdjustablePaneLayoutState(masterSubject);
 }
 
-class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
+class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
   final PublishSubject<dynamic> masterSubject;
   _AdjustablePaneLayoutState(this.masterSubject);
 
@@ -73,8 +81,8 @@ class _AdjustablePaneLayoutState extends State<AdjustablePaneLayout> {
   void initState() {
     super.initState();
 
-    musicPlayerService = MusicPlayerService(masterSubject: masterSubject, context: context);
-    lyricService = TimingService(masterSubject: masterSubject, context: context);
+    musicPlayerService = ref.read(musicPlayerMasterProvider);
+    lyricService = TimingService(masterSubject: masterSubject, musicPlayerProvider: musicPlayerService);
     videoPaneFocusNode = FocusNode();
     textPaneFocusNode = FocusNode();
     timelinePaneFocusNode = FocusNode();

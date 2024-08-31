@@ -2,12 +2,14 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lyric_editor/service/music_player_service.dart';
+import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
 import 'string_resource.dart';
 import 'package:file_selector/file_selector.dart';
 
-AppBar buildAppBarWithMenu(BuildContext context, PublishSubject<dynamic> masterSubject) {
+AppBar buildAppBarWithMenu(BuildContext context, PublishSubject<dynamic> masterSubject, MusicPlayerService musicPlayerService) {
   return AppBar(
     title: Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -37,19 +39,19 @@ AppBar buildAppBarWithMenu(BuildContext context, PublishSubject<dynamic> masterS
           onChanged: (String? newValue) {
             switch (newValue) {
               case StringResource.fileMenuOpenAudio:
-                masterSubject.add(RequestInitAudio());
+                openAudio(context, masterSubject, musicPlayerService);
                 break;
 
               case StringResource.fileMenuCreateNewLyric:
-                masterSubject.add(RequestInitLyric());
+                createNewLyric(context, masterSubject);
                 break;
 
               case StringResource.fileMenuOpenLyric:
-                masterSubject.add(RequestLoadLyric());
+                openLyric(context, masterSubject);
                 break;
 
               case StringResource.fileMenuExportLyric:
-                masterSubject.add(RequestExportLyric());
+                exportLyric(context, masterSubject);
                 break;
 
               default:
@@ -72,4 +74,74 @@ AppBar buildAppBarWithMenu(BuildContext context, PublishSubject<dynamic> masterS
       ],
     ),
   );
+}
+
+void openAudio(BuildContext context, PublishSubject<dynamic> masterSubject, MusicPlayerService musicPlayerSerivce) async {
+  final XTypeGroup typeGroup = XTypeGroup(
+    label: 'audio',
+    extensions: ['mp3', 'wav', 'flac'],
+    mimeTypes: ['audio/mpeg', 'audio/x-wav', 'audio/flac'],
+  );
+  final XFile? file = await openFile(acceptedTypeGroups: [typeGroup]);
+
+  if (file != null) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Selected file: ${file.name}'),
+    ));
+    musicPlayerSerivce.initAudio(file.path);
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('No file selected')),
+    );
+  }
+}
+
+void createNewLyric(BuildContext context, PublishSubject<dynamic> masterSubject) async {
+  final XFile? file = await openFile(acceptedTypeGroups: [
+    XTypeGroup(
+      label: 'text',
+      extensions: ['txt'],
+      mimeTypes: ['text/plain'],
+    )
+  ]);
+
+  if (file != null) {
+    String rawText = await file.readAsString();
+    masterSubject.add(RequestInitLyric(lyric: rawText));
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('No file selected')),
+    );
+  }
+}
+
+void openLyric(BuildContext context, PublishSubject<dynamic> masterSubject) async {
+  final XFile? file = await openFile(acceptedTypeGroups: [
+    XTypeGroup(
+      label: 'xlrc',
+      extensions: ['xlrc'],
+      mimeTypes: ['application/xml'],
+    )
+  ]);
+
+  if (file != null) {
+    String rawLyricText = await file.readAsString();
+    masterSubject.add(RequestLoadLyric(lyric: rawLyricText));
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('No file selected')),
+    );
+  }
+}
+
+void exportLyric(BuildContext context, PublishSubject<dynamic> masterSubject) async {
+  const String fileName = 'example.xlrc';
+  final FileSaveLocation? result = await getSaveLocation(suggestedName: fileName);
+  if (result == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('No file selected')),
+    );
+    return;
+  }
+  masterSubject.add(RequestExportLyric(path: result.path));
 }

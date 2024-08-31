@@ -1,76 +1,45 @@
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:lyric_editor/main.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'dart:async';
 import 'package:rxdart/rxdart.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MusicPlayerService {
-  final PublishSubject<dynamic> masterSubject;
+final musicPlayerMasterProvider = ChangeNotifierProvider((ref) => MusicPlayerService());
+
+class MusicPlayerService extends ChangeNotifier {
   AudioPlayer player = AudioPlayer();
+  int _seekPosition = 0;
+  bool _isPlaying = false;
+  int _audioDuration = 0;
   late DeviceFileSource audioFile;
-  BuildContext context;
 
-  MusicPlayerService({required this.context, required this.masterSubject}) {
+  MusicPlayerService() {
     player.onPositionChanged.listen((event) {
-      masterSubject.add(NotifySeekPosition(event.inMilliseconds));
+      _seekPosition = event.inMilliseconds;
+      notifyListeners();
     });
     player.onPlayerStateChanged.listen((event) {
       if (player.state == PlayerState.playing) {
-        masterSubject.add(NotifyIsPlaying(true));
+        _isPlaying = true;
       } else {
-        masterSubject.add(NotifyIsPlaying(false));
+        _isPlaying = false;
       }
+      notifyListeners();
     });
     player.onDurationChanged.listen((duration) {
-      masterSubject.add(NotifyAudioFileLoaded(duration.inMilliseconds));
-    });
-    masterSubject.stream.listen((signal) async {
-      if (signal is RequestInitAudio) {
-        final XTypeGroup typeGroup = XTypeGroup(
-          label: 'audio',
-          extensions: ['mp3', 'wav', 'flac'],
-          mimeTypes: ['audio/mpeg', 'audio/x-wav', 'audio/flac'],
-        );
-        final XFile? file = await openFile(acceptedTypeGroups: [typeGroup]);
-
-        if (file != null) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Selected file: ${file.name}'),
-          ));
-          initAudio(file.path);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('No file selected')),
-          );
-        }
-      }
-      if (signal is RequestPlayPause) {
-        playPause();
-      }
-      if (signal is RequestSeek) {
-        seek(signal.seekPosition);
-      }
-      if (signal is RequestRewind) {
-        rewind(signal.millisec);
-      }
-      if (signal is RequestForward) {
-        forward(signal.millisec);
-      }
-      if (signal is RequestVolumeUp) {
-        volumeUp(signal.value);
-      }
-      if (signal is RequestVolumeDown) {
-        volumeDown(signal.value);
-      }
-      if (signal is RequestSpeedUp) {
-        speedUp(signal.rate);
-      }
-      if (signal is RequestSpeedDown) {
-        speedDown(signal.rate);
-      }
+      _audioDuration = duration.inMilliseconds;
+      notifyListeners();
     });
   }
+
+  int get seekPosition => _seekPosition;
+
+  bool get isPlaying => _isPlaying;
+
+  int get audioDuration => _audioDuration;
 
   void playPause() {
     if (player.state == PlayerState.playing) {

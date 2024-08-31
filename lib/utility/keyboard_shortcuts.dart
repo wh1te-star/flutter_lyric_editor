@@ -1,11 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:rxdart/rxdart.dart';
 import 'signal_structure.dart';
 
-class KeyboardShortcuts extends StatefulWidget {
+final keyboardShortcutsMasterProvider = ChangeNotifierProvider((ref) => KeyboardShortcutsNotifier());
+
+class KeyboardShortcutsNotifier with ChangeNotifier {
+  bool _enable = true;
+
+  bool get enable => _enable;
+
+  void setEnable(bool value) {
+    _enable = value;
+    notifyListeners();
+  }
+
+  KeyboardShortcutsNotifier();
+}
+
+class KeyboardShortcuts extends ConsumerStatefulWidget {
   final PublishSubject<dynamic> masterSubject;
   final Widget child;
   final FocusNode videoPaneFocusNode;
@@ -24,18 +41,19 @@ class KeyboardShortcuts extends StatefulWidget {
   _KeyboardShortcutsState createState() => _KeyboardShortcutsState(masterSubject: this.masterSubject, child: this.child, videoPaneFocusNode: this.videoPaneFocusNode, textPaneFocusNode: this.textPaneFocusNode, timelinePaneFocusNode: this.timelinePaneFocusNode);
 }
 
-class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
+class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
   final PublishSubject<dynamic> masterSubject;
   final Widget child;
   final FocusNode videoPaneFocusNode;
   final FocusNode textPaneFocusNode;
   final FocusNode timelinePaneFocusNode;
 
+  late final MusicPlayerService musicPlayerProvider = ref.watch(musicPlayerMasterProvider.notifier);
+
   bool enable = true;
 
   List<SnippetID> selectingSnippetIDs = [];
   List<String> selectingVocalist = [];
-  int seekPosition = 0;
   int charCursorPosition = 0;
   Option cursorPositionOption = Option.former;
 
@@ -72,9 +90,6 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
       }
       if (signal is NotifyDeselectingVocalist) {
         selectingVocalist.remove(signal.vocalistName);
-      }
-      if (signal is NotifySeekPosition) {
-        seekPosition = signal.seekPosition;
       }
       if (signal is NotifySectionAdded || signal is NotifySectionDeleted) {
         sections = signal.sections;
@@ -122,17 +137,17 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
   Map<Type, Action<Intent>> get actions => {
         PlayPauseIntent: CallbackAction<PlayPauseIntent>(
           onInvoke: (PlayPauseIntent intent) => () {
-            masterSubject.add(RequestPlayPause());
+            musicPlayerProvider.playPause();
           }(),
         ),
         RewindIntent: CallbackAction<RewindIntent>(
           onInvoke: (RewindIntent intent) => () {
-            masterSubject.add(RequestRewind(1000));
+            musicPlayerProvider.rewind(1000);
           }(),
         ),
         ForwardIntent: CallbackAction<ForwardIntent>(
           onInvoke: (ForwardIntent intent) => () {
-            masterSubject.add(RequestForward(1000));
+            musicPlayerProvider.forward(1000);
           }(),
         ),
         SnippetStartMoveIntent: CallbackAction<SnippetStartMoveIntent>(
@@ -151,22 +166,22 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
         ),
         VolumeUpIntent: CallbackAction<VolumeUpIntent>(
           onInvoke: (VolumeUpIntent intent) => () {
-            masterSubject.add(RequestVolumeUp(0.1));
+            musicPlayerProvider.volumeUp(0.1);
           }(),
         ),
         VolumeDownIntent: CallbackAction<VolumeDownIntent>(
           onInvoke: (VolumeDownIntent intent) => () {
-            masterSubject.add(RequestVolumeDown(0.1));
+            musicPlayerProvider.volumeDown(0.1);
           }(),
         ),
         SpeedUpIntent: CallbackAction<SpeedUpIntent>(
           onInvoke: (SpeedUpIntent intent) => () {
-            masterSubject.add(RequestSpeedUp(0.1));
+            musicPlayerProvider.speedUp(0.1);
           }(),
         ),
         SpeedDownIntent: CallbackAction<SpeedDownIntent>(
           onInvoke: (SpeedDownIntent intent) => () {
-            masterSubject.add(RequestSpeedDown(0.1));
+            musicPlayerProvider.speedDown(0.1);
           }(),
         ),
         TextPaneCursorMoveLeftIntent: CallbackAction<TextPaneCursorMoveLeftIntent>(
@@ -206,16 +221,19 @@ class _KeyboardShortcutsState extends State<KeyboardShortcuts> {
         ),
         AddSectionIntent: CallbackAction<AddSectionIntent>(
           onInvoke: (AddSectionIntent intent) => () {
+            int seekPosition = musicPlayerProvider.seekPosition;
             masterSubject.add(RequestAddSection(seekPosition));
           }(),
         ),
         DeleteSectionIntent: CallbackAction<DeleteSectionIntent>(
           onInvoke: (DeleteSectionIntent intent) => () {
+            int seekPosition = musicPlayerProvider.seekPosition;
             masterSubject.add(RequestDeleteSection(seekPosition));
           }(),
         ),
         TimingPointAddIntent: CallbackAction<TimingPointAddIntent>(
           onInvoke: (TimingPointAddIntent intent) => () {
+            int seekPosition = musicPlayerProvider.seekPosition;
             selectingSnippetIDs.forEach((SnippetID id) {
               masterSubject.add(RequestToAddTimingPoint(id, charCursorPosition, seekPosition));
             });

@@ -1,12 +1,16 @@
+import 'dart:ui';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/painter/partial_text_painter.dart';
+import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
 
-class VideoPane extends StatefulWidget {
+class VideoPane extends ConsumerStatefulWidget {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
 
@@ -16,14 +20,12 @@ class VideoPane extends StatefulWidget {
   _VideoPaneState createState() => _VideoPaneState(masterSubject, focusNode);
 }
 
-class _VideoPaneState extends State<VideoPane> {
+class _VideoPaneState extends ConsumerState<VideoPane> {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
   _VideoPaneState(this.masterSubject, this.focusNode);
-  bool isPlaying = true;
   int startBulge = 1000;
   int endBulge = 1000;
-  int currentSeekPosition = 0;
   List<LyricSnippetTrack> lyricSnippetTrack = [];
   Map<String, int> vocalistColorList = {};
   Map<String, List<String>> vocalistCombinationCorrespondence = {};
@@ -40,21 +42,21 @@ class _VideoPaneState extends State<VideoPane> {
     super.initState();
     scrollController.addListener(_onScroll);
 
+    ref.read(musicPlayerMasterProvider).addListener(() {
+      final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
+      int seekPosition = musicPlayerService.seekPosition;
+      bool isPlaying = musicPlayerService.isPlaying;
+      if (displayMode == DisplayMode.verticalScroll && isPlaying) {
+        scrollController.jumpTo(getScrollOffsetFromSeekPosition(seekPosition));
+      }
+    });
+
     masterSubject.stream.listen((signal) {
       if (signal is RequestSwitchDisplayMode) {
         if (displayMode == DisplayMode.appearDissappear) {
           displayMode = DisplayMode.verticalScroll;
         } else {
           displayMode = DisplayMode.appearDissappear;
-        }
-      }
-      if (signal is NotifyIsPlaying) {
-        isPlaying = signal.isPlaying;
-      }
-      if (signal is NotifySeekPosition) {
-        currentSeekPosition = signal.seekPosition;
-        if (displayMode == DisplayMode.verticalScroll && isPlaying) {
-          scrollController.jumpTo(getScrollOffsetFromSeekPosition(currentSeekPosition));
         }
       }
       if (signal is NotifyLyricParsed || signal is NotifyVocalistAdded || signal is NotifyVocalistDeleted || signal is NotifyVocalistNameChanged || signal is NotifySnippetSentenceChanged) {
@@ -80,8 +82,9 @@ class _VideoPaneState extends State<VideoPane> {
   }
 
   List<LyricSnippetTrack> getSnippetsAtCurrentSeekPosition() {
+    int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
     return lyricSnippetTrack.where((snippet) {
-      return snippet.lyricSnippet.startTimestamp - startBulge < currentSeekPosition && currentSeekPosition < snippet.lyricSnippet.endTimestamp + endBulge;
+      return snippet.lyricSnippet.startTimestamp - startBulge < seekPosition && seekPosition < snippet.lyricSnippet.endTimestamp + endBulge;
     }).toList();
   }
 
@@ -202,9 +205,10 @@ class _VideoPaneState extends State<VideoPane> {
   }
 
   PartialTextPainter getColorHilightedText(LyricSnippet snippet, int seekPosition, String fontFamily, Color fontColor) {
-    if (currentSeekPosition < snippet.startTimestamp) {
+    int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
+    if (seekPosition < snippet.startTimestamp) {
       return getBeforeSnippetPainter(snippet, fontFamily, fontColor);
-    } else if (snippet.endTimestamp < currentSeekPosition) {
+    } else if (snippet.endTimestamp < seekPosition) {
       return getAfterSnippetPainter(snippet, fontFamily, fontColor);
     } else {
       int wordIndex = 0;
@@ -232,6 +236,7 @@ class _VideoPaneState extends State<VideoPane> {
   }
 
   Widget outlinedText(LyricSnippet snippet, String fontFamily) {
+    int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
     Color fontColor = Color(0);
     if (vocalistColorList.containsKey(snippet.vocalist.name)) {
       fontColor = Color(vocalistColorList[snippet.vocalist.name]!);
@@ -240,23 +245,23 @@ class _VideoPaneState extends State<VideoPane> {
       return Expanded(
         child: CustomPaint(
           painter: PartialTextPainter(
-        text: "",
-        start: 0,
-        end: 0,
-        percent: 0.0,
-        fontFamily: fontFamily,
-        fontSize: 40,
-        fontBaseColor: fontColor,
-        firstOutlineWidth: 2,
-        secondOutlineWidth: 4,
-      ),
+            text: "",
+            start: 0,
+            end: 0,
+            percent: 0.0,
+            fontFamily: fontFamily,
+            fontSize: 40,
+            fontBaseColor: fontColor,
+            firstOutlineWidth: 2,
+            secondOutlineWidth: 4,
+          ),
           size: Size(double.infinity, double.infinity),
         ),
       );
     } else {
       return Expanded(
         child: CustomPaint(
-          painter: getColorHilightedText(snippet, currentSeekPosition, fontFamily, fontColor),
+          painter: getColorHilightedText(snippet, seekPosition, fontFamily, fontColor),
           size: Size(double.infinity, double.infinity),
         ),
       );
@@ -265,6 +270,9 @@ class _VideoPaneState extends State<VideoPane> {
 
   @override
   Widget build(BuildContext context) {
+    MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
+    int seekPosition = musicPlayerService.seekPosition;
+
     String fontFamily = "Times New Roman";
     List<LyricSnippetTrack> currentSnippets = getSnippetsAtCurrentSeekPosition();
 
@@ -285,7 +293,7 @@ class _VideoPaneState extends State<VideoPane> {
         focusNode: focusNode,
         child: GestureDetector(
           onTap: () {
-            widget.masterSubject.add(RequestPlayPause());
+            musicPlayerService.playPause();
             focusNode.requestFocus();
             debugPrint("The video pane is focused");
           },
@@ -308,7 +316,7 @@ class _VideoPaneState extends State<VideoPane> {
         }
         columnSnippets.add(
           CustomPaint(
-            painter: getColorHilightedText(snippet, currentSeekPosition, fontFamily, fontColor),
+            painter: getColorHilightedText(snippet, seekPosition, fontFamily, fontColor),
             size: Size(double.infinity, height),
           ),
         );
@@ -318,7 +326,7 @@ class _VideoPaneState extends State<VideoPane> {
         focusNode: focusNode,
         child: GestureDetector(
           onTap: () {
-            widget.masterSubject.add(RequestPlayPause());
+            musicPlayerService.playPause();
             focusNode.requestFocus();
             debugPrint("The video pane is focused");
           },
@@ -338,9 +346,10 @@ class _VideoPaneState extends State<VideoPane> {
   }
 
   void _onScroll() {
-    if (!isPlaying) {
+    MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
+    if (!musicPlayerService.isPlaying) {
       int position = getSeekPositionFromScrollOffset(scrollController.offset).toInt();
-      masterSubject.add(RequestSeek(position));
+      musicPlayerService.seek(position);
     }
     setState(() {});
   }
