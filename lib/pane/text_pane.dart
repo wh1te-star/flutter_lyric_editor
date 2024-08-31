@@ -286,14 +286,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
       setState(() {});
     });
 
-    masterSubject.stream.listen((signal) {
-      if (signal is NotifySelectingSnippets) {
-        selectingSnippets = signal.snippetIDs;
-      }
-
-      setState(() {});
-    });
-
     cursorBlinker = CursorBlinker(
         blinkIntervalInMillisec: 1000,
         onTick: () {
