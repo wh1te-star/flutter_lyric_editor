@@ -6,7 +6,7 @@ import 'package:lyric_editor/painter/rectangle_painter.dart';
 import 'package:lyric_editor/painter/triangle_painter.dart';
 
 class TimelinePainter extends CustomPainter {
-  final List<LyricSnippet> snippets;
+  final Map<SnippetID, LyricSnippet> snippets;
   final List<SnippetID> selectingId;
   final double intervalLength;
   final int intervalDuration;
@@ -30,7 +30,7 @@ class TimelinePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    int maxLanes = getMaxLanes(snippets);
+    int maxLanes = getMaxLanes(snippets.values.toList());
 
     int previousEndtime = 0;
     int currentLane = 0;
@@ -50,7 +50,7 @@ class TimelinePainter extends CustomPainter {
     Paint paint = Paint()..color = backgroundColor;
     canvas.drawRect(rect, paint);
 
-    snippets.forEach((LyricSnippet snippet) {
+    snippets.forEach((SnippetID id, LyricSnippet snippet) {
       if (snippet.sentence == "") return;
 
       final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
@@ -67,7 +67,7 @@ class TimelinePainter extends CustomPainter {
       final right = endtime * intervalLength / intervalDuration;
       final rect = Rect.fromLTRB(left, top, right, bottom);
 
-      final isSelected = selectingId.contains(snippet.id);
+      final isSelected = selectingId.contains(id);
       final rectanglePainter = RectanglePainter(
         rect: rect,
         sentence: snippet.sentence,
@@ -94,7 +94,7 @@ class TimelinePainter extends CustomPainter {
         height: 5.0,
       ).paint(canvas, size);
 
-      if (snippet.id == cursorPosition) {
+      if (id == cursorPosition) {
         final paint = Paint()
           ..color = Colors.black
           ..style = PaintingStyle.stroke

@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 
 class LyricSnippet {
-  SnippetID id;
   Vocalist vocalist;
   String sentence;
   int startTimestamp;
@@ -10,7 +9,6 @@ class LyricSnippet {
   late List<SentenceSegment> accumulatedSentenceSegments;
 
   LyricSnippet({
-    required this.id,
     required this.vocalist,
     required this.sentence,
     required this.startTimestamp,
@@ -30,7 +28,6 @@ class LyricSnippet {
 
   static LyricSnippet get emptySnippet {
     return LyricSnippet(
-      id: SnippetID(0),
       vocalist: Vocalist(
         id: VocalistID(0),
         name: "",
@@ -50,14 +47,12 @@ class LyricSnippet {
   }
 
   LyricSnippet copyWith({
-    SnippetID? id,
     Vocalist? vocalist,
     String? sentence,
     int? startTimestamp,
     List<SentenceSegment>? sentenceSegments,
   }) {
     return LyricSnippet(
-      id: id ?? this.id,
       vocalist: vocalist ?? this.vocalist,
       sentence: sentence ?? this.sentence,
       startTimestamp: startTimestamp ?? this.startTimestamp,

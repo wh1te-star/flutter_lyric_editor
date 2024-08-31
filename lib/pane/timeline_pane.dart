@@ -1,4 +1,6 @@
 import 'package:collection/collection.dart';
+import 'package:collection/equality.dart';
+import 'package:collection/wrappers.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,7 +28,7 @@ class TimelinePaneProvider with ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
   final TimingService timingService;
 
-  Map<String, List<LyricSnippet>> snippetsForeachVocalist = {};
+  Map<String, Map<SnippetID, LyricSnippet>> snippetsForeachVocalist = {};
   SnippetID cursorPosition = SnippetID(0);
   List<SnippetID> selectingSnippets = [];
   List<String> selectingVocalist = [];
@@ -50,10 +52,20 @@ class TimelinePaneProvider with ChangeNotifier {
       }
     });
     timingService.addListener(() {
-      final List<LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
-      snippetsForeachVocalist = groupBy(lyricSnippetList, (LyricSnippet snippet) => snippet.vocalist.name);
-      cursorPosition = snippetsForeachVocalist[snippetsForeachVocalist.keys.first]![0].id;
+      final Map<SnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
+      snippetsForeachVocalist = groupBy(
+        lyricSnippetList.entries,
+        (MapEntry<SnippetID, LyricSnippet> entry) {
+          return entry.value.vocalist.name;
+        },
+      ).map(
+        (vocalist, snippets) => MapEntry(
+          vocalist,
+          {for (var entry in snippets) entry.key: entry.value},
+        ),
+      );
 
+    cursorPosition = timingService.lyricSnippetList.keys.first;
       List<SnippetID> currentSelectingSnippet = getSnippetsAtCurrentSeekPosition();
       selectingSnippets = currentSelectingSnippet;
       notifyListeners();
@@ -63,20 +75,20 @@ class TimelinePaneProvider with ChangeNotifier {
   List<SnippetID> getSnippetsAtCurrentSeekPosition() {
     int seekPosition = musicPlayerProvider.seekPosition;
     List<SnippetID> currentSnippet = [];
-    snippetsForeachVocalist.forEach((vocalist, snippets) {
-      for (var snippet in snippets) {
-        final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
-        if (snippet.startTimestamp <= seekPosition && seekPosition <= endtime) {
-          currentSnippet.add(snippet.id);
-        }
+    for (MapEntry<SnippetID, LyricSnippet> entry in timingService.lyricSnippetList.entries) {
+      final id = entry.key;
+      final snippet = entry.value;
+      final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
+      if (snippet.startTimestamp <= seekPosition && seekPosition <= endtime) {
+        currentSnippet.add(id);
       }
-    });
+    }
     return currentSnippet;
   }
 
   void moveLeftCursor() {
     /*
-    LyricSnippetID nextCursorPosition = cursorPosition;
+    SnippetID nextCursorPosition = cursorPosition;
     nextCursorPosition.index--;
     if (nextCursorPosition.index >= 0) {
       nextCursorPosition = getSnippetWithID(nextCursorPosition).id;
@@ -167,7 +179,6 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
 
     final musicPlayerService = ref.read(musicPlayerMasterProvider);
     final timingService = ref.read(timingMasterProvider);
-    final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
 
     musicPlayerService.addListener(() {
       setState(() {});
@@ -205,38 +216,13 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   LyricSnippet getSnippetWithID(SnippetID id) {
-    final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
-    for (var entry in timelinePaneProvider.snippetsForeachVocalist.entries) {
-      List<LyricSnippet> snippets = entry.value;
-
-      for (var snippet in snippets) {
-        if (snippet.id == id) {
-          return snippet;
-        }
-      }
-    }
-
-    return LyricSnippet.emptySnippet;
-  }
-
-  int getSnippetIndexWithID(SnippetID id) {
-    final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
-    for (var entry in timelinePaneProvider.snippetsForeachVocalist.entries) {
-      List<LyricSnippet> snippets = entry.value;
-
-      for (int i = 0; i < snippets.length; i++) {
-        if (snippets[i].id == id) {
-          return i;
-        }
-      }
-    }
-
-    return -1;
+    final Map<SnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
+    return lyricSnippetList[id]!;
   }
 
   LyricSnippet getNearSnippetFromSeekPosition(String vocalistName, int targetSeekPosition) {
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
-    List<LyricSnippet> snippets = timelinePaneProvider.snippetsForeachVocalist[vocalistName]!;
+    List<LyricSnippet> snippets = timelinePaneProvider.snippetsForeachVocalist[vocalistName]!.values.toList();
     for (int index = 0; index < snippets.length; index++) {
       int snippetStart = snippets[index].startTimestamp;
       int snippetEnd = snippets[index].endTimestamp;
@@ -451,7 +437,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final double intervalLength = timelinePaneProvider.intervalLength;
     final int intervalDuration = timelinePaneProvider.intervalDuration;
 
-    final Map<String, List<LyricSnippet>> snippetsForeachVocalist = ref.read(timelinePaneMasterProvider).snippetsForeachVocalist;
+    final Map<String, Map<SnippetID, LyricSnippet>> snippetsForeachVocalist = timelinePaneProvider.snippetsForeachVocalist;
     if (index < vocalistColorMap.length) {
       final String vocalistName = vocalistColorMap.keys.toList()[index];
 
@@ -462,7 +448,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
       if (isDragging || snippetsForeachVocalist[vocalistName] == null) {
         rowHeight = 20;
       } else {
-        final int lanes = getLanes(snippetsForeachVocalist[vocalistName]!);
+        final int lanes = getLanes(snippetsForeachVocalist[vocalistName]!.values.toList());
         rowHeight = 60.0 * lanes;
       }
       final Widget borderLine = Container(
@@ -649,7 +635,13 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final double minorMarkLength = timelinePaneProvider.minorMarkLength;
 
     return CustomPaint(
-      painter: ScaleMark(intervalLength: intervalLength, majorMarkLength: majorMarkLength, midiumMarkLength: midiumMarkLength, minorMarkLength: minorMarkLength, intervalDuration: intervalDuration),
+      painter: ScaleMark(
+        intervalLength: intervalLength,
+        majorMarkLength: majorMarkLength,
+        midiumMarkLength: midiumMarkLength,
+        minorMarkLength: minorMarkLength,
+        intervalDuration: intervalDuration,
+      ),
     );
   }
 
@@ -725,7 +717,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     final TimingService timingService = ref.read(timingMasterProvider);
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
-    final Map<String, List<LyricSnippet>> snippetsForeachVocalist = timelinePaneProvider.snippetsForeachVocalist;
+    final Map<String, Map<SnippetID, LyricSnippet>> snippetsForeachVocalist = timelinePaneProvider.snippetsForeachVocalist;
     final List<SnippetID> selectingSnippets = timelinePaneProvider.selectingSnippets;
     final double intervalLength = timelinePaneProvider.intervalLength;
     final int intervalDuration = timelinePaneProvider.intervalDuration;
@@ -733,33 +725,25 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
 
     final Map<String, int> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
     final String vocalistName = vocalistColorMap.keys.toList()[index];
-    final snippets = snippetsForeachVocalist.containsKey(vocalistName)
-        ? snippetsForeachVocalist[vocalistName]!
-        : [
-            LyricSnippet(
-                id: SnippetID(0),
-                vocalist: Vocalist(
-                  id: VocalistID(0),
-                  name: "",
-                  color: 0,
-                ),
-                sentence: "",
-                startTimestamp: 0,
-                sentenceSegments: [SentenceSegment(1, 1)]),
-          ];
+    final Map<SnippetID, LyricSnippet> snippets = snippetsForeachVocalist.containsKey(vocalistName) ? snippetsForeachVocalist[vocalistName]! : {};
     double topMargin = 10;
     double bottomMargin = 5;
     return GestureDetector(
       onTapDown: (TapDownDetails details) {
         Offset localPosition = details.localPosition;
-        for (var snippet in snippets) {
+        if (snippets.isEmpty) {
+          return;
+        }
+        for (MapEntry<SnippetID, LyricSnippet> entry in snippets.entries) {
+          final SnippetID id = entry.key;
+          final LyricSnippet snippet = entry.value;
           final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
           final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
           if (snippet.startTimestamp <= touchedSeekPosition && touchedSeekPosition <= endtime) {
-            if (selectingSnippets.contains(snippet.id)) {
-              selectingSnippets.remove(snippet.id);
+            if (selectingSnippets.contains(id)) {
+              selectingSnippets.remove(id);
             } else {
-              selectingSnippets.add(snippet.id);
+              selectingSnippets.add(id);
             }
           }
         }
@@ -767,13 +751,18 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
       },
       onDoubleTapDown: (TapDownDetails details) async {
         Offset localPosition = details.localPosition;
-        for (var snippet in snippets) {
+        if (snippets.isEmpty) {
+          return;
+        }
+        for (MapEntry<SnippetID, LyricSnippet> entry in snippets.entries) {
+          final SnippetID id = entry.key;
+          final LyricSnippet snippet = entry.value;
           final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
           final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
           if (snippet.startTimestamp <= touchedSeekPosition && touchedSeekPosition <= endtime) {
             List<String> sentence = await displayDialog(context, [snippet.sentence]);
             final TimingService timingService = ref.read(timingMasterProvider);
-            timingService.editSentence(snippet.id, sentence[0]);
+            timingService.editSentence(id, sentence[0]);
           }
         }
         setState(() {});

@@ -18,7 +18,7 @@ final timingMasterProvider = ChangeNotifierProvider((ref) {
 class TimingService extends ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
 
-  List<LyricSnippet> lyricSnippetList = [];
+  Map<SnippetID, LyricSnippet> lyricSnippetList = {};
   Map<String, int> vocalistColorMap = {};
   List<int> sections = [];
   Map<String, List<String>> vocalistCombinationCorrespondence = {};
@@ -27,7 +27,7 @@ class TimingService extends ChangeNotifier {
   VocalistIdGenerator vocalistIdGenerator = VocalistIdGenerator();
 
   Future<void>? _loadLyricsFuture;
-  List<List<LyricSnippet>> undoHistory = [];
+  List<Map<SnippetID, LyricSnippet>> undoHistory = [];
 
   String defaultVocalistName = "vocalist 1";
 
@@ -41,8 +41,7 @@ class TimingService extends ChangeNotifier {
     int audioDuration = musicPlayerProvider.audioDuration;
     String singlelineText = rawText.replaceAll("\n", "").replaceAll("\r", "");
     lyricSnippetList.clear();
-    lyricSnippetList.add(LyricSnippet(
-      id: snippetIdGenerator.idGen(),
+    lyricSnippetList[snippetIdGenerator.idGen()] = LyricSnippet(
       vocalist: Vocalist(
         id: vocalistIdGenerator.idGen(),
         name: defaultVocalistName,
@@ -51,7 +50,7 @@ class TimingService extends ChangeNotifier {
       sentence: singlelineText,
       startTimestamp: 0,
       sentenceSegments: [SentenceSegment(singlelineText.length, audioDuration)],
-    ));
+    );
 
     vocalistColorMap.clear();
     vocalistColorMap[defaultVocalistName] = 0xff777777;
@@ -76,20 +75,16 @@ class TimingService extends ChangeNotifier {
     return ids.map((id) => getSnippetWithID(id)).toList();
   }
 
-  int getSnippetIndexWithID(SnippetID id) {
-    return lyricSnippetList.indexWhere((snippet) => snippet.id == id);
-  }
-
   LyricSnippet getSnippetWithID(SnippetID id) {
-    return lyricSnippetList.firstWhere((snippet) => snippet.id == id);
+    return lyricSnippetList[id]!;
   }
 
   void removeSnippetWithID(SnippetID id) {
-    lyricSnippetList.removeWhere((snippet) => snippet.id == id);
+    lyricSnippetList.remove(id);
   }
 
   List<LyricSnippet> getSnippetsWithVocalistName(String vocalistName) {
-    return lyricSnippetList.where((snippet) => snippet.vocalist.name == vocalistName).toList();
+    return lyricSnippetList.values.where((snippet) => snippet.vocalist.name == vocalistName).toList();
   }
 
   void addSection(int seekPosition) {
@@ -137,7 +132,7 @@ class TimingService extends ChangeNotifier {
     pushUndoHistory(lyricSnippetList);
 
     vocalistColorMap.remove(vocalistName);
-    lyricSnippetList.removeWhere((snippet) => snippet.vocalist.name == vocalistName);
+    lyricSnippetList.removeWhere((id, snippet) => snippet.vocalist.name == vocalistName);
 
     notifyListeners();
   }
@@ -232,7 +227,7 @@ class TimingService extends ChangeNotifier {
     return (minutes * 60 + seconds) * 1000 + milliseconds;
   }
 
-  List<LyricSnippet> parseLyric(String rawLyricText) {
+  Map<SnippetID, LyricSnippet> parseLyric(String rawLyricText) {
     final document = xml.XmlDocument.parse(rawLyricText);
 
     final vocalistCombination = document.findAllElements('VocalistsList');
@@ -251,7 +246,7 @@ class TimingService extends ChangeNotifier {
     }
 
     final lineTimestamps = document.findAllElements('LineTimestamp');
-    List<LyricSnippet> snippets = [];
+    Map<SnippetID, LyricSnippet> snippets = {};
     for (var lineTimestamp in lineTimestamps) {
       final startTime = parseTimestamp(lineTimestamp.getAttribute('startTime')!);
       final vocalistName = lineTimestamp.getAttribute('vocalistName')!;
@@ -266,8 +261,7 @@ class TimingService extends ChangeNotifier {
         sentenceSegments.add(SentenceSegment(word.length, time));
         sentence += word;
       }
-      snippets.add(LyricSnippet(
-        id: snippetIdGenerator.idGen(),
+      snippets[snippetIdGenerator.idGen()] = LyricSnippet(
         vocalist: Vocalist(
           id: vocalistIdGenerator.idGen(),
           name: vocalistName,
@@ -276,17 +270,17 @@ class TimingService extends ChangeNotifier {
         sentence: sentence,
         startTimestamp: startTime,
         sentenceSegments: sentenceSegments,
-      ));
+      );
     }
 
     return snippets;
   }
 
-  String serializeLyric(List<LyricSnippet> lyricSnippetList) {
+  String serializeLyric(Map<SnippetID, LyricSnippet> lyricSnippetList) {
     final builder = xml.XmlBuilder();
     builder.processing('xml', 'version="1.0" encoding="UTF-8"');
     builder.element('Lyrics', nest: () {
-      for (var snippet in lyricSnippetList) {
+      for (var snippet in lyricSnippetList.values) {
         builder.element('LineTimestamp', attributes: {
           'vocalistName': snippet.vocalist.name,
           'startTime': _formatTimestamp(snippet.startTimestamp),
@@ -312,7 +306,7 @@ class TimingService extends ChangeNotifier {
     final builder = xml.XmlBuilder();
     builder.processing('xml', 'version="1.0" encoding="UTF-8"');
     builder.element('Lyrics', nest: () {
-      for (var snippet in lyricSnippetList) {
+      for (var snippet in lyricSnippetList.values) {
         builder.element('LineTimestamp', attributes: {
           'vocalistName': snippet.vocalist.name,
           'startTime': _formatTimestamp(snippet.startTimestamp),
@@ -367,7 +361,7 @@ class TimingService extends ChangeNotifier {
 
   List<LyricSnippet> getSnippetsAtCurrentSeekPosition() {
     int seekPosition = musicPlayerProvider.seekPosition;
-    return lyricSnippetList.where((snippet) {
+    return lyricSnippetList.values.where((snippet) {
       final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
       return snippet.startTimestamp < seekPosition && seekPosition < endtime;
     }).toList();
@@ -382,33 +376,27 @@ class TimingService extends ChangeNotifier {
     String beforeString = snippet.sentence.substring(0, charPosition);
     String afterString = snippet.sentence.substring(charPosition);
     Vocalist vocalist = snippet.vocalist;
-    List<LyricSnippet> newSnippets = [];
+    Map<SnippetID, LyricSnippet> newSnippets = {};
     if (beforeString.isNotEmpty) {
       int snippetDuration = seekPosition - snippet.startTimestamp;
-      newSnippets.add(
-        LyricSnippet(
-          id: snippetIdGenerator.idGen(),
-          vocalist: vocalist,
-          sentence: beforeString,
-          startTimestamp: snippet.startTimestamp,
-          sentenceSegments: [SentenceSegment(beforeString.length, snippetDuration)],
-        ),
+      newSnippets[snippetIdGenerator.idGen()] = LyricSnippet(
+        vocalist: vocalist,
+        sentence: beforeString,
+        startTimestamp: snippet.startTimestamp,
+        sentenceSegments: [SentenceSegment(beforeString.length, snippetDuration)],
       );
     }
     if (afterString.isNotEmpty) {
       int snippetDuration = snippet.endTimestamp - snippet.startTimestamp - seekPosition - snippetMargin;
-      newSnippets.add(
-        LyricSnippet(
-          id: snippetIdGenerator.idGen(),
-          vocalist: vocalist,
-          sentence: afterString,
-          startTimestamp: seekPosition + snippetMargin,
-          sentenceSegments: [SentenceSegment(afterString.length, snippetDuration)],
-        ),
+      newSnippets[snippetIdGenerator.idGen()] = LyricSnippet(
+        vocalist: vocalist,
+        sentence: afterString,
+        startTimestamp: seekPosition + snippetMargin,
+        sentenceSegments: [SentenceSegment(afterString.length, snippetDuration)],
       );
     }
     if (newSnippets.isNotEmpty) {
-      lyricSnippetList.removeWhere((snippet) => snippet.id == snippetID);
+      lyricSnippetList.removeWhere((id, snippet) => id == snippetID);
       lyricSnippetList.addAll(newSnippets);
     }
 
@@ -439,7 +427,8 @@ class TimingService extends ChangeNotifier {
         leftSnippet.sentence += rightSnippet.sentence;
         leftSnippet.sentenceSegments.addAll(rightSnippet.sentenceSegments);
 
-        removeSnippetWithID(rightSnippet.id);
+        SnippetID rightSnippetID = snippetIDs[index];
+        removeSnippetWithID(rightSnippetID);
       }
     });
 
@@ -752,28 +741,31 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void pushUndoHistory(List<LyricSnippet> lyricSnippetList) {
-    List<LyricSnippet> copy = lyricSnippetList.map((snippet) {
-      return LyricSnippet(
-        id: snippet.id,
-        vocalist: Vocalist(
-          id: snippet.vocalist.id,
-          name: snippet.vocalist.name,
-          color: vocalistColorMap[snippet.vocalist.name]!,
+  void pushUndoHistory(Map<SnippetID, LyricSnippet> lyricSnippetList) {
+    Map<SnippetID, LyricSnippet> copy = lyricSnippetList.map((id, snippet) {
+      return MapEntry(
+        id,
+        LyricSnippet(
+          vocalist: Vocalist(
+            id: snippet.vocalist.id,
+            name: snippet.vocalist.name,
+            color: snippet.vocalist.color,
+          ),
+          sentence: snippet.sentence,
+          startTimestamp: snippet.startTimestamp,
+          sentenceSegments: snippet.sentenceSegments.map((point) {
+            return SentenceSegment(point.wordLength, point.wordDuration);
+          }).toList(),
         ),
-        sentence: snippet.sentence,
-        startTimestamp: snippet.startTimestamp,
-        sentenceSegments: snippet.sentenceSegments.map((point) {
-          return SentenceSegment(point.wordLength, point.wordDuration);
-        }).toList(),
       );
-    }).toList();
+    });
+
     undoHistory.add(copy);
   }
 
-  List<LyricSnippet> popUndoHistory() {
+  Map<SnippetID, LyricSnippet> popUndoHistory() {
     if (undoHistory.isEmpty) {
-      return [];
+      return {};
     }
     return undoHistory.removeLast();
   }

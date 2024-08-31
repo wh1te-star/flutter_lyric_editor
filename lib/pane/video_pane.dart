@@ -67,7 +67,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     });
 
     timingService.addListener(() {
-      lyricSnippetTrack = assignTrackNumber(timingService.lyricSnippetList);
+      lyricSnippetTrack = assignTrackNumber(timingService.lyricSnippetList.values.toList());
       setState(() {});
     });
 
@@ -77,10 +77,6 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
   }
 
   String defaultText = "Video Pane";
-
-  LyricSnippetTrack getLyricSnippetWithID(SnippetID id) {
-    return lyricSnippetTrack.firstWhere((snippet) => snippet.lyricSnippet.id == id);
-  }
 
   List<LyricSnippetTrack> getSnippetsAtCurrentSeekPosition() {
     int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;

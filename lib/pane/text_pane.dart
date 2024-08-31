@@ -39,10 +39,10 @@ class TextPaneProvider with ChangeNotifier {
       updateCursorIfNeed();
     });
     timingService.addListener(() {
-      List<LyricSnippet> lyricSnippets = timingService.lyricSnippetList;
+      Map<SnippetID, LyricSnippet> lyricSnippets = timingService.lyricSnippetList;
       lyricAppearance = List.filled(lyricSnippets.length, '');
       updateLyricAppearance();
-      maxLanes = getMaxTracks(lyricSnippets);
+      maxLanes = getMaxTracks(lyricSnippets.values.toList());
     });
   }
 
@@ -64,13 +64,8 @@ class TextPaneProvider with ChangeNotifier {
   }
 
   LyricSnippet getSnippetWithID(SnippetID id) {
-    final List<LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
-    return lyricSnippetList.firstWhere((snippet) => snippet.id == id);
-  }
-
-  int getSnippetIndexWithID(SnippetID id) {
-    final List<LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
-    return lyricSnippetList.indexWhere((snippet) => snippet.id == id);
+    final Map<SnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
+    return lyricSnippetList[id]!;
   }
 
   int countOccurrences(List<int> list, int number) {
@@ -78,7 +73,7 @@ class TextPaneProvider with ChangeNotifier {
   }
 
   void updateLyricAppearance() {
-    final List<LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
+    final List<LyricSnippet> lyricSnippetList = timingService.lyricSnippetList.values.toList();
     timingPointsForEachLine = lyricSnippetList.map((snippet) => snippet.sentenceSegments.take(snippet.sentenceSegments.length - 1).map((sentenceSegmentMap) => sentenceSegmentMap.wordLength).fold<List<int>>([], (acc, pos) => acc..add((acc.isEmpty ? 0 : acc.last) + pos))).toList();
     for (int index = 0; index < timingPointsForEachLine.length; index++) {
       Map<int, String> timingPointsForEachLineMap = {};
@@ -93,7 +88,7 @@ class TextPaneProvider with ChangeNotifier {
       lyricAppearance[index] = insertChars(lyricSnippetList[index].sentence, timingPointsForEachLineMap);
     }
 
-      notifyListeners();
+    notifyListeners();
   }
 
   String insertChars(String originalString, Map<int, String> charPositions) {
@@ -136,6 +131,7 @@ class TextPaneProvider with ChangeNotifier {
   }
 
   void moveUpCursor() {
+    /*
     int highlightSnippetsIndex = highlightingSnippetsIDs.indexWhere((id) => id == cursorLinePosition);
     if (highlightSnippetsIndex > 0) {
       cursorPositionOption = Option.former;
@@ -156,9 +152,11 @@ class TextPaneProvider with ChangeNotifier {
 
       notifyListeners();
     }
+    */
   }
 
   void moveDownCursor() {
+    /*
     int highlightSnippetsIndex = highlightingSnippetsIDs.indexWhere((id) => id == cursorLinePosition);
     if (highlightSnippetsIndex < highlightingSnippetsIDs.length - 1) {
       cursorPositionOption = Option.former;
@@ -179,9 +177,11 @@ class TextPaneProvider with ChangeNotifier {
 
       notifyListeners();
     }
+    */
   }
 
   void moveLeftCursor() {
+    /*
     if (cursorCharPosition > 0) {
       cursorCharPositionRestore = 0;
 
@@ -200,9 +200,11 @@ class TextPaneProvider with ChangeNotifier {
 
       notifyListeners();
     }
+    */
   }
 
   void moveRightCursor() {
+    /*
     if (cursorCharPosition < getSnippetWithID(cursorLinePosition).sentence.length) {
       cursorCharPositionRestore = 0;
 
@@ -223,6 +225,7 @@ class TextPaneProvider with ChangeNotifier {
 
       notifyListeners();
     }
+    */
   }
 }
 
@@ -282,13 +285,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
   }
 
   LyricSnippet getSnippetWithID(SnippetID id) {
-    final List<LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
-    return lyricSnippetList.firstWhere((snippet) => snippet.id == id);
-  }
-
-  int getSnippetIndexWithID(SnippetID id) {
-    final List<LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
-    return lyricSnippetList.indexWhere((snippet) => snippet.id == id);
+    final Map<SnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
+    return lyricSnippetList[id]!;
   }
 
   int countOccurrences(List<int> list, int number) {
@@ -297,31 +295,31 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
   Tuple3<List<SnippetID>, List<SnippetID>, List<SnippetID>> getSnippetIDsAtCurrentSeekPosition() {
     int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
-    final List<LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
+    final Map<SnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
 
     List<SnippetID> beforeSnippetIndexes = [];
     List<SnippetID> currentSnippetIndexes = [];
     List<SnippetID> afterSnippetIndexes = [];
-    lyricSnippetList.forEach((LyricSnippet snippet) {
+    lyricSnippetList.forEach((SnippetID id, LyricSnippet snippet) {
       int start = snippet.startTimestamp;
       int end = snippet.endTimestamp;
       if (seekPosition < start) {
-        beforeSnippetIndexes.add(snippet.id);
+        beforeSnippetIndexes.add(id);
       } else if (seekPosition < end) {
-        currentSnippetIndexes.add(snippet.id);
+        currentSnippetIndexes.add(id);
       } else {
-        afterSnippetIndexes.add(snippet.id);
+        afterSnippetIndexes.add(id);
       }
     });
     return Tuple3(beforeSnippetIndexes, currentSnippetIndexes, afterSnippetIndexes);
   }
 
   List<int> getIndexFromIDs(List<SnippetID> lyricSnippetIDs) {
-    final List<LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
+    final Map<SnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
     List<int> indexes = [];
-    for (int i = 0; i < lyricSnippetList.length; i++) {
-      if (lyricSnippetIDs.contains(lyricSnippetList[i].id)) {
-        indexes.add(i);
+    for (var entry in lyricSnippetList.entries) {
+      if (lyricSnippetIDs.contains(entry.key)) {
+        indexes.add(lyricSnippetList.keys.toList().indexOf(entry.key));
       }
     }
     return indexes;
@@ -372,6 +370,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     }
     return Column(
       children: [
+        /*
         Expanded(
           child: ListView.builder(
             shrinkWrap: true,
@@ -382,6 +381,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
             },
           ),
         ),
+        */
         Center(
           child: Container(
             height: height,
@@ -390,16 +390,17 @@ class _TextPaneState extends ConsumerState<TextPane> {
               shrinkWrap: true,
               itemCount: currentSnippetIDs.length,
               itemBuilder: (context, index) {
-                int lyricSnippetIndex = getSnippetIndexWithID(currentSnippetIDs[index]);
+                //int lyricSnippetIndex = getSnippetIndexWithID(currentSnippetIDs[index]);
                 if (currentSnippetIDs[index] == cursorLinePosition) {
-                  return highlightedLyricItem(lyricAppearance[lyricSnippetIndex], cursorLinePosition, cursorCharPosition);
+                  return highlightedLyricItem(lyricAppearance[0], cursorLinePosition, cursorCharPosition);
                 } else {
-                  return Text(lyricAppearance[lyricSnippetIndex]);
+                  return Text(lyricAppearance[0]);
                 }
               },
             ),
           ),
         ),
+        /*
         Expanded(
           child: ListView.builder(
             shrinkWrap: true,
@@ -410,6 +411,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
             },
           ),
         ),
+        */
       ],
     );
   }
@@ -420,7 +422,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
     final List<List<int>> timingPointsForEachLine = textPaneProvider.timingPointsForEachLine;
 
     int sentenceSegmentsBeforeCursor = 0;
-    int lineIndex = getSnippetIndexWithID(snippetID);
+    //int lineIndex = getSnippetIndexWithID(snippetID);
+    int lineIndex = 0;
     List<int> currentLinesentenceSegment = timingPointsForEachLine[lineIndex];
     while (sentenceSegmentsBeforeCursor < currentLinesentenceSegment.length && currentLinesentenceSegment[sentenceSegmentsBeforeCursor] < charIndex) {
       sentenceSegmentsBeforeCursor++;
