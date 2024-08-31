@@ -1,6 +1,3 @@
-import 'dart:ui';
-
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/painter/partial_text_painter.dart';
@@ -8,8 +5,6 @@ import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
-import 'package:lyric_editor/utility/signal_structure.dart';
-import 'package:rxdart/rxdart.dart';
 
 final videoPaneMasterProvider = ChangeNotifierProvider((ref) {
   return VideoPaneProvider();

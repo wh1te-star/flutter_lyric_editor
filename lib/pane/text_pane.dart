@@ -1,12 +1,5 @@
-import 'dart:async';
-
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lyric_editor/main.dart';
-import 'package:lyric_editor/pane/video_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
@@ -14,7 +7,6 @@ import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:lyric_editor/utility/sorted_list.dart';
-import 'package:rxdart/rxdart.dart';
 import 'package:tuple/tuple.dart';
 
 final textPaneMasterProvider = ChangeNotifierProvider((ref) {

@@ -1,10 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
-import 'package:lyric_editor/main.dart';
 import 'package:lyric_editor/painter/current_position_indicator_painter.dart';
 import 'package:lyric_editor/painter/rectangle_painter.dart';
 import 'package:lyric_editor/painter/scale_mark.dart';
@@ -17,8 +15,6 @@ import 'package:lyric_editor/utility/dialogbox_utility.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/svg_icon.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
-import 'package:lyric_editor/utility/signal_structure.dart';
-import 'package:rxdart/rxdart.dart';
 
 final timelinePaneMasterProvider = ChangeNotifierProvider((ref) {
   final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);

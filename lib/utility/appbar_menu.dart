@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
-import 'package:lyric_editor/utility/signal_structure.dart';
-import 'package:rxdart/rxdart.dart';
 import 'string_resource.dart';
 import 'package:file_selector/file_selector.dart';
 
