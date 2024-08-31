@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/pane/text_pane.dart';
 import 'package:lyric_editor/pane/timeline_pane.dart';
+import 'package:lyric_editor/pane/video_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
@@ -55,6 +56,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
   late final TimingService timingService = ref.watch(timingMasterProvider.notifier);
   late final TextPaneProvider textPaneProvider = ref.watch(textPaneMasterProvider.notifier);
   late final TimelinePaneProvider timelinePaneProvider = ref.watch(timelinePaneMasterProvider.notifier);
+  late final VideoPaneProvider videoPaneProvider = ref.watch(videoPaneMasterProvider.notifier);
 
   bool enable = true;
 
@@ -235,7 +237,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         DisplayModeSwitchIntent: CallbackAction<DisplayModeSwitchIntent>(
           onInvoke: (DisplayModeSwitchIntent intent) => () {
-            masterSubject.add(RequestSwitchDisplayMode());
+            videoPaneProvider.switchDisplayMode();
           }(),
         ),
         TimelineCursorMoveLeft: CallbackAction<TimelineCursorMoveLeft>(

@@ -11,6 +11,25 @@ import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/signal_structure.dart';
 import 'package:rxdart/rxdart.dart';
 
+final videoPaneMasterProvider = ChangeNotifierProvider((ref) {
+  return VideoPaneProvider();
+});
+
+class VideoPaneProvider with ChangeNotifier {
+  DisplayMode displayMode = DisplayMode.verticalScroll;
+
+  VideoPaneProvider();
+
+  void switchDisplayMode() {
+    if (displayMode == DisplayMode.appearDissappear) {
+      displayMode = DisplayMode.verticalScroll;
+    } else {
+      displayMode = DisplayMode.appearDissappear;
+    }
+    notifyListeners();
+  }
+}
+
 class VideoPane extends ConsumerStatefulWidget {
   final PublishSubject<dynamic> masterSubject;
   final FocusNode focusNode;
@@ -29,7 +48,6 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
   int endBulge = 1000;
   List<LyricSnippetTrack> lyricSnippetTrack = [];
 
-  DisplayMode displayMode = DisplayMode.verticalScroll;
   ScrollController scrollController = ScrollController();
 
   int maxLanes = 0;
@@ -41,30 +59,26 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     super.initState();
     scrollController.addListener(_onScroll);
 
-    final musicPlayerService = ref.read(musicPlayerMasterProvider);
-    final timingService = ref.read(timingMasterProvider);
+    final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
+    final TimingService timingService = ref.read(timingMasterProvider);
+    final VideoPaneProvider videoPaneProvider = ref.read(videoPaneMasterProvider);
 
     musicPlayerService.addListener(() {
       final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
       int seekPosition = musicPlayerService.seekPosition;
       bool isPlaying = musicPlayerService.isPlaying;
-      if (displayMode == DisplayMode.verticalScroll && isPlaying) {
+      if (videoPaneProvider.displayMode == DisplayMode.verticalScroll && isPlaying) {
         scrollController.jumpTo(getScrollOffsetFromSeekPosition(seekPosition));
       }
+      setState(() {});
     });
 
     timingService.addListener(() {
       lyricSnippetTrack = assignTrackNumber(timingService.lyricSnippetList);
+      setState(() {});
     });
 
-    masterSubject.stream.listen((signal) {
-      if (signal is RequestSwitchDisplayMode) {
-        if (displayMode == DisplayMode.appearDissappear) {
-          displayMode = DisplayMode.verticalScroll;
-        } else {
-          displayMode = DisplayMode.appearDissappear;
-        }
-      }
+    videoPaneProvider.addListener(() {
       setState(() {});
     });
   }
@@ -272,6 +286,8 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     String fontFamily = "Times New Roman";
     List<LyricSnippetTrack> currentSnippets = getSnippetsAtCurrentSeekPosition();
 
+    final VideoPaneProvider videoPaneProvider = ref.read(videoPaneMasterProvider);
+    DisplayMode displayMode = videoPaneProvider.displayMode;
     if (displayMode == DisplayMode.appearDissappear) {
       List<Widget> content = List<Widget>.generate(maxLanes, (index) => Container());
 
