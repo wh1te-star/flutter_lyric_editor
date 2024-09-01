@@ -401,12 +401,24 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                       isDragging = true;
                       setState(() {});
                     },
-                    onReorderEnd: (index) {
-                      isDragging = false;
-                      setState(() {});
-                    },
+        onReorderEnd: (index) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Future.delayed(Duration(milliseconds: 300), () {
+              setState(() {
+                isDragging = false;
+                print("Reordering animation completed for item at index $index");
+              });
+            });
+          });
+        },
                     children: List.generate(vocalistColorMap.length + 1, (index) {
-                      return itemBuilder(context, index);
+                      return AnimatedContainer(
+                        duration: Duration(milliseconds: 200),
+                        key: ValueKey(index),
+                        curve: Curves.easeInOut,
+                        height: isDragging ? 20.0 : 60.0,
+                        child: itemBuilder(context, index),
+                      );
                     }),
                   ),
                 ),
@@ -487,12 +499,15 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
               },
               child: ReorderableDragStartListener(
                 index: index,
-                child: SvgIcon(
-                  assetName: 'assets/drag_handle.svg',
-                  iconColor: determineBlackOrWhite(backgroundColor),
-                  backgroundColor: vocalistColor,
-                  width: 20,
-                  height: rowHeight,
+                child: AnimatedContainer(
+                  duration: Duration(milliseconds: 500),
+                  child: SvgIcon(
+                    assetName: 'assets/drag_handle.svg',
+                    iconColor: determineBlackOrWhite(backgroundColor),
+                    backgroundColor: vocalistColor,
+                    width: 20,
+                    height: rowHeight,
+                  ),
                 ),
               ),
             ),
