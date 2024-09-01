@@ -1,6 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:collection/equality.dart';
-import 'package:collection/wrappers.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -402,8 +400,8 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                     },
                     children: List.generate(vocalistColorMap.length + 1, (index) {
                       return AnimatedContainer(
+                        key: ValueKey('VocalistPanel_${index}'),
                         duration: Duration(milliseconds: 200),
-                        key: ValueKey(index),
                         curve: Curves.easeInOut,
                         height: getReorderableListHeight(index),
                         child: itemBuilder(context, index),
@@ -470,7 +468,6 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
 
     if (index < vocalistColorMap.length) {
       final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
-      final String vocalistName = vocalistColorMap.values.toList()[index].name;
 
       final Color vocalistColor = Color(vocalistColorMap[vocalistID]!.color);
       final Color backgroundColor = adjustColorBrightness(vocalistColor, 0.3);
@@ -488,7 +485,6 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
       );
 
       return Row(
-        key: ValueKey('VocalistPanel_${index}'),
         children: [
           GestureDetector(
             onTapDown: (details) {
@@ -516,8 +512,8 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
           borderLine,
           Expanded(
             child: SingleChildScrollView(
-              key: ValueKey("Reorderable List Item ${vocalistName}"),
-              controller: snippetTimelineScrollController[vocalistName],
+              key: ValueKey("Reorderable List Item ${vocalistID.id}"),
+              controller: snippetTimelineScrollController[vocalistID],
               scrollDirection: Axis.horizontal,
               child: Container(
                 width: audioDuration * intervalLength / intervalDuration,
