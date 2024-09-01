@@ -1,7 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:lyric_editor/painter/current_position_indicator_painter.dart';
@@ -391,23 +390,23 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                   ],
                 ),
                 Expanded(
-                  child: ReorderableListView.builder(
+                  child: ReorderableListView(
                     key: ValueKey("Reorderable List Vertical"),
-                    itemCount: vocalistColorMap.length + 1,
                     buildDefaultDragHandles: false,
                     scrollController: verticalScrollController,
-                    dragStartBehavior: DragStartBehavior.down,
                     onReorder: onReorder,
-                    onReorderStart: (index) {
-                      isDragging = true;
-                      setState(() {});
-                    },
                     onReorderEnd: (index) {
                       isDragging = false;
-                      setState(() {});
                     },
-                    itemExtentBuilder: itemExtentBuilder,
-                    itemBuilder: itemBuilder,
+                    children: List.generate(vocalistColorMap.length + 1, (index) {
+                      return AnimatedContainer(
+                        key: ValueKey('VocalistPanel_${index}'),
+                        duration: Duration(milliseconds: 200),
+                        curve: Curves.easeInOut,
+                        height: getReorderableListHeight(index),
+                        child: itemBuilder(context, index),
+                      );
+                    }),
                   ),
                 ),
               ],
@@ -467,32 +466,36 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final double intervalLength = timelinePaneProvider.intervalLength;
     final int intervalDuration = timelinePaneProvider.intervalDuration;
 
-    final Widget borderLine = Container(
-      width: 5,
-      decoration: BoxDecoration(
-        border: Border(
-          left: BorderSide(
-            color: Colors.black,
-            width: 5,
-          ),
-        ),
-      ),
-    );
     if (index < vocalistColorMap.length) {
       final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
 
       final Color vocalistColor = Color(vocalistColorMap[vocalistID]!.color);
       final Color backgroundColor = adjustColorBrightness(vocalistColor, 0.3);
 
-      return AnimatedContainer(
-        key: ValueKey('VocalistPanel_${index}'),
-        duration: Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-        height: getReorderableListHeight(index),
-        child: Row(
-          children: [
-            ReorderableDragStartListener(
-              key: ValueKey('VocalistPanel_${index}'),
+      final Widget borderLine = Container(
+        width: 5,
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(
+              color: Colors.black,
+              width: 5,
+            ),
+          ),
+        ),
+      );
+
+      return Row(
+        children: [
+          GestureDetector(
+            onTapDown: (details) {
+              isDragging = true;
+              setState(() {});
+            },
+            onTapUp: (details) {
+              isDragging = false;
+              setState(() {});
+            },
+            child: ReorderableDragStartListener(
               index: index,
               child: SvgIcon(
                 assetName: 'assets/drag_handle.svg',
@@ -501,24 +504,24 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                 width: 20,
               ),
             ),
-            Container(
-              width: 135,
-              child: Container(alignment: Alignment.topLeft, child: cellVocalistPanel(index)),
-            ),
-            borderLine,
-            Expanded(
-              child: SingleChildScrollView(
-                key: ValueKey("Reorderable List Item ${vocalistID.id}"),
-                controller: snippetTimelineScrollController[vocalistID],
-                scrollDirection: Axis.horizontal,
-                child: Container(
-                  width: audioDuration * intervalLength / intervalDuration,
-                  child: cellSnippetTimeline(index),
-                ),
+          ),
+          Container(
+            width: 135,
+            child: Container(alignment: Alignment.topLeft, child: cellVocalistPanel(index)),
+          ),
+          borderLine,
+          Expanded(
+            child: SingleChildScrollView(
+              key: ValueKey("Reorderable List Item ${vocalistID.id}"),
+              controller: snippetTimelineScrollController[vocalistID],
+              scrollDirection: Axis.horizontal,
+              child: Container(
+                width: audioDuration * intervalLength / intervalDuration,
+                child: cellSnippetTimeline(index),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       );
     } else {
       final Widget borderLine = Container(
@@ -545,16 +548,6 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
           Expanded(child: cellAddVocalistButtonNeighbor()),
         ],
       );
-    }
-  }
-
-  double itemExtentBuilder(int index, SliverLayoutDimensions dimensions) {
-    if (isDragging) {
-      debugPrint("dragging extent");
-      return 20.0;
-    } else {
-      debugPrint("not dragging extent");
-      return getReorderableListHeight(index);
     }
   }
 
