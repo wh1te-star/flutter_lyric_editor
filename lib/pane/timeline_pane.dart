@@ -397,6 +397,9 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                     buildDefaultDragHandles: false,
                     scrollController: verticalScrollController,
                     onReorder: onReorder,
+                    onReorderEnd: (index) {
+                      isDragging = false;
+                    },
                     children: List.generate(vocalistColorMap.length + 1, (index) {
                       return AnimatedContainer(
                         duration: Duration(milliseconds: 200),
@@ -498,14 +501,11 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
             },
             child: ReorderableDragStartListener(
               index: index,
-              child: AnimatedContainer(
-                duration: Duration(milliseconds: 500),
-                child: SvgIcon(
-                  assetName: 'assets/drag_handle.svg',
-                  iconColor: determineBlackOrWhite(backgroundColor),
-                  backgroundColor: vocalistColor,
-                  width: 20,
-                ),
+              child: SvgIcon(
+                assetName: 'assets/drag_handle.svg',
+                iconColor: determineBlackOrWhite(backgroundColor),
+                backgroundColor: vocalistColor,
+                width: 20,
               ),
             ),
           ),
@@ -572,7 +572,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
         ..clear()
         ..addEntries(entries);
     }
-    isDragging = false;
+
     setState(() {});
   }
 
@@ -787,7 +787,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
         setState(() {});
       },
       child: CustomPaint(
-            size: Size(double.infinity, double.infinity),
+        size: Size(double.infinity, double.infinity),
         painter: TimelinePainter(
           snippets: snippets,
           selectingId: selectingSnippets,
