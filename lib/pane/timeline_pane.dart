@@ -397,16 +397,12 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                     buildDefaultDragHandles: false,
                     scrollController: verticalScrollController,
                     onReorder: onReorder,
-                    onReorderStart: (index) {
-                      isDragging = true;
-                      setState(() {});
-                    },
                     children: List.generate(vocalistColorMap.length + 1, (index) {
                       return AnimatedContainer(
                         duration: Duration(milliseconds: 200),
                         key: ValueKey(index),
                         curve: Curves.easeInOut,
-                        height: isDragging ? 20.0 : 60.0,
+                        height: getReorderableListHeight(index),
                         child: itemBuilder(context, index),
                       );
                     }),
@@ -435,6 +431,30 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     );
   }
 
+  double getReorderableListHeight(int index) {
+    final TimingService timingService = ref.read(timingMasterProvider);
+    final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
+
+    final Map<VocalistID, Vocalist> vocalistColorMap = timingService.vocalistColorMap;
+
+    if (index >= vocalistColorMap.length) {
+      if (isDragging) {
+        return 0;
+      } else {
+        return 40;
+      }
+    }
+
+    final Map<VocalistID, Map<SnippetID, LyricSnippet>> snippetsForeachVocalist = timelinePaneProvider.snippetsForeachVocalist;
+    final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
+    if (isDragging || snippetsForeachVocalist[vocalistID] == null) {
+      return 20;
+    } else {
+      final int lanes = getLanes(snippetsForeachVocalist[vocalistID]!.values.toList());
+      return 60.0 * lanes;
+    }
+  }
+
   Widget itemBuilder(BuildContext context, int index) {
     final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     final TimingService timingService = ref.read(timingMasterProvider);
@@ -453,13 +473,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
       final Color vocalistColor = Color(vocalistColorMap[vocalistID]!.color);
       final Color backgroundColor = adjustColorBrightness(vocalistColor, 0.3);
 
-      late final double rowHeight;
-      if (isDragging || snippetsForeachVocalist[vocalistID] == null) {
-        rowHeight = 20;
-      } else {
-        final int lanes = getLanes(snippetsForeachVocalist[vocalistID]!.values.toList());
-        rowHeight = 60.0 * lanes;
-      }
+      final double rowHeight = getReorderableListHeight(index);
       final Widget borderLine = Container(
         width: 5,
         height: rowHeight,
@@ -540,7 +554,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
         children: [
           Container(
             width: 155,
-            height: 40,
+            height: getReorderableListHeight(index),
             child: cellAddVocalistButton(),
           ),
           borderLine,
