@@ -465,7 +465,6 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final double intervalLength = timelinePaneProvider.intervalLength;
     final int intervalDuration = timelinePaneProvider.intervalDuration;
 
-    final Map<VocalistID, Map<SnippetID, LyricSnippet>> snippetsForeachVocalist = timelinePaneProvider.snippetsForeachVocalist;
     if (index < vocalistColorMap.length) {
       final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
       final String vocalistName = vocalistColorMap.values.toList()[index].name;
@@ -473,10 +472,8 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
       final Color vocalistColor = Color(vocalistColorMap[vocalistID]!.color);
       final Color backgroundColor = adjustColorBrightness(vocalistColor, 0.3);
 
-      final double rowHeight = getReorderableListHeight(index);
       final Widget borderLine = Container(
         width: 5,
-        height: rowHeight,
         decoration: BoxDecoration(
           border: Border(
             left: BorderSide(
@@ -487,54 +484,48 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
         ),
       );
 
-      return Container(
+      return Row(
         key: ValueKey('VocalistPanel_${index}'),
-        height: rowHeight,
-        child: Row(
-          children: [
-            GestureDetector(
-              onTapDown: (details) {
-                isDragging = true;
-                setState(() {});
-              },
-              onTapUp: (details) {
-                isDragging = false;
-                setState(() {});
-              },
-              child: ReorderableDragStartListener(
-                index: index,
-                child: AnimatedContainer(
-                  duration: Duration(milliseconds: 500),
-                  child: SvgIcon(
-                    assetName: 'assets/drag_handle.svg',
-                    iconColor: determineBlackOrWhite(backgroundColor),
-                    backgroundColor: vocalistColor,
-                    width: 20,
-                    height: rowHeight,
-                  ),
+        children: [
+          GestureDetector(
+            onTapDown: (details) {
+              isDragging = true;
+              setState(() {});
+            },
+            onTapUp: (details) {
+              isDragging = false;
+              setState(() {});
+            },
+            child: ReorderableDragStartListener(
+              index: index,
+              child: AnimatedContainer(
+                duration: Duration(milliseconds: 500),
+                child: SvgIcon(
+                  assetName: 'assets/drag_handle.svg',
+                  iconColor: determineBlackOrWhite(backgroundColor),
+                  backgroundColor: vocalistColor,
+                  width: 20,
                 ),
               ),
             ),
-            Container(
-              width: 135,
-              height: rowHeight,
-              child: Container(alignment: Alignment.topLeft, child: cellVocalistPanel(index)),
-            ),
-            borderLine,
-            Expanded(
-              child: SingleChildScrollView(
-                key: ValueKey("Reorderable List Item ${vocalistName}"),
-                controller: snippetTimelineScrollController[vocalistName],
-                scrollDirection: Axis.horizontal,
-                child: Container(
-                  width: audioDuration * intervalLength / intervalDuration,
-                  height: rowHeight,
-                  child: cellSnippetTimeline(index),
-                ),
+          ),
+          Container(
+            width: 135,
+            child: Container(alignment: Alignment.topLeft, child: cellVocalistPanel(index)),
+          ),
+          borderLine,
+          Expanded(
+            child: SingleChildScrollView(
+              key: ValueKey("Reorderable List Item ${vocalistName}"),
+              controller: snippetTimelineScrollController[vocalistName],
+              scrollDirection: Axis.horizontal,
+              child: Container(
+                width: audioDuration * intervalLength / intervalDuration,
+                child: cellSnippetTimeline(index),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       );
     } else {
       final Widget borderLine = Container(
@@ -796,6 +787,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
         setState(() {});
       },
       child: CustomPaint(
+            size: Size(double.infinity, double.infinity),
         painter: TimelinePainter(
           snippets: snippets,
           selectingId: selectingSnippets,

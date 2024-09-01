@@ -5,16 +5,16 @@ class SvgIcon extends StatelessWidget {
   final String assetName;
   final Color iconColor;
   final Color backgroundColor;
-  final double width;
-  final double height;
+  final double? width;
+  final double? height;
 
   const SvgIcon({
     Key? key,
     required this.assetName,
     required this.iconColor,
     required this.backgroundColor,
-    required this.width,
-    required this.height,
+    this.width,
+    this.height,
   }) : super(key: key);
 
   @override
