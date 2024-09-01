@@ -401,16 +401,6 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                       isDragging = true;
                       setState(() {});
                     },
-        onReorderEnd: (index) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Future.delayed(Duration(milliseconds: 300), () {
-              setState(() {
-                isDragging = false;
-                print("Reordering animation completed for item at index $index");
-              });
-            });
-          });
-        },
                     children: List.generate(vocalistColorMap.length + 1, (index) {
                       return AnimatedContainer(
                         duration: Duration(milliseconds: 200),
@@ -577,6 +567,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
         ..clear()
         ..addEntries(entries);
     }
+    isDragging = false;
     setState(() {});
   }
 
