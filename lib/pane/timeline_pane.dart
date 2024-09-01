@@ -804,33 +804,40 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   Widget cellAddVocalistButton() {
-    return GestureDetector(
-      onTapDown: (TapDownDetails details) {
-        isAddVocalistButtonSelected = true;
-        setState(() {});
-      },
-      onTapUp: (TapUpDetails details) {
-        isAddVocalistButtonSelected = false;
-        /*
+    if (isDragging) {
+      return Container(
+        color: Colors.grey,
+        child: Text("+"),
+      );
+    } else {
+      return GestureDetector(
+        onTapDown: (TapDownDetails details) {
+          isAddVocalistButtonSelected = true;
+          setState(() {});
+        },
+        onTapUp: (TapUpDetails details) {
+          isAddVocalistButtonSelected = false;
+          /*
         isAddVocalistInput = "input";
       */
-        setState(() {});
-      },
-      onTap: () async {
-        String newVocalistName = (await displayDialog(context, [""]))[0];
-        final TimingService timingService = ref.read(timingMasterProvider);
-        timingService.addVocalist(newVocalistName);
-      },
-      child: CustomPaint(
-        painter: RectanglePainter(
-          rect: Rect.fromLTRB(0.0, 0.0, 155, 40),
-          sentence: "+",
-          color: Colors.grey,
-          isSelected: isAddVocalistButtonSelected,
-          borderLineWidth: 1.0,
+          setState(() {});
+        },
+        onTap: () async {
+          String newVocalistName = (await displayDialog(context, [""]))[0];
+          final TimingService timingService = ref.read(timingMasterProvider);
+          timingService.addVocalist(newVocalistName);
+        },
+        child: CustomPaint(
+          size: Size(double.infinity, double.infinity),
+          painter: RectanglePainter(
+            sentence: "+",
+            color: Colors.grey,
+            isSelected: isAddVocalistButtonSelected,
+            borderLineWidth: 1.0,
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   Widget cellAddVocalistButtonNeighbor() {
