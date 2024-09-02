@@ -90,36 +90,6 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
     timelinePane = TimelinePane(
       focusNode: timelinePaneFocusNode,
     );
-    videoTextBorder = AdjustablePaneBorder(
-        child: Container(
-          width: horizontalBorderWidth,
-          color: Colors.grey,
-        ),
-        onHorizontalDragUpdate: (details) {
-          setState(() {
-            if (details.delta.dx > 0) {
-              LeftUpperPaneWidth += details.delta.dx;
-            } else {
-              if (LeftUpperPaneWidth > videoPaneWidthlimit) {
-                LeftUpperPaneWidth += details.delta.dx;
-              } else {
-                LeftUpperPaneWidth = videoPaneWidthlimit;
-              }
-            }
-          });
-        },
-        onVerticalDragUpdate: (details) {});
-    upperTimelineBorder = AdjustablePaneBorder(
-        child: Container(
-          height: verticalBorderHeight,
-          color: Colors.grey,
-        ),
-        onHorizontalDragUpdate: (details) {},
-        onVerticalDragUpdate: (details) {
-          setState(() {
-            LeftUpperPaneHeight += details.delta.dy;
-          });
-        });
 
     musicPlayerService.initAudio('assets/09 ウェルカムティーフレンド.mp3');
     musicPlayerService.play();
@@ -150,27 +120,10 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
       videoPaneFocusNode: videoPaneFocusNode,
       textPaneFocusNode: textPaneFocusNode,
       timelinePaneFocusNode: timelinePaneFocusNode,
-      child: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          return Column(
-            children: <Widget>[
-              Container(
-                height: LeftUpperPaneHeight,
-                child: Row(
-                  children: <Widget>[
-                    Container(width: LeftUpperPaneWidth, child: textPane),
-                    videoTextBorder,
-                    Expanded(child: videoPane),
-                  ],
-                ),
-              ),
-              upperTimelineBorder,
-              Expanded(
-                child: timelinePane,
-              ),
-            ],
-          );
-        },
+      child:  AdjustablePaneBorder(
+            videoPane: videoPane,
+            textPane: textPane,
+            timelinePane: timelinePane,
       ),
     );
   }
