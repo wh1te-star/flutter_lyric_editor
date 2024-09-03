@@ -36,6 +36,20 @@ class TimingService extends ChangeNotifier {
     _loadLyricsFuture = loadExampleLyrics();
   }
 
+  Map<VocalistID, Map<SnippetID, LyricSnippet>> get snippetsForeachVocalist {
+    return groupBy(
+      lyricSnippetList.entries,
+      (MapEntry<SnippetID, LyricSnippet> entry) {
+        return entry.value.vocalistID;
+      },
+    ).map(
+      (VocalistID vocalistID, List<MapEntry<SnippetID, LyricSnippet>> snippets) => MapEntry(
+        vocalistID,
+        {for (var entry in snippets) entry.key: entry.value},
+      ),
+    );
+  }
+
   void initLyric(String rawText) {
     int audioDuration = musicPlayerProvider.audioDuration;
 
@@ -213,13 +227,13 @@ class TimingService extends ChangeNotifier {
 
         final vocalistNames = colorElement.findAllElements('Vocalist').map((e) => e.innerText).toList();
         if (vocalistNames.length == 1) {
-        vocalistColorMap[vocalistIdGenerator.idGen()] = Vocalist(name: name, color: color + 0xFF000000);
-        }else{
+          vocalistColorMap[vocalistIdGenerator.idGen()] = Vocalist(name: name, color: color + 0xFF000000);
+        } else {
           int combinationID = 0;
-          for (String vocalistName in vocalistNames){
+          for (String vocalistName in vocalistNames) {
             combinationID += getVocalistIDWithName(vocalistName).id;
           }
-        vocalistColorMap[VocalistID(combinationID)] = Vocalist(name: name, color: color + 0xFF000000);
+          vocalistColorMap[VocalistID(combinationID)] = Vocalist(name: name, color: color + 0xFF000000);
         }
       }
     }
@@ -381,20 +395,8 @@ class TimingService extends ChangeNotifier {
   void concatenateSnippets(List<SnippetID> snippetIDs) {
     pushUndoHistory(lyricSnippetList);
 
-    List<LyricSnippet> snippets = translateIDsToSnippets(snippetIDs);
-
-    Map<VocalistID, List<LyricSnippet>> snippetsForeachVocalist = groupBy(
-      lyricSnippetList.entries,
-      (MapEntry<SnippetID, LyricSnippet> entry) {
-        return entry.value.vocalistID;
-      },
-    ).map(
-      (vocalistID, snippets) => MapEntry(
-        vocalistID,
-        snippets.map((entry) => entry.value).toList(),
-      ),
-    );
-    snippetsForeachVocalist.forEach((vocalist, vocalistSnippets) {
+    snippetsForeachVocalist.values.toList().forEach((vocalistSnippetsMap) {
+      List<LyricSnippet> vocalistSnippets = vocalistSnippetsMap.values.toList();
       vocalistSnippets.sort((a, b) => a.startTimestamp.compareTo(b.startTimestamp));
       for (int index = 1; index < vocalistSnippets.length; index++) {
         LyricSnippet leftSnippet = vocalistSnippets[0];

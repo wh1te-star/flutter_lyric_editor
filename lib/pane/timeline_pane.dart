@@ -218,10 +218,10 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     return lyricSnippetList[id]!;
   }
 
+    /*
   LyricSnippet getNearSnippetFromSeekPosition(String vocalistName, int targetSeekPosition) {
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
     List<LyricSnippet> snippets = timelinePaneProvider.snippetsForeachVocalist[vocalistName]!.values.toList();
-    /*
     for (int index = 0; index < snippets.length; index++) {
       int snippetStart = snippets[index].startTimestamp;
       int snippetEnd = snippets[index].endTimestamp;
@@ -241,9 +241,9 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
         return snippets[index];
       }
     }
-    */
     return snippets.last;
   }
+    */
 
   String? getNextVocalist(String currentVocalist) {
     /*
