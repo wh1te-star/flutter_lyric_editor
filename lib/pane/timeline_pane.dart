@@ -42,7 +42,7 @@ class TimelinePaneProvider with ChangeNotifier {
     required this.timingService,
   }) {
     musicPlayerProvider.addListener(() {
-      List<SnippetID> currentSelectingSnippet = getSnippetsAtCurrentSeekPosition();
+      List<SnippetID> currentSelectingSnippet = timingService.getCurrentSeekPositionSnippets().keys.toList();
 
       if (autoCurrentSelectMode) {
         selectingSnippets = currentSelectingSnippet;
@@ -64,24 +64,10 @@ class TimelinePaneProvider with ChangeNotifier {
       );
 
       cursorPosition = timingService.lyricSnippetList.keys.first;
-      List<SnippetID> currentSelectingSnippet = getSnippetsAtCurrentSeekPosition();
+      List<SnippetID> currentSelectingSnippet = timingService.getCurrentSeekPositionSnippets().keys.toList();
       selectingSnippets = currentSelectingSnippet;
       notifyListeners();
     });
-  }
-
-  List<SnippetID> getSnippetsAtCurrentSeekPosition() {
-    int seekPosition = musicPlayerProvider.seekPosition;
-    List<SnippetID> currentSnippet = [];
-    for (MapEntry<SnippetID, LyricSnippet> entry in timingService.lyricSnippetList.entries) {
-      final id = entry.key;
-      final snippet = entry.value;
-      final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
-      if (snippet.startTimestamp <= seekPosition && seekPosition <= endtime) {
-        currentSnippet.add(id);
-      }
-    }
-    return currentSnippet;
   }
 
   void moveLeftCursor() {
@@ -218,7 +204,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     return lyricSnippetList[id]!;
   }
 
-    /*
+  /*
   LyricSnippet getNearSnippetFromSeekPosition(String vocalistName, int targetSeekPosition) {
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
     List<LyricSnippet> snippets = timelinePaneProvider.snippetsForeachVocalist[vocalistName]!.values.toList();

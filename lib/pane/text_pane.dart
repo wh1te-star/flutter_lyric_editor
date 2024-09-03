@@ -265,38 +265,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
     return list.where((element) => element == number).length;
   }
 
-  Tuple3<List<SnippetID>, List<SnippetID>, List<SnippetID>> getSnippetIDsAtCurrentSeekPosition() {
-    int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
-    final Map<SnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
-
-    List<SnippetID> beforeSnippetIndexes = [];
-    List<SnippetID> currentSnippetIndexes = [];
-    List<SnippetID> afterSnippetIndexes = [];
-    lyricSnippetList.forEach((SnippetID id, LyricSnippet snippet) {
-      int start = snippet.startTimestamp;
-      int end = snippet.endTimestamp;
-      if (seekPosition < start) {
-        beforeSnippetIndexes.add(id);
-      } else if (seekPosition < end) {
-        currentSnippetIndexes.add(id);
-      } else {
-        afterSnippetIndexes.add(id);
-      }
-    });
-    return Tuple3(beforeSnippetIndexes, currentSnippetIndexes, afterSnippetIndexes);
-  }
-
-  List<int> getIndexFromIDs(List<SnippetID> lyricSnippetIDs) {
-    final Map<SnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
-    List<int> indexes = [];
-    for (var entry in lyricSnippetList.entries) {
-      if (lyricSnippetIDs.contains(entry.key)) {
-        indexes.add(lyricSnippetList.keys.toList().indexOf(entry.key));
-      }
-    }
-    return indexes;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Focus(
@@ -313,70 +281,18 @@ class _TextPaneState extends ConsumerState<TextPane> {
   }
 
   Widget lyricListWidget() {
+    final TimingService timingService = ref.read(timingMasterProvider);
     final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
     final List<String> lyricAppearance = textPaneProvider.lyricAppearance;
-    final SnippetID cursorLinePosition = textPaneProvider.cursorLinePosition;
-    final int cursorCharPosition = textPaneProvider.cursorCharPosition;
 
-    final indexesTuple = getSnippetIDsAtCurrentSeekPosition();
-    late List<SnippetID> beforeSnippetIDs;
-    late List<SnippetID> currentSnippetIDs;
-    late List<SnippetID> afterSnippetIDs;
-    if (selectingSnippets.isEmpty) {
-      beforeSnippetIDs = indexesTuple.item1;
-      currentSnippetIDs = indexesTuple.item2;
-      afterSnippetIDs = indexesTuple.item3;
-    } else {
-      beforeSnippetIDs = indexesTuple.item1 + indexesTuple.item2;
-      currentSnippetIDs = selectingSnippets;
-      afterSnippetIDs = indexesTuple.item3;
-    }
-    textPaneProvider.highlightingSnippetsIDs = currentSnippetIDs;
+    final Map<SnippetID, LyricSnippet> currentSnippets = timingService.getCurrentSeekPositionSnippets();
 
-    return Column(
-      children: [
-        /*
-        Expanded(
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: afterSnippetIDs.length,
-            itemBuilder: (context, index) {
-              int lyricSnippetIndex = getSnippetIndexWithID(afterSnippetIDs[index]);
-              return Text(lyricAppearance[lyricSnippetIndex]);
-            },
-          ),
-        ),
-        */
-        Center(
-          child: Container(
-            color: Colors.yellowAccent,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: currentSnippetIDs.length,
-              itemBuilder: (context, index) {
-                //int lyricSnippetIndex = getSnippetIndexWithID(currentSnippetIDs[index]);
-                if (currentSnippetIDs[index] == cursorLinePosition) {
-                  return highlightedLyricItem(lyricAppearance[0], cursorLinePosition, cursorCharPosition);
-                } else {
-                  return Text(lyricAppearance[0]);
-                }
-              },
-            ),
-          ),
-        ),
-        /*
-        Expanded(
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: beforeSnippetIDs.length,
-            itemBuilder: (context, index) {
-              int lyricSnippetIndex = getSnippetIndexWithID(beforeSnippetIDs[index]);
-              return Text(lyricAppearance[lyricSnippetIndex]);
-            },
-          ),
-        ),
-        */
-      ],
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: currentSnippets.length,
+      itemBuilder: (context, index) {
+          return Text(lyricAppearance[0]);
+      },
     );
   }
 

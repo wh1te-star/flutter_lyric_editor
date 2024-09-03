@@ -50,6 +50,16 @@ class TimingService extends ChangeNotifier {
     );
   }
 
+  Map<SnippetID, LyricSnippet> getCurrentSeekPositionSnippets() {
+    int seekPosition = musicPlayerProvider.seekPosition;
+
+    return Map.fromEntries(
+      lyricSnippetList.entries.where((entry) {
+        return entry.value.startTimestamp <= seekPosition && seekPosition <= entry.value.endTimestamp;
+      }),
+    );
+  }
+
   int getLanes({VocalistID? vocalistID}) {
     List<LyricSnippet> snippets = vocalistID != null ? snippetsForeachVocalist[vocalistID]?.values.toList() ?? [] : lyricSnippetList.values.toList();
     if (snippets.isEmpty) return 1;
@@ -370,14 +380,6 @@ class TimingService extends ChangeNotifier {
     }
     //String first30Chars = rawLyricText.substring(0, 30);
     //debugPrint(first30Chars);
-  }
-
-  List<LyricSnippet> getSnippetsAtCurrentSeekPosition() {
-    int seekPosition = musicPlayerProvider.seekPosition;
-    return lyricSnippetList.values.where((snippet) {
-      final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
-      return snippet.startTimestamp < seekPosition && seekPosition < endtime;
-    }).toList();
   }
 
   void divideSnippet(SnippetID snippetID, int charPosition) {
