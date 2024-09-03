@@ -28,7 +28,6 @@ class TextPaneProvider with ChangeNotifier {
   List<SnippetID> highlightingSnippetsIDs = [];
   List<List<int>> timingPointsForEachLine = [];
   static const String timingPointChar = '|';
-  int maxLanes = 0;
 
   TextPaneProvider({
     required this.musicPlayerProvider,
@@ -41,7 +40,6 @@ class TextPaneProvider with ChangeNotifier {
       Map<SnippetID, LyricSnippet> lyricSnippets = timingService.lyricSnippetList;
       lyricAppearance = List.filled(lyricSnippets.length, '');
       updateLyricAppearance();
-      maxLanes = getMaxTracks(lyricSnippets.values.toList());
     });
   }
 
@@ -102,31 +100,6 @@ class TextPaneProvider with ChangeNotifier {
     resultString += originalString.substring(previousPosition);
 
     return resultString;
-  }
-
-  int getMaxTracks(List<LyricSnippet> lyricSnippetList) {
-    int maxOverlap = 0;
-    int currentOverlap = 1;
-    int currentEndTime = lyricSnippetList[0].endTimestamp;
-
-    for (int i = 1; i < lyricSnippetList.length; ++i) {
-      int start = lyricSnippetList[i].startTimestamp;
-      int end = lyricSnippetList[i].endTimestamp;
-      if (start <= currentEndTime) {
-        currentOverlap++;
-      } else {
-        currentOverlap = 1;
-        currentEndTime = end;
-      }
-      if (currentOverlap > maxOverlap) {
-        maxOverlap = currentOverlap;
-      }
-
-      if (currentOverlap > maxLanes) {
-        maxLanes = currentOverlap;
-      }
-    }
-    return maxLanes;
   }
 
   void moveUpCursor() {
@@ -342,7 +315,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
   Widget lyricListWidget() {
     final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
     final List<String> lyricAppearance = textPaneProvider.lyricAppearance;
-    final int maxLanes = textPaneProvider.maxLanes;
     final SnippetID cursorLinePosition = textPaneProvider.cursorLinePosition;
     final int cursorCharPosition = textPaneProvider.cursorCharPosition;
 
@@ -361,12 +333,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
     }
     textPaneProvider.highlightingSnippetsIDs = currentSnippetIDs;
 
-    late double height;
-    if (selectingSnippets.length < maxLanes) {
-      height = lineHeight * maxLanes;
-    } else {
-      height = lineHeight * selectingSnippets.length;
-    }
     return Column(
       children: [
         /*
@@ -383,7 +349,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
         */
         Center(
           child: Container(
-            height: height,
             color: Colors.yellowAccent,
             child: ListView.builder(
               shrinkWrap: true,

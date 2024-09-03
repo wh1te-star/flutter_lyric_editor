@@ -50,6 +50,30 @@ class TimingService extends ChangeNotifier {
     );
   }
 
+  int getLanes({VocalistID? vocalistID}) {
+    List<LyricSnippet> snippets = vocalistID != null ? snippetsForeachVocalist[vocalistID]?.values.toList() ?? [] : lyricSnippetList.values.toList();
+    if (snippets.isEmpty) return 1;
+    int maxOverlap = 1;
+    int currentOverlap = 1;
+    int currentEndTime = snippets.first.endTimestamp;
+
+    for (int i = 1; i < snippets.length; ++i) {
+      int start = snippets[i].startTimestamp;
+      int end = snippets[i].endTimestamp;
+      if (start <= currentEndTime) {
+        currentOverlap++;
+      } else {
+        currentOverlap = 1;
+        currentEndTime = end;
+      }
+      if (currentOverlap > maxOverlap) {
+        maxOverlap = currentOverlap;
+      }
+    }
+
+    return maxOverlap;
+  }
+
   void initLyric(String rawText) {
     int audioDuration = musicPlayerProvider.audioDuration;
 
