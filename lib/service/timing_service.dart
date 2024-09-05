@@ -336,18 +336,15 @@ class TimingService extends ChangeNotifier {
         }, nest: () {
           int characterPosition = 0;
           for (int i = 0; i < snippet.sentenceSegments.length; i++) {
-            final currentPoint = snippet.sentenceSegments[i];
-            final nextPoint = i < snippet.sentenceSegments.length - 1 ? snippet.sentenceSegments[i + 1] : null;
-
-            final endtime = snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
-            final duration = nextPoint != null ? nextPoint.wordDuration - currentPoint.wordDuration : endtime - currentPoint.wordDuration;
+            final currentSegment = snippet.sentenceSegments[i];
+            final duration = currentSegment.wordDuration;
 
             builder.element('WordTimestamp',
                 attributes: {
                   'time': _formatDuration(Duration(milliseconds: duration)),
                 },
-                nest: snippet.sentence.substring(characterPosition, characterPosition + currentPoint.wordLength));
-            characterPosition += currentPoint.wordLength;
+                nest: snippet.sentence.substring(characterPosition, characterPosition + currentSegment.wordLength));
+            characterPosition += currentSegment.wordLength;
           }
         });
       }
@@ -537,16 +534,16 @@ class TimingService extends ChangeNotifier {
       durationSum += snippet.sentenceSegments[index].wordDuration;
       if (charPositionSum == characterPosition) {
         timingPointIndex = index + 1;
-        leftBoundPosition = snippet.startTimestamp + (durationSum - snippet.sentenceSegments[index].wordDuration);
-        centerPosition = snippet.startTimestamp + durationSum;
-        rightBoundPosition = snippet.startTimestamp + (durationSum + snippet.sentenceSegments[index + 1].wordDuration);
+        leftBoundPosition = snippet.timingPoints[index - 1].seekPosition;
+        centerPosition = snippet.timingPoints[index].seekPosition;
+        rightBoundPosition = snippet.timingPoints[index + 1].seekPosition;
         break;
       }
       if (charPositionSum > characterPosition) {
         sentenceSegmentIndex = index;
-        leftBoundPosition = snippet.startTimestamp + (durationSum - snippet.sentenceSegments[index].wordDuration);
-        rightBoundPosition = snippet.startTimestamp + durationSum;
-        charRest = characterPosition - (charPositionSum - snippet.sentenceSegments[index].wordLength);
+        leftBoundPosition = snippet.timingPoints[index].seekPosition;
+        rightBoundPosition = snippet.timingPoints[index + 1].seekPosition;
+        charRest = characterPosition - leftBoundPosition;
         break;
       }
     }

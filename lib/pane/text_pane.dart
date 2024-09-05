@@ -291,7 +291,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
       shrinkWrap: true,
       itemCount: currentSnippets.length,
       itemBuilder: (context, index) {
-          return Text(lyricAppearance[0]);
+        return Text(lyricAppearance[0]);
       },
     );
   }

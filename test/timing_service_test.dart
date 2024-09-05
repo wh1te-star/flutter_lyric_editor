@@ -22,11 +22,11 @@ void main() {
       sentence: "abcdefghijklmnopqrst",
       startTimestamp: 2000,
       sentenceSegments: [
-        SentenceSegment(3, 300),
-        SentenceSegment(2, 100),
-        SentenceSegment(6, 700),
-        SentenceSegment(4, 500),
-        SentenceSegment(5, 600),
+        TimingPoint(3, 300),
+        TimingPoint(2, 100),
+        TimingPoint(6, 700),
+        TimingPoint(4, 500),
+        TimingPoint(5, 600),
       ],
     );
     final dataSetSnippet2 = LyricSnippet(
@@ -35,12 +35,12 @@ void main() {
       sentence: "abcdefghijklmnopqrs",
       startTimestamp: 5000,
       sentenceSegments: [
-        SentenceSegment(3, 400),
-        SentenceSegment(2, 300),
-        SentenceSegment(7, 700),
-        SentenceSegment(0, 100),
-        SentenceSegment(5, 600),
-        SentenceSegment(2, 200),
+        TimingPoint(3, 400),
+        TimingPoint(2, 300),
+        TimingPoint(7, 700),
+        TimingPoint(0, 100),
+        TimingPoint(5, 600),
+        TimingPoint(2, 200),
       ],
     );
 
@@ -56,36 +56,36 @@ void main() {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final int characterPosition = 7;
       final int seekPosition = 2450;
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 300),
-        SentenceSegment(2, 100),
-        SentenceSegment(2, 50),
-        SentenceSegment(4, 650),
-        SentenceSegment(4, 500),
-        SentenceSegment(5, 600),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 300),
+        TimingPoint(2, 100),
+        TimingPoint(2, 50),
+        TimingPoint(4, 650),
+        TimingPoint(4, 500),
+        TimingPoint(5, 600),
       ];
 
       timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
 
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to add a timing point to a snippet No.2', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final characterPosition = 8;
       final seekPosition = 2450;
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 300),
-        SentenceSegment(2, 100),
-        SentenceSegment(3, 50),
-        SentenceSegment(3, 650),
-        SentenceSegment(4, 500),
-        SentenceSegment(5, 600),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 300),
+        TimingPoint(2, 100),
+        TimingPoint(3, 50),
+        TimingPoint(3, 650),
+        TimingPoint(4, 500),
+        TimingPoint(5, 600),
       ];
 
       timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
 
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test the seek position is not valid', () {
@@ -100,112 +100,112 @@ void main() {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final characterPosition = 5;
       final seekPosition = 2450;
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 300),
-        SentenceSegment(2, 100),
-        SentenceSegment(0, 50),
-        SentenceSegment(6, 650),
-        SentenceSegment(4, 500),
-        SentenceSegment(5, 600),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 300),
+        TimingPoint(2, 100),
+        TimingPoint(0, 50),
+        TimingPoint(6, 650),
+        TimingPoint(4, 500),
+        TimingPoint(5, 600),
       ];
 
       timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
 
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to add a timing point twice. No.2', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final characterPosition = 5;
       final seekPosition = 2360;
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 300),
-        SentenceSegment(2, 60),
-        SentenceSegment(0, 40),
-        SentenceSegment(6, 700),
-        SentenceSegment(4, 500),
-        SentenceSegment(5, 600),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 300),
+        TimingPoint(2, 60),
+        TimingPoint(0, 40),
+        TimingPoint(6, 700),
+        TimingPoint(4, 500),
+        TimingPoint(5, 600),
       ];
 
       timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
 
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to add a timing point to a snippet that have a char position with 2 timing point. No.1', () {
       final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
       final characterPosition = 4;
       final seekPosition = 5450;
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 400),
-        SentenceSegment(1, 50),
-        SentenceSegment(1, 250),
-        SentenceSegment(7, 700),
-        SentenceSegment(0, 100),
-        SentenceSegment(5, 600),
-        SentenceSegment(2, 200),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 400),
+        TimingPoint(1, 50),
+        TimingPoint(1, 250),
+        TimingPoint(7, 700),
+        TimingPoint(0, 100),
+        TimingPoint(5, 600),
+        TimingPoint(2, 200),
       ];
 
       timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
 
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to add a timing point to a snippet that have a char position with 2 timing point. No.2', () {
       final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
       final characterPosition = 18;
       final seekPosition = 7200;
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 400),
-        SentenceSegment(2, 300),
-        SentenceSegment(7, 700),
-        SentenceSegment(0, 100),
-        SentenceSegment(5, 600),
-        SentenceSegment(1, 100),
-        SentenceSegment(1, 100),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 400),
+        TimingPoint(2, 300),
+        TimingPoint(7, 700),
+        TimingPoint(0, 100),
+        TimingPoint(5, 600),
+        TimingPoint(1, 100),
+        TimingPoint(1, 100),
       ];
 
       timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
 
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to add a timing point twice. No.1', () {
       final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
       final characterPosition = 5;
       final seekPosition = 5450;
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 400),
-        SentenceSegment(2, 50),
-        SentenceSegment(0, 250),
-        SentenceSegment(7, 700),
-        SentenceSegment(0, 100),
-        SentenceSegment(5, 600),
-        SentenceSegment(2, 200),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 400),
+        TimingPoint(2, 50),
+        TimingPoint(0, 250),
+        TimingPoint(7, 700),
+        TimingPoint(0, 100),
+        TimingPoint(5, 600),
+        TimingPoint(2, 200),
       ];
 
       timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
 
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to add a timing point twice. No.2', () {
       final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
       final characterPosition = 5;
       final seekPosition = 5800;
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 400),
-        SentenceSegment(2, 300),
-        SentenceSegment(0, 100),
-        SentenceSegment(7, 600),
-        SentenceSegment(0, 100),
-        SentenceSegment(5, 600),
-        SentenceSegment(2, 200),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 400),
+        TimingPoint(2, 300),
+        TimingPoint(0, 100),
+        TimingPoint(7, 600),
+        TimingPoint(0, 100),
+        TimingPoint(5, 600),
+        TimingPoint(2, 200),
       ];
 
       timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
 
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to throw TimingPointException when tring to add a timing point third time at the same char position. No.1', () {
@@ -220,32 +220,32 @@ void main() {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final characterPosition = 5;
       final option = Option.former;
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 300),
-        SentenceSegment(8, 800),
-        SentenceSegment(4, 500),
-        SentenceSegment(5, 600),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 300),
+        TimingPoint(8, 800),
+        TimingPoint(4, 500),
+        TimingPoint(5, 600),
       ];
 
       timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
 
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to delete a timing point. No.2', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final characterPosition = 11;
       final option = Option.former;
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 300),
-        SentenceSegment(2, 100),
-        SentenceSegment(10, 1200),
-        SentenceSegment(5, 600),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 300),
+        TimingPoint(2, 100),
+        TimingPoint(10, 1200),
+        TimingPoint(5, 600),
       ];
 
       timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
 
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to try to delete a non-existent timing point.', () {
@@ -260,34 +260,34 @@ void main() {
       final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
       final characterPosition = 5;
       final option = Option.former;
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 400),
-        SentenceSegment(9, 1000),
-        SentenceSegment(0, 100),
-        SentenceSegment(5, 600),
-        SentenceSegment(2, 200),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 400),
+        TimingPoint(9, 1000),
+        TimingPoint(0, 100),
+        TimingPoint(5, 600),
+        TimingPoint(2, 200),
       ];
 
       timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
 
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to delete a timing point. No.2', () {
       final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
       final characterPosition = 17;
       final option = Option.former;
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 400),
-        SentenceSegment(2, 300),
-        SentenceSegment(7, 700),
-        SentenceSegment(0, 100),
-        SentenceSegment(7, 800),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 400),
+        TimingPoint(2, 300),
+        TimingPoint(7, 700),
+        TimingPoint(0, 100),
+        TimingPoint(7, 800),
       ];
 
       timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
 
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to try to delete a non-existent timing point.', () {
@@ -302,34 +302,34 @@ void main() {
       final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
       final characterPosition = 12;
       final option = Option.former;
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 400),
-        SentenceSegment(2, 300),
-        SentenceSegment(7, 800),
-        SentenceSegment(5, 600),
-        SentenceSegment(2, 200),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 400),
+        TimingPoint(2, 300),
+        TimingPoint(7, 800),
+        TimingPoint(5, 600),
+        TimingPoint(2, 200),
       ];
 
       timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
 
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to a latter timing point of a character position.', () {
       final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
       final characterPosition = 12;
       final option = Option.latter;
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 400),
-        SentenceSegment(2, 300),
-        SentenceSegment(7, 700),
-        SentenceSegment(5, 700),
-        SentenceSegment(2, 200),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 400),
+        TimingPoint(2, 300),
+        TimingPoint(7, 700),
+        TimingPoint(5, 700),
+        TimingPoint(2, 200),
       ];
 
       timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
 
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
   });
 
@@ -343,10 +343,10 @@ void main() {
       sentence: "abcdefghij",
       startTimestamp: 2000,
       sentenceSegments: [
-        SentenceSegment(1, 200),
-        SentenceSegment(3, 400),
-        SentenceSegment(4, 500),
-        SentenceSegment(2, 300),
+        TimingPoint(1, 200),
+        TimingPoint(3, 400),
+        TimingPoint(4, 500),
+        TimingPoint(2, 300),
       ],
     );
     final dataSetSnippet2 = LyricSnippet(
@@ -355,14 +355,14 @@ void main() {
       sentence: "abcdefghijkl",
       startTimestamp: 5000,
       sentenceSegments: [
-        SentenceSegment(3, 400),
-        SentenceSegment(1, 300),
-        SentenceSegment(0, 100),
-        SentenceSegment(3, 500),
-        SentenceSegment(1, 100),
-        SentenceSegment(2, 300),
-        SentenceSegment(0, 100),
-        SentenceSegment(2, 200),
+        TimingPoint(3, 400),
+        TimingPoint(1, 300),
+        TimingPoint(0, 100),
+        TimingPoint(3, 500),
+        TimingPoint(1, 100),
+        TimingPoint(2, 300),
+        TimingPoint(0, 100),
+        TimingPoint(2, 200),
       ],
     );
 
@@ -417,206 +417,206 @@ void main() {
     test('Test to edit a substring from a sentence. No.1', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final String newSentence = "abcxxxhij";
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(1, 200),
-        SentenceSegment(6, 900),
-        SentenceSegment(2, 300),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(1, 200),
+        TimingPoint(6, 900),
+        TimingPoint(2, 300),
       ];
 
       timingService.editSentence(targetSnippet, newSentence);
 
       expect(targetSnippet.sentence, newSentence);
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to delete a substring from a sentence. No.1', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final String newSentence = "abchij";
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(1, 200),
-        SentenceSegment(3, 900),
-        SentenceSegment(2, 300),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(1, 200),
+        TimingPoint(3, 900),
+        TimingPoint(2, 300),
       ];
 
       timingService.editSentence(targetSnippet, newSentence);
 
       expect(targetSnippet.sentence, newSentence);
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to add a string to a sentence. No.1', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final String newSentence = "abcdefgxxhij";
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(1, 200),
-        SentenceSegment(3, 400),
-        SentenceSegment(6, 500),
-        SentenceSegment(2, 300),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(1, 200),
+        TimingPoint(3, 400),
+        TimingPoint(6, 500),
+        TimingPoint(2, 300),
       ];
 
       timingService.editSentence(targetSnippet, newSentence);
 
       expect(targetSnippet.sentence, newSentence);
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to edit a substring from a sentence. No.2 (Edit just a segment)', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final String newSentence = "abcdxxxij";
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(1, 200),
-        SentenceSegment(3, 400),
-        SentenceSegment(3, 500),
-        SentenceSegment(2, 300),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(1, 200),
+        TimingPoint(3, 400),
+        TimingPoint(3, 500),
+        TimingPoint(2, 300),
       ];
 
       timingService.editSentence(targetSnippet, newSentence);
 
       expect(targetSnippet.sentence, newSentence);
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to delete a substring from a sentence. No.2 (Delete just a segment)', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final String newSentence = "abcdij";
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(1, 200),
-        SentenceSegment(3, 400),
-        SentenceSegment(0, 500),
-        SentenceSegment(2, 300),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(1, 200),
+        TimingPoint(3, 400),
+        TimingPoint(0, 500),
+        TimingPoint(2, 300),
       ];
 
       timingService.editSentence(targetSnippet, newSentence);
 
       expect(targetSnippet.sentence, newSentence);
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to add a string to a sentence. No.2 (Add a string at the same position of a timing point)', () {
       final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
       final String newSentence = "abcdxxefghij";
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(1, 200),
-        SentenceSegment(3, 400),
-        SentenceSegment(6, 500),
-        SentenceSegment(2, 300),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(1, 200),
+        TimingPoint(3, 400),
+        TimingPoint(6, 500),
+        TimingPoint(2, 300),
       ];
 
       timingService.editSentence(targetSnippet, newSentence);
 
       expect(targetSnippet.sentence, newSentence);
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to edit a substring from a sentence. No.3', () {
       final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
       final String newSentence = "abxxxghijkl";
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(6, 1300),
-        SentenceSegment(1, 100),
-        SentenceSegment(2, 300),
-        SentenceSegment(0, 100),
-        SentenceSegment(2, 200),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(6, 1300),
+        TimingPoint(1, 100),
+        TimingPoint(2, 300),
+        TimingPoint(0, 100),
+        TimingPoint(2, 200),
       ];
 
       timingService.editSentence(targetSnippet, newSentence);
 
       expect(targetSnippet.sentence, newSentence);
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to delete a substring from a sentence. No.3', () {
       final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
       final String newSentence = "abghijkl";
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 1300),
-        SentenceSegment(1, 100),
-        SentenceSegment(2, 300),
-        SentenceSegment(0, 100),
-        SentenceSegment(2, 200),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 1300),
+        TimingPoint(1, 100),
+        TimingPoint(2, 300),
+        TimingPoint(0, 100),
+        TimingPoint(2, 200),
       ];
 
       timingService.editSentence(targetSnippet, newSentence);
 
       expect(targetSnippet.sentence, newSentence);
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to add a string from a sentence. No.3', () {
       final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
       final String newSentence = "abcdxxxefghijkl";
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 400),
-        SentenceSegment(1, 300),
-        SentenceSegment(0, 100),
-        SentenceSegment(6, 500),
-        SentenceSegment(1, 100),
-        SentenceSegment(2, 300),
-        SentenceSegment(0, 100),
-        SentenceSegment(2, 200),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 400),
+        TimingPoint(1, 300),
+        TimingPoint(0, 100),
+        TimingPoint(6, 500),
+        TimingPoint(1, 100),
+        TimingPoint(2, 300),
+        TimingPoint(0, 100),
+        TimingPoint(2, 200),
       ];
 
       timingService.editSentence(targetSnippet, newSentence);
 
       expect(targetSnippet.sentence, newSentence);
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to edit a substring from a sentence. No.4 (Edit just a segment)', () {
       final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
       final String newSentence = "abcdxxhijkl";
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 400),
-        SentenceSegment(1, 300),
-        SentenceSegment(0, 100),
-        SentenceSegment(2, 500),
-        SentenceSegment(1, 100),
-        SentenceSegment(2, 300),
-        SentenceSegment(0, 100),
-        SentenceSegment(2, 200),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 400),
+        TimingPoint(1, 300),
+        TimingPoint(0, 100),
+        TimingPoint(2, 500),
+        TimingPoint(1, 100),
+        TimingPoint(2, 300),
+        TimingPoint(0, 100),
+        TimingPoint(2, 200),
       ];
 
       timingService.editSentence(targetSnippet, newSentence);
 
       expect(targetSnippet.sentence, newSentence);
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to delete a substring from a sentence. No.4 (Delete just a segment)', () {
       final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
       final String newSentence = "abcdhijkl";
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 400),
-        SentenceSegment(1, 300),
-        SentenceSegment(0, 600),
-        SentenceSegment(1, 100),
-        SentenceSegment(2, 300),
-        SentenceSegment(0, 100),
-        SentenceSegment(2, 200),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 400),
+        TimingPoint(1, 300),
+        TimingPoint(0, 600),
+        TimingPoint(1, 100),
+        TimingPoint(2, 300),
+        TimingPoint(0, 100),
+        TimingPoint(2, 200),
       ];
 
       timingService.editSentence(targetSnippet, newSentence);
 
       expect(targetSnippet.sentence, newSentence);
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test to delete a substring from a sentence. No.5 (Delete just some segment)', () {
       final LyricSnippet targetSnippet = dataSetSnippet2.copyWith();
       final String newSentence = "abcdijkl";
-      final List<SentenceSegment> expectedSentenceSegments = [
-        SentenceSegment(3, 400),
-        SentenceSegment(1, 300),
-        SentenceSegment(0, 700),
-        SentenceSegment(2, 300),
-        SentenceSegment(0, 100),
-        SentenceSegment(2, 200),
+      final List<TimingPoint> expectedSentenceSegments = [
+        TimingPoint(3, 400),
+        TimingPoint(1, 300),
+        TimingPoint(0, 700),
+        TimingPoint(2, 300),
+        TimingPoint(0, 100),
+        TimingPoint(2, 200),
       ];
 
       timingService.editSentence(targetSnippet, newSentence);
 
       expect(targetSnippet.sentence, newSentence);
-      expect(targetSnippet.sentenceSegments, expectedSentenceSegments);
+      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
     });
 
     test('Test the seek position is not valid', () {

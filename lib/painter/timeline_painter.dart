@@ -53,7 +53,7 @@ class TimelinePainter extends CustomPainter {
     snippets.forEach((SnippetID id, LyricSnippet snippet) {
       if (snippet.sentence == "") return;
 
-      final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
+      final endtime = snippet.endTimestamp;
       if (snippet.startTimestamp < previousEndtime) {
         currentLane++;
       } else {

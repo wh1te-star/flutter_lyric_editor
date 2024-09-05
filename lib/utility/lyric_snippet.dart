@@ -5,25 +5,58 @@ class LyricSnippet {
   VocalistID vocalistID;
   String sentence;
   int startTimestamp;
-  List<SentenceSegment> sentenceSegments;
-  late List<SentenceSegment> accumulatedSentenceSegments;
+  final List<SentenceSegment> _sentenceSegments;
 
   LyricSnippet({
     required this.vocalistID,
     required this.sentence,
     required this.startTimestamp,
-    required this.sentenceSegments,
-  });
+    required List<SentenceSegment> sentenceSegments,
+  }) : _sentenceSegments = sentenceSegments {
+    updateTimingPoints();
+  }
+
+  List<TimingPoint> _timingPoints = [];
+
+  List<SentenceSegment> get sentenceSegments => _sentenceSegments;
+  set sentenceSegments(List<SentenceSegment> segments) {
+    _sentenceSegments.clear();
+    _sentenceSegments.addAll(segments);
+    updateTimingPoints();
+  }
+
+  List<TimingPoint> get timingPoints => _timingPoints;
 
   int get endTimestamp {
-    return startTimestamp + sentenceSegments.fold(0, (sum, current) => sum + current.wordDuration);
+    return startTimestamp + _timingPoints.last.seekPosition;
+  }
+
+  void updateTimingPoints() {
+    List<TimingPoint> newTimingPoints = [];
+    int charPosition = 0;
+    int seekPosition = 0;
+    for (var segment in sentenceSegments) {
+      newTimingPoints.add(TimingPoint(charPosition, seekPosition));
+      charPosition += segment.wordLength;
+      seekPosition += segment.wordDuration;
+    }
+    newTimingPoints.add(TimingPoint(charPosition, seekPosition));
+
+    _timingPoints = newTimingPoints;
   }
 
   int charPosition(int index) {
-    if (index < 0 || index >= sentenceSegments.length) {
-      throw RangeError('Index ${index} is out of bounds for sentenceSegments with length ${sentenceSegments.length}');
+    if (index < 0 || index >= _sentenceSegments.length) {
+      throw RangeError('Index ${index} is out of bounds for sentenceSegments with length ${_sentenceSegments.length}');
     }
-    return sentenceSegments.take(index + 1).fold(0, (sum, current) => sum + current.wordLength);
+    return _sentenceSegments.take(index + 1).fold(0, (sum, current) => sum + current.wordLength);
+  }
+
+  int seekPosition(int index) {
+    if (index < 0 || index >= _sentenceSegments.length) {
+      throw RangeError('Index ${index} is out of bounds for sentenceSegments with length ${_sentenceSegments.length}');
+    }
+    return _sentenceSegments.take(index + 1).fold(0, (sum, current) => sum + current.wordDuration);
   }
 
   static LyricSnippet get emptySnippet {
@@ -33,13 +66,6 @@ class LyricSnippet {
       startTimestamp: 0,
       sentenceSegments: [],
     );
-  }
-
-  int seekPosition(int index) {
-    if (index < 0 || index >= sentenceSegments.length) {
-      throw RangeError('Index ${index} is out of bounds for sentenceSegments with length ${sentenceSegments.length}');
-    }
-    return sentenceSegments.take(index + 1).fold(0, (sum, current) => sum + current.wordDuration);
   }
 
   LyricSnippet copyWith({
@@ -52,15 +78,15 @@ class LyricSnippet {
       vocalistID: vocalistID ?? this.vocalistID,
       sentence: sentence ?? this.sentence,
       startTimestamp: startTimestamp ?? this.startTimestamp,
-      sentenceSegments: sentenceSegments != null ? sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList() : this.sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList(),
+      sentenceSegments: sentenceSegments != null ? sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList() : this._sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList(),
     );
   }
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is LyricSnippet && runtimeType == other.runtimeType && vocalistID == other.vocalistID && sentence == other.sentence && startTimestamp == other.startTimestamp && listEquals(sentenceSegments, other.sentenceSegments);
+  bool operator ==(Object other) => identical(this, other) || other is LyricSnippet && runtimeType == other.runtimeType && vocalistID == other.vocalistID && sentence == other.sentence && startTimestamp == other.startTimestamp && listEquals(_sentenceSegments, other._sentenceSegments);
 
   @override
-  int get hashCode => vocalistID.hashCode ^ sentence.hashCode ^ startTimestamp.hashCode ^ sentenceSegments.hashCode;
+  int get hashCode => vocalistID.hashCode ^ sentence.hashCode ^ startTimestamp.hashCode ^ _sentenceSegments.hashCode;
 }
 
 class Vocalist {
@@ -115,5 +141,28 @@ class SentenceSegment {
   @override
   String toString() {
     return 'SentenceSegment(wordLength: $wordLength, wordDuration: $wordDuration)';
+  }
+}
+
+class TimingPoint {
+  int charPosition;
+  int seekPosition;
+
+  TimingPoint(this.charPosition, this.seekPosition);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (runtimeType != other.runtimeType) return false;
+    final TimingPoint otherSentenceSegments = other as TimingPoint;
+    return charPosition == otherSentenceSegments.charPosition && seekPosition == otherSentenceSegments.seekPosition;
+  }
+
+  @override
+  int get hashCode => charPosition.hashCode ^ seekPosition.hashCode;
+
+  @override
+  String toString() {
+    return 'TimingPoint(charPosition: $charPosition, seekPosition: $seekPosition)';
   }
 }
