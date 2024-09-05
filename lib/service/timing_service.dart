@@ -21,10 +21,9 @@ class TimingService extends ChangeNotifier {
   Map<VocalistID, Vocalist> vocalistColorMap = {};
   List<int> sections = [];
 
-  SnippetIdGenerator snippetIdGenerator = SnippetIdGenerator();
-  VocalistIdGenerator vocalistIdGenerator = VocalistIdGenerator();
+  final SnippetIdGenerator _snippetIdGenerator = SnippetIdGenerator();
+  final VocalistIdGenerator _vocalistIdGenerator = VocalistIdGenerator();
 
-  Future<void>? _loadLyricsFuture;
   List<Map<SnippetID, LyricSnippet>> undoHistory = [];
 
   String defaultVocalistName = "Vocalist Name";
@@ -32,9 +31,7 @@ class TimingService extends ChangeNotifier {
 
   TimingService({
     required this.musicPlayerProvider,
-  }) {
-    _loadLyricsFuture = loadExampleLyrics();
-  }
+  });
 
   Map<VocalistID, Map<SnippetID, LyricSnippet>> get snippetsForeachVocalist {
     return groupBy(
@@ -88,11 +85,11 @@ class TimingService extends ChangeNotifier {
     int audioDuration = musicPlayerProvider.audioDuration;
 
     vocalistColorMap.clear();
-    vocalistColorMap[vocalistIdGenerator.idGen()] = Vocalist(name: defaultVocalistName, color: 0xff777777);
+    vocalistColorMap[_vocalistIdGenerator.idGen()] = Vocalist(name: defaultVocalistName, color: 0xff777777);
 
     String singlelineText = rawText.replaceAll("\n", "").replaceAll("\r", "");
     lyricSnippetList.clear();
-    lyricSnippetList[snippetIdGenerator.idGen()] = LyricSnippet(
+    lyricSnippetList[_snippetIdGenerator.idGen()] = LyricSnippet(
       vocalistID: vocalistColorMap.keys.first,
       sentence: singlelineText,
       startTimestamp: 0,
@@ -201,7 +198,7 @@ class TimingService extends ChangeNotifier {
   void addVocalist(String vocalistName) {
     pushUndoHistory(lyricSnippetList);
 
-    vocalistColorMap[vocalistIdGenerator.idGen()] = Vocalist(name: vocalistName, color: 0xFF222222);
+    vocalistColorMap[_vocalistIdGenerator.idGen()] = Vocalist(name: vocalistName, color: 0xFF222222);
 
     notifyListeners();
   }
@@ -261,7 +258,7 @@ class TimingService extends ChangeNotifier {
 
         final vocalistNames = colorElement.findAllElements('Vocalist').map((e) => e.innerText).toList();
         if (vocalistNames.length == 1) {
-          vocalistColorMap[vocalistIdGenerator.idGen()] = Vocalist(name: name, color: color + 0xFF000000);
+          vocalistColorMap[_vocalistIdGenerator.idGen()] = Vocalist(name: name, color: color + 0xFF000000);
         } else {
           int combinationID = 0;
           for (String vocalistName in vocalistNames) {
@@ -288,7 +285,7 @@ class TimingService extends ChangeNotifier {
         sentenceSegments.add(SentenceSegment(word.length, time));
         sentence += word;
       }
-      snippets[snippetIdGenerator.idGen()] = LyricSnippet(
+      snippets[_snippetIdGenerator.idGen()] = LyricSnippet(
         vocalistID: getVocalistIDWithName(vocalistName),
         sentence: sentence,
         startTimestamp: startTime,
@@ -371,14 +368,6 @@ class TimingService extends ChangeNotifier {
     return '$minutes:$seconds.$milliseconds';
   }
 
-  Future<void> printLyric() async {
-    if (_loadLyricsFuture != null) {
-      await _loadLyricsFuture;
-    }
-    //String first30Chars = rawLyricText.substring(0, 30);
-    //debugPrint(first30Chars);
-  }
-
   void divideSnippet(SnippetID snippetID, int charPosition) {
     pushUndoHistory(lyricSnippetList);
 
@@ -391,7 +380,7 @@ class TimingService extends ChangeNotifier {
     Map<SnippetID, LyricSnippet> newSnippets = {};
     if (beforeString.isNotEmpty) {
       int snippetDuration = seekPosition - snippet.startTimestamp;
-      newSnippets[snippetIdGenerator.idGen()] = LyricSnippet(
+      newSnippets[_snippetIdGenerator.idGen()] = LyricSnippet(
         vocalistID: vocalistID,
         sentence: beforeString,
         startTimestamp: snippet.startTimestamp,
@@ -400,7 +389,7 @@ class TimingService extends ChangeNotifier {
     }
     if (afterString.isNotEmpty) {
       int snippetDuration = snippet.endTimestamp - snippet.startTimestamp - seekPosition - snippetMargin;
-      newSnippets[snippetIdGenerator.idGen()] = LyricSnippet(
+      newSnippets[_snippetIdGenerator.idGen()] = LyricSnippet(
         vocalistID: vocalistID,
         sentence: afterString,
         startTimestamp: seekPosition + snippetMargin,

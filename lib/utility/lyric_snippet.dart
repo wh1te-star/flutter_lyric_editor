@@ -45,20 +45,6 @@ class LyricSnippet {
     _timingPoints = newTimingPoints;
   }
 
-  int charPosition(int index) {
-    if (index < 0 || index >= _sentenceSegments.length) {
-      throw RangeError('Index ${index} is out of bounds for sentenceSegments with length ${_sentenceSegments.length}');
-    }
-    return _sentenceSegments.take(index + 1).fold(0, (sum, current) => sum + current.wordLength);
-  }
-
-  int seekPosition(int index) {
-    if (index < 0 || index >= _sentenceSegments.length) {
-      throw RangeError('Index ${index} is out of bounds for sentenceSegments with length ${_sentenceSegments.length}');
-    }
-    return _sentenceSegments.take(index + 1).fold(0, (sum, current) => sum + current.wordDuration);
-  }
-
   static LyricSnippet get emptySnippet {
     return LyricSnippet(
       vocalistID: VocalistID(0),

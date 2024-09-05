@@ -75,9 +75,7 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
     super.initState();
 
     musicPlayerService = ref.read(musicPlayerMasterProvider);
-    timingService = TimingService(
-      musicPlayerProvider: musicPlayerService,
-    );
+    timingService = ref.read(timingMasterProvider);
     videoPaneFocusNode = FocusNode();
     textPaneFocusNode = FocusNode();
     timelinePaneFocusNode = FocusNode();
@@ -94,13 +92,7 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
     musicPlayerService.initAudio('assets/09 ウェルカムティーフレンド.mp3');
     musicPlayerService.play();
 
-    //loadText();
-  }
-
-  void loadText() async {
-    String filePath = 'assets/ウェルカムティーフレンド.txt';
-    String rawText = await rootBundle.loadString(filePath);
-    timingService.initLyric(rawText);
+    timingService.loadExampleLyrics();
   }
 
   @override
@@ -120,10 +112,10 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
       videoPaneFocusNode: videoPaneFocusNode,
       textPaneFocusNode: textPaneFocusNode,
       timelinePaneFocusNode: timelinePaneFocusNode,
-      child:  AdjustablePaneBorder(
-            videoPane: videoPane,
-            textPane: textPane,
-            timelinePane: timelinePane,
+      child: AdjustablePaneBorder(
+        videoPane: videoPane,
+        textPane: textPane,
+        timelinePane: timelinePane,
       ),
     );
   }
