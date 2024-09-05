@@ -47,6 +47,22 @@ class TimingService extends ChangeNotifier {
     );
   }
 
+  void sortLyricSnippetList() {
+    lyricSnippetList = Map.fromEntries(
+      lyricSnippetList.entries.toList()
+        ..sort(
+          (a, b) {
+            int compareStartTime = a.value.startTimestamp.compareTo(b.value.startTimestamp);
+            if (compareStartTime != 0) {
+              return compareStartTime;
+            } else {
+              return a.value.vocalistID.id.compareTo(b.value.vocalistID.id);
+            }
+          },
+        ),
+    );
+  }
+
   Map<SnippetID, LyricSnippet> getCurrentSeekPositionSnippets() {
     int seekPosition = musicPlayerProvider.seekPosition;
 
@@ -95,12 +111,14 @@ class TimingService extends ChangeNotifier {
       startTimestamp: 0,
       sentenceSegments: [SentenceSegment(singlelineText.length, audioDuration)],
     );
+    sortLyricSnippetList();
 
     notifyListeners();
   }
 
   void loadLyric(String rawLyricText) {
     lyricSnippetList = parseLyric(rawLyricText);
+    sortLyricSnippetList();
 
     pushUndoHistory(lyricSnippetList);
     notifyListeners();
@@ -230,6 +248,7 @@ class TimingService extends ChangeNotifier {
       String rawLyricText = await rootBundle.loadString('assets/ウェルカムティーフレンド.xlrc');
 
       lyricSnippetList = parseLyric(rawLyricText);
+      sortLyricSnippetList();
       notifyListeners();
       //writeTranslatedXmlToFile();
     } catch (e) {
@@ -400,6 +419,7 @@ class TimingService extends ChangeNotifier {
       lyricSnippetList.removeWhere((id, snippet) => id == snippetID);
       lyricSnippetList.addAll(newSnippets);
     }
+    sortLyricSnippetList();
 
     notifyListeners();
   }
@@ -427,6 +447,7 @@ class TimingService extends ChangeNotifier {
         removeSnippetWithID(rightSnippetID);
       }
     });
+    sortLyricSnippetList();
 
     notifyListeners();
   }
@@ -457,6 +478,7 @@ class TimingService extends ChangeNotifier {
         }
       }
     }
+    sortLyricSnippetList();
 
     notifyListeners();
   }
