@@ -234,6 +234,8 @@ class TimingService extends ChangeNotifier {
   }
 
   void changeVocalistName(String oldName, String newName) {
+    undoHistory.pushUndoHistory(LyricUndoType.vocalistsColor, vocalistColorMap);
+
     VocalistID vocalistID = getVocalistIDWithName(oldName);
     vocalistColorMap[vocalistID]!.name = newName;
 

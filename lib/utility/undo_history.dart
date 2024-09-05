@@ -17,9 +17,21 @@ class LyricUndoHistory {
   List<LyricUndoAction> undoHistory = [];
 
   void pushUndoHistory(LyricUndoType type, dynamic value) {
-    typeValueAssert(type, value);
+    final dynamic copiedValue;
+    if (type == LyricUndoType.lyricSnippet) {
+      assert(value is Map<SnippetID, LyricSnippet>);
+      copiedValue = Map<SnippetID, LyricSnippet>.from(value)
+        ..updateAll((key, snippet) => snippet.copyWith());
+    } else if (type == LyricUndoType.vocalistsColor) {
+      assert(value is Map<VocalistID, Vocalist>);
+      copiedValue = Map<VocalistID, Vocalist>.from(value)
+        ..updateAll((key, vocalist) => vocalist.copyWith());
+    } else {
+      assert(value is List<int>);
+      copiedValue = List<int>.from(value);
+    }
 
-    undoHistory.add(LyricUndoAction(type, value));
+    undoHistory.add(LyricUndoAction(type, copiedValue));
   }
 
   LyricUndoAction? popUndoHistory() {

@@ -93,6 +93,16 @@ class Vocalist {
 
   @override
   int get hashCode => name.hashCode ^ color.hashCode;
+
+  Vocalist copyWith({
+    String? name,
+    int? color,
+  }) {
+    return Vocalist(
+      name: name ?? this.name,
+      color: color ?? this.color,
+    );
+  }
 }
 
 class VocalistCombination {
