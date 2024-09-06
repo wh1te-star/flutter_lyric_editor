@@ -54,6 +54,21 @@ class LyricSnippet {
     );
   }
 
+  PositionTypeInfo getSeekPositionIndex(int seekPosition) {
+    if (seekPosition < startTimestamp || endTimestamp < seekPosition) {
+      return PositionTypeInfo(PositionType.sentenceSegment, -1);
+    }
+    for (int index = 0; index < sentenceSegments.length; index++) {
+      if (timingPoints[index].seekPosition < seekPosition && seekPosition < timingPoints[index + 1].seekPosition) {
+        return PositionTypeInfo(PositionType.sentenceSegment, index);
+      }
+      if(timingPoints[index].seekPosition == seekPosition){
+        return PositionTypeInfo(PositionType.timingPoint, index);
+      }
+    }
+    return PositionTypeInfo(PositionType.sentenceSegment, -1);
+  }
+
   LyricSnippet copyWith({
     VocalistID? vocalistID,
     String? sentence,
@@ -161,4 +176,15 @@ class TimingPoint {
   String toString() {
     return 'TimingPoint(charPosition: $charPosition, seekPosition: $seekPosition)';
   }
+}
+
+class PositionTypeInfo {
+  PositionType type;
+  int index;
+  PositionTypeInfo(this.type, this.index);
+}
+
+enum PositionType {
+  timingPoint,
+  sentenceSegment,
 }
