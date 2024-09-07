@@ -275,93 +275,25 @@ class _TextPaneState extends ConsumerState<TextPane> {
           debugPrint("The text pane is focused");
           setState(() {});
         },
-        child: lyricListWidget(),
+        child: snippetEditColumn(),
       ),
     );
   }
 
-  Widget lyricListWidget() {
+  Widget snippetEditColumn() {
     final TimingService timingService = ref.read(timingMasterProvider);
-    final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
-    final List<String> lyricAppearance = textPaneProvider.lyricAppearance;
+    List<Widget> elements = [];
+    timingService.getCurrentSeekPositionSnippets().values.toList().forEach((snippet) {
+      elements.add(snippetEditLine(snippet));
+    });
 
-    final Map<SnippetID, LyricSnippet> currentSnippets = timingService.getCurrentSeekPositionSnippets();
-
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: currentSnippets.length,
-      itemBuilder: (context, index) {
-        return Text(lyricAppearance[0]);
-      },
+    return Column(
+      children: elements,
     );
   }
 
-  Widget highlightedLyricItem(String lyrics, SnippetID snippetID, int charIndex) {
-    final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
-    final Option cursorPositionOption = textPaneProvider.cursorPositionOption;
-    final List<List<int>> timingPointsForEachLine = textPaneProvider.timingPointsForEachLine;
-
-    int sentenceSegmentsBeforeCursor = 0;
-    //int lineIndex = getSnippetIndexWithID(snippetID);
-    int lineIndex = 0;
-    List<int> currentLinesentenceSegment = timingPointsForEachLine[lineIndex];
-    while (sentenceSegmentsBeforeCursor < currentLinesentenceSegment.length && currentLinesentenceSegment[sentenceSegmentsBeforeCursor] < charIndex) {
-      sentenceSegmentsBeforeCursor++;
-    }
-    int cursorIndexsentenceSegments = currentLinesentenceSegment.indexOf(charIndex);
-
-    charIndex = charIndex + sentenceSegmentsBeforeCursor;
-    if (cursorIndexsentenceSegments >= 0) {
-      if (cursorPositionOption == Option.latter) {
-        charIndex++;
-      }
-      lyrics = replaceNthCharacter(lyrics, charIndex, cursorChar);
-    } else {
-      lyrics = insertCharacterAt(lyrics, charIndex, cursorChar);
-    }
-
-    String beforeN = lyrics.substring(0, charIndex);
-    String charAtN = lyrics[charIndex].toString();
-    String afterN = lyrics.substring(charIndex + 1);
-
-    Color cursorColor = cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent;
-    return RichText(
-      text: TextSpan(
-        children: [
-          TextSpan(text: beforeN, style: TextStyle(fontSize: 14, color: Colors.black)),
-          TextSpan(text: charAtN, style: TextStyle(fontSize: 14, backgroundColor: cursorColor)),
-          TextSpan(text: afterN, style: TextStyle(fontSize: 14, color: Colors.black)),
-        ],
-      ),
-    );
-  }
-
-  Widget highlightedLyricItemSelectionMode(String lyrics, int lineIndex, int charIndex) {
-    final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
-    final int cursorCharPosition = textPaneProvider.cursorCharPosition;
-
-    String beforeSelect = lyrics.substring(0, selectionBasePosition);
-    String selecting = lyrics.substring(selectionBasePosition, cursorCharPosition);
-    String afterSelect = lyrics.substring(cursorCharPosition);
-
-    return RichText(
-      text: TextSpan(
-        children: [
-          TextSpan(
-            text: beforeSelect,
-            style: const TextStyle(fontSize: 20, color: Colors.black),
-          ),
-          TextSpan(
-            text: selecting,
-            style: const TextStyle(fontSize: 20, color: Colors.black, backgroundColor: Colors.blue),
-          ),
-          TextSpan(
-            text: afterSelect,
-            style: const TextStyle(fontSize: 20, color: Colors.black),
-          ),
-        ],
-      ),
-    );
+  Widget snippetEditLine(LyricSnippet snippet) {
+    return Text(snippet.sentence);
   }
 
   String replaceNthCharacter(String originalString, int index, String newChar) {

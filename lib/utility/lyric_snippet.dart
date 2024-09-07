@@ -66,7 +66,7 @@ class LyricSnippet {
         return PositionTypeInfo(PositionType.timingPoint, index);
       }
     }
-    return PositionTypeInfo(PositionType.sentenceSegment, -1);
+    return PositionTypeInfo(PositionType.sentenceSegment, timingPoints.length);
   }
 
   LyricSnippet copyWith({
