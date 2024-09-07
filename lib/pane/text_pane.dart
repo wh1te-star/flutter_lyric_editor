@@ -293,7 +293,33 @@ class _TextPaneState extends ConsumerState<TextPane> {
   }
 
   Widget snippetEditLine(LyricSnippet snippet) {
-    return Text(snippet.sentence);
+    MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
+    List<Widget> coloredTextWidgets = [];
+    PositionTypeInfo position = snippet.getSeekPositionIndex(musicPlayerService.seekPosition);
+
+    for (int index = 0; index < snippet.sentenceSegments.length; index++) {
+      String segmentWord = snippet.segmentWord(index);
+
+      if (position.type == PositionType.sentenceSegment && index == position.index) {
+        coloredTextWidgets.add(
+          Text(
+            segmentWord,
+            style: TextStyle(color: Colors.red),
+          ),
+        );
+      } else {
+        coloredTextWidgets.add(
+          Text(
+            segmentWord,
+            style: TextStyle(color: Colors.black),
+          ),
+        );
+      }
+    }
+
+    return Row(
+      children: coloredTextWidgets,
+    );
   }
 
   String replaceNthCharacter(String originalString, int index, String newChar) {

@@ -31,6 +31,13 @@ class LyricSnippet {
     return startTimestamp + _timingPoints.last.seekPosition;
   }
 
+  String segmentWord(int index) {
+    return sentence.substring(
+      timingPoints[index].charPosition,
+      timingPoints[index + 1].charPosition,
+    );
+  }
+
   void updateTimingPoints() {
     List<TimingPoint> newTimingPoints = [];
     int charPosition = 0;
@@ -59,10 +66,12 @@ class LyricSnippet {
       return PositionTypeInfo(PositionType.sentenceSegment, -1);
     }
     for (int index = 0; index < sentenceSegments.length; index++) {
-      if (timingPoints[index].seekPosition < seekPosition && seekPosition < timingPoints[index + 1].seekPosition) {
+      int leftSegmentPosition = startTimestamp + timingPoints[index].seekPosition;
+      int rightSegmentPosition = startTimestamp + timingPoints[index + 1].seekPosition;
+      if (leftSegmentPosition < seekPosition && seekPosition < rightSegmentPosition) {
         return PositionTypeInfo(PositionType.sentenceSegment, index);
       }
-      if(timingPoints[index].seekPosition == seekPosition){
+      if (timingPoints[index].seekPosition == leftSegmentPosition) {
         return PositionTypeInfo(PositionType.timingPoint, index);
       }
     }
