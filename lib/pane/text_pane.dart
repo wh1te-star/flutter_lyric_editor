@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
@@ -302,10 +304,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
       if (position.type == PositionType.sentenceSegment && index == position.index) {
         coloredTextWidgets.add(
-          Text(
-            segmentWord,
-            style: TextStyle(color: Colors.red),
-          ),
+          segmentEdit(segmentWord),
         );
       } else {
         coloredTextWidgets.add(
@@ -320,6 +319,48 @@ class _TextPaneState extends ConsumerState<TextPane> {
     return Row(
       children: coloredTextWidgets,
     );
+  }
+
+  Widget segmentEdit(String segmentWord) {
+    final double charSize = 18.0;
+    final double charWidth = 10.0;
+    final double cursorWidth = 2.0;
+    final double cursorHeight = 24.0;
+    final Color cursorColor = Colors.black;
+
+    final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
+    final int cursorPosition = textPaneProvider.cursorCharPosition;
+    double cursorCoordinate = calculateCursorPosition(segmentWord, cursorPosition, charSize);
+    return Stack(
+      children: [
+        Text(
+          segmentWord,
+          style: TextStyle(color: Colors.red),
+        ),
+        cursorBlinker.isCursorVisible
+            ? Positioned(
+                left: cursorCoordinate - cursorWidth / 2,
+                child: Container(
+                  width: cursorWidth,
+                  height: cursorHeight,
+                  color: cursorColor,
+                ),
+              )
+            : const SizedBox.shrink(),
+      ],
+    );
+  }
+
+  double calculateCursorPosition(String text, int cursorPosition, double charSize) {
+    final TextPainter textPainter = TextPainter(
+      text: TextSpan(text: text, style: TextStyle(fontSize: charSize)),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    final TextPosition position = TextPosition(offset: cursorPosition);
+    final Rect caretPrototype = Rect.fromLTWH(0, 0, 0, textPainter.height);
+    final Offset caretOffset = textPainter.getOffsetForCaret(position, caretPrototype);
+    return caretOffset.dx;
   }
 
   String replaceNthCharacter(String originalString, int index, String newChar) {
