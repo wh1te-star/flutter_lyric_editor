@@ -78,7 +78,7 @@ class TimelinePainter extends CustomPainter {
       rectanglePainter.paint(canvas, size);
 
       double x = snippet.startTimestamp * intervalLength / intervalDuration;
-      snippet.sentenceSegments.forEach((SentenceSegment sentenceSegment) {
+      for (var sentenceSegment in snippet.sentenceSegments) {
         TrianglePainter(
           x: x,
           y: top,
@@ -86,7 +86,7 @@ class TimelinePainter extends CustomPainter {
           height: 5.0,
         ).paint(canvas, size);
         x += sentenceSegment.wordDuration * intervalLength / intervalDuration;
-      });
+      }
       TrianglePainter(
         x: x,
         y: top,

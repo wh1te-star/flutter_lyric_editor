@@ -15,6 +15,8 @@ void main() {
 }
 
 class MyApp extends ConsumerWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final musicPlayerService = ref.read(musicPlayerMasterProvider);
@@ -38,7 +40,7 @@ class MyApp extends ConsumerWidget {
 }
 
 class AdjustablePaneLayout extends ConsumerStatefulWidget {
-  AdjustablePaneLayout() : super(key: Key('Main'));
+  AdjustablePaneLayout() : super(key: const Key('Main'));
 
   @override
   _AdjustablePaneLayoutState createState() => _AdjustablePaneLayoutState();

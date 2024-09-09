@@ -666,7 +666,7 @@ class TimingService extends ChangeNotifier {
       allCharPosition.add(charPosition);
     }
 
-    allCharPosition.forEach((int currentCharPosition) {
+    for (var currentCharPosition in allCharPosition) {
       if (charPositionTranslation[currentCharPosition] == -1) {
         try {
           deleteTimingPoint(snippetID, currentCharPosition, option: Option.former);
@@ -679,7 +679,7 @@ class TimingService extends ChangeNotifier {
           debugPrint(e.toString());
         }
       }
-    });
+    }
 
     charPosition = 0;
     allCharPosition.clear();
@@ -706,7 +706,7 @@ class TimingService extends ChangeNotifier {
     List<SentenceSegment> result = [];
     int accumulatedSum = 0;
 
-    snippet.sentenceSegments.forEach((SentenceSegment sentenceSegment) {
+    for (var sentenceSegment in snippet.sentenceSegments) {
       if (sentenceSegment.wordLength == 0) {
         accumulatedSum += sentenceSegment.wordDuration;
       } else {
@@ -716,7 +716,7 @@ class TimingService extends ChangeNotifier {
         }
         result.add(sentenceSegment);
       }
-    });
+    }
 
     if (accumulatedSum != 0) {
       result.add(SentenceSegment(0, accumulatedSum));

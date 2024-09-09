@@ -30,7 +30,7 @@ class ScaleMark extends CustomPainter {
         );
         String text = formatSecond((i * intervalDuration / 1000.0).toInt());
         TextSpan span = TextSpan(
-          style: TextStyle(color: Colors.black, fontSize: 12),
+          style: const TextStyle(color: Colors.black, fontSize: 12),
           text: text,
         );
         TextPainter tp = TextPainter(

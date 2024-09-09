@@ -28,7 +28,7 @@ class VideoPaneProvider with ChangeNotifier {
 class VideoPane extends ConsumerStatefulWidget {
   final FocusNode focusNode;
 
-  VideoPane({required this.focusNode}) : super(key: Key('VideoPane'));
+  VideoPane({required this.focusNode}) : super(key: const Key('VideoPane'));
 
   @override
   _VideoPaneState createState() => _VideoPaneState(focusNode);
@@ -154,7 +154,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       return lyricSnippetTrack[0].lyricSnippet.startTimestamp.toDouble();
     }
     int snippetIndex = (scrollOffset - 30) ~/ 60;
-    debugPrint("scroll offset: ${scrollOffset}, snippetIndex: ${snippetIndex}");
+    debugPrint("scroll offset: $scrollOffset, snippetIndex: $snippetIndex");
     late double startPosition;
     late double endPosition;
     if ((scrollOffset - 30) % 60 < 30) {
@@ -234,7 +234,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
   Widget outlinedText(LyricSnippet snippet, String fontFamily) {
     int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
-    Color fontColor = Color(0);
+    Color fontColor = const Color(0x00000000);
     final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap;
     if (vocalistColorList.containsKey(snippet.vocalistID)) {
       fontColor = Color(vocalistColorList[snippet.vocalistID]!.color);
@@ -253,14 +253,14 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
             firstOutlineWidth: 2,
             secondOutlineWidth: 4,
           ),
-          size: Size(double.infinity, double.infinity),
+          size: const Size(double.infinity, double.infinity),
         ),
       );
     } else {
       return Expanded(
         child: CustomPaint(
           painter: getColorHilightedText(snippet, seekPosition, fontFamily, fontColor),
-          size: Size(double.infinity, double.infinity),
+          size: const Size(double.infinity, double.infinity),
         ),
       );
     }
@@ -307,11 +307,11 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     } else {
       double height = 60;
       List<Widget> columnSnippets = [];
-      columnSnippets.add(Container(color: Color.fromARGB(255, 164, 240, 156), height: 200));
+      columnSnippets.add(Container(color: const Color.fromARGB(255, 164, 240, 156), height: 200));
       columnSnippets.add(Container(color: Colors.blueAccent, height: height));
-      lyricSnippetTrack.forEach((LyricSnippetTrack trackSnippet) {
+      for (var trackSnippet in lyricSnippetTrack) {
         LyricSnippet snippet = trackSnippet.lyricSnippet;
-        Color fontColor = Color(0);
+        Color fontColor = const Color(0x00000000);
         if (vocalistColorList.containsKey(snippet.vocalistID)) {
           fontColor = Color(vocalistColorList[snippet.vocalistID]!.color);
         }
@@ -321,8 +321,8 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
             size: Size(double.infinity, height),
           ),
         );
-      });
-      columnSnippets.add(Container(color: Color.fromARGB(255, 164, 240, 156), height: 1000));
+      }
+      columnSnippets.add(Container(color: const Color.fromARGB(255, 164, 240, 156), height: 1000));
       return Focus(
         focusNode: focusNode,
         child: GestureDetector(

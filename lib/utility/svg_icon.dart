@@ -9,13 +9,13 @@ class SvgIcon extends StatelessWidget {
   final double? height;
 
   const SvgIcon({
-    Key? key,
+    super.key,
     required this.assetName,
     required this.iconColor,
     required this.backgroundColor,
     this.width,
     this.height,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

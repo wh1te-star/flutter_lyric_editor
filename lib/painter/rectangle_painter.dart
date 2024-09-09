@@ -49,7 +49,7 @@ void paint(Canvas canvas, Size size) {
 
   textPainter.paint(canvas, offset);
 
-  final double strokeLineWidth = 1.0;
+  const double strokeLineWidth = 1.0;
   final lighterColor = adjustColorBrightness(color, 0.1);
   final darkerColor = adjustColorBrightness(color, -0.3);
   final leftInner = effectiveRect.left + borderLineWidth;

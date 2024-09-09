@@ -124,7 +124,7 @@ class TimelinePaneProvider with ChangeNotifier {
 class TimelinePane extends ConsumerStatefulWidget {
   final FocusNode focusNode;
 
-  TimelinePane({required this.focusNode}) : super(key: Key('TimelinePane'));
+  TimelinePane({required this.focusNode}) : super(key: const Key('TimelinePane'));
 
   @override
   _TimelinePaneState createState() => _TimelinePaneState(focusNode);
@@ -260,7 +260,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final Widget borderLine = Container(
       width: 5,
       height: 30,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         border: Border(
           left: BorderSide(
             color: Colors.black,
@@ -329,7 +329,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
             }
             scaleMarkScrollController.animateTo(
               nextHorizontalOffset,
-              duration: Duration(milliseconds: 500),
+              duration: const Duration(milliseconds: 500),
               curve: Curves.decelerate,
             );
 
@@ -341,7 +341,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
             }
             verticalScrollController.animateTo(
               nextVerticalOffset,
-              duration: Duration(milliseconds: 500),
+              duration: const Duration(milliseconds: 500),
               curve: Curves.decelerate,
             );
           }
@@ -355,7 +355,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
               children: [
                 Row(
                   children: [
-                    Container(
+                    SizedBox(
                       width: 155,
                       height: 30,
                       child: cellFunctionButton(),
@@ -363,10 +363,10 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                     borderLine,
                     Expanded(
                       child: SingleChildScrollView(
-                        key: ValueKey("Scale Mark"),
+                        key: const ValueKey("Scale Mark"),
                         controller: scaleMarkScrollController,
                         scrollDirection: Axis.horizontal,
-                        child: Container(
+                        child: SizedBox(
                           width: audioDuration * intervalLength / intervalDuration,
                           height: 30,
                           child: cellScaleMark(),
@@ -377,7 +377,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                 ),
                 Expanded(
                   child: ReorderableListView(
-                    key: ValueKey("Reorderable List Vertical"),
+                    key: const ValueKey("Reorderable List Vertical"),
                     buildDefaultDragHandles: false,
                     scrollController: verticalScrollController,
                     onReorder: onReorder,
@@ -386,8 +386,8 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                     },
                     children: List.generate(vocalistColorMap.length + 1, (index) {
                       return AnimatedContainer(
-                        key: ValueKey('VocalistPanel_${index}'),
-                        duration: Duration(milliseconds: 200),
+                        key: ValueKey('VocalistPanel_$index'),
+                        duration: const Duration(milliseconds: 200),
                         curve: Curves.easeInOut,
                         height: getReorderableListHeight(index),
                         child: itemBuilder(context, index),
@@ -402,7 +402,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
               child: Padding(
                 padding: const EdgeInsets.only(left: 160.0),
                 child: SingleChildScrollView(
-                  key: ValueKey("Seek Position"),
+                  key: const ValueKey("Seek Position"),
                   controller: seekPositionScrollController,
                   scrollDirection: Axis.horizontal,
                   child: CustomPaint(
@@ -460,7 +460,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
 
       final Widget borderLine = Container(
         width: 5,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           border: Border(
             left: BorderSide(
               color: Colors.black,
@@ -491,7 +491,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
               ),
             ),
           ),
-          Container(
+          SizedBox(
             width: 135,
             child: Container(alignment: Alignment.topLeft, child: cellVocalistPanel(index)),
           ),
@@ -501,7 +501,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
               key: ValueKey("Reorderable List Item ${vocalistID.id}"),
               controller: snippetTimelineScrollController[vocalistID],
               scrollDirection: Axis.horizontal,
-              child: Container(
+              child: SizedBox(
                 width: audioDuration * intervalLength / intervalDuration,
                 child: cellSnippetTimeline(index),
               ),
@@ -513,7 +513,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
       final Widget borderLine = Container(
         width: 5,
         height: 40,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           border: Border(
             left: BorderSide(
               color: Colors.black,
@@ -523,9 +523,9 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
         ),
       );
       return Row(
-        key: ValueKey('AddVocalistButton'),
+        key: const ValueKey('AddVocalistButton'),
         children: [
-          Container(
+          SizedBox(
             width: 155,
             height: getReorderableListHeight(index),
             child: cellAddVocalistButton(),
@@ -616,7 +616,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
       },
       child: CustomPaint(
         painter: RectanglePainter(
-          rect: Rect.fromLTRB(0.0, 0.0, 155, 30),
+          rect: const Rect.fromLTRB(0.0, 0.0, 155, 30),
           sentence: "Auto Select Mode",
           color: Colors.purpleAccent,
           isSelected: autoCurrentSelectMode,
@@ -654,7 +654,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
       oldVocalistValue = vocalistName;
       return TextField(
         controller: controller,
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           border: OutlineInputBorder(),
         ),
         onSubmitted: (value) {
@@ -769,7 +769,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
         setState(() {});
       },
       child: CustomPaint(
-        size: Size(double.infinity, double.infinity),
+        size: const Size(double.infinity, double.infinity),
         painter: TimelinePainter(
           snippets: snippets,
           selectingId: selectingSnippets,
@@ -789,7 +789,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     if (isDragging) {
       return Container(
         color: Colors.grey,
-        child: Text("+"),
+        child: const Text("+"),
       );
     } else {
       return GestureDetector(
@@ -810,7 +810,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
           timingService.addVocalist(newVocalistName);
         },
         child: CustomPaint(
-          size: Size(double.infinity, double.infinity),
+          size: const Size(double.infinity, double.infinity),
           painter: RectanglePainter(
             sentence: "+",
             color: Colors.grey,

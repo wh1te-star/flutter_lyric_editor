@@ -43,7 +43,7 @@ class PartialTextPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final backgroundPaint = Paint()..color = Color.fromARGB(255, 164, 240, 156);
+    final backgroundPaint = Paint()..color = const Color.fromARGB(255, 164, 240, 156);
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), backgroundPaint);
 
     setupTextStyle();
@@ -56,7 +56,7 @@ class PartialTextPainter extends CustomPainter {
     Shadow shadow = Shadow(
       color: fontBaseColor,
       blurRadius: 30.0,
-      offset: Offset(0.0, 0.0),
+      offset: const Offset(0.0, 0.0),
     );
     textStyleBeforeInner = TextStyle(
       fontFamily: fontFamily,
@@ -154,7 +154,7 @@ class PartialTextPainter extends CustomPainter {
 
     if (percent < 0) {
       if (sliceWidth > 0) {
-        debugPrint("percent: ${percent}, sliceWidth: ${sliceWidth}");
+        debugPrint("percent: $percent, sliceWidth: $sliceWidth");
       }
     }
     canvas.clipRect(Rect.fromLTWH(0, 0, sliceWidth, size.height));

@@ -79,7 +79,7 @@ AppBar buildAppBarWithMenu(
 }
 
 void openAudio(BuildContext context, MusicPlayerService musicPlayerSerivce) async {
-  final XTypeGroup typeGroup = XTypeGroup(
+  final XTypeGroup typeGroup = const XTypeGroup(
     label: 'audio',
     extensions: ['mp3', 'wav', 'flac'],
     mimeTypes: ['audio/mpeg', 'audio/x-wav', 'audio/flac'],
@@ -93,14 +93,14 @@ void openAudio(BuildContext context, MusicPlayerService musicPlayerSerivce) asyn
     musicPlayerSerivce.initAudio(file.path);
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('No file selected')),
+      const SnackBar(content: Text('No file selected')),
     );
   }
 }
 
 void createNewLyric(BuildContext context, TimingService timingService) async {
   final XFile? file = await openFile(acceptedTypeGroups: [
-    XTypeGroup(
+    const XTypeGroup(
       label: 'text',
       extensions: ['txt'],
       mimeTypes: ['text/plain'],
@@ -112,14 +112,14 @@ void createNewLyric(BuildContext context, TimingService timingService) async {
     timingService.initLyric(rawText);
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('No file selected')),
+      const SnackBar(content: Text('No file selected')),
     );
   }
 }
 
 void openLyric(BuildContext context, TimingService timingService) async {
   final XFile? file = await openFile(acceptedTypeGroups: [
-    XTypeGroup(
+    const XTypeGroup(
       label: 'xlrc',
       extensions: ['xlrc'],
       mimeTypes: ['application/xml'],
@@ -131,7 +131,7 @@ void openLyric(BuildContext context, TimingService timingService) async {
     timingService.loadLyric(rawLyricText);
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('No file selected')),
+      const SnackBar(content: Text('No file selected')),
     );
   }
 }
@@ -141,7 +141,7 @@ void exportLyric(BuildContext context, TimingService timingService) async {
   final FileSaveLocation? result = await getSaveLocation(suggestedName: fileName);
   if (result == null) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('No file selected')),
+      const SnackBar(content: Text('No file selected')),
     );
     return;
   }

@@ -5,12 +5,12 @@ class AdjustablePaneBorder extends StatefulWidget {
   final Widget timelinePane;
   final Widget videoPane;
 
-  AdjustablePaneBorder({
-    Key? key,
+  const AdjustablePaneBorder({
+    super.key,
     required this.videoPane,
     required this.textPane,
     required this.timelinePane,
-  }) : super(key: key);
+  });
 
   @override
   _AdjustablePaneBorderState createState() => _AdjustablePaneBorderState();
@@ -44,12 +44,12 @@ class _AdjustablePaneBorderState extends State<AdjustablePaneBorder> {
     );
     return Column(
       children: [
-        Container(
+        SizedBox(
           height: videoPaneHeight,
           child: widget.videoPane,
         ),
         videoTextPaneBorder,
-        Container(
+        SizedBox(
           height: textPaneHeight,
           child: widget.textPane,
         ),

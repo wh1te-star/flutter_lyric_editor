@@ -1,5 +1,5 @@
 class SortedList<T extends Comparable> {
-  List<T> _list = [];
+  final List<T> _list = [];
 
   SortedList([Iterable<T>? elements]) {
     if (elements != null) {
@@ -70,7 +70,7 @@ class SortedMap<K extends Comparable, V> implements Map<K, V> {
   @override
   void forEach(void Function(K key, V value) action) {
     for (var key in keys) {
-      action(key, _map[key]!);
+      action(key, _map[key] as V);
     }
   }
 
@@ -116,7 +116,7 @@ class SortedMap<K extends Comparable, V> implements Map<K, V> {
   }
 
   @override
-  Iterable<MapEntry<K, V>> get entries => keys.map((key) => MapEntry(key, _map[key]!));
+  Iterable<MapEntry<K, V>> get entries => keys.map((key) => MapEntry(key, _map[key] as V));
 
   @override
   void removeWhere(bool Function(K key, V value) test) {

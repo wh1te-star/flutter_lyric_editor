@@ -20,16 +20,11 @@ class TextPaneProvider with ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
   final TimingService timingService;
 
-  List<String> lyricAppearance = [];
-
   SnippetID cursorLinePosition = SnippetID(0);
   int cursorCharPosition = 0;
-  int cursorCharPositionRestore = 0;
   Option cursorPositionOption = Option.former;
 
-  List<SnippetID> highlightingSnippetsIDs = [];
-  List<List<int>> timingPointsForEachLine = [];
-  static const String timingPointChar = '|';
+  static const String timingPointChar = '■';
 
   TextPaneProvider({
     required this.musicPlayerProvider,
@@ -38,27 +33,16 @@ class TextPaneProvider with ChangeNotifier {
     musicPlayerProvider.addListener(() {
       updateCursorIfNeed();
     });
-    timingService.addListener(() {
-      Map<SnippetID, LyricSnippet> lyricSnippets = timingService.lyricSnippetList;
-      lyricAppearance = List.filled(lyricSnippets.length, '');
-      updateLyricAppearance();
-    });
   }
 
   void updateCursorIfNeed() {
-    if (highlightingSnippetsIDs.isNotEmpty && !highlightingSnippetsIDs.contains(cursorLinePosition)) {
-      cursorLinePosition = highlightingSnippetsIDs[0];
-      LyricSnippet nextSnippet = getSnippetWithID(cursorLinePosition);
+    Map<SnippetID, LyricSnippet> currentSnippets = timingService.getCurrentSeekPositionSnippets();
+    if (!currentSnippets.keys.toList().contains(cursorLinePosition)) {
+      SnippetID id = currentSnippets.keys.toList()[0];
+      LyricSnippet snippet = currentSnippets.values.toList()[0];
 
-      if (cursorCharPositionRestore != 0) {
-        cursorCharPosition = cursorCharPositionRestore;
-      }
-      if (cursorCharPosition > nextSnippet.sentence.length) {
-        cursorCharPositionRestore = cursorCharPosition;
-        cursorCharPosition = nextSnippet.sentence.length;
-      }
-
-      //cursorBlinker.restartCursorTimer();
+      cursorLinePosition = id;
+      PositionTypeInfo snippetPosition = snippet.getSeekPositionIndex(musicPlayerProvider.seekPosition);
     }
   }
 
@@ -69,25 +53,6 @@ class TextPaneProvider with ChangeNotifier {
 
   int countOccurrences(List<int> list, int number) {
     return list.where((element) => element == number).length;
-  }
-
-  void updateLyricAppearance() {
-    final List<LyricSnippet> lyricSnippetList = timingService.lyricSnippetList.values.toList();
-    timingPointsForEachLine = lyricSnippetList.map((snippet) => snippet.sentenceSegments.take(snippet.sentenceSegments.length - 1).map((sentenceSegmentMap) => sentenceSegmentMap.wordLength).fold<List<int>>([], (acc, pos) => acc..add((acc.isEmpty ? 0 : acc.last) + pos))).toList();
-    for (int index = 0; index < timingPointsForEachLine.length; index++) {
-      Map<int, String> timingPointsForEachLineMap = {};
-      for (int i = 0; i < timingPointsForEachLine[index].length; i++) {
-        int key = timingPointsForEachLine[index][i];
-        if (timingPointsForEachLineMap.containsKey(key)) {
-          timingPointsForEachLineMap[key] = timingPointsForEachLineMap[key]! + timingPointChar;
-        } else {
-          timingPointsForEachLineMap[key] = timingPointChar;
-        }
-      }
-      lyricAppearance[index] = insertChars(lyricSnippetList[index].sentence, timingPointsForEachLineMap);
-    }
-
-    notifyListeners();
   }
 
   String insertChars(String originalString, Map<int, String> charPositions) {
@@ -206,7 +171,7 @@ class TextPaneProvider with ChangeNotifier {
 class TextPane extends ConsumerStatefulWidget {
   final FocusNode focusNode;
 
-  TextPane({required this.focusNode}) : super(key: Key('TextPane'));
+  TextPane({required this.focusNode}) : super(key: const Key('TextPane'));
 
   @override
   _TextPaneState createState() => _TextPaneState(focusNode);
@@ -267,101 +232,104 @@ class _TextPaneState extends ConsumerState<TextPane> {
     return list.where((element) => element == number).length;
   }
 
-@override
-Widget build(BuildContext context) {
-  return Focus(
-    focusNode: focusNode,
-    child: GestureDetector(
-      onTap: () {
-        focusNode.requestFocus();
-        debugPrint("The text pane is focused");
-        setState(() {});
-      },
-      child: snippetEditColumn(),
-    ),
-  );
-}
-
-Widget snippetEditColumn() {
-  final TimingService timingService = ref.read(timingMasterProvider);
-  List<Widget> elements = [];
-  timingService.getCurrentSeekPositionSnippets().values.toList().forEach((snippet) {
-    elements.add(snippetEditLine(snippet));
-  });
-
-  return Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: elements,
-    ),
-  );
-}
-
-Widget snippetEditLine(LyricSnippet snippet) {
-  MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
-  List<Widget> coloredTextWidgets = [];
-  PositionTypeInfo position = snippet.getSeekPositionIndex(musicPlayerService.seekPosition);
-
-  for (int index = 0; index < snippet.sentenceSegments.length; index++) {
-    String segmentWord = snippet.segmentWord(index);
-
-    if (position.type == PositionType.sentenceSegment && index == position.index) {
-      coloredTextWidgets.add(
-        Center(
-          child: segmentEdit(segmentWord),
-        ),
-      );
-    } else {
-      coloredTextWidgets.add(
-        Center(
-          child: Text(
-            segmentWord,
-            style: TextStyle(color: Colors.black),
-          ),
-        ),
-      );
-    }
+  @override
+  Widget build(BuildContext context) {
+    return Focus(
+      focusNode: focusNode,
+      child: GestureDetector(
+        onTap: () {
+          focusNode.requestFocus();
+          debugPrint("The text pane is focused");
+          setState(() {});
+        },
+        child: snippetEditColumn(),
+      ),
+    );
   }
 
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: coloredTextWidgets,
-  );
-}
+  Widget snippetEditColumn() {
+    final TimingService timingService = ref.read(timingMasterProvider);
+    List<Widget> elements = [];
+    timingService.getCurrentSeekPositionSnippets().values.toList().forEach((snippet) {
+      elements.add(snippetEditLine(snippet));
+    });
 
-Widget segmentEdit(String segmentWord) {
-  final double charSize = 18.0;
-  final double charWidth = 10.0;
-  final double cursorWidth = 2.0;
-  final double cursorHeight = 24.0;
-  final Color cursorColor = Colors.black;
-
-  final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
-  final int cursorPosition = textPaneProvider.cursorCharPosition;
-  double cursorCoordinate = calculateCursorPosition(segmentWord, cursorPosition, charSize);
-
-  return Stack(
-    alignment: Alignment.center,
-    children: [
-      Text(
-        segmentWord,
-        style: TextStyle(color: Colors.red),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: elements,
       ),
-      cursorBlinker.isCursorVisible
-          ? Positioned(
-              left: cursorCoordinate - cursorWidth / 2,
-              child: Container(
-                width: cursorWidth,
-                height: cursorHeight,
-                color: cursorColor,
-              ),
-            )
-          : const SizedBox.shrink(),
-    ],
-  );
-}
+    );
+  }
+
+  Widget snippetEditLine(LyricSnippet snippet) {
+    MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
+    List<Widget> coloredTextWidgets = [];
+    PositionTypeInfo position = snippet.getSeekPositionIndex(musicPlayerService.seekPosition);
+
+    for (int index = 0; index < snippet.sentenceSegments.length; index++) {
+      String segmentWord = snippet.segmentWord(index);
+
+      if (position.type == PositionType.sentenceSegment && index == position.index) {
+        coloredTextWidgets.add(
+          Center(
+            child: segmentEdit(segmentWord),
+          ),
+        );
+      } else {
+        coloredTextWidgets.add(
+          Center(
+            child: Text(
+              segmentWord,
+              style: const TextStyle(color: Colors.black),
+            ),
+          ),
+        );
+      }
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: coloredTextWidgets,
+    );
+  }
+
+  Widget segmentEdit(String segmentWord) {
+    const double charSize = 18.0;
+    const double charWidth = 10.0;
+    const double cursorWidth = 2.0;
+    const double cursorHeight = 24.0;
+    const Color cursorColor = Colors.black;
+
+    final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
+    final int cursorPosition = textPaneProvider.cursorCharPosition;
+    double cursorCoordinate = calculateCursorPosition(segmentWord, cursorPosition, charSize);
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Text(
+          segmentWord,
+          style: TextStyle(
+            color: Colors.red,
+            fontSize: charSize,
+          ),
+        ),
+        cursorBlinker.isCursorVisible
+            ? Positioned(
+                left: cursorCoordinate - cursorWidth / 2,
+                child: Container(
+                  width: cursorWidth,
+                  height: cursorHeight,
+                  color: cursorColor,
+                ),
+              )
+            : const SizedBox.shrink(),
+      ],
+    );
+  }
 
   double calculateCursorPosition(String text, int cursorPosition, double charSize) {
     final TextPainter textPainter = TextPainter(

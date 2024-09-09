@@ -14,10 +14,10 @@ class CurrentPositionIndicatorPainter extends CustomPainter {
     Paint sectionPaint = Paint()
       ..color = Colors.grey
       ..strokeWidth = 1.0;
-    sections.forEach((int section) {
+    for (var section in sections) {
       double x = section * intervalLength / intervalDuration;
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), sectionPaint);
-    });
+    }
 
     Paint seekPositionPaint = Paint()
       ..color = Colors.red

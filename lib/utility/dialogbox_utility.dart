@@ -13,7 +13,7 @@ Future<List<String>> displayDialog(BuildContext context, List<String> texts) asy
 class _TextFieldDialog extends StatefulWidget {
   final List<String> texts;
 
-  _TextFieldDialog({required this.texts});
+  const _TextFieldDialog({required this.texts});
 
   @override
   __TextFieldDialogState createState() => __TextFieldDialogState();

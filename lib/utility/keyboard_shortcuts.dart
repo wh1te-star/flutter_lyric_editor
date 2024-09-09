@@ -29,7 +29,7 @@ class KeyboardShortcuts extends ConsumerStatefulWidget {
   final FocusNode textPaneFocusNode;
   final FocusNode timelinePaneFocusNode;
 
-  KeyboardShortcuts({
+  const KeyboardShortcuts({super.key, 
     required this.child,
     required this.videoPaneFocusNode,
     required this.textPaneFocusNode,
@@ -37,7 +37,7 @@ class KeyboardShortcuts extends ConsumerStatefulWidget {
   });
 
   @override
-  _KeyboardShortcutsState createState() => _KeyboardShortcutsState(child: this.child, videoPaneFocusNode: this.videoPaneFocusNode, textPaneFocusNode: this.textPaneFocusNode, timelinePaneFocusNode: this.timelinePaneFocusNode);
+  _KeyboardShortcutsState createState() => _KeyboardShortcutsState(child: child, videoPaneFocusNode: videoPaneFocusNode, textPaneFocusNode: textPaneFocusNode, timelinePaneFocusNode: timelinePaneFocusNode);
 }
 
 class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
@@ -114,16 +114,16 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         SnippetStartMoveIntent: CallbackAction<SnippetStartMoveIntent>(
           onInvoke: (SnippetStartMoveIntent intent) => () {
-            timelinePaneProvider.selectingSnippets.forEach((SnippetID id) {
+            for (var id in timelinePaneProvider.selectingSnippets) {
               timingService.manipulateSnippet(id, SnippetEdge.start, false);
-            });
+            }
           }(),
         ),
         SnippetEndMoveIntent: CallbackAction<SnippetEndMoveIntent>(
           onInvoke: (SnippetEndMoveIntent intent) => () {
-            timelinePaneProvider.selectingSnippets.forEach((SnippetID id) {
+            for (var id in timelinePaneProvider.selectingSnippets) {
               timingService.manipulateSnippet(id, SnippetEdge.end, false);
-            });
+            }
           }(),
         ),
         VolumeUpIntent: CallbackAction<VolumeUpIntent>(
@@ -196,16 +196,16 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         TimingPointAddIntent: CallbackAction<TimingPointAddIntent>(
           onInvoke: (TimingPointAddIntent intent) => () {
             int seekPosition = musicPlayerProvider.seekPosition;
-            timelinePaneProvider.selectingSnippets.forEach((SnippetID id) {
+            for (var id in timelinePaneProvider.selectingSnippets) {
               timingService.addTimingPoint(id, textPaneProvider.cursorCharPosition, seekPosition);
-            });
+            }
           }(),
         ),
         TimingPointDeleteIntent: CallbackAction<TimingPointDeleteIntent>(
           onInvoke: (TimingPointDeleteIntent intent) => () {
-            timelinePaneProvider.selectingSnippets.forEach((SnippetID id) {
+            for (var id in timelinePaneProvider.selectingSnippets) {
               timingService.deleteTimingPoint(id, textPaneProvider.cursorCharPosition);
-            });
+            }
           }(),
         ),
         SnippetDivideIntent: CallbackAction<SnippetDivideIntent>(
@@ -257,9 +257,9 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
       );
     } else {
       return Shortcuts(
-        shortcuts: <LogicalKeySet, Intent>{},
+        shortcuts: const <LogicalKeySet, Intent>{},
         child: Actions(
-          actions: <Type, Action<Intent>>{},
+          actions: const <Type, Action<Intent>>{},
           child: child,
         ),
       );
