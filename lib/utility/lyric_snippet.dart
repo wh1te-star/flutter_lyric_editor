@@ -78,6 +78,23 @@ class LyricSnippet {
     return PositionTypeInfo(PositionType.sentenceSegment, timingPoints.length);
   }
 
+  PositionTypeInfo getCharPositionIndex(int charPosition) {
+    if (charPosition < 0 || sentence.length < charPosition) {
+      return PositionTypeInfo(PositionType.sentenceSegment, -1);
+    }
+    for (int index = 0; index < sentenceSegments.length; index++) {
+      int leftSegmentPosition = timingPoints[index].charPosition;
+      int rightSegmentPosition = timingPoints[index + 1].charPosition;
+      if (leftSegmentPosition < charPosition && charPosition < rightSegmentPosition) {
+        return PositionTypeInfo(PositionType.sentenceSegment, index);
+      }
+      if (timingPoints[index].seekPosition == leftSegmentPosition) {
+        return PositionTypeInfo(PositionType.timingPoint, index);
+      }
+    }
+    return PositionTypeInfo(PositionType.sentenceSegment, timingPoints.length);
+  }
+
   LyricSnippet copyWith({
     VocalistID? vocalistID,
     String? sentence,
