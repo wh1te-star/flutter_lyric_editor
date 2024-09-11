@@ -20,11 +20,13 @@ class TextPaneProvider with ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
   final TimingService timingService;
 
+  late CursorBlinker cursorBlinker;
+
   SnippetID cursorLinePosition = SnippetID(0);
   int cursorCharPosition = 0;
   Option cursorPositionOption = Option.former;
 
-  static const String timingPointChar = '■';
+  static const String timingPointChar = '▲';
 
   TextPaneProvider({
     required this.musicPlayerProvider,
@@ -33,6 +35,13 @@ class TextPaneProvider with ChangeNotifier {
     musicPlayerProvider.addListener(() {
       updateCursorIfNeed();
     });
+
+    cursorBlinker = CursorBlinker(
+      blinkIntervalInMillisec: 1000,
+      onTick: () {
+        notifyListeners();
+      },
+    );
   }
 
   void updateCursorIfNeed() {
@@ -44,6 +53,7 @@ class TextPaneProvider with ChangeNotifier {
     if (!currentSnippets.keys.toList().contains(cursorLinePosition)) {
       cursorLinePosition = currentSnippets.keys.toList()[0];
       cursorCharPosition = 1;
+      cursorBlinker.restartCursorTimer();
       return;
     }
 
@@ -52,6 +62,7 @@ class TextPaneProvider with ChangeNotifier {
     PositionTypeInfo nextSnippetPosition = snippet.getCharPositionIndex(cursorCharPosition);
     if (currentSnippetPosition.index != nextSnippetPosition.index) {
       cursorCharPosition = snippet.timingPoints[currentSnippetPosition.index].charPosition + 1;
+      cursorBlinker.restartCursorTimer();
     }
   }
 
@@ -192,8 +203,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
   static const String cursorChar = '\xa0';
   //static const String sectionChar = '\n\n';
 
-  late CursorBlinker cursorBlinker;
-
   double lineHeight = 20;
 
   List<SnippetID> selectingSnippets = [];
@@ -224,12 +233,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
     textPaneProvider.addListener(() {
       setState(() {});
     });
-
-    cursorBlinker = CursorBlinker(
-        blinkIntervalInMillisec: 1000,
-        onTick: () {
-          setState(() {});
-        });
   }
 
   LyricSnippet getSnippetWithID(SnippetID id) {
@@ -300,6 +303,17 @@ class _TextPaneState extends ConsumerState<TextPane> {
           ),
         );
       }
+
+      if (index < snippet.sentenceSegments.length - 1) {
+        coloredTextWidgets.add(
+          Center(
+            child: Text(
+              TextPaneProvider.timingPointChar,
+              style: const TextStyle(color: Colors.black),
+            ),
+          ),
+        );
+      }
     }
 
     return Row(
@@ -332,7 +346,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
             letterSpacing: letterSpacing,
           ),
         ),
-        cursorBlinker.isCursorVisible
+        textPaneProvider.cursorBlinker.isCursorVisible
             ? Positioned(
                 left: cursorCoordinate - cursorWidth / 2,
                 child: Container(
