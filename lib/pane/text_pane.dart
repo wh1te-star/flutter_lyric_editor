@@ -287,7 +287,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
         int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursorLinePosition]!.timingPoints[position.index].charPosition;
         coloredTextWidgets.add(
           Center(
-            child: segmentEdit(segmentWord, cursorPositionSentence-cursorPositionWordStart),
+            child: segmentEdit(segmentWord, cursorPositionSentence - cursorPositionWordStart),
           ),
         );
       } else {
@@ -314,10 +314,11 @@ class _TextPaneState extends ConsumerState<TextPane> {
     const double charWidth = 10.0;
     const double cursorWidth = 2.0;
     const double cursorHeight = 24.0;
+    const double letterSpacing = 2.0;
     const Color cursorColor = Colors.black;
 
     final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
-    double cursorCoordinate = calculateCursorPosition(segmentWord, cursorPositionWord, charSize);
+    double cursorCoordinate = calculateCursorPosition(segmentWord, cursorPositionWord, charSize, letterSpacing);
     debugPrint(cursorPositionWord.toString());
 
     return Stack(
@@ -328,6 +329,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
           style: TextStyle(
             color: Colors.red,
             fontSize: charSize,
+            letterSpacing: letterSpacing,
           ),
         ),
         cursorBlinker.isCursorVisible
@@ -344,9 +346,14 @@ class _TextPaneState extends ConsumerState<TextPane> {
     );
   }
 
-  double calculateCursorPosition(String text, int cursorPositionWord, double charSize) {
+  double calculateCursorPosition(String text, int cursorPositionWord, double charSize, double letterSpacing) {
     final TextPainter textPainter = TextPainter(
-      text: TextSpan(text: text, style: TextStyle(fontSize: charSize)),
+      text: TextSpan(
+          text: text,
+          style: TextStyle(
+            fontSize: charSize,
+            letterSpacing: letterSpacing,
+          )),
       textDirection: TextDirection.ltr,
     );
     textPainter.layout();
