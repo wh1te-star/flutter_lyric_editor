@@ -37,12 +37,21 @@ class TextPaneProvider with ChangeNotifier {
 
   void updateCursorIfNeed() {
     Map<SnippetID, LyricSnippet> currentSnippets = timingService.getCurrentSeekPositionSnippets();
-    if (!currentSnippets.keys.toList().contains(cursorLinePosition)) {
-      SnippetID id = currentSnippets.keys.toList()[0];
-      LyricSnippet snippet = currentSnippets.values.toList()[0];
+    if (currentSnippets.isEmpty) {
+      return;
+    }
 
-      cursorLinePosition = id;
-      PositionTypeInfo snippetPosition = snippet.getSeekPositionIndex(musicPlayerProvider.seekPosition);
+    if (!currentSnippets.keys.toList().contains(cursorLinePosition)) {
+      cursorLinePosition = currentSnippets.keys.toList()[0];
+      cursorCharPosition = 1;
+      return;
+    }
+
+    LyricSnippet snippet = currentSnippets.values.toList()[0];
+    PositionTypeInfo currentSnippetPosition = snippet.getSeekPositionIndex(musicPlayerProvider.seekPosition);
+    PositionTypeInfo nextSnippetPosition = snippet.getCharPositionIndex(cursorCharPosition);
+    if (currentSnippetPosition.index != nextSnippetPosition.index) {
+      cursorCharPosition = snippet.timingPoints[currentSnippetPosition.index].charPosition + 1;
     }
   }
 
@@ -272,9 +281,13 @@ class _TextPaneState extends ConsumerState<TextPane> {
       String segmentWord = snippet.segmentWord(index);
 
       if (position.type == PositionType.sentenceSegment && index == position.index) {
+        TimingService timingService = ref.read(timingMasterProvider);
+        TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
+        int cursorPositionSentence = textPaneProvider.cursorCharPosition;
+        int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursorLinePosition]!.timingPoints[position.index].charPosition;
         coloredTextWidgets.add(
           Center(
-            child: segmentEdit(segmentWord),
+            child: segmentEdit(segmentWord, cursorPositionSentence-cursorPositionWordStart),
           ),
         );
       } else {
@@ -296,7 +309,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     );
   }
 
-  Widget segmentEdit(String segmentWord) {
+  Widget segmentEdit(String segmentWord, int cursorPositionWord) {
     const double charSize = 18.0;
     const double charWidth = 10.0;
     const double cursorWidth = 2.0;
@@ -304,8 +317,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
     const Color cursorColor = Colors.black;
 
     final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
-    final int cursorPosition = textPaneProvider.cursorCharPosition;
-    double cursorCoordinate = calculateCursorPosition(segmentWord, cursorPosition, charSize);
+    double cursorCoordinate = calculateCursorPosition(segmentWord, cursorPositionWord, charSize);
+    debugPrint(cursorPositionWord.toString());
 
     return Stack(
       alignment: Alignment.center,
@@ -331,13 +344,13 @@ class _TextPaneState extends ConsumerState<TextPane> {
     );
   }
 
-  double calculateCursorPosition(String text, int cursorPosition, double charSize) {
+  double calculateCursorPosition(String text, int cursorPositionWord, double charSize) {
     final TextPainter textPainter = TextPainter(
       text: TextSpan(text: text, style: TextStyle(fontSize: charSize)),
       textDirection: TextDirection.ltr,
     );
     textPainter.layout();
-    final TextPosition position = TextPosition(offset: cursorPosition);
+    final TextPosition position = TextPosition(offset: cursorPositionWord);
     final Rect caretPrototype = Rect.fromLTWH(0, 0, 0, textPainter.height);
     final Offset caretOffset = textPainter.getOffsetForCaret(position, caretPrototype);
     return caretOffset.dx;

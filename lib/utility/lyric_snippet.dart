@@ -88,7 +88,7 @@ class LyricSnippet {
       if (leftSegmentPosition < charPosition && charPosition < rightSegmentPosition) {
         return PositionTypeInfo(PositionType.sentenceSegment, index);
       }
-      if (timingPoints[index].seekPosition == leftSegmentPosition) {
+      if (charPosition == leftSegmentPosition) {
         return PositionTypeInfo(PositionType.timingPoint, index);
       }
     }
