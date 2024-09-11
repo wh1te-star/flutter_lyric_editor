@@ -58,10 +58,10 @@ class TextPaneProvider with ChangeNotifier {
     }
 
     LyricSnippet snippet = currentSnippets.values.toList()[0];
-    PositionTypeInfo currentSnippetPosition = snippet.getSeekPositionIndex(musicPlayerProvider.seekPosition);
+    int currentSnippetPosition = snippet.getSeekPositionSegmentIndex(musicPlayerProvider.seekPosition);
     PositionTypeInfo nextSnippetPosition = snippet.getCharPositionIndex(cursorCharPosition);
-    if (currentSnippetPosition.index != nextSnippetPosition.index) {
-      cursorCharPosition = snippet.timingPoints[currentSnippetPosition.index].charPosition + 1;
+    if (currentSnippetPosition != nextSnippetPosition.index) {
+      cursorCharPosition = snippet.timingPoints[currentSnippetPosition].charPosition + 1;
       cursorBlinker.restartCursorTimer();
     }
   }
@@ -145,14 +145,15 @@ class TextPaneProvider with ChangeNotifier {
     }
     LyricSnippet snippet = timingService.lyricSnippetList[cursorLinePosition]!;
     PositionTypeInfo snippetPositionInfo = snippet.getCharPositionIndex(cursorCharPosition);
-    PositionTypeInfo seekPositionInfo = snippet.getSeekPositionIndex(musicPlayerProvider.seekPosition);
-    if (snippetPositionInfo.type == PositionType.sentenceSegment || snippetPositionInfo.index == seekPositionInfo.index + 1) {
+    int seekPositionInfo = snippet.getSeekPositionSegmentIndex(musicPlayerProvider.seekPosition);
+    if (snippetPositionInfo.type == PositionType.sentenceSegment || snippetPositionInfo.index == seekPositionInfo + 1) {
       cursorCharPosition--;
     } else {
       cursorCharPosition = snippet.timingPoints[snippetPositionInfo.index - 1].charPosition;
     }
     debugPrint("cursorCharPosition: $cursorCharPosition");
 
+    cursorBlinker.restartCursorTimer();
     notifyListeners();
   }
 
@@ -162,14 +163,15 @@ class TextPaneProvider with ChangeNotifier {
     }
     LyricSnippet snippet = timingService.lyricSnippetList[cursorLinePosition]!;
     PositionTypeInfo snippetPositionInfo = snippet.getCharPositionIndex(cursorCharPosition);
-    PositionTypeInfo seekPositionInfo = snippet.getSeekPositionIndex(musicPlayerProvider.seekPosition);
-    if (snippetPositionInfo.type == PositionType.sentenceSegment || snippetPositionInfo.index == seekPositionInfo.index) {
+    int seekPositionInfo = snippet.getSeekPositionSegmentIndex(musicPlayerProvider.seekPosition);
+    if (snippetPositionInfo.type == PositionType.sentenceSegment || snippetPositionInfo.index == seekPositionInfo) {
       cursorCharPosition++;
     } else {
       cursorCharPosition = snippet.timingPoints[snippetPositionInfo.index + 1].charPosition;
     }
     debugPrint("cursorCharPosition: $cursorCharPosition");
 
+    cursorBlinker.restartCursorTimer();
     notifyListeners();
   }
 }
@@ -264,16 +266,16 @@ class _TextPaneState extends ConsumerState<TextPane> {
   Widget snippetEditLine(LyricSnippet snippet) {
     MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     List<Widget> coloredTextWidgets = [];
-    PositionTypeInfo position = snippet.getSeekPositionIndex(musicPlayerService.seekPosition);
+    int highlightIndex = snippet.getSeekPositionSegmentIndex(musicPlayerService.seekPosition);
 
     for (int index = 0; index < snippet.sentenceSegments.length; index++) {
       String segmentWord = snippet.segmentWord(index);
 
-      if (position.type == PositionType.sentenceSegment && index == position.index) {
+      if (index == highlightIndex) {
         TimingService timingService = ref.read(timingMasterProvider);
         TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
         int cursorPositionSentence = textPaneProvider.cursorCharPosition;
-        int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursorLinePosition]!.timingPoints[position.index].charPosition;
+        int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursorLinePosition]!.timingPoints[highlightIndex].charPosition;
         coloredTextWidgets.add(
           Center(
             child: segmentEdit(segmentWord, cursorPositionSentence - cursorPositionWordStart),

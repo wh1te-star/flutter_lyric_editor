@@ -606,6 +606,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   Widget cellFunctionButton() {
+    final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
     bool autoCurrentSelectMode = timelinePaneProvider.autoCurrentSelectMode;
 
@@ -617,7 +618,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
       child: CustomPaint(
         painter: RectanglePainter(
           rect: const Rect.fromLTRB(0.0, 0.0, 155, 30),
-          sentence: "Auto Select Mode",
+          sentence: musicPlayerService.seekPosition.toString(),
           color: Colors.purpleAccent,
           isSelected: autoCurrentSelectMode,
           borderLineWidth: 1.0,

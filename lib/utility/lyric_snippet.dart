@@ -61,21 +61,16 @@ class LyricSnippet {
     );
   }
 
-  PositionTypeInfo getSeekPositionIndex(int seekPosition) {
+  int getSeekPositionSegmentIndex(int seekPosition) {
     if (seekPosition < startTimestamp || endTimestamp < seekPosition) {
-      return PositionTypeInfo(PositionType.sentenceSegment, -1);
+      return -1;
     }
     for (int index = 0; index < sentenceSegments.length; index++) {
-      int leftSegmentPosition = startTimestamp + timingPoints[index].seekPosition;
-      int rightSegmentPosition = startTimestamp + timingPoints[index + 1].seekPosition;
-      if (leftSegmentPosition < seekPosition && seekPosition < rightSegmentPosition) {
-        return PositionTypeInfo(PositionType.sentenceSegment, index);
-      }
-      if (timingPoints[index].seekPosition == leftSegmentPosition) {
-        return PositionTypeInfo(PositionType.timingPoint, index);
+      if (seekPosition <= startTimestamp + timingPoints[index + 1].seekPosition) {
+        return index;
       }
     }
-    return PositionTypeInfo(PositionType.timingPoint, sentenceSegments.length);
+    return sentenceSegments.length;
   }
 
   PositionTypeInfo getCharPositionIndex(int charPosition) {
