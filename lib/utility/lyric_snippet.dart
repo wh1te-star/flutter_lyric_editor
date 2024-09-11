@@ -75,7 +75,7 @@ class LyricSnippet {
         return PositionTypeInfo(PositionType.timingPoint, index);
       }
     }
-    return PositionTypeInfo(PositionType.sentenceSegment, timingPoints.length);
+    return PositionTypeInfo(PositionType.timingPoint, sentenceSegments.length);
   }
 
   PositionTypeInfo getCharPositionIndex(int charPosition) {
@@ -92,7 +92,7 @@ class LyricSnippet {
         return PositionTypeInfo(PositionType.timingPoint, index);
       }
     }
-    return PositionTypeInfo(PositionType.sentenceSegment, timingPoints.length);
+    return PositionTypeInfo(PositionType.timingPoint, sentenceSegments.length);
   }
 
   LyricSnippet copyWith({

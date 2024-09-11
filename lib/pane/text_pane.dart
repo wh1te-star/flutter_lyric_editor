@@ -140,51 +140,37 @@ class TextPaneProvider with ChangeNotifier {
   }
 
   void moveLeftCursor() {
-    /*
-    if (cursorCharPosition > 0) {
-      cursorCharPositionRestore = 0;
-
-      int snippetIndex = getSnippetIndexWithID(cursorLinePosition);
-      if (cursorPositionOption == Option.former) {
-        cursorCharPosition--;
-        if (countOccurrences(timingPointsForEachLine[snippetIndex], cursorCharPosition) >= 2) {
-          cursorPositionOption = Option.latter;
-        }
-      } else {
-        cursorPositionOption = Option.former;
-      }
-
-      //cursorBlinker.restartCursorTimer();
-      debugPrint("H key: LineCursor: ${cursorLinePosition}, CharCursor: ${cursorCharPosition}_${cursorPositionOption}");
-
-      notifyListeners();
+    if (!timingService.lyricSnippetList.containsKey(cursorLinePosition)) {
+      return;
     }
-    */
+    LyricSnippet snippet = timingService.lyricSnippetList[cursorLinePosition]!;
+    PositionTypeInfo snippetPositionInfo = snippet.getCharPositionIndex(cursorCharPosition);
+    PositionTypeInfo seekPositionInfo = snippet.getSeekPositionIndex(musicPlayerProvider.seekPosition);
+    if (snippetPositionInfo.type == PositionType.sentenceSegment || snippetPositionInfo.index == seekPositionInfo.index + 1) {
+      cursorCharPosition--;
+    } else {
+      cursorCharPosition = snippet.timingPoints[snippetPositionInfo.index - 1].charPosition;
+    }
+    debugPrint("cursorCharPosition: $cursorCharPosition");
+
+    notifyListeners();
   }
 
   void moveRightCursor() {
-    /*
-    if (cursorCharPosition < getSnippetWithID(cursorLinePosition).sentence.length) {
-      cursorCharPositionRestore = 0;
-
-      int snippetIndex = getSnippetIndexWithID(cursorLinePosition);
-      if (cursorPositionOption == Option.former) {
-        if (countOccurrences(timingPointsForEachLine[snippetIndex], cursorCharPosition) >= 2) {
-          cursorPositionOption = Option.latter;
-        } else {
-          cursorCharPosition++;
-        }
-      } else {
-        cursorCharPosition++;
-        cursorPositionOption = Option.former;
-      }
-
-      //cursorBlinker.restartCursorTimer();
-      debugPrint("L key: LineCursor: ${cursorLinePosition}, CharCursor: ${cursorCharPosition}_${cursorPositionOption}");
-
-      notifyListeners();
+    if (!timingService.lyricSnippetList.containsKey(cursorLinePosition)) {
+      return;
     }
-    */
+    LyricSnippet snippet = timingService.lyricSnippetList[cursorLinePosition]!;
+    PositionTypeInfo snippetPositionInfo = snippet.getCharPositionIndex(cursorCharPosition);
+    PositionTypeInfo seekPositionInfo = snippet.getSeekPositionIndex(musicPlayerProvider.seekPosition);
+    if (snippetPositionInfo.type == PositionType.sentenceSegment || snippetPositionInfo.index == seekPositionInfo.index) {
+      cursorCharPosition++;
+    } else {
+      cursorCharPosition = snippet.timingPoints[snippetPositionInfo.index + 1].charPosition;
+    }
+    debugPrint("cursorCharPosition: $cursorCharPosition");
+
+    notifyListeners();
   }
 }
 
@@ -333,7 +319,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
     final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
     double cursorCoordinate = calculateCursorPosition(segmentWord, cursorPositionWord, charSize, letterSpacing);
-    debugPrint(cursorPositionWord.toString());
 
     return Stack(
       alignment: Alignment.center,
