@@ -53,6 +53,7 @@ class TextPaneProvider with ChangeNotifier {
     if (!currentSnippets.keys.toList().contains(cursorLinePosition)) {
       cursorLinePosition = currentSnippets.keys.toList()[0];
       cursorCharPosition = 1;
+      cursorPositionOption = Option.former;
       cursorBlinker.restartCursorTimer();
       return;
     }
@@ -62,6 +63,7 @@ class TextPaneProvider with ChangeNotifier {
     PositionTypeInfo nextSnippetPosition = snippet.getCharPositionIndex(cursorCharPosition);
     if (currentSnippetPosition != nextSnippetPosition.index) {
       cursorCharPosition = snippet.timingPoints[currentSnippetPosition].charPosition + 1;
+      cursorPositionOption = Option.former;
       cursorBlinker.restartCursorTimer();
     }
   }
@@ -146,12 +148,31 @@ class TextPaneProvider with ChangeNotifier {
     LyricSnippet snippet = timingService.lyricSnippetList[cursorLinePosition]!;
     PositionTypeInfo snippetPositionInfo = snippet.getCharPositionIndex(cursorCharPosition);
     int seekPositionInfo = snippet.getSeekPositionSegmentIndex(musicPlayerProvider.seekPosition);
-    if (snippetPositionInfo.type == PositionType.sentenceSegment || snippetPositionInfo.index == seekPositionInfo + 1) {
-      cursorCharPosition--;
-    } else {
-      cursorCharPosition = snippet.timingPoints[snippetPositionInfo.index - 1].charPosition;
+    int charPositionIndex = snippetPositionInfo.index;
+    if (cursorPositionOption == Option.latter && snippetPositionInfo.duplicate) {
+      charPositionIndex++;
     }
-    debugPrint("cursorCharPosition: $cursorCharPosition");
+
+    if (snippetPositionInfo.duplicate && cursorPositionOption == Option.latter) {
+      cursorPositionOption = Option.former;
+    } else if (snippetPositionInfo.type == PositionType.sentenceSegment || charPositionIndex == seekPositionInfo + 1) {
+      cursorCharPosition--;
+
+      if (snippet.getCharPositionIndex(cursorCharPosition).duplicate) {
+        cursorPositionOption = Option.latter;
+      } else {
+        cursorPositionOption = Option.former;
+      }
+    } else {
+      cursorCharPosition = snippet.timingPoints[charPositionIndex - 1].charPosition;
+
+      if (snippet.getCharPositionIndex(cursorCharPosition).duplicate) {
+        cursorPositionOption = Option.latter;
+      } else {
+        cursorPositionOption = Option.former;
+      }
+    }
+    debugPrint("cursorCharPosition: $cursorCharPosition of ${cursorPositionOption}");
 
     cursorBlinker.restartCursorTimer();
     notifyListeners();
@@ -164,12 +185,21 @@ class TextPaneProvider with ChangeNotifier {
     LyricSnippet snippet = timingService.lyricSnippetList[cursorLinePosition]!;
     PositionTypeInfo snippetPositionInfo = snippet.getCharPositionIndex(cursorCharPosition);
     int seekPositionInfo = snippet.getSeekPositionSegmentIndex(musicPlayerProvider.seekPosition);
-    if (snippetPositionInfo.type == PositionType.sentenceSegment || snippetPositionInfo.index == seekPositionInfo) {
-      cursorCharPosition++;
-    } else {
-      cursorCharPosition = snippet.timingPoints[snippetPositionInfo.index + 1].charPosition;
+    int charPositionIndex = snippetPositionInfo.index;
+    if (cursorPositionOption == Option.latter && snippetPositionInfo.duplicate) {
+      charPositionIndex++;
     }
-    debugPrint("cursorCharPosition: $cursorCharPosition");
+
+    if (snippetPositionInfo.duplicate && cursorPositionOption == Option.former) {
+      cursorPositionOption = Option.latter;
+    } else if (snippetPositionInfo.type == PositionType.sentenceSegment || charPositionIndex == seekPositionInfo) {
+      cursorCharPosition++;
+      cursorPositionOption = Option.former;
+    } else {
+      cursorCharPosition = snippet.timingPoints[charPositionIndex + 1].charPosition;
+      cursorPositionOption = Option.former;
+    }
+    debugPrint("cursorCharPosition: $cursorCharPosition of ${cursorPositionOption}");
 
     cursorBlinker.restartCursorTimer();
     notifyListeners();
@@ -294,7 +324,11 @@ class _TextPaneState extends ConsumerState<TextPane> {
       }
 
       if (index < snippet.sentenceSegments.length - 1) {
-        if (textPaneProvider.cursorBlinker.isCursorVisible && cursorPositionInfo.type == PositionType.timingPoint && index == cursorPositionInfo.index - 1) {
+        int timingPointIndex = cursorPositionInfo.index;
+        if (textPaneProvider.cursorPositionOption == Option.latter) {
+          timingPointIndex++;
+        }
+        if (textPaneProvider.cursorBlinker.isCursorVisible && cursorPositionInfo.type == PositionType.timingPoint && index == timingPointIndex - 1) {
           coloredTextWidgets.add(
             Center(
               child: Text(

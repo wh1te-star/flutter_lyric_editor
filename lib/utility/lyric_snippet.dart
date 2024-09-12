@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 
 class LyricSnippet {
@@ -75,19 +76,23 @@ class LyricSnippet {
 
   PositionTypeInfo getCharPositionIndex(int charPosition) {
     if (charPosition < 0 || sentence.length < charPosition) {
-      return PositionTypeInfo(PositionType.sentenceSegment, -1);
+      return PositionTypeInfo(PositionType.sentenceSegment, -1,false);
     }
     for (int index = 0; index < sentenceSegments.length; index++) {
       int leftSegmentPosition = timingPoints[index].charPosition;
       int rightSegmentPosition = timingPoints[index + 1].charPosition;
       if (leftSegmentPosition < charPosition && charPosition < rightSegmentPosition) {
-        return PositionTypeInfo(PositionType.sentenceSegment, index);
+        return PositionTypeInfo(PositionType.sentenceSegment, index,false);
       }
       if (charPosition == leftSegmentPosition) {
-        return PositionTypeInfo(PositionType.timingPoint, index);
+        if(leftSegmentPosition == rightSegmentPosition){
+        return PositionTypeInfo(PositionType.timingPoint, index,true);
+        }else{
+        return PositionTypeInfo(PositionType.timingPoint, index,false);
+        }
       }
     }
-    return PositionTypeInfo(PositionType.timingPoint, sentenceSegments.length);
+    return PositionTypeInfo(PositionType.timingPoint, sentenceSegments.length,false);
   }
 
   LyricSnippet copyWith({
@@ -202,7 +207,8 @@ class TimingPoint {
 class PositionTypeInfo {
   PositionType type;
   int index;
-  PositionTypeInfo(this.type, this.index);
+  bool duplicate;
+  PositionTypeInfo(this.type, this.index, this.duplicate);
 }
 
 enum PositionType {
