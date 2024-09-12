@@ -466,66 +466,28 @@ class TimingService extends ChangeNotifier {
     LyricSnippet snippet = getSnippetWithID(snippetID);
     if (holdLength) {
       if (snippetEdge == SnippetEdge.start) {
-        moveSnippet(snippet, snippet.startTimestamp - seekPosition);
+        snippet.moveSnippet(snippet.startTimestamp - seekPosition);
       } else {
-        moveSnippet(snippet, seekPosition - snippet.endTimestamp);
+        snippet.moveSnippet(seekPosition - snippet.endTimestamp);
       }
     } else {
       if (snippetEdge == SnippetEdge.start) {
         if (seekPosition < snippet.startTimestamp) {
-          extendSnippet(snippet, SnippetEdge.start, snippet.startTimestamp - seekPosition);
+          snippet.extendSnippet(SnippetEdge.start, snippet.startTimestamp - seekPosition);
         } else if (snippet.startTimestamp < seekPosition) {
-          shortenSnippet(snippet, SnippetEdge.start, seekPosition - snippet.startTimestamp);
+          snippet.shortenSnippet(SnippetEdge.start, seekPosition - snippet.startTimestamp);
         }
       } else {
         if (seekPosition < snippet.endTimestamp) {
-          shortenSnippet(snippet, SnippetEdge.end, snippet.endTimestamp - seekPosition);
+          snippet.shortenSnippet(SnippetEdge.end, snippet.endTimestamp - seekPosition);
         } else if (snippet.endTimestamp < seekPosition) {
-          extendSnippet(snippet, SnippetEdge.end, seekPosition - snippet.endTimestamp);
+          snippet.extendSnippet(SnippetEdge.end, seekPosition - snippet.endTimestamp);
         }
       }
     }
     sortLyricSnippetList();
 
     notifyListeners();
-  }
-
-  void moveSnippet(LyricSnippet snippet, int shiftDuration) {
-    snippet.startTimestamp += shiftDuration;
-  }
-
-  void extendSnippet(LyricSnippet snippet, SnippetEdge snippetEdge, int extendDuration) {
-    assert(extendDuration >= 0, "Should be shorten function.");
-    if (snippetEdge == SnippetEdge.start) {
-      snippet.startTimestamp -= extendDuration;
-      snippet.sentenceSegments.first.wordDuration += extendDuration;
-    } else {
-      snippet.sentenceSegments.last.wordDuration += extendDuration;
-    }
-  }
-
-  void shortenSnippet(LyricSnippet snippet, SnippetEdge snippetEdge, int shortenDuration) {
-    assert(shortenDuration >= 0, "Should be extend function.");
-    if (snippetEdge == SnippetEdge.start) {
-      int index = 0;
-      int rest = shortenDuration;
-      while (index < snippet.sentenceSegments.length && rest - snippet.sentenceSegments[index].wordDuration > 0) {
-        rest -= snippet.sentenceSegments[index].wordDuration;
-        index++;
-      }
-      snippet.startTimestamp += shortenDuration;
-      snippet.sentenceSegments = snippet.sentenceSegments.sublist(index);
-      snippet.sentenceSegments.first.wordDuration -= rest;
-    } else {
-      int index = snippet.sentenceSegments.length - 1;
-      int rest = shortenDuration;
-      while (index >= 0 && rest - snippet.sentenceSegments[index].wordDuration > 0) {
-        rest -= snippet.sentenceSegments[index].wordDuration;
-        index--;
-      }
-      snippet.sentenceSegments = snippet.sentenceSegments.sublist(0, index + 1);
-      snippet.sentenceSegments.last.wordDuration -= rest;
-    }
   }
 
   void addTimingPoint(SnippetID snippetID, int characterPosition, int seekPosition) {

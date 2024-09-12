@@ -106,6 +106,48 @@ class LyricSnippet {
     return PositionTypeInfo(PositionType.timingPoint, sentenceSegments.length, false);
   }
 
+  void moveSnippet(int shiftDuration) {
+    startTimestamp += shiftDuration;
+  }
+
+  void extendSnippet(SnippetEdge snippetEdge, int extendDuration) {
+    assert(extendDuration >= 0, "Should be shorten function.");
+    if (snippetEdge == SnippetEdge.start) {
+      startTimestamp -= extendDuration;
+      sentenceSegments.first.wordDuration += extendDuration;
+    } else {
+      sentenceSegments.last.wordDuration += extendDuration;
+    }
+
+    updateTimingPoints();
+  }
+
+  void shortenSnippet(SnippetEdge snippetEdge, int shortenDuration) {
+    assert(shortenDuration >= 0, "Should be extend function.");
+    if (snippetEdge == SnippetEdge.start) {
+      int index = 0;
+      int rest = shortenDuration;
+      while (index < sentenceSegments.length && rest - sentenceSegments[index].wordDuration > 0) {
+        rest -= sentenceSegments[index].wordDuration;
+        index++;
+      }
+      startTimestamp += shortenDuration;
+      sentenceSegments = sentenceSegments.sublist(index);
+      sentenceSegments.first.wordDuration -= rest;
+    } else {
+      int index = sentenceSegments.length - 1;
+      int rest = shortenDuration;
+      while (index >= 0 && rest - sentenceSegments[index].wordDuration > 0) {
+        rest -= sentenceSegments[index].wordDuration;
+        index--;
+      }
+      sentenceSegments = sentenceSegments.sublist(0, index + 1);
+      sentenceSegments.last.wordDuration -= rest;
+    }
+
+    updateTimingPoints();
+  }
+
   void addTimingPoint(int charPosition, int seekPosition) {
     if (charPosition <= 0 || sentence.length <= charPosition) {
       debugPrint("The char position is out of the valid range.");

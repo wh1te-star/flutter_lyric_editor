@@ -272,7 +272,10 @@ class _TextPaneState extends ConsumerState<TextPane> {
           debugPrint("The text pane is focused");
           setState(() {});
         },
-        child: snippetEditColumn(),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: snippetEditColumn(),
+        ),
       ),
     );
   }
