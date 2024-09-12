@@ -92,53 +92,33 @@ class TextPaneProvider with ChangeNotifier {
   }
 
   void moveUpCursor() {
-    /*
-    int highlightSnippetsIndex = highlightingSnippetsIDs.indexWhere((id) => id == cursorLinePosition);
-    if (highlightSnippetsIndex > 0) {
-      cursorPositionOption = Option.former;
-
-      cursorLinePosition = highlightingSnippetsIDs[highlightSnippetsIndex - 1];
-      LyricSnippet nextSnippet = getSnippetWithID(cursorLinePosition);
-
-      if (cursorCharPositionRestore != 0) {
-        cursorCharPosition = cursorCharPositionRestore;
-      }
-      if (cursorCharPosition > nextSnippet.sentence.length) {
-        cursorCharPositionRestore = cursorCharPosition;
-        cursorCharPosition = nextSnippet.sentence.length;
-      }
-
-      //cursorBlinker.restartCursorTimer();
-      debugPrint("K key: LineCursor: ${cursorLinePosition}, CharCursor: ${cursorCharPosition}_${cursorPositionOption}");
-
-      notifyListeners();
+    Map<SnippetID, LyricSnippet> currentSnippets = timingService.getCurrentSeekPositionSnippets();
+    int index = currentSnippets.keys.toList().indexWhere((id) => id == cursorLinePosition);
+    if (index == -1) {
+      return;
     }
-    */
+    if (index - 1 < 0) {
+      return;
+    }
+    cursorLinePosition = currentSnippets.keys.toList()[index - 1];
+    updateCursorIfNeed();
+
+    notifyListeners();
   }
 
   void moveDownCursor() {
-    /*
-    int highlightSnippetsIndex = highlightingSnippetsIDs.indexWhere((id) => id == cursorLinePosition);
-    if (highlightSnippetsIndex < highlightingSnippetsIDs.length - 1) {
-      cursorPositionOption = Option.former;
-
-      cursorLinePosition = highlightingSnippetsIDs[highlightSnippetsIndex + 1];
-      LyricSnippet nextSnippet = getSnippetWithID(cursorLinePosition);
-
-      if (cursorCharPositionRestore != 0) {
-        cursorCharPosition = cursorCharPositionRestore;
-      }
-      if (cursorCharPosition > nextSnippet.sentence.length) {
-        cursorCharPositionRestore = cursorCharPosition;
-        cursorCharPosition = nextSnippet.sentence.length;
-      }
-
-      //cursorBlinker.restartCursorTimer();
-      debugPrint("J key: LineCursor: ${cursorLinePosition}, CharCursor: ${cursorCharPosition}_${cursorPositionOption}");
-
-      notifyListeners();
+    Map<SnippetID, LyricSnippet> currentSnippets = timingService.getCurrentSeekPositionSnippets();
+    int index = currentSnippets.keys.toList().indexWhere((id) => id == cursorLinePosition);
+    if (index == -1) {
+      return;
     }
-    */
+    if (index + 1 >= currentSnippets.length) {
+      return;
+    }
+    cursorLinePosition = currentSnippets.keys.toList()[index + 1];
+    updateCursorIfNeed();
+
+    notifyListeners();
   }
 
   void moveLeftCursor() {
@@ -290,10 +270,16 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
   Widget snippetEditColumn() {
     final TimingService timingService = ref.read(timingMasterProvider);
+    final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
     List<Widget> elements = [];
-    timingService.getCurrentSeekPositionSnippets().values.toList().forEach((snippet) {
-      elements.add(snippetEditLine(snippet));
-    });
+    for (var entry in timingService.getCurrentSeekPositionSnippets().entries) {
+      SnippetID id = entry.key;
+      LyricSnippet snippet = entry.value;
+      elements.add(snippetEditLine(
+        snippet,
+        id == textPaneProvider.cursorLinePosition,
+      ));
+    }
 
     return Center(
       child: Column(
@@ -304,7 +290,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     );
   }
 
-  Widget snippetEditLine(LyricSnippet snippet) {
+  Widget snippetEditLine(LyricSnippet snippet, bool isInCursor) {
     MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
     List<Widget> coloredTextWidgets = [];
@@ -328,7 +314,10 @@ class _TextPaneState extends ConsumerState<TextPane> {
           Center(
             child: Text(
               segmentWord,
-              style: const TextStyle(color: Colors.black),
+              style: TextStyle(
+                color: Colors.black,
+                background: Paint()..color = isInCursor ? Colors.yellowAccent : Colors.white,
+              ),
             ),
           ),
         );
@@ -346,7 +335,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
                 TextPaneProvider.timingPointChar,
                 style: TextStyle(
                   color: Colors.white,
-                  background: Paint()..color = Colors.black,
+                  background: Paint()..color = isInCursor ? Colors.yellowAccent : Colors.black,
                 ),
               ),
             ),
@@ -356,7 +345,10 @@ class _TextPaneState extends ConsumerState<TextPane> {
             Center(
               child: Text(
                 TextPaneProvider.timingPointChar,
-                style: const TextStyle(color: Colors.black),
+                style: TextStyle(
+                  color: Colors.black,
+                  background: Paint()..color = isInCursor ? Colors.yellowAccent : Colors.white,
+                ),
               ),
             ),
           );
