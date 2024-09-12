@@ -156,20 +156,24 @@ class TextPaneProvider with ChangeNotifier {
     if (snippetPositionInfo.duplicate && cursorPositionOption == Option.latter) {
       cursorPositionOption = Option.former;
     } else if (snippetPositionInfo.type == PositionType.sentenceSegment || charPositionIndex == seekPositionInfo + 1) {
-      cursorCharPosition--;
+      if (cursorCharPosition - 1 > 0) {
+        cursorCharPosition--;
 
-      if (snippet.getCharPositionIndex(cursorCharPosition).duplicate) {
-        cursorPositionOption = Option.latter;
-      } else {
-        cursorPositionOption = Option.former;
+        if (snippet.getCharPositionIndex(cursorCharPosition).duplicate) {
+          cursorPositionOption = Option.latter;
+        } else {
+          cursorPositionOption = Option.former;
+        }
       }
     } else {
-      cursorCharPosition = snippet.timingPoints[charPositionIndex - 1].charPosition;
+      if (snippet.timingPoints[charPositionIndex - 1].charPosition > 0) {
+        cursorCharPosition = snippet.timingPoints[charPositionIndex - 1].charPosition;
 
-      if (snippet.getCharPositionIndex(cursorCharPosition).duplicate) {
-        cursorPositionOption = Option.latter;
-      } else {
-        cursorPositionOption = Option.former;
+        if (snippet.getCharPositionIndex(cursorCharPosition).duplicate) {
+          cursorPositionOption = Option.latter;
+        } else {
+          cursorPositionOption = Option.former;
+        }
       }
     }
     debugPrint("cursorCharPosition: $cursorCharPosition of ${cursorPositionOption}");
@@ -193,11 +197,15 @@ class TextPaneProvider with ChangeNotifier {
     if (snippetPositionInfo.duplicate && cursorPositionOption == Option.former) {
       cursorPositionOption = Option.latter;
     } else if (snippetPositionInfo.type == PositionType.sentenceSegment || charPositionIndex == seekPositionInfo) {
-      cursorCharPosition++;
-      cursorPositionOption = Option.former;
+      if (cursorCharPosition + 1 < snippet.sentence.length) {
+        cursorCharPosition++;
+        cursorPositionOption = Option.former;
+      }
     } else {
-      cursorCharPosition = snippet.timingPoints[charPositionIndex + 1].charPosition;
-      cursorPositionOption = Option.former;
+      if (snippet.timingPoints[charPositionIndex + 1].charPosition < snippet.sentence.length) {
+        cursorCharPosition = snippet.timingPoints[charPositionIndex + 1].charPosition;
+        cursorPositionOption = Option.former;
+      }
     }
     debugPrint("cursorCharPosition: $cursorCharPosition of ${cursorPositionOption}");
 
