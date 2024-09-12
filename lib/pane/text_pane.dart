@@ -275,10 +275,26 @@ class _TextPaneState extends ConsumerState<TextPane> {
     for (var entry in timingService.getCurrentSeekPositionSnippets().entries) {
       SnippetID id = entry.key;
       LyricSnippet snippet = entry.value;
-      elements.add(snippetEditLine(
-        snippet,
-        id == textPaneProvider.cursorLinePosition,
-      ));
+      if (textPaneProvider.cursorLinePosition == entry.key) {
+        elements.add(
+          Container(
+            color: Colors.yellowAccent,
+            child: snippetEditLine(
+              snippet,
+              id == textPaneProvider.cursorLinePosition,
+            ),
+          ),
+        );
+      }else{
+        elements.add(
+          Container(
+            child: snippetEditLine(
+              snippet,
+              id == textPaneProvider.cursorLinePosition,
+            ),
+          ),
+        );
+      }
     }
 
     return Center(
@@ -316,7 +332,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
               segmentWord,
               style: TextStyle(
                 color: Colors.black,
-                background: Paint()..color = isInCursor ? Colors.yellowAccent : Colors.white,
               ),
             ),
           ),
@@ -335,7 +350,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
                 TextPaneProvider.timingPointChar,
                 style: TextStyle(
                   color: Colors.white,
-                  background: Paint()..color = isInCursor ? Colors.yellowAccent : Colors.black,
+                  background: Paint()..color = Colors.black,
                 ),
               ),
             ),
@@ -347,7 +362,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
                 TextPaneProvider.timingPointChar,
                 style: TextStyle(
                   color: Colors.black,
-                  background: Paint()..color = isInCursor ? Colors.yellowAccent : Colors.white,
                 ),
               ),
             ),
