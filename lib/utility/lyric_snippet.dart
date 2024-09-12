@@ -6,7 +6,7 @@ class LyricSnippet {
   VocalistID vocalistID;
   String sentence;
   int startTimestamp;
-  final List<SentenceSegment> _sentenceSegments;
+  List<SentenceSegment> _sentenceSegments;
 
   LyricSnippet({
     required this.vocalistID,
@@ -53,6 +53,17 @@ class LyricSnippet {
     _timingPoints = newTimingPoints;
   }
 
+  void updateSentenceSegments() {
+    List<SentenceSegment> newSentenceSegments = [];
+    for (int index = 0; index < timingPoints.length - 1; index++) {
+      int wordLength = timingPoints[index + 1].charPosition - timingPoints[index].charPosition;
+      int wordDuration = timingPoints[index + 1].seekPosition - timingPoints[index].seekPosition;
+      newSentenceSegments.add(SentenceSegment(wordLength, wordDuration));
+    }
+
+    _sentenceSegments = newSentenceSegments;
+  }
+
   static LyricSnippet get emptySnippet {
     return LyricSnippet(
       vocalistID: VocalistID(0),
@@ -76,23 +87,76 @@ class LyricSnippet {
 
   PositionTypeInfo getCharPositionIndex(int charPosition) {
     if (charPosition < 0 || sentence.length < charPosition) {
-      return PositionTypeInfo(PositionType.sentenceSegment, -1,false);
+      return PositionTypeInfo(PositionType.sentenceSegment, -1, false);
     }
     for (int index = 0; index < sentenceSegments.length; index++) {
       int leftSegmentPosition = timingPoints[index].charPosition;
       int rightSegmentPosition = timingPoints[index + 1].charPosition;
       if (leftSegmentPosition < charPosition && charPosition < rightSegmentPosition) {
-        return PositionTypeInfo(PositionType.sentenceSegment, index,false);
+        return PositionTypeInfo(PositionType.sentenceSegment, index, false);
       }
       if (charPosition == leftSegmentPosition) {
-        if(leftSegmentPosition == rightSegmentPosition){
-        return PositionTypeInfo(PositionType.timingPoint, index,true);
-        }else{
-        return PositionTypeInfo(PositionType.timingPoint, index,false);
+        if (leftSegmentPosition == rightSegmentPosition) {
+          return PositionTypeInfo(PositionType.timingPoint, index, true);
+        } else {
+          return PositionTypeInfo(PositionType.timingPoint, index, false);
         }
       }
     }
-    return PositionTypeInfo(PositionType.timingPoint, sentenceSegments.length,false);
+    return PositionTypeInfo(PositionType.timingPoint, sentenceSegments.length, false);
+  }
+
+  void addTimingPoint(int charPosition, int seekPosition) {
+    if (charPosition <= 0 || sentence.length <= charPosition) {
+      debugPrint("The char position is out of the valid range.");
+      return;
+    }
+    if (seekPosition <= startTimestamp || endTimestamp <= seekPosition) {
+      debugPrint("The seek position is out of the valid range.");
+      return;
+    }
+
+    seekPosition -= startTimestamp;
+    for (int index = 0; index < timingPoints.length - 1; index++) {
+      if (charPosition == timingPoints[index].charPosition) {
+        if (timingPoints[index].charPosition == timingPoints[index + 1].charPosition) {
+          debugPrint("A timing point cannot be inserted three times or more at the same char position.");
+          return;
+        }
+
+        if (seekPosition < timingPoints[index].seekPosition) {
+          timingPoints.insert(index, TimingPoint(charPosition, seekPosition));
+          break;
+        } else if (seekPosition > timingPoints[index].seekPosition) {
+          timingPoints.insert(index + 1, TimingPoint(charPosition, seekPosition));
+          break;
+        } else {
+          debugPrint("A timing point cannot be inserted twice or more at the same seek position.");
+          return;
+        }
+      }
+
+      if (timingPoints[index].charPosition < charPosition && charPosition < timingPoints[index + 1].charPosition) {
+        timingPoints.insert(index + 1, TimingPoint(charPosition, seekPosition));
+        break;
+      }
+    }
+
+    updateSentenceSegments();
+  }
+
+  void deleteTimingPoint(int charPosition, Option option) {
+    int index = timingPoints.indexWhere((timingPoint) => timingPoint.charPosition == charPosition);
+    if (index == -1) {
+      debugPrint("There is not the specified timing point.");
+      return;
+    }
+    if (option == Option.latter) {
+      index++;
+    }
+    timingPoints.removeAt(index);
+
+    updateSentenceSegments();
   }
 
   LyricSnippet copyWith({
