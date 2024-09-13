@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
@@ -275,23 +273,58 @@ class _TextPaneState extends ConsumerState<TextPane> {
     for (var entry in timingService.getCurrentSeekPositionSnippets().entries) {
       SnippetID id = entry.key;
       LyricSnippet snippet = entry.value;
+      Color vocalistColor = Color(timingService.vocalistColorMap[snippet.vocalistID]!.color);
       if (textPaneProvider.cursorLinePosition == entry.key) {
         elements.add(
-          Container(
-            color: Colors.yellowAccent,
-            child: snippetEditLine(
-              snippet,
-              id == textPaneProvider.cursorLinePosition,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 30,
+                  color: vocalistColor,
+                ),
+              ),
+              Container(
+                color: Colors.yellowAccent,
+                child: snippetEditLine(
+                  snippet,
+                  id == textPaneProvider.cursorLinePosition,
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  height: 30,
+                  color: vocalistColor,
+                ),
+              ),
+            ],
           ),
         );
-      }else{
+      } else {
         elements.add(
-          Container(
-            child: snippetEditLine(
-              snippet,
-              id == textPaneProvider.cursorLinePosition,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  "",
+                  style: TextStyle(
+                    color: Colors.black,
+                    background: Paint()..color = Colors.blue,
+                  ),
+                ),
+              ),
+              Container(
+                child: snippetEditLine(
+                  snippet,
+                  id == textPaneProvider.cursorLinePosition,
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  color: Color(timingService.vocalistColorMap[snippet.vocalistID]!.color),
+                ),
+              ),
+            ],
           ),
         );
       }
@@ -429,6 +462,16 @@ class _TextPaneState extends ConsumerState<TextPane> {
     final Rect caretPrototype = Rect.fromLTWH(0, 0, 0, textPainter.height);
     final Offset caretOffset = textPainter.getOffsetForCaret(position, caretPrototype);
     return caretOffset.dx;
+  }
+
+  Size calculateTextSize(String text, TextStyle style) {
+    final TextPainter textPainter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      maxLines: 1,
+      textDirection: TextDirection.ltr,
+    )..layout(minWidth: 0, maxWidth: double.infinity);
+
+    return textPainter.size;
   }
 
   String replaceNthCharacter(String originalString, int index, String newChar) {
