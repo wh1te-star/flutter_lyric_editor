@@ -270,7 +270,18 @@ class _TextPaneState extends ConsumerState<TextPane> {
     final TimingService timingService = ref.read(timingMasterProvider);
     final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
     List<Widget> elements = [];
-    for (var entry in timingService.getCurrentSeekPositionSnippets().entries) {
+    var currentSnippets = timingService.getCurrentSeekPositionSnippets();
+    double maxWidth = 0.0;
+    TextStyle style = TextStyle(letterSpacing: 2.0);
+    for (var entry in currentSnippets.entries) {
+      LyricSnippet snippet = entry.value;
+      String timingPointString = TextPaneProvider.timingPointChar * (snippet.timingPoints.length - 2);
+      double width = calculateTextSize(snippet.sentence+timingPointString, style).width;
+      if (width > maxWidth) {
+        maxWidth = width;
+      }
+    }
+    for (var entry in currentSnippets.entries) {
       SnippetID id = entry.key;
       LyricSnippet snippet = entry.value;
       Color vocalistColor = Color(timingService.vocalistColorMap[snippet.vocalistID]!.color);
@@ -289,6 +300,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
                 child: snippetEditLine(
                   snippet,
                   id == textPaneProvider.cursorLinePosition,
+                  maxWidth,
                 ),
               ),
               Expanded(
@@ -317,6 +329,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
                 child: snippetEditLine(
                   snippet,
                   id == textPaneProvider.cursorLinePosition,
+                  maxWidth,
                 ),
               ),
               Expanded(
@@ -339,7 +352,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     );
   }
 
-  Widget snippetEditLine(LyricSnippet snippet, bool isInCursor) {
+  Widget snippetEditLine(LyricSnippet snippet, bool isInCursor, double width) {
     MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
     List<Widget> coloredTextWidgets = [];
@@ -403,10 +416,13 @@ class _TextPaneState extends ConsumerState<TextPane> {
       }
     }
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: coloredTextWidgets,
+    return Container(
+      width: width,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: coloredTextWidgets,
+      ),
     );
   }
 
@@ -429,7 +445,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
           segmentWord,
           style: TextStyle(
             color: Colors.red,
-            fontSize: charSize,
+            //fontSize: charSize,
             letterSpacing: letterSpacing,
           ),
         ),
