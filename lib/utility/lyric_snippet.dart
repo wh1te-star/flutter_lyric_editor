@@ -73,7 +73,7 @@ class LyricSnippet {
     );
   }
 
-  int getSeekPositionSegmentIndex(int seekPosition) {
+  int getSegmentIndexFromSeekPosition(int seekPosition) {
     if (seekPosition < startTimestamp || endTimestamp < seekPosition) {
       return -1;
     }
