@@ -276,6 +276,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
       Color vocalistColor = Color(timingService.vocalistColorMap[snippet.vocalistID]!.color);
       elements.add(
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
               width: sideBandWidth,
@@ -283,11 +285,11 @@ class _TextPaneState extends ConsumerState<TextPane> {
               color: vocalistColor,
             ),
             Container(
+              width: maxWidth,
               color: id == textPaneProvider.cursorLinePosition ? Colors.yellowAccent : null,
               child: snippetEditLine(
                 snippet,
                 id == textPaneProvider.cursorLinePosition,
-                maxWidth,
               ),
             ),
             Container(
@@ -300,16 +302,12 @@ class _TextPaneState extends ConsumerState<TextPane> {
       );
     }
 
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: elements,
-      ),
+    return Column(
+      children: elements,
     );
   }
 
-  Widget snippetEditLine(LyricSnippet snippet, bool isInCursor, double width) {
+  Widget snippetEditLine(LyricSnippet snippet, bool isInCursor) {
     MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     TimingService timingService = ref.read(timingMasterProvider);
     TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
@@ -325,18 +323,14 @@ class _TextPaneState extends ConsumerState<TextPane> {
           int cursorPositionSentence = textPaneProvider.cursorCharPosition;
           int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursorLinePosition]!.timingPoints[highlightIndex].charPosition;
           coloredTextWidgets.add(
-            Center(
-              child: segmentEdit(segmentWord, cursorPositionSentence - cursorPositionWordStart),
-            ),
+            segmentEdit(segmentWord, cursorPositionSentence - cursorPositionWordStart),
           );
         } else {
           coloredTextWidgets.add(
-            Center(
-              child: Text(
-                segmentWord,
-                style: TextStyle(
-                  color: Colors.black,
-                ),
+            Text(
+              segmentWord,
+              style: const TextStyle(
+                color: Colors.black,
               ),
             ),
           );
@@ -349,24 +343,20 @@ class _TextPaneState extends ConsumerState<TextPane> {
           }
           if (textPaneProvider.cursorBlinker.isCursorVisible && cursorPositionInfo.type == PositionType.timingPoint && index == timingPointIndex - 1) {
             coloredTextWidgets.add(
-              Center(
-                child: Text(
-                  TextPaneProvider.timingPointChar,
-                  style: TextStyle(
-                    color: Colors.white,
-                    background: Paint()..color = Colors.black,
-                  ),
+              Text(
+                TextPaneProvider.timingPointChar,
+                style: TextStyle(
+                  color: Colors.white,
+                  background: Paint()..color = Colors.black,
                 ),
               ),
             );
           } else {
             coloredTextWidgets.add(
-              Center(
-                child: Text(
-                  TextPaneProvider.timingPointChar,
-                  style: TextStyle(
-                    color: Colors.black,
-                  ),
+              const Text(
+                TextPaneProvider.timingPointChar,
+                style: TextStyle(
+                  color: Colors.black,
                 ),
               ),
             );
@@ -383,19 +373,16 @@ class _TextPaneState extends ConsumerState<TextPane> {
       String outputSentence = insertChars(snippet.sentence, timingPointMap);
 
       coloredTextWidgets.add(
-        Center(
-          child: Text(
-            outputSentence,
-            style: TextStyle(
-              color: Colors.black,
-            ),
+        Text(
+          outputSentence,
+          style: TextStyle(
+            color: Colors.black,
           ),
         ),
       );
     }
 
-    return Container(
-      width: width,
+    return Center(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -412,9 +399,9 @@ class _TextPaneState extends ConsumerState<TextPane> {
     const double letterSpacing = 2.0;
     const Color cursorColor = Colors.black;
     TextStyle style = TextStyle(
-            //fontSize: charSize,
-            letterSpacing: letterSpacing,
-          );
+      //fontSize: charSize,
+      letterSpacing: letterSpacing,
+    );
 
     final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
     if (0 < cursorPositionWord && cursorPositionWord < segmentWord.length) {}
@@ -462,8 +449,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
   double calculateCursorPosition(String text, int cursorPositionWord, TextStyle style) {
     final TextPainter textPainter = TextPainter(
       text: TextSpan(
-          text: text,
-          style: style,
+        text: text,
+        style: style,
       ),
       textDirection: TextDirection.ltr,
     );
