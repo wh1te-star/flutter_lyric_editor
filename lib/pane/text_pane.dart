@@ -273,14 +273,17 @@ class _TextPaneState extends ConsumerState<TextPane> {
     var currentSnippets = timingService.getCurrentSeekPositionSnippets();
     double maxWidth = 0.0;
     TextStyle style = TextStyle(letterSpacing: 2.0);
+
+    double rowHeight = calculateTextSize("dummy text", style).height;
     for (var entry in currentSnippets.entries) {
       LyricSnippet snippet = entry.value;
       String timingPointString = TextPaneProvider.timingPointChar * (snippet.timingPoints.length - 2);
-      double width = calculateTextSize(snippet.sentence+timingPointString, style).width;
-      if (width > maxWidth) {
-        maxWidth = width;
+      double sentenceWidth = calculateTextSize(snippet.sentence + timingPointString, style).width + 10.0;
+      if (sentenceWidth > maxWidth) {
+        maxWidth = sentenceWidth;
       }
     }
+    double sideBandWidth = 30.0;
     for (var entry in currentSnippets.entries) {
       SnippetID id = entry.key;
       LyricSnippet snippet = entry.value;
@@ -289,11 +292,10 @@ class _TextPaneState extends ConsumerState<TextPane> {
         elements.add(
           Row(
             children: [
-              Expanded(
-                child: Container(
-                  height: 30,
-                  color: vocalistColor,
-                ),
+              Container(
+                width: sideBandWidth,
+                height: rowHeight,
+                color: vocalistColor,
               ),
               Container(
                 color: Colors.yellowAccent,
@@ -303,11 +305,10 @@ class _TextPaneState extends ConsumerState<TextPane> {
                   maxWidth,
                 ),
               ),
-              Expanded(
-                child: Container(
-                  height: 30,
-                  color: vocalistColor,
-                ),
+              Container(
+                width: sideBandWidth,
+                height: rowHeight,
+                color: vocalistColor,
               ),
             ],
           ),
@@ -316,14 +317,10 @@ class _TextPaneState extends ConsumerState<TextPane> {
         elements.add(
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  "",
-                  style: TextStyle(
-                    color: Colors.black,
-                    background: Paint()..color = Colors.blue,
-                  ),
-                ),
+              Container(
+                width: sideBandWidth,
+                height: rowHeight,
+                color: vocalistColor,
               ),
               Container(
                 child: snippetEditLine(
@@ -332,10 +329,10 @@ class _TextPaneState extends ConsumerState<TextPane> {
                   maxWidth,
                 ),
               ),
-              Expanded(
-                child: Container(
-                  color: Color(timingService.vocalistColorMap[snippet.vocalistID]!.color),
-                ),
+              Container(
+                width: sideBandWidth,
+                height: rowHeight,
+                color: vocalistColor,
               ),
             ],
           ),
