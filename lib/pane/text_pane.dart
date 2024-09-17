@@ -20,9 +20,7 @@ class TextPaneProvider with ChangeNotifier {
 
   late CursorBlinker cursorBlinker;
 
-  SnippetID cursorLinePosition = SnippetID(0);
-  int cursorCharPosition = 0;
-  Option cursorPositionOption = Option.former;
+  TextPaneCursor cursor = TextPaneCursor(SnippetID(0), 0, Option.former);
 
   static const String timingPointChar = '▲';
 
@@ -48,22 +46,28 @@ class TextPaneProvider with ChangeNotifier {
       return;
     }
 
-    if (!currentSnippets.keys.toList().contains(cursorLinePosition)) {
-      cursorLinePosition = currentSnippets.keys.toList()[0];
-      cursorCharPosition = 1;
-      cursorPositionOption = Option.former;
-      cursorBlinker.restartCursorTimer();
-      return;
+    if (!currentSnippets.keys.toList().contains(cursor.linePosition)) {
+      cursor.linePosition = currentSnippets.keys.toList()[0];
     }
 
     LyricSnippet snippet = currentSnippets.values.toList()[0];
     int currentSnippetPosition = snippet.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
-    PositionTypeInfo nextSnippetPosition = snippet.getCharPositionIndex(cursorCharPosition);
+    PositionTypeInfo nextSnippetPosition = snippet.getCharPositionIndex(cursor.charPosition);
     if (currentSnippetPosition != nextSnippetPosition.index) {
-      cursorCharPosition = snippet.timingPoints[currentSnippetPosition].charPosition + 1;
-      cursorPositionOption = Option.former;
+      cursor = getDefaultCursorPosition(cursor.linePosition);
       cursorBlinker.restartCursorTimer();
     }
+  }
+
+  TextPaneCursor getDefaultCursorPosition(SnippetID id) {
+    TextPaneCursor defaultCursor = TextPaneCursor(id, 0, Option.former);
+
+    LyricSnippet snippet = getSnippetWithID(id);
+    int currentSnippetPosition = snippet.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
+    defaultCursor.charPosition = snippet.timingPoints[currentSnippetPosition].charPosition + 1;
+    defaultCursor.option = Option.former;
+
+    return defaultCursor;
   }
 
   LyricSnippet getSnippetWithID(SnippetID id) {
@@ -77,101 +81,101 @@ class TextPaneProvider with ChangeNotifier {
 
   void moveUpCursor() {
     Map<SnippetID, LyricSnippet> currentSnippets = timingService.getCurrentSeekPositionSnippets();
-    int index = currentSnippets.keys.toList().indexWhere((id) => id == cursorLinePosition);
+    int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.linePosition);
     if (index == -1) {
       return;
     }
     if (index - 1 < 0) {
       return;
     }
-    cursorLinePosition = currentSnippets.keys.toList()[index - 1];
-    updateCursorIfNeed();
+    cursor.linePosition = currentSnippets.keys.toList()[index - 1];
+    cursor = getDefaultCursorPosition(cursor.linePosition);
 
     notifyListeners();
   }
 
   void moveDownCursor() {
     Map<SnippetID, LyricSnippet> currentSnippets = timingService.getCurrentSeekPositionSnippets();
-    int index = currentSnippets.keys.toList().indexWhere((id) => id == cursorLinePosition);
+    int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.linePosition);
     if (index == -1) {
       return;
     }
     if (index + 1 >= currentSnippets.length) {
       return;
     }
-    cursorLinePosition = currentSnippets.keys.toList()[index + 1];
-    updateCursorIfNeed();
+    cursor.linePosition = currentSnippets.keys.toList()[index + 1];
+    cursor = getDefaultCursorPosition(cursor.linePosition);
 
     notifyListeners();
   }
 
   void moveLeftCursor() {
-    if (!timingService.lyricSnippetList.containsKey(cursorLinePosition)) {
+    if (!timingService.lyricSnippetList.containsKey(cursor.linePosition)) {
       return;
     }
-    LyricSnippet snippet = timingService.lyricSnippetList[cursorLinePosition]!;
-    PositionTypeInfo snippetPositionInfo = snippet.getCharPositionIndex(cursorCharPosition);
+    LyricSnippet snippet = timingService.lyricSnippetList[cursor.linePosition]!;
+    PositionTypeInfo snippetPositionInfo = snippet.getCharPositionIndex(cursor.charPosition);
     int seekPositionInfo = snippet.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
     int charPositionIndex = snippetPositionInfo.index;
-    if (cursorPositionOption == Option.latter && snippetPositionInfo.duplicate) {
+    if (cursor.option == Option.latter && snippetPositionInfo.duplicate) {
       charPositionIndex++;
     }
 
-    if (snippetPositionInfo.duplicate && cursorPositionOption == Option.latter) {
-      cursorPositionOption = Option.former;
+    if (snippetPositionInfo.duplicate && cursor.option == Option.latter) {
+      cursor.option = Option.former;
     } else if (snippetPositionInfo.type == PositionType.sentenceSegment || charPositionIndex == seekPositionInfo + 1) {
-      if (cursorCharPosition - 1 > 0) {
-        cursorCharPosition--;
+      if (cursor.charPosition - 1 > 0) {
+        cursor.charPosition--;
 
-        if (snippet.getCharPositionIndex(cursorCharPosition).duplicate) {
-          cursorPositionOption = Option.latter;
+        if (snippet.getCharPositionIndex(cursor.charPosition).duplicate) {
+          cursor.option = Option.latter;
         } else {
-          cursorPositionOption = Option.former;
+          cursor.option = Option.former;
         }
       }
     } else {
       if (snippet.timingPoints[charPositionIndex - 1].charPosition > 0) {
-        cursorCharPosition = snippet.timingPoints[charPositionIndex - 1].charPosition;
+        cursor.charPosition = snippet.timingPoints[charPositionIndex - 1].charPosition;
 
-        if (snippet.getCharPositionIndex(cursorCharPosition).duplicate) {
-          cursorPositionOption = Option.latter;
+        if (snippet.getCharPositionIndex(cursor.charPosition).duplicate) {
+          cursor.option = Option.latter;
         } else {
-          cursorPositionOption = Option.former;
+          cursor.option = Option.former;
         }
       }
     }
-    debugPrint("cursorCharPosition: $cursorCharPosition of ${cursorPositionOption}");
+    debugPrint("cursor.charPosition: $cursor.charPosition of ${cursor.option}");
 
     cursorBlinker.restartCursorTimer();
     notifyListeners();
   }
 
   void moveRightCursor() {
-    if (!timingService.lyricSnippetList.containsKey(cursorLinePosition)) {
+    if (!timingService.lyricSnippetList.containsKey(cursor.linePosition)) {
       return;
     }
-    LyricSnippet snippet = timingService.lyricSnippetList[cursorLinePosition]!;
-    PositionTypeInfo snippetPositionInfo = snippet.getCharPositionIndex(cursorCharPosition);
+    LyricSnippet snippet = timingService.lyricSnippetList[cursor.linePosition]!;
+    PositionTypeInfo snippetPositionInfo = snippet.getCharPositionIndex(cursor.charPosition);
     int seekPositionInfo = snippet.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
     int charPositionIndex = snippetPositionInfo.index;
-    if (cursorPositionOption == Option.latter && snippetPositionInfo.duplicate) {
+    if (cursor.option == Option.latter && snippetPositionInfo.duplicate) {
       charPositionIndex++;
     }
 
-    if (snippetPositionInfo.duplicate && cursorPositionOption == Option.former) {
-      cursorPositionOption = Option.latter;
+    if (snippetPositionInfo.duplicate && cursor.option == Option.former) {
+      cursor.option = Option.latter;
     } else if (snippetPositionInfo.type == PositionType.sentenceSegment || charPositionIndex == seekPositionInfo) {
-      if (cursorCharPosition + 1 < snippet.sentence.length) {
-        cursorCharPosition++;
-        cursorPositionOption = Option.former;
+      if (cursor.charPosition + 1 < snippet.sentence.length) {
+        cursor.charPosition++;
+        cursor.option = Option.former;
       }
     } else {
       if (snippet.timingPoints[charPositionIndex + 1].charPosition < snippet.sentence.length) {
-        cursorCharPosition = snippet.timingPoints[charPositionIndex + 1].charPosition;
-        cursorPositionOption = Option.former;
+        cursor.charPosition = snippet.timingPoints[charPositionIndex + 1].charPosition;
+        cursor.option = Option.former;
       }
     }
-    debugPrint("cursorCharPosition: $cursorCharPosition of ${cursorPositionOption}");
+    debugPrint("cursor.charPosition: $cursor.charPosition of ${cursor.option}");
 
     cursorBlinker.restartCursorTimer();
     notifyListeners();
@@ -286,10 +290,10 @@ class _TextPaneState extends ConsumerState<TextPane> {
             ),
             Container(
               width: maxWidth,
-              color: id == textPaneProvider.cursorLinePosition ? Colors.yellowAccent : null,
+              color: id == textPaneProvider.cursor.linePosition ? Colors.yellowAccent : null,
               child: snippetEditLine(
                 snippet,
-                id == textPaneProvider.cursorLinePosition,
+                id == textPaneProvider.cursor.linePosition,
               ),
             ),
             Container(
@@ -313,15 +317,15 @@ class _TextPaneState extends ConsumerState<TextPane> {
     TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
     List<Widget> coloredTextWidgets = [];
     int highlightIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
-    PositionTypeInfo cursorPositionInfo = snippet.getCharPositionIndex(textPaneProvider.cursorCharPosition);
+    PositionTypeInfo cursorPositionInfo = snippet.getCharPositionIndex(textPaneProvider.cursor.charPosition);
 
     if (isInCursor) {
       for (int index = 0; index < snippet.sentenceSegments.length; index++) {
         String segmentWord = snippet.segmentWord(index);
 
         if (index == highlightIndex) {
-          int cursorPositionSentence = textPaneProvider.cursorCharPosition;
-          int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursorLinePosition]!.timingPoints[highlightIndex].charPosition;
+          int cursorPositionSentence = textPaneProvider.cursor.charPosition;
+          int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursor.linePosition]!.timingPoints[highlightIndex].charPosition;
           coloredTextWidgets.add(
             segmentEdit(segmentWord, cursorPositionSentence - cursorPositionWordStart),
           );
@@ -338,7 +342,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
         if (index < snippet.sentenceSegments.length - 1) {
           int timingPointIndex = cursorPositionInfo.index;
-          if (textPaneProvider.cursorPositionOption == Option.latter) {
+          if (textPaneProvider.cursor.option == Option.latter) {
             timingPointIndex++;
           }
           if (textPaneProvider.cursorBlinker.isCursorVisible && cursorPositionInfo.type == PositionType.timingPoint && index == timingPointIndex - 1) {
@@ -486,4 +490,11 @@ class _TextPaneState extends ConsumerState<TextPane> {
     }
     return charPositions;
   }
+}
+
+class TextPaneCursor {
+  SnippetID linePosition;
+  int charPosition;
+  Option option;
+  TextPaneCursor(this.linePosition, this.charPosition, this.option);
 }

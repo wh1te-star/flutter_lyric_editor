@@ -197,20 +197,20 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
           onInvoke: (TimingPointAddIntent intent) => () {
             int seekPosition = musicPlayerProvider.seekPosition;
             for (var id in timelinePaneProvider.selectingSnippets) {
-              timingService.addTimingPoint(id, textPaneProvider.cursorCharPosition, seekPosition);
+              timingService.addTimingPoint(id, textPaneProvider.cursor.charPosition, seekPosition);
             }
           }(),
         ),
         TimingPointDeleteIntent: CallbackAction<TimingPointDeleteIntent>(
           onInvoke: (TimingPointDeleteIntent intent) => () {
             for (var id in timelinePaneProvider.selectingSnippets) {
-              timingService.deleteTimingPoint(id, textPaneProvider.cursorCharPosition);
+              timingService.deleteTimingPoint(id, textPaneProvider.cursor.charPosition);
             }
           }(),
         ),
         SnippetDivideIntent: CallbackAction<SnippetDivideIntent>(
           onInvoke: (SnippetDivideIntent intent) => () {
-            timingService.divideSnippet(timelinePaneProvider.selectingSnippets[0], textPaneProvider.cursorCharPosition);
+            timingService.divideSnippet(timelinePaneProvider.selectingSnippets[0], textPaneProvider.cursor.charPosition);
           }(),
         ),
         SnippetConcatenateIntent: CallbackAction<SnippetConcatenateIntent>(
