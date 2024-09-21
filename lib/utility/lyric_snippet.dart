@@ -6,11 +6,13 @@ import 'package:lyric_editor/utility/id_generator.dart';
 
 class LyricSnippet with TimingObject {
   VocalistID vocalistID;
+  List<Annotation> annotation;
 
   LyricSnippet({
     required this.vocalistID,
     required startTimestamp,
     required List<SentenceSegment> sentenceSegments,
+    required this.annotation,
   }) {
     this.startTimestamp = startTimestamp;
     _sentenceSegments = sentenceSegments;
@@ -22,6 +24,7 @@ class LyricSnippet with TimingObject {
       vocalistID: VocalistID(0),
       startTimestamp: 0,
       sentenceSegments: [],
+      annotation: [],
     );
   }
 
@@ -29,11 +32,13 @@ class LyricSnippet with TimingObject {
     VocalistID? vocalistID,
     int? startTimestamp,
     List<SentenceSegment>? sentenceSegments,
+    List<Annotation>? annotation,
   }) {
     return LyricSnippet(
       vocalistID: vocalistID ?? this.vocalistID,
       startTimestamp: startTimestamp ?? this.startTimestamp,
       sentenceSegments: sentenceSegments ?? _sentenceSegments,
+      annotation: annotation ?? this.annotation,
     );
   }
 
@@ -42,6 +47,40 @@ class LyricSnippet with TimingObject {
 
   @override
   int get hashCode => Object.hash(vocalistID, startTimestamp, Object.hashAll(_sentenceSegments));
+}
+
+class Annotation with TimingObject {
+  Annotation({
+    required startTimestamp,
+    required List<SentenceSegment> sentenceSegments,
+  }) {
+    this.startTimestamp = startTimestamp;
+    _sentenceSegments = sentenceSegments;
+    updateTimingPoints();
+  }
+
+  static Annotation get emptySnippet {
+    return Annotation(
+      startTimestamp: 0,
+      sentenceSegments: [],
+    );
+  }
+
+  Annotation copyWith({
+    int? startTimestamp,
+    List<SentenceSegment>? sentenceSegments,
+  }) {
+    return Annotation(
+      startTimestamp: startTimestamp ?? this.startTimestamp,
+      sentenceSegments: sentenceSegments ?? _sentenceSegments,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => identical(this, other) || other is LyricSnippet && runtimeType == other.runtimeType && sentence == other.sentence && startTimestamp == other.startTimestamp && listEquals(_sentenceSegments, other._sentenceSegments);
+
+  @override
+  int get hashCode => Object.hash(startTimestamp, Object.hashAll(_sentenceSegments));
 }
 
 mixin TimingObject {

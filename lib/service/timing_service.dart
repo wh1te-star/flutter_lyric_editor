@@ -111,6 +111,7 @@ class TimingService extends ChangeNotifier {
       vocalistID: vocalistColorMap.keys.first,
       startTimestamp: 0,
       sentenceSegments: [SentenceSegment(singlelineText, audioDuration)],
+      annotation: [],
     );
     sortLyricSnippetList();
 
@@ -313,6 +314,7 @@ class TimingService extends ChangeNotifier {
         vocalistID: getVocalistIDWithName(vocalistName),
         startTimestamp: startTime,
         sentenceSegments: sentenceSegments,
+        annotation: [],
       );
     }
 
@@ -407,6 +409,7 @@ class TimingService extends ChangeNotifier {
         vocalistID: vocalistID,
         startTimestamp: snippet.startTimestamp,
         sentenceSegments: [SentenceSegment(beforeString, snippetDuration)],
+        annotation: snippet.annotation,
       );
     }
     if (afterString.isNotEmpty) {
@@ -415,6 +418,7 @@ class TimingService extends ChangeNotifier {
         vocalistID: vocalistID,
         startTimestamp: seekPosition + snippetMargin,
         sentenceSegments: [SentenceSegment(afterString, snippetDuration)],
+        annotation: snippet.annotation,
       );
     }
     if (newSnippets.isNotEmpty) {
