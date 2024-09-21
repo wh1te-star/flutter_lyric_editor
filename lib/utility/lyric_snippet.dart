@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
@@ -53,6 +55,18 @@ mixin TimingObject {
     return sentenceSegments.map((segment) => segment.word).join();
   }
 
+  List<TimingPoint> get timingPoints => _timingPoints;
+  List<SentenceSegment> get sentenceSegments => _sentenceSegments;
+  set sentenceSegments(List<SentenceSegment> segments) {
+    _sentenceSegments.clear();
+    _sentenceSegments.addAll(segments);
+    updateTimingPoints();
+  }
+
+  int get endTimestamp {
+    return startTimestamp + _timingPoints.last.seekPosition;
+  }
+
   void updateTimingPoints() {
     List<TimingPoint> newTimingPoints = [];
     int charPosition = 0;
@@ -70,7 +84,7 @@ mixin TimingObject {
   void updateSentenceSegments() {
     List<SentenceSegment> newSentenceSegments = [];
     for (int index = 0; index < timingPoints.length - 1; index++) {
-      String word = sentence.substring(timingPoints[index].charPosition, timingPoints[index + 1].charPosition - timingPoints[index].charPosition);
+      String word = sentence.substring(timingPoints[index].charPosition, timingPoints[index + 1].charPosition);
       int duration = timingPoints[index + 1].seekPosition - timingPoints[index].seekPosition;
       newSentenceSegments.add(SentenceSegment(word, duration));
     }
@@ -78,17 +92,91 @@ mixin TimingObject {
     _sentenceSegments = newSentenceSegments;
   }
 
-  List<SentenceSegment> get sentenceSegments => _sentenceSegments;
-  set sentenceSegments(List<SentenceSegment> segments) {
-    _sentenceSegments.clear();
-    _sentenceSegments.addAll(segments);
+  void editSentence(String newSentence) {
+    List<int> charPositionTranslation = getCharPositionTranslation(sentence, newSentence);
+
+    List<TimingPoint> timingPointsCopy = List.from(timingPoints);
+    for (var charPositions in timingPointsCopy) {
+      int currentCharPosition = charPositions.charPosition;
+      if (charPositionTranslation[currentCharPosition] == -1) {
+        try {
+          deleteTimingPoint(currentCharPosition, Option.former);
+        } on TimingPointException catch (_, e) {
+          debugPrint(e.toString());
+        }
+        try {
+          deleteTimingPoint(currentCharPosition, Option.latter);
+        } on TimingPointException catch (_, e) {
+          debugPrint(e.toString());
+        }
+      }
+    }
+
+    for (int index = 0; index < sentenceSegments.length; index++) {
+      int leftCharPosition = charPositionTranslation[timingPoints[index].charPosition];
+      int rightCharPosition = charPositionTranslation[timingPoints[index + 1].charPosition];
+      sentenceSegments[index].word = newSentence.substring(leftCharPosition, rightCharPosition);
+    }
+    integrate2OrMoreTimingPoints();
     updateTimingPoints();
   }
 
-  List<TimingPoint> get timingPoints => _timingPoints;
+  void integrate2OrMoreTimingPoints() {
+    List<SentenceSegment> result = [];
+    int accumulatedSum = 0;
 
-  int get endTimestamp {
-    return startTimestamp + _timingPoints.last.seekPosition;
+    for (var sentenceSegment in sentenceSegments) {
+      if (sentenceSegment.word == "") {
+        accumulatedSum += sentenceSegment.duration;
+      } else {
+        if (accumulatedSum != 0) {
+          result.add(SentenceSegment("", accumulatedSum));
+          accumulatedSum = 0;
+        }
+        result.add(sentenceSegment);
+      }
+    }
+
+    if (accumulatedSum != 0) {
+      result.add(SentenceSegment("", accumulatedSum));
+    }
+
+    sentenceSegments = result;
+  }
+
+  List<int> getCharPositionTranslation(String oldSentence, String newSentence) {
+    int oldLength = oldSentence.length;
+    int newLength = newSentence.length;
+
+    List<List<int>> lcsMap = List.generate(oldLength + 1, (_) => List.filled(newLength + 1, 0));
+
+    for (int i = 1; i <= oldLength; i++) {
+      for (int j = 1; j <= newLength; j++) {
+        if (oldSentence[i - 1] == newSentence[j - 1]) {
+          lcsMap[i][j] = lcsMap[i - 1][j - 1] + 1;
+        } else {
+          lcsMap[i][j] = max(lcsMap[i - 1][j], lcsMap[i][j - 1]);
+        }
+      }
+    }
+
+    List<int> indexTranslation = List.filled(oldLength + 1, -1);
+    int i = oldLength, j = newLength;
+
+    while (i > 0 && j > 0) {
+      if (oldSentence[i - 1] == newSentence[j - 1]) {
+        indexTranslation[i] = j;
+        indexTranslation[i - 1] = j - 1;
+        i--;
+        j--;
+      } else if (lcsMap[i - 1][j] >= lcsMap[i][j - 1]) {
+        i--;
+      } else {
+        j--;
+      }
+    }
+
+    return indexTranslation;
   }
 
   String segmentWord(int index) {
@@ -325,4 +413,12 @@ class PositionTypeInfo {
 enum PositionType {
   timingPoint,
   sentenceSegment,
+}
+
+class TimingPointException implements Exception {
+  final String message;
+  TimingPointException(this.message);
+
+  @override
+  String toString() => 'TimingPointException: $message';
 }

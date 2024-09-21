@@ -505,104 +505,9 @@ class TimingService extends ChangeNotifier {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
 
     LyricSnippet snippet = getSnippetWithID(snippetID);
-    List<int> charPositionTranslation = getCharPositionTranslation(snippet.sentence, newSentence);
-    int charPosition = 0;
-    List<int> allCharPosition = [0];
-    for (int index = 0; index < snippet.sentenceSegments.length; index++) {
-      charPosition += snippet.sentenceSegments[index].word.length;
-      allCharPosition.add(charPosition);
-    }
-
-    for (var currentCharPosition in allCharPosition) {
-      if (charPositionTranslation[currentCharPosition] == -1) {
-        try {
-          deleteTimingPoint(snippetID, currentCharPosition, option: Option.former);
-        } catch (TimingPointException) {
-          debugPrint(e.toString());
-        }
-        try {
-          deleteTimingPoint(snippetID, currentCharPosition, option: Option.latter);
-        } catch (TimingPointException) {
-          debugPrint(e.toString());
-        }
-      }
-    }
-
-    charPosition = 0;
-    allCharPosition.clear();
-    allCharPosition.add(0);
-    for (int index = 0; index < snippet.sentenceSegments.length; index++) {
-      charPosition += snippet.sentenceSegments[index].word.length;
-      allCharPosition.add(charPosition);
-    }
-
-    for (int index = 0; index < snippet.sentenceSegments.length; index++) {
-      int leftCharPosition = charPositionTranslation[allCharPosition[index]];
-      int rightCharPosition = charPositionTranslation[allCharPosition[index + 1]];
-      snippet.sentenceSegments[index].word = snippet.sentence.substring(leftCharPosition, rightCharPosition - leftCharPosition);
-    }
-
-    integrate2OrMoreTimingPoints(snippet);
+    snippet.editSentence(newSentence);
 
     notifyListeners();
-  }
-
-  void integrate2OrMoreTimingPoints(LyricSnippet snippet) {
-    List<SentenceSegment> result = [];
-    int accumulatedSum = 0;
-
-    for (var sentenceSegment in snippet.sentenceSegments) {
-      if (sentenceSegment.word == "") {
-        accumulatedSum += sentenceSegment.duration;
-      } else {
-        if (accumulatedSum != 0) {
-          result.add(SentenceSegment("", accumulatedSum));
-          accumulatedSum = 0;
-        }
-        result.add(sentenceSegment);
-      }
-    }
-
-    if (accumulatedSum != 0) {
-      result.add(SentenceSegment("", accumulatedSum));
-    }
-
-    snippet.sentenceSegments = result;
-  }
-
-  List<int> getCharPositionTranslation(String oldSentence, String newSentence) {
-    int oldLength = oldSentence.length;
-    int newLength = newSentence.length;
-
-    List<List<int>> lcsMap = List.generate(oldLength + 1, (_) => List.filled(newLength + 1, 0));
-
-    for (int i = 1; i <= oldLength; i++) {
-      for (int j = 1; j <= newLength; j++) {
-        if (oldSentence[i - 1] == newSentence[j - 1]) {
-          lcsMap[i][j] = lcsMap[i - 1][j - 1] + 1;
-        } else {
-          lcsMap[i][j] = max(lcsMap[i - 1][j], lcsMap[i][j - 1]);
-        }
-      }
-    }
-
-    List<int> indexTranslation = List.filled(oldLength + 1, -1);
-    int i = oldLength, j = newLength;
-
-    while (i > 0 && j > 0) {
-      if (oldSentence[i - 1] == newSentence[j - 1]) {
-        indexTranslation[i] = j;
-        indexTranslation[i - 1] = j - 1;
-        i--;
-        j--;
-      } else if (lcsMap[i - 1][j] >= lcsMap[i][j - 1]) {
-        i--;
-      } else {
-        j--;
-      }
-    }
-
-    return indexTranslation;
   }
 
   void undo() {
@@ -622,14 +527,6 @@ class TimingService extends ChangeNotifier {
 
     notifyListeners();
   }
-}
-
-class TimingPointException implements Exception {
-  final String message;
-  TimingPointException(this.message);
-
-  @override
-  String toString() => 'TimingPointException: $message';
 }
 
 enum Option {
