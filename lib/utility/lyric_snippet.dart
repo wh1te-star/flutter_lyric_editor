@@ -2,42 +2,59 @@ import 'package:flutter/foundation.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 
-class LyricSnippet {
+class LyricSnippet with TimingObject {
   VocalistID vocalistID;
-  String sentence;
-  int startTimestamp;
-  List<SentenceSegment> _sentenceSegments;
 
   LyricSnippet({
     required this.vocalistID,
-    required this.sentence,
-    required this.startTimestamp,
     required List<SentenceSegment> sentenceSegments,
-  }) : _sentenceSegments = sentenceSegments {
+    required sentence,
+    required startTimestamp,
+  }) {
+    _sentenceSegments = sentenceSegments;
     updateTimingPoints();
+
+    this.sentence = sentence;
+    this.startTimestamp = startTimestamp;
   }
 
-  List<TimingPoint> _timingPoints = [];
-
-  List<SentenceSegment> get sentenceSegments => _sentenceSegments;
-  set sentenceSegments(List<SentenceSegment> segments) {
-    _sentenceSegments.clear();
-    _sentenceSegments.addAll(segments);
-    updateTimingPoints();
-  }
-
-  List<TimingPoint> get timingPoints => _timingPoints;
-
-  int get endTimestamp {
-    return startTimestamp + _timingPoints.last.seekPosition;
-  }
-
-  String segmentWord(int index) {
-    return sentence.substring(
-      timingPoints[index].charPosition,
-      timingPoints[index + 1].charPosition,
+  static LyricSnippet get emptySnippet {
+    return LyricSnippet(
+      vocalistID: VocalistID(0),
+      sentence: "",
+      startTimestamp: 0,
+      sentenceSegments: [],
     );
   }
+
+  LyricSnippet copyWith({
+    VocalistID? vocalistID,
+    String? sentence,
+    int? startTimestamp,
+    List<SentenceSegment>? sentenceSegments,
+  }) {
+    return LyricSnippet(
+      vocalistID: vocalistID ?? this.vocalistID,
+      sentence: sentence ?? this.sentence,
+      startTimestamp: startTimestamp ?? this.startTimestamp,
+      sentenceSegments: sentenceSegments != null ? sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList() : _sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList(),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => identical(this, other) || other is LyricSnippet && runtimeType == other.runtimeType && vocalistID == other.vocalistID && sentence == other.sentence && startTimestamp == other.startTimestamp && listEquals(_sentenceSegments, other._sentenceSegments);
+
+  @override
+  int get hashCode => vocalistID.hashCode ^ sentence.hashCode ^ startTimestamp.hashCode ^ _sentenceSegments.hashCode;
+}
+
+class Annotation with TimingObject {}
+
+mixin TimingObject {
+  List<SentenceSegment> _sentenceSegments = [];
+  List<TimingPoint> _timingPoints = [];
+  String sentence = "";
+  int startTimestamp = 0;
 
   void updateTimingPoints() {
     List<TimingPoint> newTimingPoints = [];
@@ -64,12 +81,23 @@ class LyricSnippet {
     _sentenceSegments = newSentenceSegments;
   }
 
-  static LyricSnippet get emptySnippet {
-    return LyricSnippet(
-      vocalistID: VocalistID(0),
-      sentence: "",
-      startTimestamp: 0,
-      sentenceSegments: [],
+  List<SentenceSegment> get sentenceSegments => _sentenceSegments;
+  set sentenceSegments(List<SentenceSegment> segments) {
+    _sentenceSegments.clear();
+    _sentenceSegments.addAll(segments);
+    updateTimingPoints();
+  }
+
+  List<TimingPoint> get timingPoints => _timingPoints;
+
+  int get endTimestamp {
+    return startTimestamp + _timingPoints.last.seekPosition;
+  }
+
+  String segmentWord(int index) {
+    return sentence.substring(
+      timingPoints[index].charPosition,
+      timingPoints[index + 1].charPosition,
     );
   }
 
@@ -200,26 +228,6 @@ class LyricSnippet {
 
     updateSentenceSegments();
   }
-
-  LyricSnippet copyWith({
-    VocalistID? vocalistID,
-    String? sentence,
-    int? startTimestamp,
-    List<SentenceSegment>? sentenceSegments,
-  }) {
-    return LyricSnippet(
-      vocalistID: vocalistID ?? this.vocalistID,
-      sentence: sentence ?? this.sentence,
-      startTimestamp: startTimestamp ?? this.startTimestamp,
-      sentenceSegments: sentenceSegments != null ? sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList() : _sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList(),
-    );
-  }
-
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is LyricSnippet && runtimeType == other.runtimeType && vocalistID == other.vocalistID && sentence == other.sentence && startTimestamp == other.startTimestamp && listEquals(_sentenceSegments, other._sentenceSegments);
-
-  @override
-  int get hashCode => vocalistID.hashCode ^ sentence.hashCode ^ startTimestamp.hashCode ^ _sentenceSegments.hashCode;
 }
 
 class Vocalist {
