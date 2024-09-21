@@ -739,7 +739,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
         for (MapEntry<SnippetID, LyricSnippet> entry in snippets.entries) {
           final SnippetID id = entry.key;
           final LyricSnippet snippet = entry.value;
-          final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
+          final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.duration).reduce((a, b) => a + b);
           final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
           if (snippet.startTimestamp <= touchedSeekPosition && touchedSeekPosition <= endtime) {
             if (selectingSnippets.contains(id)) {
@@ -759,7 +759,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
         for (MapEntry<SnippetID, LyricSnippet> entry in snippets.entries) {
           final SnippetID id = entry.key;
           final LyricSnippet snippet = entry.value;
-          final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.wordDuration).reduce((a, b) => a + b);
+          final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.duration).reduce((a, b) => a + b);
           final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
           if (snippet.startTimestamp <= touchedSeekPosition && touchedSeekPosition <= endtime) {
             List<String> sentence = await displayDialog(context, [snippet.sentence]);

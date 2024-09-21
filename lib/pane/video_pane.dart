@@ -211,17 +211,17 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       int wordIndex = 0;
       int startChar = 0;
       int restDuration = seekPosition - snippet.startTimestamp;
-      while (restDuration - snippet.sentenceSegments[wordIndex].wordDuration > 0) {
-        startChar += snippet.sentenceSegments[wordIndex].wordLength;
-        restDuration -= snippet.sentenceSegments[wordIndex].wordDuration;
+      while (restDuration - snippet.sentenceSegments[wordIndex].duration > 0) {
+        startChar += snippet.sentenceSegments[wordIndex].word.length;
+        restDuration -= snippet.sentenceSegments[wordIndex].duration;
         wordIndex++;
       }
       double percent;
-      percent = restDuration / snippet.sentenceSegments[wordIndex].wordDuration;
+      percent = restDuration / snippet.sentenceSegments[wordIndex].duration;
       return PartialTextPainter(
         text: snippet.sentence,
         start: startChar,
-        end: startChar + snippet.sentenceSegments[wordIndex].wordLength,
+        end: startChar + snippet.sentenceSegments[wordIndex].word.length,
         percent: percent,
         fontFamily: fontFamily,
         fontSize: 40,

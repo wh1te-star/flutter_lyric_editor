@@ -8,20 +8,17 @@ class LyricSnippet with TimingObject {
   LyricSnippet({
     required this.vocalistID,
     required List<SentenceSegment> sentenceSegments,
-    required sentence,
     required startTimestamp,
   }) {
     _sentenceSegments = sentenceSegments;
     updateTimingPoints();
 
-    this.sentence = sentence;
     this.startTimestamp = startTimestamp;
   }
 
   static LyricSnippet get emptySnippet {
     return LyricSnippet(
       vocalistID: VocalistID(0),
-      sentence: "",
       startTimestamp: 0,
       sentenceSegments: [],
     );
@@ -35,9 +32,8 @@ class LyricSnippet with TimingObject {
   }) {
     return LyricSnippet(
       vocalistID: vocalistID ?? this.vocalistID,
-      sentence: sentence ?? this.sentence,
       startTimestamp: startTimestamp ?? this.startTimestamp,
-      sentenceSegments: sentenceSegments != null ? sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList() : _sentenceSegments.map((segment) => SentenceSegment(segment.wordLength, segment.wordDuration)).toList(),
+      sentenceSegments: sentenceSegments != null ? sentenceSegments.map((segment) => SentenceSegment(segment.word, segment.duration)).toList() : _sentenceSegments.map((segment) => SentenceSegment(segment.word, segment.duration)).toList(),
     );
   }
 
@@ -48,13 +44,14 @@ class LyricSnippet with TimingObject {
   int get hashCode => vocalistID.hashCode ^ sentence.hashCode ^ startTimestamp.hashCode ^ _sentenceSegments.hashCode;
 }
 
-class Annotation with TimingObject {}
-
 mixin TimingObject {
   List<SentenceSegment> _sentenceSegments = [];
   List<TimingPoint> _timingPoints = [];
-  String sentence = "";
   int startTimestamp = 0;
+
+  String get sentence {
+    return sentenceSegments.map((segment) => segment.word).join();
+  }
 
   void updateTimingPoints() {
     List<TimingPoint> newTimingPoints = [];
@@ -62,8 +59,8 @@ mixin TimingObject {
     int seekPosition = 0;
     for (var segment in sentenceSegments) {
       newTimingPoints.add(TimingPoint(charPosition, seekPosition));
-      charPosition += segment.wordLength;
-      seekPosition += segment.wordDuration;
+      charPosition += segment.word.length;
+      seekPosition += segment.duration;
     }
     newTimingPoints.add(TimingPoint(charPosition, seekPosition));
 
@@ -73,9 +70,9 @@ mixin TimingObject {
   void updateSentenceSegments() {
     List<SentenceSegment> newSentenceSegments = [];
     for (int index = 0; index < timingPoints.length - 1; index++) {
-      int wordLength = timingPoints[index + 1].charPosition - timingPoints[index].charPosition;
-      int wordDuration = timingPoints[index + 1].seekPosition - timingPoints[index].seekPosition;
-      newSentenceSegments.add(SentenceSegment(wordLength, wordDuration));
+      String word = sentence.substring(timingPoints[index].charPosition, timingPoints[index + 1].charPosition - timingPoints[index].charPosition);
+      int duration = timingPoints[index + 1].seekPosition - timingPoints[index].seekPosition;
+      newSentenceSegments.add(SentenceSegment(word, duration));
     }
 
     _sentenceSegments = newSentenceSegments;
@@ -142,9 +139,9 @@ mixin TimingObject {
     assert(extendDuration >= 0, "Should be shorten function.");
     if (snippetEdge == SnippetEdge.start) {
       startTimestamp -= extendDuration;
-      sentenceSegments.first.wordDuration += extendDuration;
+      sentenceSegments.first.duration += extendDuration;
     } else {
-      sentenceSegments.last.wordDuration += extendDuration;
+      sentenceSegments.last.duration += extendDuration;
     }
 
     updateTimingPoints();
@@ -155,22 +152,22 @@ mixin TimingObject {
     if (snippetEdge == SnippetEdge.start) {
       int index = 0;
       int rest = shortenDuration;
-      while (index < sentenceSegments.length && rest - sentenceSegments[index].wordDuration > 0) {
-        rest -= sentenceSegments[index].wordDuration;
+      while (index < sentenceSegments.length && rest - sentenceSegments[index].duration > 0) {
+        rest -= sentenceSegments[index].duration;
         index++;
       }
       startTimestamp += shortenDuration;
       sentenceSegments = sentenceSegments.sublist(index);
-      sentenceSegments.first.wordDuration -= rest;
+      sentenceSegments.first.duration -= rest;
     } else {
       int index = sentenceSegments.length - 1;
       int rest = shortenDuration;
-      while (index >= 0 && rest - sentenceSegments[index].wordDuration > 0) {
-        rest -= sentenceSegments[index].wordDuration;
+      while (index >= 0 && rest - sentenceSegments[index].duration > 0) {
+        rest -= sentenceSegments[index].duration;
         index--;
       }
       sentenceSegments = sentenceSegments.sublist(0, index + 1);
-      sentenceSegments.last.wordDuration -= rest;
+      sentenceSegments.last.duration -= rest;
     }
 
     updateTimingPoints();
@@ -273,25 +270,25 @@ class VocalistCombination {
 }
 
 class SentenceSegment {
-  int wordLength;
-  int wordDuration;
+  String word;
+  int duration;
 
-  SentenceSegment(this.wordLength, this.wordDuration);
+  SentenceSegment(this.word, this.duration);
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
     final SentenceSegment otherSentenceSegments = other as SentenceSegment;
-    return wordLength == otherSentenceSegments.wordLength && wordDuration == otherSentenceSegments.wordDuration;
+    return word == otherSentenceSegments.word && duration == otherSentenceSegments.duration;
   }
 
   @override
-  int get hashCode => wordLength.hashCode ^ wordDuration.hashCode;
+  int get hashCode => word.hashCode ^ duration.hashCode;
 
   @override
   String toString() {
-    return 'SentenceSegment(wordLength: $wordLength, wordDuration: $wordDuration)';
+    return 'SentenceSegment(wordLength: $word, wordDuration: $duration)';
   }
 }
 

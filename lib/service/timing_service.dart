@@ -109,9 +109,8 @@ class TimingService extends ChangeNotifier {
     lyricSnippetList.clear();
     lyricSnippetList[_snippetIdGenerator.idGen()] = LyricSnippet(
       vocalistID: vocalistColorMap.keys.first,
-      sentence: singlelineText,
       startTimestamp: 0,
-      sentenceSegments: [SentenceSegment(singlelineText.length, audioDuration)],
+      sentenceSegments: [SentenceSegment(singlelineText, audioDuration)],
     );
     sortLyricSnippetList();
 
@@ -302,18 +301,15 @@ class TimingService extends ChangeNotifier {
       final vocalistName = lineTimestamp.getAttribute('vocalistName')!;
 
       final wordTimestamps = lineTimestamp.findElements('WordTimestamp');
-      String sentence = '';
       List<SentenceSegment> sentenceSegments = [];
 
       for (var wordTimestamp in wordTimestamps) {
         final time = parseTimestamp(wordTimestamp.getAttribute('time')!);
         final word = wordTimestamp.innerText;
-        sentenceSegments.add(SentenceSegment(word.length, time));
-        sentence += word;
+        sentenceSegments.add(SentenceSegment(word, time));
       }
       snippets[_snippetIdGenerator.idGen()] = LyricSnippet(
         vocalistID: getVocalistIDWithName(vocalistName),
-        sentence: sentence,
         startTimestamp: startTime,
         sentenceSegments: sentenceSegments,
       );
@@ -331,14 +327,14 @@ class TimingService extends ChangeNotifier {
           'vocalistName': vocalistColorMap[snippet.vocalistID]!.name,
           'startTime': _formatTimestamp(snippet.startTimestamp),
         }, nest: () {
-          int characterPosition = 0;
           for (var sentenceSegment in snippet.sentenceSegments) {
-            builder.element('WordTimestamp',
-                attributes: {
-                  'time': _formatTimestamp(sentenceSegment.wordDuration),
-                },
-                nest: snippet.sentence.substring(characterPosition, characterPosition + sentenceSegment.wordLength));
-            characterPosition += sentenceSegment.wordLength;
+            builder.element(
+              'WordTimestamp',
+              attributes: {
+                'time': _formatTimestamp(sentenceSegment.duration),
+              },
+              nest: sentenceSegment.word,
+            );
           }
         });
       }
@@ -357,17 +353,17 @@ class TimingService extends ChangeNotifier {
           'vocalistName': vocalistColorMap[snippet.vocalistID]!.name,
           'startTime': _formatTimestamp(snippet.startTimestamp),
         }, nest: () {
-          int characterPosition = 0;
           for (int i = 0; i < snippet.sentenceSegments.length; i++) {
             final currentSegment = snippet.sentenceSegments[i];
-            final duration = currentSegment.wordDuration;
+            final duration = currentSegment.duration;
 
-            builder.element('WordTimestamp',
-                attributes: {
-                  'time': _formatDuration(Duration(milliseconds: duration)),
-                },
-                nest: snippet.sentence.substring(characterPosition, characterPosition + currentSegment.wordLength));
-            characterPosition += currentSegment.wordLength;
+            builder.element(
+              'WordTimestamp',
+              attributes: {
+                'time': _formatDuration(Duration(milliseconds: duration)),
+              },
+              nest: snippet.sentenceSegments[i].word,
+            );
           }
         });
       }
@@ -408,18 +404,16 @@ class TimingService extends ChangeNotifier {
       int snippetDuration = seekPosition - snippet.startTimestamp;
       newSnippets[_snippetIdGenerator.idGen()] = LyricSnippet(
         vocalistID: vocalistID,
-        sentence: beforeString,
         startTimestamp: snippet.startTimestamp,
-        sentenceSegments: [SentenceSegment(beforeString.length, snippetDuration)],
+        sentenceSegments: [SentenceSegment(beforeString, snippetDuration)],
       );
     }
     if (afterString.isNotEmpty) {
       int snippetDuration = snippet.endTimestamp - snippet.startTimestamp - seekPosition - snippetMargin;
       newSnippets[_snippetIdGenerator.idGen()] = LyricSnippet(
         vocalistID: vocalistID,
-        sentence: afterString,
         startTimestamp: seekPosition + snippetMargin,
-        sentenceSegments: [SentenceSegment(afterString.length, snippetDuration)],
+        sentenceSegments: [SentenceSegment(afterString, snippetDuration)],
       );
     }
     if (newSnippets.isNotEmpty) {
@@ -446,8 +440,7 @@ class TimingService extends ChangeNotifier {
         } else {
           extendDuration = 0;
         }
-        leftSnippet.sentenceSegments.last.wordDuration += extendDuration;
-        leftSnippet.sentence += rightSnippet.sentence;
+        leftSnippet.sentenceSegments.last.duration += extendDuration;
         leftSnippet.sentenceSegments.addAll(rightSnippet.sentenceSegments);
 
         SnippetID rightSnippetID = snippetIDs[index];
@@ -516,7 +509,7 @@ class TimingService extends ChangeNotifier {
     int charPosition = 0;
     List<int> allCharPosition = [0];
     for (int index = 0; index < snippet.sentenceSegments.length; index++) {
-      charPosition += snippet.sentenceSegments[index].wordLength;
+      charPosition += snippet.sentenceSegments[index].word.length;
       allCharPosition.add(charPosition);
     }
 
@@ -539,19 +532,17 @@ class TimingService extends ChangeNotifier {
     allCharPosition.clear();
     allCharPosition.add(0);
     for (int index = 0; index < snippet.sentenceSegments.length; index++) {
-      charPosition += snippet.sentenceSegments[index].wordLength;
+      charPosition += snippet.sentenceSegments[index].word.length;
       allCharPosition.add(charPosition);
     }
 
     for (int index = 0; index < snippet.sentenceSegments.length; index++) {
       int leftCharPosition = charPositionTranslation[allCharPosition[index]];
       int rightCharPosition = charPositionTranslation[allCharPosition[index + 1]];
-      snippet.sentenceSegments[index].wordLength = rightCharPosition - leftCharPosition;
+      snippet.sentenceSegments[index].word = snippet.sentence.substring(leftCharPosition, rightCharPosition - leftCharPosition);
     }
 
     integrate2OrMoreTimingPoints(snippet);
-
-    snippet.sentence = newSentence;
 
     notifyListeners();
   }
@@ -561,11 +552,11 @@ class TimingService extends ChangeNotifier {
     int accumulatedSum = 0;
 
     for (var sentenceSegment in snippet.sentenceSegments) {
-      if (sentenceSegment.wordLength == 0) {
-        accumulatedSum += sentenceSegment.wordDuration;
+      if (sentenceSegment.word == "") {
+        accumulatedSum += sentenceSegment.duration;
       } else {
         if (accumulatedSum != 0) {
-          result.add(SentenceSegment(0, accumulatedSum));
+          result.add(SentenceSegment("", accumulatedSum));
           accumulatedSum = 0;
         }
         result.add(sentenceSegment);
@@ -573,7 +564,7 @@ class TimingService extends ChangeNotifier {
     }
 
     if (accumulatedSum != 0) {
-      result.add(SentenceSegment(0, accumulatedSum));
+      result.add(SentenceSegment("", accumulatedSum));
     }
 
     snippet.sentenceSegments = result;

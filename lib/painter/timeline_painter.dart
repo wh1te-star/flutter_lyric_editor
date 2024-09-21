@@ -85,7 +85,7 @@ class TimelinePainter extends CustomPainter {
           width: 5.0,
           height: 5.0,
         ).paint(canvas, size);
-        x += sentenceSegment.wordDuration * intervalLength / intervalDuration;
+        x += sentenceSegment.duration * intervalLength / intervalDuration;
       }
       TrianglePainter(
         x: x,
