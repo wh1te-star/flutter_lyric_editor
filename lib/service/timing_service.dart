@@ -226,7 +226,8 @@ class TimingService extends ChangeNotifier {
   void deleteVocalist(String vocalistName) {
     undoHistory.pushUndoHistory(LyricUndoType.vocalistsColor, vocalistColorMap);
 
-    vocalistColorMap.remove(vocalistName);
+    VocalistID id = getVocalistIDWithName(vocalistName);
+    vocalistColorMap.remove(id);
     lyricSnippetList.removeWhere((id, snippet) => vocalistColorMap[snippet.vocalistID]!.name == vocalistName);
 
     notifyListeners();
