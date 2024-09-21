@@ -42,35 +42,42 @@ class MusicPlayerService extends ChangeNotifier {
     } else {
       player.resume();
     }
+    notifyListeners();
   }
 
-  void seek(int seekPosition) async {
-    Duration position = Duration(milliseconds: seekPosition);
-    await player.seek(position);
-  }
+void seek(int seekPosition) async {
+  Duration position = Duration(milliseconds: seekPosition);
+  await player.seek(position);
+  _seekPosition = seekPosition;
+  notifyListeners();
+}
 
-  void rewind(int millisec) async {
-    var currentPosition = await player.getCurrentPosition();
-    if (currentPosition != null) {
-      Duration newPosition = currentPosition - Duration(milliseconds: millisec);
-      if (newPosition.inMilliseconds < 0) {
-        newPosition = Duration.zero;
-      }
-      player.seek(newPosition);
+void rewind(int millisec) async {
+  var currentPosition = await player.getCurrentPosition();
+  if (currentPosition != null) {
+    Duration newPosition = currentPosition - Duration(milliseconds: millisec);
+    if (newPosition.inMilliseconds < 0) {
+      newPosition = Duration.zero;
     }
+    await player.seek(newPosition);
+    _seekPosition = newPosition.inMilliseconds;
+    notifyListeners();
   }
+}
 
-  void forward(int millisec) async {
-    var currentPosition = await player.getCurrentPosition();
-    var musicDuration = await player.getDuration();
-    if (currentPosition != null && musicDuration != null) {
-      Duration newPosition = currentPosition + Duration(milliseconds: millisec);
-      if (newPosition.inMilliseconds > musicDuration.inMilliseconds) {
-        newPosition = musicDuration;
-      }
-      player.seek(newPosition);
+void forward(int millisec) async {
+  var currentPosition = await player.getCurrentPosition();
+  var musicDuration = await player.getDuration();
+  if (currentPosition != null && musicDuration != null) {
+    Duration newPosition = currentPosition + Duration(milliseconds: millisec);
+    if (newPosition.inMilliseconds > musicDuration.inMilliseconds) {
+      newPosition = musicDuration;
     }
+    await player.seek(newPosition);
+    _seekPosition = newPosition.inMilliseconds;
+    notifyListeners();
   }
+}
 
   void volumeUp(double value) {
     player.setVolume(player.volume + value);

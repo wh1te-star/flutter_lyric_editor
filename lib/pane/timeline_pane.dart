@@ -628,6 +628,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   Widget cellScaleMark() {
+    final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
     final double intervalLength = timelinePaneProvider.intervalLength;
     final int intervalDuration = timelinePaneProvider.intervalDuration;
@@ -635,13 +636,21 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final double midiumMarkLength = timelinePaneProvider.midiumMarkLength;
     final double minorMarkLength = timelinePaneProvider.minorMarkLength;
 
-    return CustomPaint(
-      painter: ScaleMark(
-        intervalLength: intervalLength,
-        majorMarkLength: majorMarkLength,
-        midiumMarkLength: midiumMarkLength,
-        minorMarkLength: minorMarkLength,
-        intervalDuration: intervalDuration,
+    return GestureDetector(
+      onTapDown: (TapDownDetails details) {
+        Offset localPosition = details.localPosition;
+        final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
+        musicPlayerService.seek(touchedSeekPosition.toInt());
+        setState(() {});
+      },
+      child: CustomPaint(
+        painter: ScaleMark(
+          intervalLength: intervalLength,
+          majorMarkLength: majorMarkLength,
+          midiumMarkLength: midiumMarkLength,
+          minorMarkLength: minorMarkLength,
+          intervalDuration: intervalDuration,
+        ),
       ),
     );
   }
