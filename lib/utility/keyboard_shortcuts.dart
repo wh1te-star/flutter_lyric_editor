@@ -29,7 +29,8 @@ class KeyboardShortcuts extends ConsumerStatefulWidget {
   final FocusNode textPaneFocusNode;
   final FocusNode timelinePaneFocusNode;
 
-  const KeyboardShortcuts({super.key, 
+  const KeyboardShortcuts({
+    super.key,
     required this.child,
     required this.videoPaneFocusNode,
     required this.textPaneFocusNode,

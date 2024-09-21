@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/painter/partial_text_painter.dart';
@@ -58,9 +60,9 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
     musicPlayerService.addListener(() {
       final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
-      int seekPosition = musicPlayerService.seekPosition;
       bool isPlaying = musicPlayerService.isPlaying;
       if (videoPaneProvider.displayMode == DisplayMode.verticalScroll && isPlaying) {
+        int seekPosition = musicPlayerService.seekPosition;
         scrollController.jumpTo(getScrollOffsetFromSeekPosition(seekPosition));
       }
       setState(() {});
@@ -349,7 +351,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
   void _onScroll() {
     MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     if (!musicPlayerService.isPlaying) {
-      int position = getSeekPositionFromScrollOffset(scrollController.offset).toInt();
+      int position = getSeekPositionFromScrollOffset(scrollController.offset).round();
       musicPlayerService.seek(position);
     }
     setState(() {});
