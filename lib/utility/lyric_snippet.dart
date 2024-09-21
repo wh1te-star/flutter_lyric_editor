@@ -9,13 +9,12 @@ class LyricSnippet with TimingObject {
 
   LyricSnippet({
     required this.vocalistID,
-    required List<SentenceSegment> sentenceSegments,
     required startTimestamp,
+    required List<SentenceSegment> sentenceSegments,
   }) {
+    this.startTimestamp = startTimestamp;
     _sentenceSegments = sentenceSegments;
     updateTimingPoints();
-
-    this.startTimestamp = startTimestamp;
   }
 
   static LyricSnippet get emptySnippet {
@@ -28,14 +27,13 @@ class LyricSnippet with TimingObject {
 
   LyricSnippet copyWith({
     VocalistID? vocalistID,
-    String? sentence,
     int? startTimestamp,
     List<SentenceSegment>? sentenceSegments,
   }) {
     return LyricSnippet(
       vocalistID: vocalistID ?? this.vocalistID,
       startTimestamp: startTimestamp ?? this.startTimestamp,
-      sentenceSegments: sentenceSegments != null ? sentenceSegments.map((segment) => SentenceSegment(segment.word, segment.duration)).toList() : _sentenceSegments.map((segment) => SentenceSegment(segment.word, segment.duration)).toList(),
+      sentenceSegments: sentenceSegments ?? _sentenceSegments,
     );
   }
 
@@ -43,7 +41,7 @@ class LyricSnippet with TimingObject {
   bool operator ==(Object other) => identical(this, other) || other is LyricSnippet && runtimeType == other.runtimeType && vocalistID == other.vocalistID && sentence == other.sentence && startTimestamp == other.startTimestamp && listEquals(_sentenceSegments, other._sentenceSegments);
 
   @override
-  int get hashCode => vocalistID.hashCode ^ sentence.hashCode ^ startTimestamp.hashCode ^ _sentenceSegments.hashCode;
+  int get hashCode => Object.hash(vocalistID, startTimestamp, Object.hashAll(_sentenceSegments));
 }
 
 mixin TimingObject {
@@ -332,7 +330,7 @@ class Vocalist {
   }
 
   @override
-  int get hashCode => name.hashCode ^ color.hashCode;
+  int get hashCode => Object.hash(name, color);
 
   Vocalist copyWith({
     String? name,
