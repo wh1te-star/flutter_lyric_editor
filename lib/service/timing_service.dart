@@ -393,6 +393,34 @@ class TimingService extends ChangeNotifier {
     return '$minutes:$seconds.$milliseconds';
   }
 
+  void addSnippet(String sentence, int startSeekPosition, VocalistID vocalistID) {
+    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
+
+    const int defaultSnippetDuration = 3000;
+    lyricSnippetList[_snippetIdGenerator.idGen()] = LyricSnippet(
+      startTimestamp: startSeekPosition,
+      vocalistID: vocalistID,
+      sentenceSegments: [
+        SentenceSegment(
+          sentence,
+          defaultSnippetDuration,
+        ),
+      ],
+      annotations: [],
+    );
+    sortLyricSnippetList();
+
+    notifyListeners();
+  }
+
+  void deleteSnippet(SnippetID snippetID) {
+    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
+
+    lyricSnippetList.remove(snippetID);
+
+    notifyListeners();
+  }
+
   void divideSnippet(SnippetID snippetID, int charPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
 
