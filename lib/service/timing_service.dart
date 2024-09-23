@@ -421,11 +421,10 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void divideSnippet(SnippetID snippetID, int charPosition) {
+  void divideSnippet(SnippetID snippetID, int charPosition, int seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
 
     LyricSnippet snippet = getSnippetWithID(snippetID);
-    int seekPosition = musicPlayerProvider.seekPosition;
     int snippetMargin = 100;
     String beforeString = snippet.sentence.substring(0, charPosition);
     String afterString = snippet.sentence.substring(charPosition);
