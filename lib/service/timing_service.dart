@@ -111,7 +111,7 @@ class TimingService extends ChangeNotifier {
       vocalistID: vocalistColorMap.keys.first,
       startTimestamp: 0,
       sentenceSegments: [SentenceSegment(singlelineText, audioDuration)],
-      annotation: [],
+      annotations: [],
     );
     sortLyricSnippetList();
 
@@ -314,7 +314,7 @@ class TimingService extends ChangeNotifier {
         vocalistID: getVocalistIDWithName(vocalistName),
         startTimestamp: startTime,
         sentenceSegments: sentenceSegments,
-        annotation: [],
+        annotations: [],
       );
     }
 
@@ -409,7 +409,7 @@ class TimingService extends ChangeNotifier {
         vocalistID: vocalistID,
         startTimestamp: snippet.startTimestamp,
         sentenceSegments: [SentenceSegment(beforeString, snippetDuration)],
-        annotation: snippet.annotation,
+        annotations: snippet.annotations,
       );
     }
     if (afterString.isNotEmpty) {
@@ -418,7 +418,7 @@ class TimingService extends ChangeNotifier {
         vocalistID: vocalistID,
         startTimestamp: seekPosition + snippetMargin,
         sentenceSegments: [SentenceSegment(afterString, snippetDuration)],
-        annotation: snippet.annotation,
+        annotations: snippet.annotations,
       );
     }
     if (newSnippets.isNotEmpty) {
@@ -504,6 +504,11 @@ class TimingService extends ChangeNotifier {
     snippet.deleteTimingPoint(characterPosition, option);
 
     notifyListeners();
+  }
+
+  void addAnnotation(SnippetID snippetID, String annotationString, int startCharTiming, int endCharTiming) {
+    LyricSnippet snippet = getSnippetWithID(snippetID);
+    snippet.addAnnotation(annotationString, startCharTiming, endCharTiming);
   }
 
   void editSentence(SnippetID snippetID, String newSentence) {

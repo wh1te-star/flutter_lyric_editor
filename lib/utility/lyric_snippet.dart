@@ -6,13 +6,13 @@ import 'package:lyric_editor/utility/id_generator.dart';
 
 class LyricSnippet with TimingObject {
   VocalistID vocalistID;
-  List<Annotation> annotation;
+  List<Annotation> annotations;
 
   LyricSnippet({
     required this.vocalistID,
     required startTimestamp,
     required List<SentenceSegment> sentenceSegments,
-    required this.annotation,
+    required this.annotations,
   }) {
     this.startTimestamp = startTimestamp;
     _sentenceSegments = sentenceSegments;
@@ -24,7 +24,36 @@ class LyricSnippet with TimingObject {
       vocalistID: VocalistID(0),
       startTimestamp: 0,
       sentenceSegments: [],
-      annotation: [],
+      annotations: [],
+    );
+  }
+
+  void addAnnotation(String annotationString, int startCharTiming, int endCharTiming) {
+    TimingPoint? startTimingPoint = timingPoints.firstWhere(
+      (TimingPoint timingPoint) => timingPoint.charPosition == startCharTiming,
+      orElse: () => TimingPoint.emptyTimingPoint,
+    );
+    if (startTimingPoint == TimingPoint.emptyTimingPoint) {
+      debugPrint("The specified start timing point was not found.");
+      return;
+    }
+
+    TimingPoint? endTimingPoint = timingPoints.firstWhere(
+      (TimingPoint timingPoint) => timingPoint.charPosition == endCharTiming,
+      orElse: () => TimingPoint.emptyTimingPoint,
+    );
+    if (endTimingPoint == TimingPoint.emptyTimingPoint) {
+      debugPrint("The specified end timing point was not found.");
+      return;
+    }
+
+    annotations.add(
+      Annotation(snippetStartTimingPointRef: startTimingPoint, snippetEndTimingPointRef: endTimingPoint, sentenceSegments: [
+        SentenceSegment(
+          annotationString,
+          endTimingPoint.seekPosition - startTimingPoint.seekPosition,
+        ),
+      ]),
     );
   }
 
@@ -38,7 +67,7 @@ class LyricSnippet with TimingObject {
       vocalistID: vocalistID ?? this.vocalistID,
       startTimestamp: startTimestamp ?? this.startTimestamp,
       sentenceSegments: sentenceSegments ?? _sentenceSegments,
-      annotation: annotation ?? this.annotation,
+      annotations: annotation ?? this.annotations,
     );
   }
 
@@ -50,28 +79,34 @@ class LyricSnippet with TimingObject {
 }
 
 class Annotation with TimingObject {
+  TimingPoint snippetStartTimingPointRef;
+  TimingPoint snippetEndTimingPointRef;
   Annotation({
-    required startTimestamp,
+    required this.snippetStartTimingPointRef,
+    required this.snippetEndTimingPointRef,
     required List<SentenceSegment> sentenceSegments,
   }) {
-    this.startTimestamp = startTimestamp;
+    startTimestamp = snippetStartTimingPointRef.seekPosition;
     _sentenceSegments = sentenceSegments;
     updateTimingPoints();
   }
 
   static Annotation get emptySnippet {
     return Annotation(
-      startTimestamp: 0,
+      snippetStartTimingPointRef: TimingPoint(-1, -1),
+      snippetEndTimingPointRef: TimingPoint(-1, -1),
       sentenceSegments: [],
     );
   }
 
   Annotation copyWith({
-    int? startTimestamp,
+    TimingPoint? snippetStartTimingPointRef,
+    TimingPoint? snippetEndTimingPointRef,
     List<SentenceSegment>? sentenceSegments,
   }) {
     return Annotation(
-      startTimestamp: startTimestamp ?? this.startTimestamp,
+      snippetStartTimingPointRef: snippetStartTimingPointRef ?? this.snippetStartTimingPointRef,
+      snippetEndTimingPointRef: snippetEndTimingPointRef ?? this.snippetEndTimingPointRef,
       sentenceSegments: sentenceSegments ?? _sentenceSegments,
     );
   }
@@ -422,6 +457,10 @@ class TimingPoint {
   int seekPosition;
 
   TimingPoint(this.charPosition, this.seekPosition);
+
+  static TimingPoint get emptyTimingPoint {
+    return TimingPoint(-1, -1);
+  }
 
   @override
   bool operator ==(Object other) {
