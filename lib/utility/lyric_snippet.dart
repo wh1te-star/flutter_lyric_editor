@@ -57,6 +57,16 @@ class LyricSnippet with TimingObject {
     );
   }
 
+  void deleteAnnotation(int charPosition) {
+    Annotation deleteAnnotation = annotations.firstWhere((Annotation annotation) {
+      int startCharPosition = annotation.snippetStartTimingPointRef.charPosition;
+      int endCharPosition = annotation.snippetEndTimingPointRef.charPosition;
+      return startCharPosition <= charPosition && charPosition <= endCharPosition;
+    });
+
+    annotations.remove(deleteAnnotation);
+  }
+
   LyricSnippet copyWith({
     VocalistID? vocalistID,
     int? startTimestamp,

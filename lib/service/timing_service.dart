@@ -507,8 +507,21 @@ class TimingService extends ChangeNotifier {
   }
 
   void addAnnotation(SnippetID snippetID, String annotationString, int startCharTiming, int endCharTiming) {
+    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
+
     LyricSnippet snippet = getSnippetWithID(snippetID);
     snippet.addAnnotation(annotationString, startCharTiming, endCharTiming);
+
+    notifyListeners();
+  }
+
+  void deleteAnnotation(SnippetID snippetID, int charPosition) {
+    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
+
+    LyricSnippet snippet = getSnippetWithID(snippetID);
+    snippet.deleteAnnotation(charPosition);
+
+    notifyListeners();
   }
 
   void editSentence(SnippetID snippetID, String newSentence) {
