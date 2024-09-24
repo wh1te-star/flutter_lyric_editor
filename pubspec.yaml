@@ -30,7 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  audioplayers: 6.0.0
+  just_audio: ^0.9.40
+  just_audio_windows: ^0.2.2
   collection: ^1.16.0
   file_selector: ^1.0.3
   flutter_svg: 2.0.10+1

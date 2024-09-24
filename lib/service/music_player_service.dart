@@ -1,6 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:just_audio/just_audio.dart';
 
 final musicPlayerMasterProvider = ChangeNotifierProvider((ref) => MusicPlayerService());
 
@@ -9,51 +11,56 @@ class MusicPlayerService extends ChangeNotifier {
   int _seekPosition = 0;
   bool _isPlaying = false;
   int _audioDuration = 0;
-  late DeviceFileSource audioFile;
+  late UriAudioSource audioFile;
 
   MusicPlayerService() {
-    player.onPositionChanged.listen((event) {
+    /*
+    player.positionStream.listen((event) {
       _seekPosition = event.inMilliseconds;
       notifyListeners();
     });
-    player.onPlayerStateChanged.listen((event) {
-      if (player.state == PlayerState.playing) {
-        _isPlaying = true;
-      } else {
-        _isPlaying = false;
+
+    player.playerStateStream.listen((state) {
+      _isPlaying = state.playing;
+      notifyListeners();
+    });
+
+    player.durationStream.listen((duration) {
+      if (duration != null) {
+        _audioDuration = duration.inMilliseconds;
+        notifyListeners();
       }
-      notifyListeners();
     });
-    player.onDurationChanged.listen((duration) {
-      _audioDuration = duration.inMilliseconds;
-      notifyListeners();
-    });
+    */
   }
 
   int get seekPosition => _seekPosition;
-
   bool get isPlaying => _isPlaying;
-
   int get audioDuration => _audioDuration;
 
   void playPause() {
-    if (player.state == PlayerState.playing) {
+    /*
+    if (player.playing) {
       player.pause();
     } else {
-      player.resume();
+      player.play();
     }
     notifyListeners();
+    */
   }
 
-  void seek(int seekPosition) async {
+  Future<void> seek(int seekPosition) async {
+    /*
     Duration position = Duration(milliseconds: seekPosition);
     await player.seek(position);
     _seekPosition = seekPosition;
     notifyListeners();
+    */
   }
 
-  void rewind(int millisec) async {
-    var currentPosition = await player.getCurrentPosition();
+  Future<void> rewind(int millisec) async {
+    /*
+    var currentPosition = await player.position;
     if (currentPosition != null) {
       Duration newPosition = currentPosition - Duration(milliseconds: millisec);
       if (newPosition.inMilliseconds < 0) {
@@ -63,11 +70,13 @@ class MusicPlayerService extends ChangeNotifier {
       _seekPosition = newPosition.inMilliseconds;
       notifyListeners();
     }
+    */
   }
 
-  void forward(int millisec) async {
-    var currentPosition = await player.getCurrentPosition();
-    var musicDuration = await player.getDuration();
+  Future<void> forward(int millisec) async {
+    /*
+    var currentPosition = await player.position;
+    var musicDuration = await player.duration;
     if (currentPosition != null && musicDuration != null) {
       Duration newPosition = currentPosition + Duration(milliseconds: millisec);
       if (newPosition.inMilliseconds > musicDuration.inMilliseconds) {
@@ -77,6 +86,7 @@ class MusicPlayerService extends ChangeNotifier {
       _seekPosition = newPosition.inMilliseconds;
       notifyListeners();
     }
+    */
   }
 
   void volumeUp(double value) {
@@ -88,20 +98,20 @@ class MusicPlayerService extends ChangeNotifier {
   }
 
   void speedUp(double rate) {
-    player.setPlaybackRate(player.playbackRate + rate);
+    player.setSpeed(player.speed + rate);
   }
 
   void speedDown(double rate) {
-    player.setPlaybackRate(player.playbackRate - rate);
+    player.setSpeed(player.speed - rate);
   }
 
   void initAudio(String audioPath) {
-    audioFile = DeviceFileSource(audioPath);
-    player.setSourceDeviceFile(audioPath);
+    audioFile = AudioSource.uri(Uri.file(audioPath));
+    player.setAudioSource(audioFile);
   }
 
   void play() {
-    player.play(audioFile);
+    player.play();
   }
 
   void setVolume(double volume) {
