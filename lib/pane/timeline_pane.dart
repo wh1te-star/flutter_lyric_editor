@@ -29,7 +29,7 @@ class TimelinePaneProvider with ChangeNotifier {
   Map<VocalistID, Map<SnippetID, LyricSnippet>> snippetsForeachVocalist = {};
   SnippetID cursorPosition = SnippetID(0);
   List<SnippetID> selectingSnippets = [];
-  List<String> selectingVocalist = [];
+  List<VocalistID> selectingVocalist = [];
   double intervalLength = 10.0;
   double majorMarkLength = 15.0;
   double midiumMarkLength = 11.0;
@@ -681,16 +681,16 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
       );
     } else {
       final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
-      final List<String> selectingVocalist = timelinePaneProvider.selectingVocalist;
+      final List<VocalistID> selectingVocalist = timelinePaneProvider.selectingVocalist;
 
       return LayoutBuilder(
         builder: (context, constraints) {
           return GestureDetector(
             onTapDown: (TapDownDetails details) {
-              if (selectingVocalist.contains(vocalistName)) {
-                selectingVocalist.remove(vocalistName);
+              if (selectingVocalist.contains(vocalistID)) {
+                selectingVocalist.remove(vocalistID);
               } else {
-                selectingVocalist.add(vocalistName);
+                selectingVocalist.add(vocalistID);
               }
               setState(() {});
             },
@@ -714,7 +714,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                 rect: Rect.fromLTRB(0.0, 0.0, 135, constraints.maxHeight),
                 sentence: vocalistName,
                 color: Color(vocalistColorMap[vocalistID]!.color),
-                isSelected: selectingVocalist.contains(vocalistName),
+                isSelected: selectingVocalist.contains(vocalistID),
                 borderLineWidth: 1.0,
               ),
             ),

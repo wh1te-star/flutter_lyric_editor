@@ -71,30 +71,34 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         LogicalKeySet(LogicalKeyboardKey.space): PlayPauseIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyN): RewindIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyM): ForwardIntent(),
+        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyS): AddSnippetIntent(),
+        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyA): AddAnnotationIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyS): DeleteSnippetIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyA): DeleteAnnotationIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyC): SnippetStartMoveIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyV): SnippetEndMoveIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowLeft): SpeedDownIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowRight): SpeedUpIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowUp): VolumeUpIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowDown): VolumeDownIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyI): TimingPointAddIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyO): TimingPointDeleteIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyZ): SnippetDivideIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyX): SnippetConcatenateIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyU): UndoIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyH): TextPaneCursorMoveLeftIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyJ): TextPaneCursorMoveDownIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyK): TextPaneCursorMoveUpIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyL): TextPaneCursorMoveRightIntent(),
-        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyK): TimelineZoomIn(),
-        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyJ): TimelineZoomOut(),
-        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyA): AddSectionIntent(),
-        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyS): DeleteSectionIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyI): TimingPointAddIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyO): TimingPointDeleteIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyZ): SnippetDivideIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyX): SnippetConcatenateIntent(),
-        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyD): DisplayModeSwitchIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyG): TimelineCursorMoveLeft(),
         LogicalKeySet(LogicalKeyboardKey.keyF): TimelineCursorMoveDown(),
         LogicalKeySet(LogicalKeyboardKey.keyD): TimelineCursorMoveUp(),
         LogicalKeySet(LogicalKeyboardKey.keyS): TimelineCursorMoveRight(),
+        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyK): TimelineZoomInIntent(),
+        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyJ): TimelineZoomOutIntent(),
+        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyE): AddSectionIntent(),
+        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyR): DeleteSectionIntent(),
+        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyD): DisplayModeSwitchIntent(),
       };
 
   Map<Type, Action<Intent>> get actions => {
@@ -111,6 +115,26 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ForwardIntent: CallbackAction<ForwardIntent>(
           onInvoke: (ForwardIntent intent) => () {
             musicPlayerProvider.forward(1000);
+          }(),
+        ),
+        AddSnippetIntent: CallbackAction<AddSnippetIntent>(
+          onInvoke: (AddSnippetIntent intent) => () {
+            timingService.addSnippet("default sentence", musicPlayerProvider.seekPosition, timelinePaneProvider.selectingVocalist[0]);
+          }(),
+        ),
+        DeleteSnippetIntent: CallbackAction<DeleteSnippetIntent>(
+          onInvoke: (DeleteSnippetIntent intent) => () {
+            timingService.deleteSnippet(timelinePaneProvider.selectingSnippets[0]);
+          }(),
+        ),
+        AddAnnotationIntent: CallbackAction<AddAnnotationIntent>(
+          onInvoke: (AddAnnotationIntent intent) => () {
+            //timingService.addAnnotation(timelinePaneProvider.selectingSnippets[0], "default annotation", startCharTiming, endCharTiming)
+          }(),
+        ),
+        DeleteAnnotationIntent: CallbackAction<DeleteAnnotationIntent>(
+          onInvoke: (DeleteAnnotationIntent intent) => () {
+            //timingService.deleteAnnotation(timelinePaneProvider.selectingSnippets[0], );
           }(),
         ),
         SnippetStartMoveIntent: CallbackAction<SnippetStartMoveIntent>(
@@ -172,13 +196,13 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             textPaneProvider.moveRightCursor();
           }(),
         ),
-        TimelineZoomIn: CallbackAction<TimelineZoomIn>(
-          onInvoke: (TimelineZoomIn intent) => () {
+        TimelineZoomInIntent: CallbackAction<TimelineZoomInIntent>(
+          onInvoke: (TimelineZoomInIntent intent) => () {
             timelinePaneProvider.zoomIn();
           }(),
         ),
-        TimelineZoomOut: CallbackAction<TimelineZoomOut>(
-          onInvoke: (TimelineZoomOut intent) => () {
+        TimelineZoomOutIntent: CallbackAction<TimelineZoomOutIntent>(
+          onInvoke: (TimelineZoomOutIntent intent) => () {
             timelinePaneProvider.zoomOut();
           }(),
         ),
@@ -274,6 +298,14 @@ class ForwardIntent extends Intent {}
 
 class RewindIntent extends Intent {}
 
+class AddSnippetIntent extends Intent {}
+
+class DeleteSnippetIntent extends Intent {}
+
+class AddAnnotationIntent extends Intent {}
+
+class DeleteAnnotationIntent extends Intent {}
+
 class SnippetStartMoveIntent extends Intent {}
 
 class SnippetEndMoveIntent extends Intent {}
@@ -296,9 +328,9 @@ class TextPaneCursorMoveLeftIntent extends Intent {}
 
 class TextPaneCursorMoveRightIntent extends Intent {}
 
-class TimelineZoomIn extends Intent {}
+class TimelineZoomInIntent extends Intent {}
 
-class TimelineZoomOut extends Intent {}
+class TimelineZoomOutIntent extends Intent {}
 
 class AddSectionIntent extends Intent {}
 
