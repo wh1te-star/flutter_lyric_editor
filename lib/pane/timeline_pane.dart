@@ -42,7 +42,7 @@ class TimelinePaneProvider with ChangeNotifier {
     required this.timingService,
   }) {
     musicPlayerProvider.addListener(() {
-      List<SnippetID> currentSelectingSnippet = timingService.getCurrentSeekPositionSnippets().keys.toList();
+      List<SnippetID> currentSelectingSnippet = timingService.getSnippetsAtSeekPosition().keys.toList();
 
       if (autoCurrentSelectMode) {
         selectingSnippets = currentSelectingSnippet;
@@ -64,7 +64,7 @@ class TimelinePaneProvider with ChangeNotifier {
       );
 
       cursorPosition = timingService.lyricSnippetList.keys.first;
-      List<SnippetID> currentSelectingSnippet = timingService.getCurrentSeekPositionSnippets().keys.toList();
+      List<SnippetID> currentSelectingSnippet = timingService.getSnippetsAtSeekPosition().keys.toList();
       selectingSnippets = currentSelectingSnippet;
       notifyListeners();
     });
@@ -437,7 +437,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     if (isDragging || snippetsForeachVocalist[vocalistID] == null) {
       return 20;
     } else {
-      final int lanes = getLanes(snippetsForeachVocalist[vocalistID]!.values.toList());
+      final int lanes = timingService.getLanes(vocalistID: vocalistID);
       return 60.0 * lanes;
     }
   }
@@ -736,31 +736,30 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
 
     final Map<VocalistID, Vocalist> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
     final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
-    final Map<SnippetID, LyricSnippet> snippets = snippetsForeachVocalist.containsKey(vocalistID) ? snippetsForeachVocalist[vocalistID]! : {};
     double topMargin = 10;
     double bottomMargin = 5;
     return GestureDetector(
       onTapDown: (TapDownDetails details) {
         Offset localPosition = details.localPosition;
-        if (snippets.isEmpty) {
-          return;
-        }
-        for (MapEntry<SnippetID, LyricSnippet> entry in snippets.entries) {
-          final SnippetID id = entry.key;
-          final LyricSnippet snippet = entry.value;
-          final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.duration).reduce((a, b) => a + b);
-          final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
-          if (snippet.startTimestamp <= touchedSeekPosition && touchedSeekPosition <= endtime) {
-            if (selectingSnippets.contains(id)) {
-              selectingSnippets.remove(id);
-            } else {
-              selectingSnippets.add(id);
-            }
-          }
+        final int touchedSeekPosition = (localPosition.dx * intervalDuration / intervalLength).toInt();
+        Map<SnippetID, LyricSnippet> touchedSnippets = timingService.getSnippetsAtSeekPosition(seekPosition: touchedSeekPosition, vocalistID: vocalistID);
+        Map<SnippetID, int> tracks = timingService.getTrackNumber(snippetsForeachVocalist[vocalistID]!, 0, 0);
+
+        final int height = 60 * timingService.getLanes(vocalistID: vocalistID);
+        final int touchedTrack = (localPosition.dy / (height / touchedSnippets.length)).toInt();
+        final SnippetID touchedID = touchedSnippets.keys.toList().firstWhere((snippetID) {
+          return tracks[snippetID] == touchedTrack;
+        });
+
+        if (selectingSnippets.contains(touchedID)) {
+          selectingSnippets.remove(touchedID);
+        } else {
+          selectingSnippets.add(touchedID);
         }
         setState(() {});
       },
       onDoubleTapDown: (TapDownDetails details) async {
+        /*
         Offset localPosition = details.localPosition;
         if (snippets.isEmpty) {
           return;
@@ -777,11 +776,12 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
           }
         }
         setState(() {});
+        */
       },
       child: CustomPaint(
         size: const Size(double.infinity, double.infinity),
         painter: TimelinePainter(
-          snippets: snippets,
+          snippets: snippetsForeachVocalist[vocalistID]!,
           selectingId: selectingSnippets,
           intervalLength: intervalLength,
           intervalDuration: intervalDuration,

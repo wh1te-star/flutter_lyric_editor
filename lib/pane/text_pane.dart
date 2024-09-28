@@ -40,7 +40,7 @@ class TextPaneProvider with ChangeNotifier {
   }
 
   void updateCursorIfNeed() {
-    Map<SnippetID, LyricSnippet> currentSnippets = timingService.getCurrentSeekPositionSnippets();
+    Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
     if (currentSnippets.isEmpty) {
       return;
     }
@@ -79,7 +79,7 @@ class TextPaneProvider with ChangeNotifier {
   }
 
   void moveUpCursor() {
-    Map<SnippetID, LyricSnippet> currentSnippets = timingService.getCurrentSeekPositionSnippets();
+    Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
     int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.linePosition);
     if (index == -1) {
       return;
@@ -94,7 +94,7 @@ class TextPaneProvider with ChangeNotifier {
   }
 
   void moveDownCursor() {
-    Map<SnippetID, LyricSnippet> currentSnippets = timingService.getCurrentSeekPositionSnippets();
+    Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
     int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.linePosition);
     if (index == -1) {
       return;
@@ -259,7 +259,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     final TimingService timingService = ref.read(timingMasterProvider);
     final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
     List<Widget> elements = [];
-    var currentSnippets = timingService.getCurrentSeekPositionSnippets();
+    var currentSnippets = timingService.getSnippetsAtSeekPosition();
     double maxWidth = 0.0;
     TextStyle style = TextStyle(letterSpacing: 2.0);
 

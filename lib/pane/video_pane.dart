@@ -245,7 +245,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap;
 
     Map<SnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
-    Map<SnippetID, LyricSnippet> currentSnippets = timingService.getCurrentSeekPositionSnippets(
+    Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition(
       startBulge: startBulge,
       endBulge: endBulge,
     );

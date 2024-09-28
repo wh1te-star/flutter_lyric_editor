@@ -119,7 +119,9 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         AddSnippetIntent: CallbackAction<AddSnippetIntent>(
           onInvoke: (AddSnippetIntent intent) => () {
-            timingService.addSnippet("default sentence", musicPlayerProvider.seekPosition, timelinePaneProvider.selectingVocalist[0]);
+            if (timelinePaneProvider.selectingVocalist.isNotEmpty) {
+              timingService.addSnippet("default sentence", musicPlayerProvider.seekPosition, timelinePaneProvider.selectingVocalist[0]);
+            }
           }(),
         ),
         DeleteSnippetIntent: CallbackAction<DeleteSnippetIntent>(

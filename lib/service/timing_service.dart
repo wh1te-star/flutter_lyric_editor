@@ -97,12 +97,14 @@ class TimingService extends ChangeNotifier {
     );
   }
 
-  Map<SnippetID, LyricSnippet> getCurrentSeekPositionSnippets({int startBulge = 0, int endBulge = 0}) {
-    int seekPosition = musicPlayerProvider.seekPosition;
+  Map<SnippetID, LyricSnippet> getSnippetsAtSeekPosition({int? seekPosition, VocalistID? vocalistID, int startBulge = 0, int endBulge = 0}) {
+    int seekPosition0 = seekPosition ?? musicPlayerProvider.seekPosition;
 
     return Map.fromEntries(
       lyricSnippetList.entries.where((entry) {
-        return entry.value.startTimestamp - startBulge <= seekPosition && seekPosition <= entry.value.endTimestamp + endBulge;
+        bool isWithinTimestamp = entry.value.startTimestamp - startBulge <= seekPosition0 && seekPosition0 <= entry.value.endTimestamp + endBulge;
+        bool isMatchingVocalist = vocalistID == null || entry.value.vocalistID == vocalistID;
+        return isWithinTimestamp && isMatchingVocalist;
       }),
     );
   }
