@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/painter/partial_text_painter.dart';
@@ -41,7 +42,6 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
   _VideoPaneState(this.focusNode);
   int startBulge = 1000;
   int endBulge = 1000;
-  List<LyricSnippetTrack> lyricSnippetTrack = [];
 
   ScrollController scrollController = ScrollController();
 
@@ -69,7 +69,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     });
 
     timingService.addListener(() {
-      lyricSnippetTrack = assignTrackNumber(timingService.lyricSnippetList.values.toList());
+      maxLanes = getMaxRequiredLanes(timingService.getTrackNumber(timingService.lyricSnippetList, startBulge, endBulge)) + 1;
       setState(() {});
     });
 
@@ -80,44 +80,8 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
   String defaultText = "Video Pane";
 
-  List<LyricSnippetTrack> getSnippetsAtCurrentSeekPosition() {
-    int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
-    return lyricSnippetTrack.where((snippet) {
-      return snippet.lyricSnippet.startTimestamp - startBulge < seekPosition && seekPosition < snippet.lyricSnippet.endTimestamp + endBulge;
-    }).toList();
-  }
-
-  List<LyricSnippetTrack> assignTrackNumber(List<LyricSnippet> lyricSnippetList) {
-    if (lyricSnippetList.isEmpty) return [];
-    lyricSnippetList.sort((a, b) => a.startTimestamp.compareTo(b.startTimestamp));
-
-    List<LyricSnippetTrack> lyricSnippetTrack = [];
-
-    int maxOverlap = 0;
-    int currentOverlap = 1;
-    int currentEndTime = lyricSnippetList[0].endTimestamp + endBulge;
-    lyricSnippetTrack.add(LyricSnippetTrack(lyricSnippetList[0], 0));
-
-    for (int i = 1; i < lyricSnippetList.length; ++i) {
-      int start = lyricSnippetList[i].startTimestamp - startBulge;
-      int end = lyricSnippetList[i].endTimestamp + endBulge;
-      if (start <= currentEndTime) {
-        currentOverlap++;
-      } else {
-        currentOverlap = 1;
-        currentEndTime = end;
-      }
-      if (currentOverlap > maxOverlap) {
-        maxOverlap = currentOverlap;
-      }
-
-      lyricSnippetTrack.add(LyricSnippetTrack(lyricSnippetList[i], currentOverlap - 1));
-      if (currentOverlap > maxLanes) {
-        maxLanes = currentOverlap;
-      }
-    }
-
-    return lyricSnippetTrack;
+  int getMaxRequiredLanes(Map<SnippetID, int> lyricSnippetList) {
+    return lyricSnippetList.values.toList().reduce(max);
   }
 
   double getMiddlePoint(LyricSnippet snippet) {
@@ -128,9 +92,11 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     int justBeforeIndex = 0;
     int justAfterIndex = 0;
     double justBeforePosition = 0;
-    double justAfterPosition = 240000;
-    for (int index = 0; index < lyricSnippetTrack.length; index++) {
-      double currentTime = getMiddlePoint(lyricSnippetTrack[index].lyricSnippet);
+    double justAfterPosition = double.maxFinite;
+
+    final Map<SnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
+    for (int index = 0; index < lyricSnippetList.length; index++) {
+      double currentTime = getMiddlePoint(lyricSnippetList.values.toList()[index]);
       if (currentTime < seekPosition) {
         if (justBeforePosition < currentTime) {
           justBeforePosition = currentTime;
@@ -152,8 +118,11 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
   }
 
   double getSeekPositionFromScrollOffset(double scrollOffset) {
+    final TimingService timingService = ref.read(timingMasterProvider);
+    final List<LyricSnippet> lyricSnippetList = timingService.lyricSnippetList.values.toList();
+
     if (scrollOffset < 30) {
-      return lyricSnippetTrack[0].lyricSnippet.startTimestamp.toDouble();
+      return lyricSnippetList[0].startTimestamp.toDouble();
     }
     int snippetIndex = (scrollOffset - 30) ~/ 60;
     debugPrint("scroll offset: $scrollOffset, snippetIndex: $snippetIndex");
@@ -161,14 +130,14 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     late double endPosition;
     if ((scrollOffset - 30) % 60 < 30) {
       if (snippetIndex == 0) {
-        startPosition = 2 * getMiddlePoint(lyricSnippetTrack[snippetIndex].lyricSnippet) - getMiddlePoint(lyricSnippetTrack[snippetIndex + 1].lyricSnippet);
+        startPosition = 2 * getMiddlePoint(lyricSnippetList[snippetIndex]) - getMiddlePoint(lyricSnippetList[snippetIndex + 1]);
       } else {
-        startPosition = getMiddlePoint(lyricSnippetTrack[snippetIndex - 1].lyricSnippet);
+        startPosition = getMiddlePoint(lyricSnippetList[snippetIndex - 1]);
       }
-      endPosition = getMiddlePoint(lyricSnippetTrack[snippetIndex].lyricSnippet);
+      endPosition = getMiddlePoint(lyricSnippetList[snippetIndex]);
     } else {
-      startPosition = getMiddlePoint(lyricSnippetTrack[snippetIndex].lyricSnippet);
-      endPosition = getMiddlePoint(lyricSnippetTrack[snippetIndex + 1].lyricSnippet);
+      startPosition = getMiddlePoint(lyricSnippetList[snippetIndex]);
+      endPosition = getMiddlePoint(lyricSnippetList[snippetIndex + 1]);
     }
     double scrollExtra = (scrollOffset % 60) / 60;
     double seekPosition = startPosition + (endPosition - startPosition) * scrollExtra;
@@ -270,25 +239,31 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
   @override
   Widget build(BuildContext context) {
-    MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
-    int seekPosition = musicPlayerService.seekPosition;
+    final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
+    final TimingService timingService = ref.read(timingMasterProvider);
+    final int seekPosition = musicPlayerService.seekPosition;
     final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap;
 
-    String fontFamily = "Times New Roman";
-    List<LyricSnippetTrack> currentSnippets = getSnippetsAtCurrentSeekPosition();
+    Map<SnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
+    Map<SnippetID, LyricSnippet> currentSnippets = timingService.getCurrentSeekPositionSnippets(
+      startBulge: startBulge,
+      endBulge: endBulge,
+    );
 
+    String fontFamily = "Times New Roman";
     final VideoPaneProvider videoPaneProvider = ref.read(videoPaneMasterProvider);
     DisplayMode displayMode = videoPaneProvider.displayMode;
     if (displayMode == DisplayMode.appearDissappear) {
+      final Map<SnippetID, int> tracks = timingService.getTrackNumber(timingService.lyricSnippetList, startBulge, endBulge);
+
       List<Widget> content = List<Widget>.generate(maxLanes, (index) => Container());
 
       for (int i = 0; i < maxLanes; i++) {
-        LyricSnippet targetSnippet = currentSnippets
-            .firstWhere(
-              (LyricSnippetTrack snippet) => snippet.trackNumber == i,
-              orElse: () => LyricSnippetTrack(LyricSnippet.emptySnippet, i),
-            )
-            .lyricSnippet;
+        SnippetID targetSnippetID = currentSnippets.keys.toList().firstWhere(
+              (SnippetID id) => tracks[id] == i,
+              orElse: () => SnippetID(0),
+            );
+        LyricSnippet targetSnippet = targetSnippetID == SnippetID(0) ? LyricSnippet.emptySnippet : lyricSnippetList[targetSnippetID]!;
         content[i] = outlinedText(targetSnippet, fontFamily);
       }
 
@@ -311,8 +286,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       List<Widget> columnSnippets = [];
       columnSnippets.add(Container(color: const Color.fromARGB(255, 164, 240, 156), height: 200));
       columnSnippets.add(Container(color: Colors.blueAccent, height: height));
-      for (var trackSnippet in lyricSnippetTrack) {
-        LyricSnippet snippet = trackSnippet.lyricSnippet;
+      for (var snippet in lyricSnippetList.values.toList()) {
         Color fontColor = const Color(0x00000000);
         if (vocalistColorList.containsKey(snippet.vocalistID)) {
           fontColor = Color(vocalistColorList[snippet.vocalistID]!.color);
@@ -363,12 +337,6 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     scrollController.dispose();
     super.dispose();
   }
-}
-
-class LyricSnippetTrack {
-  LyricSnippet lyricSnippet;
-  int trackNumber;
-  LyricSnippetTrack(this.lyricSnippet, this.trackNumber);
 }
 
 enum DisplayMode {

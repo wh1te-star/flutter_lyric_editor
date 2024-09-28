@@ -20,6 +20,7 @@ class TimingService extends ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
 
   Map<SnippetID, LyricSnippet> lyricSnippetList = {};
+  Map<SnippetID, int> snippetTracks = {};
   Map<VocalistID, Vocalist> vocalistColorMap = {};
   List<int> sections = [];
 
@@ -49,6 +50,37 @@ class TimingService extends ChangeNotifier {
     );
   }
 
+  Map<SnippetID, int> getTrackNumber(Map<SnippetID, LyricSnippet> lyricSnippetList, int startBulge, int endBulge) {
+    if (lyricSnippetList.isEmpty) return {};
+
+    Map<SnippetID, int> snippetTracks = {};
+
+    int maxOverlap = 0;
+    int currentOverlap = 1;
+    int currentEndTime = lyricSnippetList.values.first.endTimestamp + endBulge;
+    snippetTracks[lyricSnippetList.keys.first] = 0;
+
+    for (int i = 1; i < lyricSnippetList.length; i++) {
+      SnippetID currentSnippetID = lyricSnippetList.keys.toList()[i];
+      LyricSnippet currentSnippet = lyricSnippetList.values.toList()[i];
+      int start = currentSnippet.startTimestamp - startBulge;
+      int end = currentSnippet.endTimestamp + endBulge;
+      if (start <= currentEndTime) {
+        currentOverlap++;
+      } else {
+        currentOverlap = 1;
+        currentEndTime = end;
+      }
+      if (currentOverlap > maxOverlap) {
+        maxOverlap = currentOverlap;
+      }
+
+      snippetTracks[currentSnippetID] = currentOverlap - 1;
+    }
+
+    return snippetTracks;
+  }
+
   void sortLyricSnippetList() {
     lyricSnippetList = Map.fromEntries(
       lyricSnippetList.entries.toList()
@@ -65,12 +97,12 @@ class TimingService extends ChangeNotifier {
     );
   }
 
-  Map<SnippetID, LyricSnippet> getCurrentSeekPositionSnippets() {
+  Map<SnippetID, LyricSnippet> getCurrentSeekPositionSnippets({int startBulge = 0, int endBulge = 0}) {
     int seekPosition = musicPlayerProvider.seekPosition;
 
     return Map.fromEntries(
       lyricSnippetList.entries.where((entry) {
-        return entry.value.startTimestamp <= seekPosition && seekPosition <= entry.value.endTimestamp;
+        return entry.value.startTimestamp - startBulge <= seekPosition && seekPosition <= entry.value.endTimestamp + endBulge;
       }),
     );
   }
