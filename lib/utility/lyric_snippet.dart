@@ -28,36 +28,21 @@ class LyricSnippet with TimingObject {
     );
   }
 
-  void addAnnotation(String annotationString, int startCharTiming, int endCharTiming) {
-    TimingPoint? startTimingPoint = timingPoints.firstWhere(
-      (TimingPoint timingPoint) => timingPoint.charPosition == startCharTiming,
-      orElse: () => TimingPoint.emptyTimingPoint,
-    );
-    if (startTimingPoint == TimingPoint.emptyTimingPoint) {
-      debugPrint("The specified start timing point was not found.");
-      return;
-    }
-
-    TimingPoint? endTimingPoint = timingPoints.firstWhere(
-      (TimingPoint timingPoint) => timingPoint.charPosition == endCharTiming,
-      orElse: () => TimingPoint.emptyTimingPoint,
-    );
-    if (endTimingPoint == TimingPoint.emptyTimingPoint) {
-      debugPrint("The specified end timing point was not found.");
-      return;
-    }
-
+  void addAnnotation(String annotationString, int segmentIndex) {
+    SentenceSegment segment = sentenceSegments[segmentIndex];
+    TimingPoint justBeforeTimingPoint = timingPoints[segmentIndex];
     annotations.add(
-      Annotation(snippetStartTimingPointRef: startTimingPoint, snippetEndTimingPointRef: endTimingPoint, sentenceSegments: [
+      Annotation(startTimestamp: justBeforeTimingPoint.seekPosition, sentenceSegments: [
         SentenceSegment(
           annotationString,
-          endTimingPoint.seekPosition - startTimingPoint.seekPosition,
+          segment.duration,
         ),
       ]),
     );
   }
 
   void deleteAnnotation(int charPosition) {
+    /*
     Annotation deleteAnnotation = annotations.firstWhere((Annotation annotation) {
       int startCharPosition = annotation.snippetStartTimingPointRef.charPosition;
       int endCharPosition = annotation.snippetEndTimingPointRef.charPosition;
@@ -65,6 +50,7 @@ class LyricSnippet with TimingObject {
     });
 
     annotations.remove(deleteAnnotation);
+    */
   }
 
   LyricSnippet copyWith({
@@ -89,34 +75,28 @@ class LyricSnippet with TimingObject {
 }
 
 class Annotation with TimingObject {
-  TimingPoint snippetStartTimingPointRef;
-  TimingPoint snippetEndTimingPointRef;
   Annotation({
-    required this.snippetStartTimingPointRef,
-    required this.snippetEndTimingPointRef,
+    required int startTimestamp,
     required List<SentenceSegment> sentenceSegments,
   }) {
-    startTimestamp = snippetStartTimingPointRef.seekPosition;
+    this.startTimestamp = startTimestamp;
     _sentenceSegments = sentenceSegments;
     updateTimingPoints();
   }
 
   static Annotation get emptySnippet {
     return Annotation(
-      snippetStartTimingPointRef: TimingPoint(-1, -1),
-      snippetEndTimingPointRef: TimingPoint(-1, -1),
+      startTimestamp: 0,
       sentenceSegments: [],
     );
   }
 
   Annotation copyWith({
-    TimingPoint? snippetStartTimingPointRef,
-    TimingPoint? snippetEndTimingPointRef,
+    int? startTimestamp,
     List<SentenceSegment>? sentenceSegments,
   }) {
     return Annotation(
-      snippetStartTimingPointRef: snippetStartTimingPointRef ?? this.snippetStartTimingPointRef,
-      snippetEndTimingPointRef: snippetEndTimingPointRef ?? this.snippetEndTimingPointRef,
+      startTimestamp: startTimestamp ?? this.startTimestamp,
       sentenceSegments: sentenceSegments ?? _sentenceSegments,
     );
   }

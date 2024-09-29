@@ -7,6 +7,7 @@ import 'package:lyric_editor/pane/video_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
+import 'package:lyric_editor/utility/lyric_snippet.dart';
 
 final keyboardShortcutsMasterProvider = ChangeNotifierProvider((ref) => KeyboardShortcutsNotifier());
 
@@ -131,12 +132,29 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         AddAnnotationIntent: CallbackAction<AddAnnotationIntent>(
           onInvoke: (AddAnnotationIntent intent) => () {
-            //timingService.addAnnotation(timelinePaneProvider.selectingSnippets[0], "default annotation", startCharTiming, endCharTiming)
+            Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
+            MapEntry<SnippetID, LyricSnippet> target = currentSnippets.entries.firstWhere(
+              (entry) {
+              VocalistID currentVocalistID = entry.value.vocalistID;
+              VocalistID textPaneVocalistID = timingService.lyricSnippetList[textPaneProvider.cursor.linePosition]!.vocalistID;
+                return currentVocalistID == textPaneVocalistID;
+              },
+              orElse: () => MapEntry(SnippetID(0), LyricSnippet.emptySnippet),
+            );
+
+            SnippetID targetID = target.key;
+            LyricSnippet targetSnippet = target.value;
+            if (targetSnippet == LyricSnippet.emptySnippet) {
+              return;
+            }
+
+            int segmentIndex = targetSnippet.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
+            timingService.addAnnotation(targetID, "default annotation", segmentIndex);
           }(),
         ),
         DeleteAnnotationIntent: CallbackAction<DeleteAnnotationIntent>(
           onInvoke: (DeleteAnnotationIntent intent) => () {
-            //timingService.deleteAnnotation(timelinePaneProvider.selectingSnippets[0], );
+            //timingService.deleteAnnotation( timelinePaneProvider.selectingSnippets[0],);
           }(),
         ),
         SnippetStartMoveIntent: CallbackAction<SnippetStartMoveIntent>(

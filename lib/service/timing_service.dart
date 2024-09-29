@@ -567,11 +567,11 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addAnnotation(SnippetID snippetID, String annotationString, int startCharTiming, int endCharTiming) {
+  void addAnnotation(SnippetID snippetID, String annotationString, int segmentIndex) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
 
     LyricSnippet snippet = getSnippetWithID(snippetID);
-    snippet.addAnnotation(annotationString, startCharTiming, endCharTiming);
+    snippet.addAnnotation(annotationString, segmentIndex);
 
     notifyListeners();
   }
