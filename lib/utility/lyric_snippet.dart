@@ -53,6 +53,13 @@ class LyricSnippet with TimingObject {
     */
   }
 
+  @override
+  void addTimingPoint(int charPosition, int seekPosition) {
+    super.addTimingPoint(charPosition, seekPosition);
+    int insertIndex = getSegmentIndexFromSeekPosition(seekPosition);
+    annotations.insert(insertIndex + 1, Annotation.emptySnippet);
+  }
+
   LyricSnippet copyWith({
     VocalistID? vocalistID,
     int? startTimestamp,
