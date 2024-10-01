@@ -6,7 +6,7 @@ import 'package:lyric_editor/utility/id_generator.dart';
 
 class LyricSnippet with TimingObject {
   VocalistID vocalistID;
-  List<Annotation> annotations;
+  Map<int, Annotation> annotations;
 
   LyricSnippet({
     required this.vocalistID,
@@ -24,21 +24,19 @@ class LyricSnippet with TimingObject {
       vocalistID: VocalistID(0),
       startTimestamp: 0,
       sentenceSegments: [],
-      annotations: [],
+      annotations: {},
     );
   }
 
   void addAnnotation(String annotationString, int segmentIndex) {
     SentenceSegment segment = sentenceSegments[segmentIndex];
     TimingPoint justBeforeTimingPoint = timingPoints[segmentIndex];
-    annotations.add(
-      Annotation(startTimestamp: justBeforeTimingPoint.seekPosition, sentenceSegments: [
-        SentenceSegment(
-          annotationString,
-          segment.duration,
-        ),
-      ]),
-    );
+    annotations[segmentIndex] = Annotation(startTimestamp: justBeforeTimingPoint.seekPosition, sentenceSegments: [
+      SentenceSegment(
+        annotationString,
+        segment.duration,
+      ),
+    ]);
   }
 
   void deleteAnnotation(int charPosition) {
@@ -53,24 +51,17 @@ class LyricSnippet with TimingObject {
     */
   }
 
-  @override
-  void addTimingPoint(int charPosition, int seekPosition) {
-    super.addTimingPoint(charPosition, seekPosition);
-    int insertIndex = getSegmentIndexFromSeekPosition(seekPosition);
-    annotations.insert(insertIndex + 1, Annotation.emptySnippet);
-  }
-
   LyricSnippet copyWith({
     VocalistID? vocalistID,
     int? startTimestamp,
     List<SentenceSegment>? sentenceSegments,
-    List<Annotation>? annotation,
+    Map<int, Annotation>? annotations,
   }) {
     return LyricSnippet(
       vocalistID: vocalistID ?? this.vocalistID,
       startTimestamp: startTimestamp ?? this.startTimestamp,
       sentenceSegments: sentenceSegments ?? _sentenceSegments,
-      annotations: annotation ?? this.annotations,
+      annotations: annotations ?? this.annotations,
     );
   }
 

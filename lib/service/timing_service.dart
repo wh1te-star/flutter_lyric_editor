@@ -145,7 +145,7 @@ class TimingService extends ChangeNotifier {
       vocalistID: vocalistColorMap.keys.first,
       startTimestamp: 0,
       sentenceSegments: [SentenceSegment(singlelineText, audioDuration)],
-      annotations: [],
+      annotations: {},
     );
     sortLyricSnippetList();
 
@@ -348,7 +348,7 @@ class TimingService extends ChangeNotifier {
         vocalistID: getVocalistIDWithName(vocalistName),
         startTimestamp: startTime,
         sentenceSegments: sentenceSegments,
-        annotations: [],
+        annotations: {},
       );
     }
 
@@ -440,7 +440,7 @@ class TimingService extends ChangeNotifier {
           defaultSnippetDuration,
         ),
       ],
-      annotations: [],
+      annotations: {},
     );
     sortLyricSnippetList();
 
