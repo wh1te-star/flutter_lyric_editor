@@ -90,31 +90,35 @@ class MusicPlayerService extends ChangeNotifier {
   }
 
   void volumeUp(double value) {
-    player.setVolume(player.volume + value);
+    //player.setVolume(player.volume + value);
   }
 
   void volumeDown(double value) {
-    player.setVolume(player.volume - value);
+    //player.setVolume(player.volume - value);
   }
 
   void speedUp(double rate) {
-    player.setSpeed(player.speed + rate);
+    //player.setSpeed(player.speed + rate);
   }
 
   void speedDown(double rate) {
-    player.setSpeed(player.speed - rate);
+    //player.setSpeed(player.speed - rate);
   }
 
-  void initAudio(String audioPath) {
-    audioFile = AudioSource.uri(Uri.file(audioPath));
-    player.setAudioSource(audioFile);
+  Future<void> initAudio(String audioPath) async {
+    try {
+      await player.setAudioSource(source)
+    } catch (e) {
+      // Handle any errors during loading
+      print('Error loading audio: $e');
+    }
   }
 
   void play() {
-    player.play();
+    //player.play();
   }
 
   void setVolume(double volume) {
-    player.setVolume(volume);
+    //player.setVolume(volume);
   }
 }
