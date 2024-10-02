@@ -9,6 +9,7 @@ import 'pane/video_pane.dart';
 import 'pane/text_pane.dart';
 import 'pane/timeline_pane.dart';
 import 'pane/adjustable_pane_border.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   runApp(ProviderScope(child: MyApp()));
@@ -76,6 +77,8 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
   void initState() {
     super.initState();
 
+    _requestPermission();
+
     musicPlayerService = ref.read(musicPlayerMasterProvider);
     timingService = ref.read(timingMasterProvider);
     videoPaneFocusNode = FocusNode();
@@ -92,7 +95,7 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
     );
 
     musicPlayerService.initAudio('assets/09 ウェルカムティーフレンド.mp3');
-    musicPlayerService.play();
+    //musicPlayerService.play();
 
     timingService.loadExampleLyrics();
   }
@@ -106,6 +109,13 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
     exactHeight = screenHeight * MediaQuery.of(context).devicePixelRatio;
     LeftUpperPaneWidth = screenWidth * 1.0 / 3.0;
     LeftUpperPaneHeight = screenHeight * 2.0 / 3.0;
+  }
+
+  Future<void> _requestPermission() async {
+    var status = await Permission.storage.status;
+    if (!status.isGranted) {
+      await Permission.storage.request();
+    }
   }
 
   @override

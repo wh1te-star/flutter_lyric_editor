@@ -106,12 +106,17 @@ class MusicPlayerService extends ChangeNotifier {
   }
 
   Future<void> initAudio(String audioPath) async {
-    try {
-      await player.setAudioSource(source)
-    } catch (e) {
-      // Handle any errors during loading
-      print('Error loading audio: $e');
-    }
+    /*
+    AudioSource source = AudioSource.uri(Uri.file(audioPath));
+    player.setFilePath(audioPath);
+
+    final audioSource = AudioSource.uri(Uri.parse(audioPath));
+    await player.setAudioSource(audioSource);
+    await player.play();
+    */
+
+    player.setAsset(audioPath);
+    player.play();
   }
 
   void play() {
