@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -12,12 +13,17 @@ class MusicPlayerService extends ChangeNotifier {
   bool _isPlaying = false;
   int _audioDuration = 0;
   late UriAudioSource audioFile;
+  Timer? _positionUpdateTimer;
 
   MusicPlayerService() {
-    /*
-    player.positionStream.listen((event) {
-      _seekPosition = event.inMilliseconds;
-      notifyListeners();
+    _positionUpdateTimer = Timer.periodic(Duration(milliseconds: 50), (timer) {
+      //player.position.then((position) {
+      Duration position = player.position;
+      if (position != null) {
+        _seekPosition = position.inMilliseconds;
+        notifyListeners();
+      }
+      //});
     });
 
     player.playerStateStream.listen((state) {
@@ -31,7 +37,6 @@ class MusicPlayerService extends ChangeNotifier {
         notifyListeners();
       }
     });
-    */
   }
 
   int get seekPosition => _seekPosition;
@@ -39,27 +44,22 @@ class MusicPlayerService extends ChangeNotifier {
   int get audioDuration => _audioDuration;
 
   void playPause() {
-    /*
     if (player.playing) {
       player.pause();
     } else {
       player.play();
     }
     notifyListeners();
-    */
   }
 
   Future<void> seek(int seekPosition) async {
-    /*
     Duration position = Duration(milliseconds: seekPosition);
     await player.seek(position);
     _seekPosition = seekPosition;
     notifyListeners();
-    */
   }
 
   Future<void> rewind(int millisec) async {
-    /*
     var currentPosition = await player.position;
     if (currentPosition != null) {
       Duration newPosition = currentPosition - Duration(milliseconds: millisec);
@@ -70,11 +70,9 @@ class MusicPlayerService extends ChangeNotifier {
       _seekPosition = newPosition.inMilliseconds;
       notifyListeners();
     }
-    */
   }
 
   Future<void> forward(int millisec) async {
-    /*
     var currentPosition = await player.position;
     var musicDuration = await player.duration;
     if (currentPosition != null && musicDuration != null) {
@@ -86,7 +84,6 @@ class MusicPlayerService extends ChangeNotifier {
       _seekPosition = newPosition.inMilliseconds;
       notifyListeners();
     }
-    */
   }
 
   void volumeUp(double value) {
