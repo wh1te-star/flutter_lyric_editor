@@ -637,10 +637,10 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final double minorMarkLength = timelinePaneProvider.minorMarkLength;
 
     return GestureDetector(
-      onTapDown: (TapDownDetails details) {
+      onTapDown: (TapDownDetails details) async {
         Offset localPosition = details.localPosition;
         final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
-        musicPlayerService.seek(touchedSeekPosition.toInt());
+        await musicPlayerService.player.seek(Duration(milliseconds: touchedSeekPosition.toInt()));
         setState(() {});
       },
       child: CustomPaint(

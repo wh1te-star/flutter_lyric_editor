@@ -15,6 +15,10 @@ class MusicPlayerService extends ChangeNotifier {
     player.onPositionChanged.listen((event) {
       _seekPosition = event.inMilliseconds;
       notifyListeners();
+
+      if (seekPosition > 60000) {
+        seek(30500);
+      }
     });
     player.onPlayerStateChanged.listen((event) {
       if (player.state == PlayerState.playing) {
@@ -47,7 +51,7 @@ class MusicPlayerService extends ChangeNotifier {
 
   void seek(int seekPosition) async {
     Duration position = Duration(milliseconds: seekPosition);
-    await player.seek(position);
+    player.seek(position);
     _seekPosition = seekPosition;
     notifyListeners();
   }
@@ -59,7 +63,7 @@ class MusicPlayerService extends ChangeNotifier {
       if (newPosition.inMilliseconds < 0) {
         newPosition = Duration.zero;
       }
-      await player.seek(newPosition);
+      player.seek(newPosition);
       _seekPosition = newPosition.inMilliseconds;
       notifyListeners();
     }
@@ -73,7 +77,7 @@ class MusicPlayerService extends ChangeNotifier {
       if (newPosition.inMilliseconds > musicDuration.inMilliseconds) {
         newPosition = musicDuration;
       }
-      await player.seek(newPosition);
+      player.seek(newPosition);
       _seekPosition = newPosition.inMilliseconds;
       notifyListeners();
     }
