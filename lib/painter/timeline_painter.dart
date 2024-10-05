@@ -61,7 +61,9 @@ class TimelinePainter extends CustomPainter {
         previousEndtime = endtime;
       }
 
-      final top = currentLane * size.height / maxLanes + topMargin;
+      final double annotationHeight = 13.0;
+
+      final top = currentLane * size.height / maxLanes + annotationHeight + topMargin;
       final bottom = currentLane * size.height / maxLanes + size.height / maxLanes - bottomMargin;
       final left = snippet.startTimestamp * intervalLength / intervalDuration;
       final right = endtime * intervalLength / intervalDuration;
@@ -81,18 +83,37 @@ class TimelinePainter extends CustomPainter {
       for (var sentenceSegment in snippet.sentenceSegments) {
         TrianglePainter(
           x: x,
-          y: top,
+          y: bottom,
           width: 5.0,
-          height: 5.0,
+          height: -5.0,
         ).paint(canvas, size);
         x += sentenceSegment.duration * intervalLength / intervalDuration;
       }
       TrianglePainter(
         x: x,
-        y: top,
+        y: bottom,
         width: 5.0,
-        height: 5.0,
+        height: -5.0,
       ).paint(canvas, size);
+
+      for (int i = 0; i < snippet.sentenceSegments.length; i++) {
+        if (snippet.annotations.containsKey(i)) {
+          final annotationTop = currentLane * size.height / maxLanes + topMargin;
+          final annotationBottom = currentLane * size.height / maxLanes + topMargin + annotationHeight;
+          final annotationLeft = (snippet.startTimestamp + snippet.timingPoints[i].seekPosition) * intervalLength / intervalDuration;
+          final annotationRight = (snippet.startTimestamp + snippet.timingPoints[i+1].seekPosition) * intervalLength / intervalDuration;
+          final annotationRect = Rect.fromLTRB(annotationLeft, annotationTop, annotationRight, annotationBottom);
+
+          final annotationRectanglePainter = RectanglePainter(
+            rect: annotationRect,
+            sentence: snippet.annotations[i]!.sentence,
+            color: color,
+            isSelected: isSelected,
+            borderLineWidth: 2.0,
+          );
+          annotationRectanglePainter.paint(canvas, size);
+        }
+      }
 
       if (id == cursorPosition) {
         final paint = Paint()

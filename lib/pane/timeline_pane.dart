@@ -737,7 +737,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final Map<VocalistID, Vocalist> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
     final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
     double topMargin = 10;
-    double bottomMargin = 5;
+    double bottomMargin = 10;
     return GestureDetector(
       onTapDown: (TapDownDetails details) {
         Offset localPosition = details.localPosition;
