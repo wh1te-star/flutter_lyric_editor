@@ -284,7 +284,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
           children: [
             Container(
               width: sideBandWidth,
-              height: rowHeight,
+              height: 2*rowHeight,
               color: vocalistColor,
             ),
             Container(
@@ -297,7 +297,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
             ),
             Container(
               width: sideBandWidth,
-              height: rowHeight,
+              height: 2*rowHeight,
               color: vocalistColor,
             ),
           ],
@@ -320,21 +320,41 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
     if (isInCursor) {
       for (int index = 0; index < snippet.sentenceSegments.length; index++) {
-        String segmentWord = snippet.segmentWord(index);
+        String segmentWord = snippet.getSegmentWord(index);
 
         if (index == highlightIndex) {
           int cursorPositionSentence = textPaneProvider.cursor.charPosition;
           int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursor.linePosition]!.timingPoints[highlightIndex].charPosition;
           coloredTextWidgets.add(
+            Column(
+              children: [
+                Text(
+                  snippet.getAnnotationWord(index),
+                  style: const TextStyle(
+                    color: Colors.black,
+                  ),
+                ),
             segmentEdit(segmentWord, cursorPositionSentence - cursorPositionWordStart),
+              ],
+            ),
           );
         } else {
           coloredTextWidgets.add(
-            Text(
-              segmentWord,
-              style: const TextStyle(
-                color: Colors.black,
-              ),
+            Column(
+              children: [
+                Text(
+                  snippet.getAnnotationWord(index),
+                  style: const TextStyle(
+                    color: Colors.black,
+                  ),
+                ),
+                Text(
+                  segmentWord,
+                  style: const TextStyle(
+                    color: Colors.black,
+                  ),
+                ),
+              ],
             ),
           );
         }

@@ -149,7 +149,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             }
 
             int segmentIndex = targetSnippet.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
-            timingService.addAnnotation(targetID, "default annotation", segmentIndex);
+            timingService.addAnnotation(targetID, "Anno", segmentIndex);
           }(),
         ),
         DeleteAnnotationIntent: CallbackAction<DeleteAnnotationIntent>(

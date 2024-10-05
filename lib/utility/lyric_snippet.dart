@@ -28,6 +28,14 @@ class LyricSnippet with TimingObject {
     );
   }
 
+  String getAnnotationWord(int index) {
+    if (annotations.containsKey(index)) {
+      return annotations[index]!.sentence;
+    } else {
+      return "";
+    }
+  }
+
   void addAnnotation(String annotationString, int segmentIndex) {
     SentenceSegment segment = sentenceSegments[segmentIndex];
     TimingPoint justBeforeTimingPoint = timingPoints[segmentIndex];
@@ -239,7 +247,7 @@ mixin TimingObject {
     return indexTranslation;
   }
 
-  String segmentWord(int index) {
+  String getSegmentWord(int index) {
     return sentence.substring(
       timingPoints[index].charPosition,
       timingPoints[index + 1].charPosition,
