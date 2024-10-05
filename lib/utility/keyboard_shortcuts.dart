@@ -6,6 +6,7 @@ import 'package:lyric_editor/pane/timeline_pane.dart';
 import 'package:lyric_editor/pane/video_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
+import 'package:lyric_editor/utility/dialogbox_utility.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 
@@ -131,12 +132,12 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
           }(),
         ),
         AddAnnotationIntent: CallbackAction<AddAnnotationIntent>(
-          onInvoke: (AddAnnotationIntent intent) => () {
+          onInvoke: (AddAnnotationIntent intent) => () async {
             Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
             MapEntry<SnippetID, LyricSnippet> target = currentSnippets.entries.firstWhere(
               (entry) {
-              VocalistID currentVocalistID = entry.value.vocalistID;
-              VocalistID textPaneVocalistID = timingService.lyricSnippetList[textPaneProvider.cursor.linePosition]!.vocalistID;
+                VocalistID currentVocalistID = entry.value.vocalistID;
+                VocalistID textPaneVocalistID = timingService.lyricSnippetList[textPaneProvider.cursor.linePosition]!.vocalistID;
                 return currentVocalistID == textPaneVocalistID;
               },
               orElse: () => MapEntry(SnippetID(0), LyricSnippet.emptySnippet),
@@ -149,7 +150,10 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             }
 
             int segmentIndex = targetSnippet.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
-            timingService.addAnnotation(targetID, "Anno", segmentIndex);
+            String annotationString = (await displayDialog(context, [""]))[0];
+            if (annotationString != "") {
+              timingService.addAnnotation(targetID, annotationString, segmentIndex);
+            }
           }(),
         ),
         DeleteAnnotationIntent: CallbackAction<DeleteAnnotationIntent>(
