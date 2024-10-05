@@ -95,7 +95,7 @@ class _AdjustablePaneLayoutState extends ConsumerState<AdjustablePaneLayout> {
     );
 
     musicPlayerService.initAudio('assets/09 ウェルカムティーフレンド.mp3');
-    //musicPlayerService.play();
+    musicPlayerService.play();
 
     timingService.loadExampleLyrics();
   }
