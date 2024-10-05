@@ -15,10 +15,6 @@ class MusicPlayerService extends ChangeNotifier {
     player.onPositionChanged.listen((event) {
       _seekPosition = event.inMilliseconds;
       notifyListeners();
-
-      if (seekPosition > 60000) {
-        seek(30500);
-      }
     });
     player.onPlayerStateChanged.listen((event) {
       if (player.state == PlayerState.playing) {
@@ -49,10 +45,15 @@ class MusicPlayerService extends ChangeNotifier {
     notifyListeners();
   }
 
+  int roundToNear(int number, int unit) {
+    return ((number / unit).round()) * unit;
+  }
+
   void seek(int seekPosition) async {
-    Duration position = Duration(milliseconds: seekPosition);
+    int roundedSeekPosition = roundToNear(seekPosition, 100);
+    Duration position = Duration(milliseconds: roundedSeekPosition);
     player.seek(position);
-    _seekPosition = seekPosition;
+    _seekPosition = roundedSeekPosition;
     notifyListeners();
   }
 

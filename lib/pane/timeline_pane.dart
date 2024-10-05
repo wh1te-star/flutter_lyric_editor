@@ -640,7 +640,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
       onTapDown: (TapDownDetails details) async {
         Offset localPosition = details.localPosition;
         final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
-        await musicPlayerService.player.seek(Duration(milliseconds: touchedSeekPosition.toInt()));
+        musicPlayerService.seek(touchedSeekPosition.toInt());
         setState(() {});
       },
       child: CustomPaint(
