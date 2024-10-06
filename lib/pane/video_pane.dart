@@ -172,12 +172,18 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     );
   }
 
-  PartialTextPainter getColorHilightedText(LyricSnippet snippet, int seekPosition, String fontFamily, Color fontColor) {
+  CustomPaint getColorHilightedText(LyricSnippet snippet, int seekPosition, String fontFamily, Color fontColor) {
     int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
     if (seekPosition < snippet.startTimestamp) {
-      return getBeforeSnippetPainter(snippet, fontFamily, fontColor);
+        return CustomPaint(
+          painter: getBeforeSnippetPainter(snippet, fontFamily, fontColor),
+          size: const Size(double.infinity, 60.0),
+        );
     } else if (snippet.endTimestamp < seekPosition) {
-      return getAfterSnippetPainter(snippet, fontFamily, fontColor);
+      return CustomPaint(
+          painter: getAfterSnippetPainter(snippet, fontFamily, fontColor),
+          size: const Size(double.infinity, 60.0),
+        );
     } else {
       int wordIndex = 0;
       int startChar = 0;
@@ -189,7 +195,8 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       }
       double percent;
       percent = restDuration / snippet.sentenceSegments[wordIndex].duration;
-      return PartialTextPainter(
+      return CustomPaint(
+          painter: PartialTextPainter(
         text: snippet.sentence,
         start: startChar,
         end: startChar + snippet.sentenceSegments[wordIndex].word.length,
@@ -199,7 +206,9 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
         fontBaseColor: fontColor,
         firstOutlineWidth: 2,
         secondOutlineWidth: 4,
-      );
+      ),
+          size: const Size(double.infinity, 60.0),
+        );
     }
   }
 
@@ -229,10 +238,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       );
     } else {
       return Expanded(
-        child: CustomPaint(
-          painter: getColorHilightedText(snippet, seekPosition, fontFamily, fontColor),
-          size: const Size(double.infinity, double.infinity),
-        ),
+  child: getColorHilightedText(snippet, seekPosition, fontFamily, fontColor),
       );
     }
   }
@@ -292,10 +298,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
           fontColor = Color(vocalistColorList[snippet.vocalistID]!.color);
         }
         columnSnippets.add(
-          CustomPaint(
-            painter: getColorHilightedText(snippet, seekPosition, fontFamily, fontColor),
-            size: Size(double.infinity, height),
-          ),
+getColorHilightedText(snippet, seekPosition, fontFamily, fontColor),
         );
       }
       columnSnippets.add(Container(color: const Color.fromARGB(255, 164, 240, 156), height: 1000));
