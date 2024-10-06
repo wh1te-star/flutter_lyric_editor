@@ -8,6 +8,7 @@ import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
+import 'package:lyric_editor/utility/text_size_functions.dart';
 
 final videoPaneMasterProvider = ChangeNotifierProvider((ref) {
   return VideoPaneProvider();
@@ -172,18 +173,19 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     );
   }
 
-  CustomPaint getColorHilightedText(LyricSnippet snippet, int seekPosition, String fontFamily, Color fontColor) {
+  CustomPaint getColorHilightedText(LyricSnippet snippet, int seekPosition, double fontSize, String fontFamily, Color fontColor) {
     int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
+    Size textSize = getSizeFromFontInfo(snippet.sentence, fontSize, fontFamily);
     if (seekPosition < snippet.startTimestamp) {
-        return CustomPaint(
-          painter: getBeforeSnippetPainter(snippet, fontFamily, fontColor),
-          size: const Size(double.infinity, 60.0),
-        );
+      return CustomPaint(
+        painter: getBeforeSnippetPainter(snippet, fontFamily, fontColor),
+        size: textSize,
+      );
     } else if (snippet.endTimestamp < seekPosition) {
       return CustomPaint(
-          painter: getAfterSnippetPainter(snippet, fontFamily, fontColor),
-          size: const Size(double.infinity, 60.0),
-        );
+        painter: getAfterSnippetPainter(snippet, fontFamily, fontColor),
+        size: textSize,
+      );
     } else {
       int wordIndex = 0;
       int startChar = 0;
@@ -196,23 +198,23 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       double percent;
       percent = restDuration / snippet.sentenceSegments[wordIndex].duration;
       return CustomPaint(
-          painter: PartialTextPainter(
-        text: snippet.sentence,
-        start: startChar,
-        end: startChar + snippet.sentenceSegments[wordIndex].word.length,
-        percent: percent,
-        fontFamily: fontFamily,
-        fontSize: 40,
-        fontBaseColor: fontColor,
-        firstOutlineWidth: 2,
-        secondOutlineWidth: 4,
-      ),
-          size: const Size(double.infinity, 60.0),
-        );
+        painter: PartialTextPainter(
+          text: snippet.sentence,
+          start: startChar,
+          end: startChar + snippet.sentenceSegments[wordIndex].word.length,
+          percent: percent,
+          fontFamily: fontFamily,
+          fontSize: fontSize,
+          fontBaseColor: fontColor,
+          firstOutlineWidth: 2,
+          secondOutlineWidth: 4,
+        ),
+        size: textSize,
+      );
     }
   }
 
-  Widget outlinedText(LyricSnippet snippet, String fontFamily) {
+  Widget outlinedText(LyricSnippet snippet, double fontSize, String fontFamily) {
     int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
     Color fontColor = const Color(0x00000000);
     final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap;
@@ -228,7 +230,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
             end: 0,
             percent: 0.0,
             fontFamily: fontFamily,
-            fontSize: 40,
+            fontSize: fontSize,
             fontBaseColor: fontColor,
             firstOutlineWidth: 2,
             secondOutlineWidth: 4,
@@ -238,7 +240,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       );
     } else {
       return Expanded(
-  child: getColorHilightedText(snippet, seekPosition, fontFamily, fontColor),
+        child: getColorHilightedText(snippet, seekPosition, fontSize, fontFamily, fontColor),
       );
     }
   }
@@ -256,6 +258,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       endBulge: endBulge,
     );
 
+    double fontSize = 40.0;
     String fontFamily = "Times New Roman";
     final VideoPaneProvider videoPaneProvider = ref.read(videoPaneMasterProvider);
     DisplayMode displayMode = videoPaneProvider.displayMode;
@@ -270,7 +273,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
               orElse: () => SnippetID(0),
             );
         LyricSnippet targetSnippet = targetSnippetID == SnippetID(0) ? LyricSnippet.emptySnippet : lyricSnippetList[targetSnippetID]!;
-        content[i] = outlinedText(targetSnippet, fontFamily);
+        content[i] = outlinedText(targetSnippet, fontSize, fontFamily);
       }
 
       return Focus(
@@ -298,7 +301,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
           fontColor = Color(vocalistColorList[snippet.vocalistID]!.color);
         }
         columnSnippets.add(
-getColorHilightedText(snippet, seekPosition, fontFamily, fontColor),
+          getColorHilightedText(snippet, seekPosition, fontSize, fontFamily, fontColor),
         );
       }
       columnSnippets.add(Container(color: const Color.fromARGB(255, 164, 240, 156), height: 1000));

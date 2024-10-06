@@ -6,6 +6,7 @@ import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/sorted_list.dart';
+import 'package:lyric_editor/utility/text_size_functions.dart';
 
 final textPaneMasterProvider = ChangeNotifierProvider((ref) {
   final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
@@ -263,11 +264,11 @@ class _TextPaneState extends ConsumerState<TextPane> {
     double maxWidth = 0.0;
     TextStyle style = TextStyle(letterSpacing: 2.0);
 
-    double rowHeight = calculateTextSize("dummy text", style).height;
+    double rowHeight = getSizeFromTextStyle("dummy text", style).height;
     for (var entry in currentSnippets.entries) {
       LyricSnippet snippet = entry.value;
       String timingPointString = TextPaneProvider.timingPointChar * (snippet.timingPoints.length - 2);
-      double sentenceWidth = calculateTextSize(snippet.sentence + timingPointString, style).width + 10.0;
+      double sentenceWidth = getSizeFromTextStyle(snippet.sentence + timingPointString, style).width + 10.0;
       if (sentenceWidth > maxWidth) {
         maxWidth = sentenceWidth;
       }
@@ -284,7 +285,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
           children: [
             Container(
               width: sideBandWidth,
-              height: 2*rowHeight,
+              height: 2 * rowHeight,
               color: vocalistColor,
             ),
             Container(
@@ -297,7 +298,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
             ),
             Container(
               width: sideBandWidth,
-              height: 2*rowHeight,
+              height: 2 * rowHeight,
               color: vocalistColor,
             ),
           ],
@@ -334,7 +335,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
                     color: Colors.black,
                   ),
                 ),
-            segmentEdit(segmentWord, cursorPositionSentence - cursorPositionWordStart),
+                segmentEdit(segmentWord, cursorPositionSentence - cursorPositionWordStart),
               ],
             ),
           );
@@ -482,16 +483,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
     final Rect caretPrototype = Rect.fromLTWH(0, 0, 0, textPainter.height);
     final Offset caretOffset = textPainter.getOffsetForCaret(position, caretPrototype);
     return caretOffset.dx;
-  }
-
-  Size calculateTextSize(String text, TextStyle style) {
-    final TextPainter textPainter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      maxLines: 1,
-      textDirection: TextDirection.ltr,
-    )..layout(minWidth: 0, maxWidth: double.infinity);
-
-    return textPainter.size;
   }
 
   String replaceNthCharacter(String originalString, int index, String newChar) {
