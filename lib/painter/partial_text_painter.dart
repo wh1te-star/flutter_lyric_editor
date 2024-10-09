@@ -140,6 +140,8 @@ class PartialTextPainter extends CustomPainter {
 
     final actualX = (size.width - textWidth) / 2;
     final actualY = (size.height - textHeight) / 2;
+
+    final annotationCenterOffset = Offset(actualX, actualY-10);
     final centerOffset = Offset(actualX, actualY);
 
     canvas.clipRect(Rect.fromLTWH(0, 0, size.width, size.height));
@@ -147,6 +149,10 @@ class PartialTextPainter extends CustomPainter {
     textPainterBeforeOuter.paint(canvas, centerOffset);
     textPainterBeforeMiddle.paint(canvas, centerOffset);
     textPainterBeforeInner.paint(canvas, centerOffset);
+
+    textPainterBeforeOuter.paint(canvas, annotationCenterOffset);
+    textPainterBeforeMiddle.paint(canvas, annotationCenterOffset);
+    textPainterBeforeInner.paint(canvas, annotationCenterOffset);
 
     final startOffset = textPainterAfterInner.getOffsetForCaret(TextPosition(offset: start), Rect.zero).dx;
     final endOffset = textPainterAfterInner.getOffsetForCaret(TextPosition(offset: end), Rect.zero).dx;
