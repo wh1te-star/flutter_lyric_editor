@@ -10,6 +10,8 @@ class PartialTextPainter extends CustomPainter {
   final Color fontBaseColor;
   final double firstOutlineWidth;
   final double secondOutlineWidth;
+  late final OutlinedTextPainter before;
+  late final OutlinedTextPainter after;
   late final TextStyle textStyleBeforeInner;
   late final TextStyle textStyleBeforeMiddle;
   late final TextStyle textStyleBeforeOuter;
@@ -46,11 +48,16 @@ class PartialTextPainter extends CustomPainter {
     //final backgroundPaint = Paint()..color = const Color.fromARGB(255, 164, 240, 156);
     //canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), backgroundPaint);
 
+    setupBeforeText();
+    setupAfterText();
     setupTextStyle();
     setupTextSpan();
     setupTextPainter(size);
     paintText(canvas, size);
   }
+
+  void setupBeforeText() {}
+  void setupAfterText() {}
 
   void setupTextStyle() {
     Shadow shadow = Shadow(
@@ -141,7 +148,7 @@ class PartialTextPainter extends CustomPainter {
     final actualX = (size.width - textWidth) / 2;
     final actualY = (size.height - textHeight) / 2;
 
-    final annotationCenterOffset = Offset(actualX, actualY-10);
+    final annotationCenterOffset = Offset(actualX, actualY - 10);
     final centerOffset = Offset(actualX, actualY);
 
     canvas.clipRect(Rect.fromLTWH(0, 0, size.width, size.height));
@@ -174,4 +181,18 @@ class PartialTextPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return true;
   }
+}
+
+class PainterElements {
+  TextStyle style;
+  TextSpan span;
+  TextPainter painter;
+  PainterElements(this.style, this.span, this.painter);
+}
+
+class OutlinedTextPainter {
+  PainterElements inner;
+  PainterElements middle;
+  PainterElements outer;
+  OutlinedTextPainter(this.inner, this.middle, this.outer);
 }
