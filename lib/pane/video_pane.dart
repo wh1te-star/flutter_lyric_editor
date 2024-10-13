@@ -173,7 +173,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     );
   }
 
-  CustomPaint getColorHilightedText(LyricSnippet snippet, int seekPosition, double fontSize, String fontFamily, Color fontColor) {
+  Widget getColorHilightedText(LyricSnippet snippet, int seekPosition, double fontSize, String fontFamily, Color fontColor) {
     int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
     Size annotationSize = getSizeFromFontInfo(snippet.sentence, fontSize / 2, fontFamily);
     Size sentenceSize = getSizeFromFontInfo(snippet.sentence, fontSize, fontFamily);
@@ -199,19 +199,32 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       }
       double percent;
       percent = restDuration / snippet.sentenceSegments[wordIndex].duration;
-      return CustomPaint(
-        painter: PartialTextPainter(
-          text: snippet.sentence,
-          start: startChar,
-          end: startChar + snippet.sentenceSegments[wordIndex].word.length,
-          percent: percent,
-          fontFamily: fontFamily,
-          fontSize: fontSize,
-          fontBaseColor: fontColor,
-          firstOutlineWidth: 2,
-          secondOutlineWidth: 4,
-        ),
-        size: snippetSize,
+      return Stack(
+        children: [
+          CustomPaint(
+            painter: PartialTextPainter(
+              text: snippet.sentence,
+              start: startChar,
+              end: startChar + snippet.sentenceSegments[wordIndex].word.length,
+              percent: percent,
+              fontFamily: fontFamily,
+              fontSize: fontSize,
+              fontBaseColor: fontColor,
+              firstOutlineWidth: 2,
+              secondOutlineWidth: 4,
+            ),
+            size: snippetSize,
+          ),
+          Positioned(
+            left: 30.0,
+            top: 1.0,
+            child: Container(
+              width: 10,
+              height: 10,
+              color: Colors.green,
+            ),
+          ),
+        ],
       );
     }
   }
