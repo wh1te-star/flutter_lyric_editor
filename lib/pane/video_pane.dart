@@ -216,13 +216,24 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
             size: snippetSize,
           ),
           Positioned(
-            left: 30.0,
-            top: 1.0,
-            child: Container(
-              width: 10,
-              height: 10,
-              color: Colors.green,
-            ),
+            left: 5.0,
+            top: 5.0,
+            child: snippet.annotations.isEmpty
+                ? CustomPaint()
+                : CustomPaint(
+                    painter: PartialTextPainter(
+                      text: snippet.annotations.entries.first.value.sentence,
+                      start: 0,
+                      end: snippet.annotations.entries.first.value.sentence.length,
+                      percent: percent,
+                      fontFamily: fontFamily,
+                      fontSize: fontSize / 2.0,
+                      fontBaseColor: fontColor,
+                      firstOutlineWidth: 2,
+                      secondOutlineWidth: 4,
+                    ),
+                    size: snippetSize,
+                  ),
           ),
         ],
       );
