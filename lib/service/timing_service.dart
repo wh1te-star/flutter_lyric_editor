@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
+import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/undo_history.dart';
 import 'package:xml/xml.dart' as xml;

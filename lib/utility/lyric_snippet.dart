@@ -482,6 +482,13 @@ class PositionTypeInfo {
   PositionTypeInfo(this.type, this.index, this.duplicate);
 }
 
+class SegmentRange {
+  SnippetID id;
+  int startIndex;
+  int endIndex;
+  SegmentRange(this.id, this.startIndex, this.endIndex);
+}
+
 enum PositionType {
   timingPoint,
   sentenceSegment,
