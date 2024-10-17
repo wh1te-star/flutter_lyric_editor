@@ -6,7 +6,7 @@ import 'package:lyric_editor/utility/id_generator.dart';
 
 class LyricSnippet with TimingObject {
   VocalistID vocalistID;
-  Map<int, Annotation> annotations;
+  Map<SegmentRange, Annotation> annotations;
 
   LyricSnippet({
     required this.vocalistID,
@@ -39,7 +39,10 @@ class LyricSnippet with TimingObject {
   void addAnnotation(String annotationString, int segmentIndex) {
     SentenceSegment segment = sentenceSegments[segmentIndex];
     TimingPoint justBeforeTimingPoint = timingPoints[segmentIndex];
-    annotations[segmentIndex] = Annotation(startTimestamp: justBeforeTimingPoint.seekPosition, sentenceSegments: [
+    SegmentRange annotationKey = annotations.keys.firstWhere((SegmentRange range) {
+      return range.startIndex <= segmentIndex && segmentIndex <= range.endIndex;
+    });
+    annotations[annotationKey] = Annotation(startTimestamp: justBeforeTimingPoint.seekPosition, sentenceSegments: [
       SentenceSegment(
         annotationString,
         segment.duration,
@@ -63,7 +66,7 @@ class LyricSnippet with TimingObject {
     VocalistID? vocalistID,
     int? startTimestamp,
     List<SentenceSegment>? sentenceSegments,
-    Map<int, Annotation>? annotations,
+    Map<SegmentRange, Annotation>? annotations,
   }) {
     return LyricSnippet(
       vocalistID: vocalistID ?? this.vocalistID,
