@@ -36,12 +36,10 @@ class LyricSnippet with TimingObject {
     }
   }
 
-  void addAnnotation(String annotationString, int segmentIndex) {
-    SentenceSegment segment = sentenceSegments[segmentIndex];
-    TimingPoint justBeforeTimingPoint = timingPoints[segmentIndex];
-    SegmentRange annotationKey = annotations.keys.firstWhere((SegmentRange range) {
-      return range.startIndex <= segmentIndex && segmentIndex <= range.endIndex;
-    });
+  void addAnnotation(String annotationString, int startIndex, int endIndex) {
+    SentenceSegment segment = sentenceSegments[startIndex];
+    TimingPoint justBeforeTimingPoint = timingPoints[startIndex];
+    SegmentRange annotationKey = SegmentRange(startIndex, endIndex);
     annotations[annotationKey] = Annotation(startTimestamp: justBeforeTimingPoint.seekPosition, sentenceSegments: [
       SentenceSegment(
         annotationString,
@@ -486,10 +484,9 @@ class PositionTypeInfo {
 }
 
 class SegmentRange {
-  SnippetID id;
   int startIndex;
   int endIndex;
-  SegmentRange(this.id, this.startIndex, this.endIndex);
+  SegmentRange(this.startIndex, this.endIndex);
 }
 
 enum PositionType {
