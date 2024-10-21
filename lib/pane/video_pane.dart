@@ -173,6 +173,15 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     );
   }
 
+  double getAnnotationSizePosition(LyricSnippet snippet, int segmentIndex) {
+    int startIndex = snippet.annotations.keys.toList()[segmentIndex].startIndex;
+    double sumPosition = 0;
+    for (int index = 0; index < startIndex; index++) {
+      sumPosition += getSizeFromTextStyle(snippet.sentenceSegments[index].word, TextStyle(fontSize: 40)).width;
+    }
+    return sumPosition;
+  }
+
   Widget getColorHilightedText(LyricSnippet snippet, int seekPosition, double fontSize, String fontFamily, Color fontColor) {
     int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
     Size annotationSize = getSizeFromFontInfo(snippet.sentence, fontSize / 2, fontFamily);
@@ -216,7 +225,8 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
             size: snippetSize,
           ),
           Positioned(
-            left: 5.0,
+            //left: snippet.annotations.length == 0 ? 5.0 : getAnnotationSizePosition(snippet, 0),
+            left: 0.0,
             top: 5.0,
             child: snippet.annotations.isEmpty
                 ? CustomPaint()
