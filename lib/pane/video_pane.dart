@@ -228,7 +228,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
           ),
           Positioned(
             left: snippet.annotations.length == 0 ? 5.0 : getAnnotationSizePosition(snippet, 0),
-            top: 5.0,
+            top: -30.0,
             child: snippet.annotations.isEmpty
                 ? CustomPaint()
                 : CustomPaint(
