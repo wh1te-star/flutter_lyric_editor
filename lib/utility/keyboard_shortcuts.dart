@@ -133,6 +133,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         AddAnnotationIntent: CallbackAction<AddAnnotationIntent>(
           onInvoke: (AddAnnotationIntent intent) => () async {
+            /*
             Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
             MapEntry<SnippetID, LyricSnippet> target = currentSnippets.entries.firstWhere(
               (entry) {
@@ -154,11 +155,14 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             if (annotationString != "") {
               timingService.addAnnotation(targetID, annotationString, segmentIndex, segmentIndex + 1);
             }
+            */
+            textPaneProvider.isSegmentSelectionMode = true;
           }(),
         ),
         DeleteAnnotationIntent: CallbackAction<DeleteAnnotationIntent>(
           onInvoke: (DeleteAnnotationIntent intent) => () {
             //timingService.deleteAnnotation( timelinePaneProvider.selectingSnippets[0],);
+            textPaneProvider.isSegmentSelectionMode = false;
           }(),
         ),
         SnippetStartMoveIntent: CallbackAction<SnippetStartMoveIntent>(

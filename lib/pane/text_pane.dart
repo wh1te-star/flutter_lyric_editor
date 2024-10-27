@@ -20,9 +20,11 @@ class TextPaneProvider with ChangeNotifier {
 
   late CursorBlinker cursorBlinker;
 
-  TextPaneCursor cursor = TextPaneCursor(SnippetID(0), 0, Option.former);
+  TextPaneCursor cursor = TextPaneCursor(SnippetID(0), 0, 0, Option.former);
 
   static const String timingPointChar = '▲';
+
+  bool isSegmentSelectionMode = false;
 
   TextPaneProvider({
     required this.musicPlayerProvider,
@@ -60,11 +62,12 @@ class TextPaneProvider with ChangeNotifier {
   }
 
   TextPaneCursor getDefaultCursorPosition(SnippetID id) {
-    TextPaneCursor defaultCursor = TextPaneCursor(id, 0, Option.former);
+    TextPaneCursor defaultCursor = TextPaneCursor(id, 0, 0, Option.former);
 
     LyricSnippet snippet = getSnippetWithID(id);
     int currentSnippetPosition = snippet.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
     defaultCursor.charPosition = snippet.timingPoints[currentSnippetPosition].charPosition + 1;
+    defaultCursor.segmentPosition = currentSnippetPosition;
     defaultCursor.option = Option.former;
 
     return defaultCursor;
@@ -291,10 +294,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
             Container(
               width: maxWidth,
               color: id == textPaneProvider.cursor.linePosition ? Colors.yellowAccent : null,
-              child: snippetEditLine(
-                snippet,
-                id == textPaneProvider.cursor.linePosition,
-              ),
+              child: snippetEditLine(id, snippet),
             ),
             Container(
               width: sideBandWidth,
@@ -311,7 +311,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     );
   }
 
-  Widget snippetEditLine(LyricSnippet snippet, bool isInCursor) {
+  Widget snippetEditLine(SnippetID id, LyricSnippet snippet) {
     MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     TimingService timingService = ref.read(timingMasterProvider);
     TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
@@ -319,91 +319,127 @@ class _TextPaneState extends ConsumerState<TextPane> {
     int highlightIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
     PositionTypeInfo cursorPositionInfo = snippet.getCharPositionIndex(textPaneProvider.cursor.charPosition);
 
-    if (isInCursor) {
+    if (textPaneProvider.isSegmentSelectionMode) {
       for (int index = 0; index < snippet.sentenceSegments.length; index++) {
-        String segmentWord = snippet.getSegmentWord(index);
-
-        if (index == highlightIndex) {
-          int cursorPositionSentence = textPaneProvider.cursor.charPosition;
-          int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursor.linePosition]!.timingPoints[highlightIndex].charPosition;
+        if (textPaneProvider.cursorBlinker.isCursorVisible && index == textPaneProvider.cursor.segmentPosition) {
           coloredTextWidgets.add(
-            Column(
-              children: [
-                Text(
-                  snippet.getAnnotationWord(index),
-                  style: const TextStyle(
-                    color: Colors.black,
+            Text(
+              snippet.getSegmentWord(index),
+                  style: TextStyle(
+                    color: Colors.white,
+                    background: Paint()..color = Colors.black,
                   ),
-                ),
-                segmentEdit(segmentWord, cursorPositionSentence - cursorPositionWordStart),
-              ],
             ),
           );
         } else {
           coloredTextWidgets.add(
-            Column(
-              children: [
-                Text(
-                  snippet.getAnnotationWord(index),
-                  style: const TextStyle(
-                    color: Colors.black,
-                  ),
-                ),
-                Text(
-                  segmentWord,
-                  style: const TextStyle(
-                    color: Colors.black,
-                  ),
-                ),
-              ],
+            Text(
+              snippet.getSegmentWord(index),
+              style: const TextStyle(
+                color: Colors.black,
+              ),
             ),
           );
         }
 
         if (index < snippet.sentenceSegments.length - 1) {
-          int timingPointIndex = cursorPositionInfo.index;
-          if (textPaneProvider.cursor.option == Option.latter) {
-            timingPointIndex++;
-          }
-          if (textPaneProvider.cursorBlinker.isCursorVisible && cursorPositionInfo.type == PositionType.timingPoint && index == timingPointIndex - 1) {
+          coloredTextWidgets.add(
+            const Text(
+              " ${TextPaneProvider.timingPointChar} ",
+              style: TextStyle(
+                color: Colors.black,
+              ),
+            ),
+          );
+        }
+      }
+    } else {
+      if (id == textPaneProvider.cursor.linePosition) {
+        for (int index = 0; index < snippet.sentenceSegments.length; index++) {
+          String segmentWord = snippet.getSegmentWord(index);
+
+          if (index == highlightIndex) {
+            int cursorPositionSentence = textPaneProvider.cursor.charPosition;
+            int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursor.linePosition]!.timingPoints[highlightIndex].charPosition;
             coloredTextWidgets.add(
-              Text(
-                TextPaneProvider.timingPointChar,
-                style: TextStyle(
-                  color: Colors.white,
-                  background: Paint()..color = Colors.black,
-                ),
+              Column(
+                children: [
+                  Text(
+                    snippet.getAnnotationWord(index),
+                    style: const TextStyle(
+                      color: Colors.black,
+                    ),
+                  ),
+                  segmentEdit(segmentWord, cursorPositionSentence - cursorPositionWordStart),
+                ],
               ),
             );
           } else {
             coloredTextWidgets.add(
-              const Text(
-                TextPaneProvider.timingPointChar,
-                style: TextStyle(
-                  color: Colors.black,
-                ),
+              Column(
+                children: [
+                  Text(
+                    snippet.getAnnotationWord(index),
+                    style: const TextStyle(
+                      color: Colors.black,
+                    ),
+                  ),
+                  Text(
+                    segmentWord,
+                    style: const TextStyle(
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
               ),
             );
           }
+
+          if (index < snippet.sentenceSegments.length - 1) {
+            int timingPointIndex = cursorPositionInfo.index;
+            if (textPaneProvider.cursor.option == Option.latter) {
+              timingPointIndex++;
+            }
+            if (textPaneProvider.cursorBlinker.isCursorVisible && cursorPositionInfo.type == PositionType.timingPoint && index == timingPointIndex - 1) {
+              coloredTextWidgets.add(
+                Text(
+                  TextPaneProvider.timingPointChar,
+                  style: TextStyle(
+                    color: Colors.white,
+                    background: Paint()..color = Colors.black,
+                  ),
+                ),
+              );
+            } else {
+              coloredTextWidgets.add(
+                const Text(
+                  TextPaneProvider.timingPointChar,
+                  style: TextStyle(
+                    color: Colors.black,
+                  ),
+                ),
+              );
+            }
+          }
         }
-      }
-    } else {
-      Map<int, String> timingPointMap = {};
-      for (int i = 1; i < snippet.timingPoints.length - 1; i++) {
-        TimingPoint timingPoint = snippet.timingPoints[i];
-        timingPointMap[timingPoint.charPosition] = TextPaneProvider.timingPointChar;
-      }
+      } else {
+        Map<int, String> timingPointMap = {};
+        for (int i = 1; i < snippet.timingPoints.length - 1; i++) {
+          TimingPoint timingPoint = snippet.timingPoints[i];
+          timingPointMap[timingPoint.charPosition] = TextPaneProvider.timingPointChar;
+        }
 
-      String outputSentence = insertChars(snippet.sentence, timingPointMap);
+        String outputSentence = insertChars(snippet.sentence, timingPointMap);
 
-      coloredTextWidgets.add(
-        Text(
-          outputSentence,
-          style: TextStyle(
-            color: Colors.black,
+        coloredTextWidgets.add(
+          Text(
+            outputSentence,
+            style: TextStyle(
+              color: Colors.black,
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
 
     return Center(
@@ -505,6 +541,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
 class TextPaneCursor {
   SnippetID linePosition;
   int charPosition;
+  int segmentPosition;
   Option option;
-  TextPaneCursor(this.linePosition, this.charPosition, this.option);
+  TextPaneCursor(this.linePosition, this.charPosition, this.segmentPosition, this.option);
 }
