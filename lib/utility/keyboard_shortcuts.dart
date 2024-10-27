@@ -140,8 +140,8 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         SegmentRangeSelectIntent: CallbackAction<SegmentRangeSelectIntent>(
           onInvoke: (SegmentRangeSelectIntent intent) => () {
-            //textPaneProvider.cursor.isSegmentSelectionMode = true;
-          setState(() {});
+            textPaneProvider.cursor.isRangeSelection = true;
+            setState(() {});
           }(),
         ),
         AddAnnotationIntent: CallbackAction<AddAnnotationIntent>(
@@ -151,6 +151,8 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
               (entry) {
                 VocalistID currentVocalistID = entry.value.vocalistID;
                 VocalistID textPaneVocalistID = timingService.lyricSnippetList[textPaneProvider.cursor.linePosition]!.vocalistID;
+                textPaneProvider.cursor.isSegmentSelectionMode = false;
+                textPaneProvider.cursor.isRangeSelection = false;
                 return currentVocalistID == textPaneVocalistID;
               },
               orElse: () => MapEntry(SnippetID(0), LyricSnippet.emptySnippet),
@@ -159,14 +161,18 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             SnippetID targetID = target.key;
             LyricSnippet targetSnippet = target.value;
             if (targetSnippet == LyricSnippet.emptySnippet) {
+              textPaneProvider.cursor.isSegmentSelectionMode = false;
+              textPaneProvider.cursor.isRangeSelection = false;
               return;
             }
 
-            int segmentIndex = targetSnippet.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
             String annotationString = (await displayDialog(context, [""]))[0];
             if (annotationString != "") {
-              timingService.addAnnotation(targetID, annotationString, segmentIndex, segmentIndex + 1);
+              timingService.addAnnotation(targetID, annotationString, textPaneProvider.cursor.startSegmentIndex, textPaneProvider.cursor.endSegmentIndex);
             }
+
+            textPaneProvider.cursor.isSegmentSelectionMode = false;
+            textPaneProvider.cursor.isRangeSelection = false;
           }(),
         ),
         DeleteAnnotationIntent: CallbackAction<DeleteAnnotationIntent>(
