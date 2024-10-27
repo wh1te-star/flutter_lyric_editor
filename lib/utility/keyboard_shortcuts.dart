@@ -74,11 +74,11 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         LogicalKeySet(LogicalKeyboardKey.keyN): RewindIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyM): ForwardIntent(),
         LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyS): AddSnippetIntent(),
-        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyA): AddAnnotationIntent(),
+        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyA): EnterSegmentSelectionIntent(),
         LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyS): DeleteSnippetIntent(),
         LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyA): DeleteAnnotationIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyC): SnippetStartMoveIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyV): SnippetEndMoveIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyV): textPaneProvider.cursor.isSegmentSelectionMode ? SegmentRangeSelectIntent() : SnippetEndMoveIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowLeft): SpeedDownIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowRight): SpeedUpIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowUp): VolumeUpIntent(),
@@ -101,6 +101,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyE): AddSectionIntent(),
         LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyR): DeleteSectionIntent(),
         LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyD): DisplayModeSwitchIntent(),
+        LogicalKeySet(LogicalKeyboardKey.enter): AddAnnotationIntent(),
       };
 
   Map<Type, Action<Intent>> get actions => {
@@ -131,9 +132,20 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             timingService.deleteSnippet(timelinePaneProvider.selectingSnippets[0]);
           }(),
         ),
+        EnterSegmentSelectionIntent: CallbackAction<EnterSegmentSelectionIntent>(
+          onInvoke: (EnterSegmentSelectionIntent intent) => () {
+            textPaneProvider.cursor.isSegmentSelectionMode = true;
+            setState(() {});
+          }(),
+        ),
+        SegmentRangeSelectIntent: CallbackAction<SegmentRangeSelectIntent>(
+          onInvoke: (SegmentRangeSelectIntent intent) => () {
+            //textPaneProvider.cursor.isSegmentSelectionMode = true;
+          setState(() {});
+          }(),
+        ),
         AddAnnotationIntent: CallbackAction<AddAnnotationIntent>(
           onInvoke: (AddAnnotationIntent intent) => () async {
-            /*
             Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
             MapEntry<SnippetID, LyricSnippet> target = currentSnippets.entries.firstWhere(
               (entry) {
@@ -155,14 +167,12 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             if (annotationString != "") {
               timingService.addAnnotation(targetID, annotationString, segmentIndex, segmentIndex + 1);
             }
-            */
-            textPaneProvider.isSegmentSelectionMode = true;
           }(),
         ),
         DeleteAnnotationIntent: CallbackAction<DeleteAnnotationIntent>(
           onInvoke: (DeleteAnnotationIntent intent) => () {
             //timingService.deleteAnnotation( timelinePaneProvider.selectingSnippets[0],);
-            textPaneProvider.isSegmentSelectionMode = false;
+            textPaneProvider.cursor.isSegmentSelectionMode = false;
           }(),
         ),
         SnippetStartMoveIntent: CallbackAction<SnippetStartMoveIntent>(
@@ -359,6 +369,10 @@ class TextPaneCursorMoveRightIntent extends Intent {}
 class TimelineZoomInIntent extends Intent {}
 
 class TimelineZoomOutIntent extends Intent {}
+
+class EnterSegmentSelectionIntent extends Intent {}
+
+class SegmentRangeSelectIntent extends Intent {}
 
 class AddSectionIntent extends Intent {}
 

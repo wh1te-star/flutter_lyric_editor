@@ -20,11 +20,9 @@ class TextPaneProvider with ChangeNotifier {
 
   late CursorBlinker cursorBlinker;
 
-  TextPaneCursor cursor = TextPaneCursor(SnippetID(0), 0, 0, Option.former);
+  TextPaneCursor cursor = TextPaneCursor(SnippetID(0), false, 0, Option.former, 0, 0);
 
   static const String timingPointChar = '▲';
-
-  bool isSegmentSelectionMode = false;
 
   TextPaneProvider({
     required this.musicPlayerProvider,
@@ -62,12 +60,13 @@ class TextPaneProvider with ChangeNotifier {
   }
 
   TextPaneCursor getDefaultCursorPosition(SnippetID id) {
-    TextPaneCursor defaultCursor = TextPaneCursor(id, 0, 0, Option.former);
+    TextPaneCursor defaultCursor = TextPaneCursor(id, false, 0, Option.former, 0, 0);
 
     LyricSnippet snippet = getSnippetWithID(id);
     int currentSnippetPosition = snippet.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
     defaultCursor.charPosition = snippet.timingPoints[currentSnippetPosition].charPosition + 1;
-    defaultCursor.segmentPosition = currentSnippetPosition;
+    defaultCursor.startSegmentIndex = currentSnippetPosition;
+    defaultCursor.endSegmentIndex = currentSnippetPosition;
     defaultCursor.option = Option.former;
 
     return defaultCursor;
@@ -319,16 +318,16 @@ class _TextPaneState extends ConsumerState<TextPane> {
     int highlightIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
     PositionTypeInfo cursorPositionInfo = snippet.getCharPositionIndex(textPaneProvider.cursor.charPosition);
 
-    if (textPaneProvider.isSegmentSelectionMode) {
+    if (textPaneProvider.cursor.isSegmentSelectionMode) {
       for (int index = 0; index < snippet.sentenceSegments.length; index++) {
-        if (textPaneProvider.cursorBlinker.isCursorVisible && index == textPaneProvider.cursor.segmentPosition) {
+        if (textPaneProvider.cursorBlinker.isCursorVisible && index == textPaneProvider.cursor.startSegmentIndex) {
           coloredTextWidgets.add(
             Text(
               snippet.getSegmentWord(index),
-                  style: TextStyle(
-                    color: Colors.white,
-                    background: Paint()..color = Colors.black,
-                  ),
+              style: TextStyle(
+                color: Colors.white,
+                background: Paint()..color = Colors.black,
+              ),
             ),
           );
         } else {
@@ -540,8 +539,18 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
 class TextPaneCursor {
   SnippetID linePosition;
+  bool isSegmentSelectionMode;
   int charPosition;
-  int segmentPosition;
   Option option;
-  TextPaneCursor(this.linePosition, this.charPosition, this.segmentPosition, this.option);
+  int startSegmentIndex;
+  int endSegmentIndex;
+
+  TextPaneCursor(
+    this.linePosition,
+    this.isSegmentSelectionMode,
+    this.charPosition,
+    this.option,
+    this.startSegmentIndex,
+    this.endSegmentIndex,
+  );
 }
