@@ -393,42 +393,42 @@ class _TextPaneState extends ConsumerState<TextPane> {
         for (int index = 0; index < snippet.sentenceSegments.length; index++) {
           String segmentWord = snippet.getSegmentWord(index);
 
-          if (index == highlightIndex) {
-            int cursorPositionSentence = textPaneProvider.cursor.charPosition;
-            int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursor.linePosition]!.timingPoints[highlightIndex].charPosition;
-            coloredTextWidgets.add(
-              Column(
-                children: [
-                  Text(
-                    snippet.getAnnotationWord(index),
-                    style: const TextStyle(
-                      color: Colors.black,
+            if (index == highlightIndex) {
+              int cursorPositionSentence = textPaneProvider.cursor.charPosition;
+              int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursor.linePosition]!.timingPoints[highlightIndex].charPosition;
+              coloredTextWidgets.add(
+                Column(
+                  children: [
+                    Text(
+                      snippet.annotations.isEmpty ? "" : snippet.annotations.values.first.sentence,
+                      style: const TextStyle(
+                        color: Colors.black,
+                      ),
                     ),
-                  ),
-                  segmentEdit(segmentWord, cursorPositionSentence - cursorPositionWordStart),
-                ],
-              ),
-            );
-          } else {
-            coloredTextWidgets.add(
-              Column(
-                children: [
-                  Text(
-                    snippet.getAnnotationWord(index),
-                    style: const TextStyle(
-                      color: Colors.black,
+                    segmentEdit(segmentWord, cursorPositionSentence - cursorPositionWordStart),
+                  ],
+                ),
+              );
+            } else {
+              coloredTextWidgets.add(
+                Column(
+                  children: [
+                    Text(
+                      snippet.annotations.isEmpty ? "" : snippet.annotations.values.first.sentence,
+                      style: const TextStyle(
+                        color: Colors.black,
+                      ),
                     ),
-                  ),
-                  Text(
-                    segmentWord,
-                    style: const TextStyle(
-                      color: Colors.black,
+                    Text(
+                      segmentWord,
+                      style: const TextStyle(
+                        color: Colors.black,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          }
+                  ],
+                ),
+              );
+            }
 
           if (index < snippet.sentenceSegments.length - 1) {
             int timingPointIndex = cursorPositionInfo.index;
