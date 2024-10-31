@@ -346,6 +346,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     );
   }
 
+  /*
   Widget snippetEditLine(SnippetID id, LyricSnippet snippet) {
     MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     TimingService timingService = ref.read(timingMasterProvider);
@@ -484,6 +485,25 @@ class _TextPaneState extends ConsumerState<TextPane> {
         children: coloredTextWidgets,
       ),
     );
+  }
+*/
+
+  Widget snippetEditLine(SnippetID id, LyricSnippet snippet) {
+    Widget timingPointChar = const Text("▲");
+    List<Widget> sentenceRow = [];
+    for (var segment in snippet.sentenceSegments) {
+      sentenceRow.add(Text(
+        segment.word,
+      ));
+      sentenceRow.add(timingPointChar);
+    }
+    sentenceRow.removeLast();
+
+    return Table(children: [
+      TableRow(
+        children: sentenceRow,
+      )
+    ]);
   }
 
   Widget segmentEdit(String segmentWord, int cursorPositionWord) {
