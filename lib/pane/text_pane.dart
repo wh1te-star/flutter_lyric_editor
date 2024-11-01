@@ -350,14 +350,15 @@ class _TextPaneState extends ConsumerState<TextPane> {
     MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     TimingService timingService = ref.read(timingMasterProvider);
     TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
-    List<Widget> coloredTextWidgets = [];
+    List<Widget> annotationRowWidget = [Text("annotation row")];
+    List<Widget> sentenceRowWidget = [];
     int highlightIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
     PositionTypeInfo cursorPositionInfo = snippet.getCharPositionIndex(textPaneProvider.cursor.charPosition);
 
     if (textPaneProvider.cursor.isSegmentSelectionMode) {
       for (int index = 0; index < snippet.sentenceSegments.length; index++) {
         if (textPaneProvider.cursorBlinker.isCursorVisible && textPaneProvider.cursor.isInRange(index)) {
-          coloredTextWidgets.add(
+          sentenceRowWidget.add(
             Text(
               snippet.getSegmentWord(index),
               style: TextStyle(
@@ -367,7 +368,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
             ),
           );
         } else {
-          coloredTextWidgets.add(
+          sentenceRowWidget.add(
             Text(
               snippet.getSegmentWord(index),
               style: const TextStyle(
@@ -378,7 +379,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
         }
 
         if (index < snippet.sentenceSegments.length - 1) {
-          coloredTextWidgets.add(
+          sentenceRowWidget.add(
             const Text(
               " ${TextPaneProvider.timingPointChar} ",
               style: TextStyle(
@@ -393,42 +394,22 @@ class _TextPaneState extends ConsumerState<TextPane> {
         for (int index = 0; index < snippet.sentenceSegments.length; index++) {
           String segmentWord = snippet.getSegmentWord(index);
 
-            if (index == highlightIndex) {
-              int cursorPositionSentence = textPaneProvider.cursor.charPosition;
-              int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursor.linePosition]!.timingPoints[highlightIndex].charPosition;
-              coloredTextWidgets.add(
-                Column(
-                  children: [
-                    Text(
-                      snippet.annotations.isEmpty ? "" : snippet.annotations.values.first.sentence,
-                      style: const TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                    segmentEdit(segmentWord, cursorPositionSentence - cursorPositionWordStart),
-                  ],
+          if (index == highlightIndex) {
+            int cursorPositionSentence = textPaneProvider.cursor.charPosition;
+            int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursor.linePosition]!.timingPoints[highlightIndex].charPosition;
+            sentenceRowWidget.add(
+              segmentEdit(segmentWord, cursorPositionSentence - cursorPositionWordStart),
+            );
+          } else {
+            sentenceRowWidget.add(
+              Text(
+                segmentWord,
+                style: const TextStyle(
+                  color: Colors.black,
                 ),
-              );
-            } else {
-              coloredTextWidgets.add(
-                Column(
-                  children: [
-                    Text(
-                      snippet.annotations.isEmpty ? "" : snippet.annotations.values.first.sentence,
-                      style: const TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                    Text(
-                      segmentWord,
-                      style: const TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
+              ),
+            );
+          }
 
           if (index < snippet.sentenceSegments.length - 1) {
             int timingPointIndex = cursorPositionInfo.index;
@@ -436,7 +417,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
               timingPointIndex++;
             }
             if (textPaneProvider.cursorBlinker.isCursorVisible && cursorPositionInfo.type == PositionType.timingPoint && index == timingPointIndex - 1) {
-              coloredTextWidgets.add(
+              sentenceRowWidget.add(
                 Text(
                   TextPaneProvider.timingPointChar,
                   style: TextStyle(
@@ -446,7 +427,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
                 ),
               );
             } else {
-              coloredTextWidgets.add(
+              sentenceRowWidget.add(
                 const Text(
                   TextPaneProvider.timingPointChar,
                   style: TextStyle(
@@ -466,7 +447,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
         String outputSentence = insertChars(snippet.sentence, timingPointMap);
 
-        coloredTextWidgets.add(
+        sentenceRowWidget.add(
           Text(
             outputSentence,
             style: TextStyle(
@@ -477,12 +458,19 @@ class _TextPaneState extends ConsumerState<TextPane> {
       }
     }
 
-    return Center(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: coloredTextWidgets,
-      ),
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: annotationRowWidget,
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: sentenceRowWidget,
+        ),
+      ],
     );
   }
 
