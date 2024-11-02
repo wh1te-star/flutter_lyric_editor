@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
@@ -350,50 +351,41 @@ class _TextPaneState extends ConsumerState<TextPane> {
     MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     TimingService timingService = ref.read(timingMasterProvider);
     TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
-    List<Widget> annotationRowWidget = [Text("annotation row")];
-    List<Widget> sentenceRowWidget = [];
     int highlightIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
     PositionTypeInfo cursorPositionInfo = snippet.getCharPositionIndex(textPaneProvider.cursor.charPosition);
 
-    if (textPaneProvider.cursor.isSegmentSelectionMode) {
-      for (int index = 0; index < snippet.sentenceSegments.length; index++) {
-        if (textPaneProvider.cursorBlinker.isCursorVisible && textPaneProvider.cursor.isInRange(index)) {
+    List<Widget> annotationRowWidget = [];
+    List<Widget> sentenceRowWidget = [];
+
+    TextStyle textStyle = TextStyle(
+      color: Colors.black,
+    );
+    TextStyle textStyleIncursor = TextStyle(
+      color: textPaneProvider.cursorBlinker.isCursorVisible ? Colors.white : Colors.black,
+      background: textPaneProvider.cursorBlinker.isCursorVisible ? (Paint()..color = Colors.black) : null,
+    );
+    TextStyle annotationTextStyle = TextStyle(
+      color: Colors.black,
+    );
+    TextStyle annotationTextStyleIncursor = TextStyle(
+      color: Colors.white,
+      background: Paint()..color = Colors.black,
+    );
+
+    for (int index = 0; index < snippet.sentenceSegments.length; index++) {
+      String segmentWord = snippet.sentenceSegments[index].word;
+      MapEntry<SegmentRange, Annotation> annotationEntry = snippet.getAnnotationWords(index);
+      SegmentRange range = annotationEntry.key;
+      Annotation annotation = annotationEntry.value;
+      if (range.startIndex == -1) {
+        if (textPaneProvider.cursor.isSegmentSelectionMode) {
           sentenceRowWidget.add(
             Text(
-              snippet.getSegmentWord(index),
-              style: TextStyle(
-                color: Colors.white,
-                background: Paint()..color = Colors.black,
-              ),
+              segmentWord,
+              style: textPaneProvider.cursor.isInRange(index) ? textStyleIncursor : textStyle,
             ),
           );
         } else {
-          sentenceRowWidget.add(
-            Text(
-              snippet.getSegmentWord(index),
-              style: const TextStyle(
-                color: Colors.black,
-              ),
-            ),
-          );
-        }
-
-        if (index < snippet.sentenceSegments.length - 1) {
-          sentenceRowWidget.add(
-            const Text(
-              " ${TextPaneProvider.timingPointChar} ",
-              style: TextStyle(
-                color: Colors.black,
-              ),
-            ),
-          );
-        }
-      }
-    } else {
-      if (id == textPaneProvider.cursor.linePosition) {
-        for (int index = 0; index < snippet.sentenceSegments.length; index++) {
-          String segmentWord = snippet.getSegmentWord(index);
-
           if (index == highlightIndex) {
             int cursorPositionSentence = textPaneProvider.cursor.charPosition;
             int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursor.linePosition]!.timingPoints[highlightIndex].charPosition;
@@ -404,56 +396,19 @@ class _TextPaneState extends ConsumerState<TextPane> {
             sentenceRowWidget.add(
               Text(
                 segmentWord,
-                style: const TextStyle(
-                  color: Colors.black,
-                ),
+                style: textStyle,
               ),
             );
           }
-
-          if (index < snippet.sentenceSegments.length - 1) {
-            int timingPointIndex = cursorPositionInfo.index;
-            if (textPaneProvider.cursor.option == Option.latter) {
-              timingPointIndex++;
-            }
-            if (textPaneProvider.cursorBlinker.isCursorVisible && cursorPositionInfo.type == PositionType.timingPoint && index == timingPointIndex - 1) {
-              sentenceRowWidget.add(
-                Text(
-                  TextPaneProvider.timingPointChar,
-                  style: TextStyle(
-                    color: Colors.white,
-                    background: Paint()..color = Colors.black,
-                  ),
-                ),
-              );
-            } else {
-              sentenceRowWidget.add(
-                const Text(
-                  TextPaneProvider.timingPointChar,
-                  style: TextStyle(
-                    color: Colors.black,
-                  ),
-                ),
-              );
-            }
-          }
         }
-      } else {
-        Map<int, String> timingPointMap = {};
-        for (int i = 1; i < snippet.timingPoints.length - 1; i++) {
-          TimingPoint timingPoint = snippet.timingPoints[i];
-          timingPointMap[timingPoint.charPosition] = TextPaneProvider.timingPointChar;
-        }
+      } else {}
 
-        String outputSentence = insertChars(snippet.sentence, timingPointMap);
-
+      if (index < snippet.sentenceSegments.length - 1) {
         sentenceRowWidget.add(
-          Text(
-            outputSentence,
-            style: TextStyle(
-              color: Colors.black,
-            ),
-          ),
+          Text.rich(TextSpan(
+            text: "\xa0${TextPaneProvider.timingPointChar}\xa0",
+            style: cursorPositionInfo.type == PositionType.timingPoint && index == cursorPositionInfo.index - 1 ? textStyleIncursor : textStyle,
+          )),
         );
       }
     }

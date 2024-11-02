@@ -28,8 +28,11 @@ class LyricSnippet with TimingObject {
     );
   }
 
-  Map<SegmentRange, Annotation> getAnnotationWords(int index) {
-    return Map.fromEntries(annotations.entries.where((entry) => entry.key.startIndex <= index && index <= entry.key.endIndex));
+  MapEntry<SegmentRange, Annotation> getAnnotationWords(int index) {
+    return annotations.entries.firstWhere(
+      (entry) => entry.key.startIndex <= index && index <= entry.key.endIndex,
+      orElse: () => MapEntry(SegmentRange(-1, -1), Annotation.emptySnippet),
+    );
   }
 
   void addAnnotation(String annotationString, int startIndex, int endIndex) {
