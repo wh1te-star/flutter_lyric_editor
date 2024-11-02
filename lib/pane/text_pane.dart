@@ -367,6 +367,9 @@ class _TextPaneState extends ConsumerState<TextPane> {
     TextStyle annotationTextStyle = TextStyle(
       color: Colors.black,
     );
+    TextStyle annotationDummyTextStyle = TextStyle(
+      color: Colors.transparent,
+    );
     TextStyle annotationTextStyleIncursor = TextStyle(
       color: Colors.white,
       background: Paint()..color = Colors.black,
@@ -383,6 +386,12 @@ class _TextPaneState extends ConsumerState<TextPane> {
             Text(
               segmentWord,
               style: textPaneProvider.cursor.isInRange(index) ? textStyleIncursor : textStyle,
+            ),
+          );
+          annotationRowWidget.add(
+            Text(
+              segmentWord,
+              style: annotationDummyTextStyle,
             ),
           );
         } else {
@@ -418,6 +427,12 @@ class _TextPaneState extends ConsumerState<TextPane> {
               ],
             ),
           );
+          annotationRowWidget.add(
+            Text(
+              segmentWord,
+              style: annotationDummyTextStyle,
+            ),
+          );
         }
 
         if (index < snippet.sentenceSegments.length - 1) {
@@ -426,6 +441,12 @@ class _TextPaneState extends ConsumerState<TextPane> {
               text: "\xa0${TextPaneProvider.timingPointChar}\xa0",
               style: cursorPositionInfo.type == PositionType.timingPoint && index == cursorPositionInfo.index - 1 ? textStyleIncursor : textStyle,
             )),
+          );
+          annotationRowWidget.add(
+            Text(
+              "\xa0${TextPaneProvider.timingPointChar}\xa0",
+              style: annotationDummyTextStyle,
+            ),
           );
         }
       } else {}
