@@ -386,31 +386,45 @@ class _TextPaneState extends ConsumerState<TextPane> {
             ),
           );
         } else {
-          if (index == highlightIndex) {
-            int cursorPositionSentence = textPaneProvider.cursor.charPosition;
-            int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursor.linePosition]!.timingPoints[highlightIndex].charPosition;
-            sentenceRowWidget.add(
-              segmentEdit(segmentWord, cursorPositionSentence - cursorPositionWordStart),
-            );
-          } else {
-            sentenceRowWidget.add(
-              Text(
-                segmentWord,
-                style: textStyle,
-              ),
-            );
-          }
+          const double cursorWidth = 1.0;
+          const double cursorHeight = 24.0;
+          int cursorPositionSentence = textPaneProvider.cursor.charPosition;
+          int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursor.linePosition]!.timingPoints[highlightIndex].charPosition;
+          int cursorPositionWord = cursorPositionSentence - cursorPositionWordStart;
+          double cursorCoordinate = calculateCursorPosition(segmentWord, cursorPositionWord, textStyle);
+
+          sentenceRowWidget.add(
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Text(
+                  segmentWord,
+                  style: textStyle,
+                ),
+                index == highlightIndex && 0 < cursorPositionWord && cursorPositionWord < segmentWord.length && textPaneProvider.cursorBlinker.isCursorVisible
+                    ? Positioned(
+                        left: cursorCoordinate - cursorWidth / 2,
+                        child: Container(
+                          width: cursorWidth,
+                          height: cursorHeight,
+                          color:  Colors.black,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+              ],
+            ),
+          );
+        }
+
+        if (index < snippet.sentenceSegments.length - 1) {
+          sentenceRowWidget.add(
+            Text.rich(TextSpan(
+              text: "\xa0${TextPaneProvider.timingPointChar}\xa0",
+              style: cursorPositionInfo.type == PositionType.timingPoint && index == cursorPositionInfo.index - 1 ? textStyleIncursor : textStyle,
+            )),
+          );
         }
       } else {}
-
-      if (index < snippet.sentenceSegments.length - 1) {
-        sentenceRowWidget.add(
-          Text.rich(TextSpan(
-            text: "\xa0${TextPaneProvider.timingPointChar}\xa0",
-            style: cursorPositionInfo.type == PositionType.timingPoint && index == cursorPositionInfo.index - 1 ? textStyleIncursor : textStyle,
-          )),
-        );
-      }
     }
 
     return Column(
@@ -425,47 +439,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: sentenceRowWidget,
         ),
-      ],
-    );
-  }
-
-  Widget segmentEdit(String segmentWord, int cursorPositionWord) {
-    const double charSize = 18.0;
-    const double charWidth = 10.0;
-    const double cursorWidth = 2.0;
-    const double cursorHeight = 24.0;
-    const double letterSpacing = 2.0;
-    const Color cursorColor = Colors.black;
-    TextStyle style = TextStyle(
-      //fontSize: charSize,
-      letterSpacing: letterSpacing,
-    );
-
-    final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
-    if (0 < cursorPositionWord && cursorPositionWord < segmentWord.length) {}
-    double cursorCoordinate = calculateCursorPosition(segmentWord, cursorPositionWord, style);
-
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Text(
-          segmentWord,
-          style: TextStyle(
-            color: Colors.red,
-            //fontSize: charSize,
-            letterSpacing: letterSpacing,
-          ),
-        ),
-        textPaneProvider.cursorBlinker.isCursorVisible && 0 < cursorPositionWord && cursorPositionWord < segmentWord.length
-            ? Positioned(
-                left: cursorCoordinate - cursorWidth / 2,
-                child: Container(
-                  width: cursorWidth,
-                  height: cursorHeight,
-                  color: cursorColor,
-                ),
-              )
-            : const SizedBox.shrink(),
       ],
     );
   }
