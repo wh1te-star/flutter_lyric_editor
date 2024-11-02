@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -351,11 +352,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     TimingService timingService = ref.read(timingMasterProvider);
     TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
-    int highlightIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
     PositionTypeInfo cursorPositionInfo = snippet.getCharPositionIndex(textPaneProvider.cursor.charPosition);
-
-    List<Widget> annotationRowWidget = [];
-    List<Widget> sentenceRowWidget = [];
 
     TextStyle textStyle = TextStyle(
       color: Colors.black,
@@ -375,82 +372,33 @@ class _TextPaneState extends ConsumerState<TextPane> {
       background: Paint()..color = Colors.black,
     );
 
-    for (int index = 0; index < snippet.sentenceSegments.length; index++) {
-      String segmentWord = snippet.sentenceSegments[index].word;
-      MapEntry<SegmentRange, Annotation> annotationEntry = snippet.getAnnotationWords(index);
-      SegmentRange range = annotationEntry.key;
-      Annotation annotation = annotationEntry.value;
-      if (range.startIndex == -1) {
-        if (textPaneProvider.cursor.isSegmentSelectionMode) {
-          sentenceRowWidget.add(
-            Text(
-              segmentWord,
-              style: textPaneProvider.cursor.isInRange(index) ? textStyleIncursor : textStyle,
-            ),
+    int incursorIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
+    List<Widget> sentenceRowWidget = sentenceLineWidgets(
+      snippet,
+      incursorIndex,
+      textPaneProvider.cursor.isSegmentSelectionMode,
+      textPaneProvider.cursor,
+      cursorPositionInfo,
+      textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
+      textStyle,
+      textStyleIncursor,
+      textStyle,
+      textStyleIncursor,
+    );
+    List<Widget> annotationRowWidget = snippet.annotations.isEmpty
+        ? []
+        : sentenceLineWidgets(
+            snippet.annotations.values.first,
+            incursorIndex,
+            textPaneProvider.cursor.isSegmentSelectionMode,
+            textPaneProvider.cursor,
+            cursorPositionInfo,
+            textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
+            textStyle,
+            textStyleIncursor,
+            textStyle,
+            textStyleIncursor,
           );
-          annotationRowWidget.add(
-            Text(
-              segmentWord,
-              style: annotationDummyTextStyle,
-            ),
-          );
-        } else {
-          const double cursorWidth = 1.0;
-          const double cursorHeight = 15.0;
-          int cursorPositionSentence = textPaneProvider.cursor.charPosition;
-          int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursor.linePosition]!.timingPoints[highlightIndex].charPosition;
-          int cursorPositionWord = cursorPositionSentence - cursorPositionWordStart;
-          double cursorCoordinate = calculateCursorPosition(segmentWord, cursorPositionWord, textStyle);
-
-          sentenceRowWidget.add(
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                Text(
-                  segmentWord,
-                  style: index == highlightIndex
-                      ? textStyle.copyWith(
-                          decoration: TextDecoration.underline,
-                        )
-                      : textStyle,
-                ),
-                index == highlightIndex && 0 < cursorPositionWord && cursorPositionWord < segmentWord.length && textPaneProvider.cursorBlinker.isCursorVisible
-                    ? Positioned(
-                        left: cursorCoordinate - cursorWidth / 2,
-                        child: Container(
-                          width: cursorWidth,
-                          height: cursorHeight,
-                          color: Colors.black,
-                        ),
-                      )
-                    : const SizedBox.shrink(),
-              ],
-            ),
-          );
-          annotationRowWidget.add(
-            Text(
-              segmentWord,
-              style: annotationDummyTextStyle,
-            ),
-          );
-        }
-
-        if (index < snippet.sentenceSegments.length - 1) {
-          sentenceRowWidget.add(
-            Text.rich(TextSpan(
-              text: "\xa0${TextPaneProvider.timingPointChar}\xa0",
-              style: cursorPositionInfo.type == PositionType.timingPoint && index == cursorPositionInfo.index - 1 ? textStyleIncursor : textStyle,
-            )),
-          );
-          annotationRowWidget.add(
-            Text(
-              "\xa0${TextPaneProvider.timingPointChar}\xa0",
-              style: annotationDummyTextStyle,
-            ),
-          );
-        }
-      } else {}
-    }
 
     return Column(
       children: [
@@ -466,6 +414,98 @@ class _TextPaneState extends ConsumerState<TextPane> {
         ),
       ],
     );
+  }
+
+  List<Widget> sentenceLineWidgets(
+    TimingObject snippet,
+    int incursorIndex,
+    bool isSegmentSelectionMode,
+    TextPaneCursor cursor,
+    PositionTypeInfo cursorPositionInfo,
+    Color wordCursorColor,
+    TextStyle wordTextStyle,
+    TextStyle wordIncursorTextStyle,
+    TextStyle timingPointTextStyle,
+    TextStyle timingPointIncursorTextStyle,
+  ) {
+    List<SentenceSegment> segments = snippet.sentenceSegments;
+    List<Widget> widgets = [];
+    for (int index = 0; index < segments.length; index++) {
+      String segmentWord = segments[index].word;
+      if (isSegmentSelectionMode) {
+        widgets.add(
+          Text(
+            segmentWord,
+            style: cursor.isInRange(index) ? wordIncursorTextStyle : wordTextStyle,
+          ),
+        );
+      } else {
+        const double cursorWidth = 1.0;
+        const double cursorHeight = 15.0;
+        int cursorPositionSentence = cursor.charPosition;
+        int cursorPositionWordStart = snippet.timingPoints[incursorIndex].charPosition;
+        int cursorPositionWord = cursorPositionSentence - cursorPositionWordStart;
+        double cursorCoordinate = calculateCursorPosition(segmentWord, cursorPositionWord, wordTextStyle);
+
+        widgets.add(
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Text(
+                segmentWord,
+                style: index == incursorIndex
+                    ? wordTextStyle.copyWith(
+                        decoration: TextDecoration.underline,
+                      )
+                    : wordTextStyle,
+              ),
+              index == incursorIndex && 0 < cursorPositionWord && cursorPositionWord < segmentWord.length
+                  ? Positioned(
+                      left: cursorCoordinate - cursorWidth / 2,
+                      child: Container(
+                        width: cursorWidth,
+                        height: cursorHeight,
+                        color: wordCursorColor,
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ],
+          ),
+        );
+      }
+
+      if (index < segments.length - 1) {
+        widgets.add(
+          Text.rich(TextSpan(
+            text: "\xa0${TextPaneProvider.timingPointChar}\xa0",
+            style: cursorPositionInfo.type == PositionType.timingPoint && index == cursorPositionInfo.index - 1 ? timingPointIncursorTextStyle : timingPointTextStyle,
+          )),
+        );
+      }
+    }
+
+    return widgets;
+  }
+
+  List<Widget> getSegmentRangeTextWidgets(List<SentenceSegment> segments, SegmentRange range, TextStyle style) {
+    List<Widget> widgets = [];
+    for (int index = range.startIndex; index <= range.endIndex; index++) {
+      widgets.add(
+        Text(
+          segments[index].word,
+          style: style,
+        ),
+      );
+      if (index < segments.length - 1) {
+        widgets.add(
+          Text.rich(TextSpan(
+            text: "\xa0${TextPaneProvider.timingPointChar}\xa0",
+            style: style,
+          )),
+        );
+      }
+    }
+    return widgets;
   }
 
   String insertChars(String originalString, Map<int, String> charPositions) {
