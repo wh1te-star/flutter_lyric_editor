@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -9,6 +10,7 @@ import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/sorted_list.dart';
 import 'package:lyric_editor/utility/text_size_functions.dart';
+import 'package:tuple/tuple.dart';
 
 final textPaneMasterProvider = ChangeNotifierProvider((ref) {
   final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
@@ -24,7 +26,8 @@ class TextPaneProvider with ChangeNotifier {
 
   TextPaneCursor cursor = TextPaneCursor(SnippetID(0), false, false, 0, Option.former, 0, 0);
 
-  static const String timingPointChar = '▲';
+  static const String timingPointChar = '|';
+  static const String annotationEdgeChar = '▲';
 
   TextPaneProvider({
     required this.musicPlayerProvider,
@@ -376,33 +379,72 @@ class _TextPaneState extends ConsumerState<TextPane> {
       color: Colors.white,
       background: Paint()..color = Colors.black,
     );
+    List<Widget> sentenceRowWidget = [];
+    List<Widget> annotationRowWidget = [];
+    List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotations, snippet.sentenceSegments.length);
+    for (int i = 0; i < rangeList.length; i++) {
+      Tuple2<SegmentRange, Annotation?> element = rangeList[i];
+      SegmentRange segmentRange = element.item1;
+      Annotation? annotation = element.item2;
+      sentenceRowWidget += sentenceLineWidgets(
+        snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1),
+        incursorIndex,
+        cursorPositionWord,
+        textPaneProvider.cursor.isSegmentSelectionMode,
+        textPaneProvider.cursor,
+        cursorPositionInfo,
+        textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
+        textStyle,
+        textStyleIncursor,
+        textStyle,
+        textStyleIncursor,
+      );
 
-    List<Widget> sentenceRowWidget = sentenceLineWidgets(
-      snippet.sentenceSegments,
-      incursorIndex,
-      cursorPositionWord,
-      textPaneProvider.cursor.isSegmentSelectionMode,
-      textPaneProvider.cursor,
-      cursorPositionInfo,
-      textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
-      textStyle,
-      textStyleIncursor,
-      textStyle,
-      textStyleIncursor,
-    );
-    List<Widget> annotationRowWidget = sentenceLineWidgets(
-      snippet.sentenceSegments.sublist(0, 3),
-      incursorIndex,
-      cursorPositionWord,
-      textPaneProvider.cursor.isSegmentSelectionMode,
-      textPaneProvider.cursor,
-      cursorPositionInfo,
-      textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
-      textStyle,
-      textStyleIncursor,
-      textStyle,
-      textStyleIncursor,
-    );
+      if (annotation != null) {
+        annotationRowWidget += sentenceLineWidgets(
+          annotation.sentenceSegments,
+          incursorIndex,
+          cursorPositionWord,
+          textPaneProvider.cursor.isSegmentSelectionMode,
+          textPaneProvider.cursor,
+          cursorPositionInfo,
+          textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
+          textStyle,
+          textStyleIncursor,
+          textStyle,
+          textStyleIncursor,
+        );
+      } else {
+        annotationRowWidget += sentenceLineWidgets(
+          snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1),
+          -1,
+          -1,
+          false,
+          textPaneProvider.cursor,
+          cursorPositionInfo,
+          textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
+          annotationDummyTextStyle,
+          annotationDummyTextStyle,
+          annotationDummyTextStyle,
+          annotationDummyTextStyle,
+        );
+      }
+
+      if (i < rangeList.length - 1) {
+        sentenceRowWidget.add(
+          Text(
+            "\xa0${TextPaneProvider.annotationEdgeChar}\xa0",
+            style: textStyle,
+          ),
+        );
+        annotationRowWidget.add(
+          Text(
+            "\xa0${TextPaneProvider.annotationEdgeChar}\xa0",
+            style: textStyle,
+          ),
+        );
+      }
+    }
 
     return Column(
       children: [
@@ -477,15 +519,62 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
       if (index < segments.length - 1) {
         widgets.add(
-          Text.rich(TextSpan(
-            text: "\xa0${TextPaneProvider.timingPointChar}\xa0",
+          Text(
+            "\xa0${TextPaneProvider.timingPointChar}\xa0",
             style: cursorPositionInfo.type == PositionType.timingPoint && index == cursorPositionInfo.index - 1 ? timingPointIncursorTextStyle : timingPointTextStyle,
-          )),
+          ),
         );
       }
     }
 
     return widgets;
+  }
+
+  List<Tuple2<SegmentRange, Annotation?>> getRangeListForAnnotations(Map<SegmentRange, Annotation> annotations, int numberOfSegments) {
+    if (annotations.isEmpty) {
+      return [
+        Tuple2(
+          SegmentRange(0, numberOfSegments - 1),
+          null,
+        ),
+      ];
+    }
+
+    List<Tuple2<SegmentRange, Annotation?>> rangeList = [];
+    int previousEnd = -1;
+
+    for (MapEntry<SegmentRange, Annotation> entry in annotations.entries) {
+      SegmentRange segmentRange = entry.key;
+      Annotation annotation = entry.value;
+
+      if (previousEnd + 1 <= segmentRange.startIndex - 1) {
+        rangeList.add(
+          Tuple2(
+            SegmentRange(previousEnd + 1, segmentRange.startIndex - 1),
+            null,
+          ),
+        );
+      }
+      rangeList.add(
+        Tuple2(
+          segmentRange,
+          annotation,
+        ),
+      );
+
+      previousEnd = segmentRange.endIndex;
+    }
+
+    if (previousEnd + 1 <= numberOfSegments - 1) {
+      rangeList.add(
+        Tuple2(
+          SegmentRange(previousEnd + 1, numberOfSegments - 1),
+          null,
+        ),
+      );
+    }
+
+    return rangeList;
   }
 
   List<Widget> getSegmentRangeTextWidgets(List<SentenceSegment> segments, SegmentRange range, TextStyle style) {
