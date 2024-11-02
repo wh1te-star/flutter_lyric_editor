@@ -353,6 +353,11 @@ class _TextPaneState extends ConsumerState<TextPane> {
     TimingService timingService = ref.read(timingMasterProvider);
     TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
     PositionTypeInfo cursorPositionInfo = snippet.getCharPositionIndex(textPaneProvider.cursor.charPosition);
+    int incursorIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
+
+    int cursorPositionSentence = textPaneProvider.cursor.charPosition;
+    int cursorPositionWordStart = snippet.timingPoints[incursorIndex].charPosition;
+    int cursorPositionWord = cursorPositionSentence - cursorPositionWordStart;
 
     TextStyle textStyle = TextStyle(
       color: Colors.black,
@@ -372,10 +377,10 @@ class _TextPaneState extends ConsumerState<TextPane> {
       background: Paint()..color = Colors.black,
     );
 
-    int incursorIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
     List<Widget> sentenceRowWidget = sentenceLineWidgets(
-      snippet,
+      snippet.sentenceSegments,
       incursorIndex,
+      cursorPositionWord,
       textPaneProvider.cursor.isSegmentSelectionMode,
       textPaneProvider.cursor,
       cursorPositionInfo,
@@ -385,20 +390,19 @@ class _TextPaneState extends ConsumerState<TextPane> {
       textStyle,
       textStyleIncursor,
     );
-    List<Widget> annotationRowWidget = snippet.annotations.isEmpty
-        ? []
-        : sentenceLineWidgets(
-            snippet.annotations.values.first,
-            incursorIndex,
-            textPaneProvider.cursor.isSegmentSelectionMode,
-            textPaneProvider.cursor,
-            cursorPositionInfo,
-            textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
-            textStyle,
-            textStyleIncursor,
-            textStyle,
-            textStyleIncursor,
-          );
+    List<Widget> annotationRowWidget = sentenceLineWidgets(
+      snippet.sentenceSegments.sublist(0, 3),
+      incursorIndex,
+      cursorPositionWord,
+      textPaneProvider.cursor.isSegmentSelectionMode,
+      textPaneProvider.cursor,
+      cursorPositionInfo,
+      textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
+      textStyle,
+      textStyleIncursor,
+      textStyle,
+      textStyleIncursor,
+    );
 
     return Column(
       children: [
@@ -417,8 +421,9 @@ class _TextPaneState extends ConsumerState<TextPane> {
   }
 
   List<Widget> sentenceLineWidgets(
-    TimingObject snippet,
+    List<SentenceSegment> segments,
     int incursorIndex,
+    int incursorCharPosition,
     bool isSegmentSelectionMode,
     TextPaneCursor cursor,
     PositionTypeInfo cursorPositionInfo,
@@ -428,7 +433,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
     TextStyle timingPointTextStyle,
     TextStyle timingPointIncursorTextStyle,
   ) {
-    List<SentenceSegment> segments = snippet.sentenceSegments;
     List<Widget> widgets = [];
     for (int index = 0; index < segments.length; index++) {
       String segmentWord = segments[index].word;
@@ -442,10 +446,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
       } else {
         const double cursorWidth = 1.0;
         const double cursorHeight = 15.0;
-        int cursorPositionSentence = cursor.charPosition;
-        int cursorPositionWordStart = snippet.timingPoints[incursorIndex].charPosition;
-        int cursorPositionWord = cursorPositionSentence - cursorPositionWordStart;
-        double cursorCoordinate = calculateCursorPosition(segmentWord, cursorPositionWord, wordTextStyle);
+        double cursorCoordinate = calculateCursorPosition(segmentWord, incursorCharPosition, wordTextStyle);
 
         widgets.add(
           Stack(
@@ -459,7 +460,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
                       )
                     : wordTextStyle,
               ),
-              index == incursorIndex && 0 < cursorPositionWord && cursorPositionWord < segmentWord.length
+              index == incursorIndex && 0 < incursorCharPosition && incursorCharPosition < segmentWord.length
                   ? Positioned(
                       left: cursorCoordinate - cursorWidth / 2,
                       child: Container(
