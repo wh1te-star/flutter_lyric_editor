@@ -387,7 +387,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
           );
         } else {
           const double cursorWidth = 1.0;
-          const double cursorHeight = 24.0;
+          const double cursorHeight = 15.0;
           int cursorPositionSentence = textPaneProvider.cursor.charPosition;
           int cursorPositionWordStart = timingService.lyricSnippetList[textPaneProvider.cursor.linePosition]!.timingPoints[highlightIndex].charPosition;
           int cursorPositionWord = cursorPositionSentence - cursorPositionWordStart;
@@ -399,7 +399,11 @@ class _TextPaneState extends ConsumerState<TextPane> {
               children: [
                 Text(
                   segmentWord,
-                  style: textStyle,
+                  style: index == highlightIndex
+                      ? textStyle.copyWith(
+                          decoration: TextDecoration.underline,
+                        )
+                      : textStyle,
                 ),
                 index == highlightIndex && 0 < cursorPositionWord && cursorPositionWord < segmentWord.length && textPaneProvider.cursorBlinker.isCursorVisible
                     ? Positioned(
@@ -407,7 +411,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
                         child: Container(
                           width: cursorWidth,
                           height: cursorHeight,
-                          color:  Colors.black,
+                          color: Colors.black,
                         ),
                       )
                     : const SizedBox.shrink(),
