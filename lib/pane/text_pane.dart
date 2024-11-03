@@ -379,30 +379,17 @@ class _TextPaneState extends ConsumerState<TextPane> {
       color: Colors.white,
       background: Paint()..color = Colors.black,
     );
-    List<Widget> sentenceRowWidget = [];
-    List<Widget> annotationRowWidget = [];
+    List<Widget> sentenceRowWidgets = [];
+    List<Widget> annotationRowWidgets = [];
     List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotations, snippet.sentenceSegments.length);
-    for (int i = 0; i < rangeList.length; i++) {
-      Tuple2<SegmentRange, Annotation?> element = rangeList[i];
+    for (int index = 0; index < rangeList.length; index++) {
+      Tuple2<SegmentRange, Annotation?> element = rangeList[index];
       SegmentRange segmentRange = element.item1;
       Annotation? annotation = element.item2;
-      sentenceRowWidget += sentenceLineWidgets(
-        snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1),
-        incursorIndex,
-        cursorPositionWord,
-        textPaneProvider.cursor.isSegmentSelectionMode,
-        textPaneProvider.cursor,
-        cursorPositionInfo,
-        textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
-        textStyle,
-        textStyleIncursor,
-        textStyle,
-        textStyleIncursor,
-      );
 
-      if (annotation != null) {
-        annotationRowWidget += sentenceLineWidgets(
-          annotation.sentenceSegments,
+      if (annotation == null) {
+        sentenceRowWidgets += sentenceLineWidgets(
+          snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1),
           incursorIndex,
           cursorPositionWord,
           textPaneProvider.cursor.isSegmentSelectionMode,
@@ -414,8 +401,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
           textStyle,
           textStyleIncursor,
         );
-      } else {
-        annotationRowWidget += sentenceLineWidgets(
+
+        annotationRowWidgets += sentenceLineWidgets(
           snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1),
           -1,
           -1,
@@ -428,16 +415,70 @@ class _TextPaneState extends ConsumerState<TextPane> {
           annotationDummyTextStyle,
           annotationDummyTextStyle,
         );
+      } else {
+        String sentenceString = snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1).map((SentenceSegment segment) => segment.word).join('');
+        String sentenceTimingPointString = "\xa0${TextPaneProvider.timingPointChar}\xa0" * (segmentRange.endIndex - segmentRange.startIndex);
+
+        double sentenceRowWidth = getSizeFromTextStyle(sentenceString, textStyle).width + getSizeFromTextStyle(sentenceTimingPointString, textStyle).width + 1;
+
+        List<Widget> sentenceRow = sentenceLineWidgets(
+          snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1),
+          incursorIndex,
+          cursorPositionWord,
+          textPaneProvider.cursor.isSegmentSelectionMode,
+          textPaneProvider.cursor,
+          cursorPositionInfo,
+          textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
+          textStyle,
+          textStyleIncursor,
+          textStyle,
+          textStyleIncursor,
+        );
+
+        List<Widget> annotationRow = sentenceLineWidgets(
+          annotation.sentenceSegments,
+          incursorIndex,
+          cursorPositionWord,
+          textPaneProvider.cursor.isSegmentSelectionMode,
+          textPaneProvider.cursor,
+          cursorPositionInfo,
+          textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
+          textStyle,
+          textStyleIncursor,
+          textStyle,
+          textStyleIncursor,
+        );
+
+        sentenceRowWidgets += [
+          SizedBox(
+            width: sentenceRowWidth,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: sentenceRow,
+            ),
+          ),
+        ];
+        annotationRowWidgets += [
+          SizedBox(
+            width: sentenceRowWidth,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: annotationRow,
+            ),
+          ),
+        ];
       }
 
-      if (i < rangeList.length - 1) {
-        sentenceRowWidget.add(
+      if (index < rangeList.length - 1) {
+        sentenceRowWidgets.add(
           Text(
             "\xa0${TextPaneProvider.annotationEdgeChar}\xa0",
             style: textStyle,
           ),
         );
-        annotationRowWidget.add(
+        annotationRowWidgets.add(
           Text(
             "\xa0${TextPaneProvider.annotationEdgeChar}\xa0",
             style: textStyle,
@@ -451,12 +492,12 @@ class _TextPaneState extends ConsumerState<TextPane> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
-          children: annotationRowWidget,
+          children: annotationRowWidgets,
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
-          children: sentenceRowWidget,
+          children: sentenceRowWidgets,
         ),
       ],
     );
