@@ -24,7 +24,7 @@ class TextPaneProvider with ChangeNotifier {
 
   late CursorBlinker cursorBlinker;
 
-  TextPaneCursor cursor = TextPaneCursor(SnippetID(0), false, false, 0, Option.former, 0, 0);
+  TextPaneCursor cursor = TextPaneCursor(SnippetID(0), false, false, false, 0, Option.former, 0, 0);
 
   static const String timingPointChar = '|';
   static const String annotationEdgeChar = '▲';
@@ -65,7 +65,7 @@ class TextPaneProvider with ChangeNotifier {
   }
 
   TextPaneCursor getDefaultCursorPosition(SnippetID id) {
-    TextPaneCursor defaultCursor = TextPaneCursor(id, false, false, 0, Option.former, 0, 0);
+    TextPaneCursor defaultCursor = TextPaneCursor(id, false, false, false, 0, Option.former, 0, 0);
 
     LyricSnippet snippet = getSnippetWithID(id);
     int currentSnippetPosition = snippet.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
@@ -392,7 +392,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
           snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1),
           incursorIndex,
           cursorPositionWord,
-          textPaneProvider.cursor.isSegmentSelectionMode,
           textPaneProvider.cursor,
           cursorPositionInfo,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
@@ -406,7 +405,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
           snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1),
           -1,
           -1,
-          false,
           textPaneProvider.cursor,
           cursorPositionInfo,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
@@ -425,7 +423,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
           snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1),
           incursorIndex,
           cursorPositionWord,
-          textPaneProvider.cursor.isSegmentSelectionMode,
           textPaneProvider.cursor,
           cursorPositionInfo,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
@@ -439,7 +436,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
           annotation.sentenceSegments,
           incursorIndex,
           cursorPositionWord,
-          textPaneProvider.cursor.isSegmentSelectionMode,
           textPaneProvider.cursor,
           cursorPositionInfo,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
@@ -507,7 +503,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
     List<SentenceSegment> segments,
     int incursorIndex,
     int incursorCharPosition,
-    bool isSegmentSelectionMode,
     TextPaneCursor cursor,
     PositionTypeInfo cursorPositionInfo,
     Color wordCursorColor,
@@ -519,7 +514,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     List<Widget> widgets = [];
     for (int index = 0; index < segments.length; index++) {
       String segmentWord = segments[index].word;
-      if (isSegmentSelectionMode) {
+      if (cursor.isSegmentSelectionMode) {
         widgets.add(
           Text(
             segmentWord,
@@ -687,6 +682,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
 class TextPaneCursor {
   SnippetID linePosition;
+  bool isAnnotationSelection;
   bool isSegmentSelectionMode;
   bool isRangeSelection;
   int charPosition;
@@ -704,6 +700,7 @@ class TextPaneCursor {
 
   TextPaneCursor(
     this.linePosition,
+    this.isAnnotationSelection,
     this.isSegmentSelectionMode,
     this.isRangeSelection,
     this.charPosition,
