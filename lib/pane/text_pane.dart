@@ -356,7 +356,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
     TimingService timingService = ref.read(timingMasterProvider);
     TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
     PositionTypeInfo cursorPositionInfo = snippet.getCharPositionIndex(textPaneProvider.cursor.charPosition);
-    int incursorIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
 
     int cursorPositionSentence = textPaneProvider.cursor.charPosition;
     int cursorPositionWordStart = snippet.timingPoints[incursorIndex].charPosition;
@@ -501,6 +500,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
   List<Widget> sentenceLineWidgets(
     List<SentenceSegment> segments,
+    SegmentRange range,
     int incursorIndex,
     int incursorCharPosition,
     TextPaneCursor cursor,
@@ -512,7 +512,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
     TextStyle timingPointIncursorTextStyle,
   ) {
     List<Widget> widgets = [];
-    for (int index = 0; index < segments.length; index++) {
+
+    for (int index = range.startIndex; index < range.endIndex; index++) {
       String segmentWord = segments[index].word;
       if (cursor.isSegmentSelectionMode) {
         widgets.add(
