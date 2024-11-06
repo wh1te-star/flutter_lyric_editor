@@ -378,6 +378,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     List<Widget> annotationRowWidgets = [];
     List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotations, snippet.sentenceSegments.length);
     int incursorSegmentIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
+    int incursorCharPosition = getIncursorCharPosition(snippet.sentenceSegments, textPaneProvider.cursor);
     for (int index = 0; index < rangeList.length; index++) {
       Tuple2<SegmentRange, Annotation?> element = rangeList[index];
       SegmentRange segmentRange = element.item1;
@@ -385,9 +386,9 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
       if (annotation == null) {
         sentenceRowWidgets += sentenceLineWidgets(
-          snippet.sentenceSegments,
-          segmentRange,
+          snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1),
           incursorSegmentIndex,
+          incursorCharPosition,
           textPaneProvider.cursor,
           cursorPositionInfo,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
@@ -398,9 +399,9 @@ class _TextPaneState extends ConsumerState<TextPane> {
         );
 
         annotationRowWidgets += sentenceLineWidgets(
-          snippet.sentenceSegments,
-          segmentRange,
+          snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1),
           incursorSegmentIndex,
+          incursorCharPosition,
           textPaneProvider.cursor,
           cursorPositionInfo,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
@@ -415,9 +416,9 @@ class _TextPaneState extends ConsumerState<TextPane> {
         double sentenceRowWidth = getSizeFromTextStyle(sentenceString, textStyle).width + getSizeFromTextStyle(sentenceTimingPointString, textStyle).width + 10;
 
         List<Widget> sentenceRow = sentenceLineWidgets(
-          snippet.sentenceSegments,
-          segmentRange,
+          snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1),
           incursorSegmentIndex,
+          incursorCharPosition,
           textPaneProvider.cursor,
           cursorPositionInfo,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
@@ -428,9 +429,9 @@ class _TextPaneState extends ConsumerState<TextPane> {
         );
 
         List<Widget> annotationRow = sentenceLineWidgets(
-          snippet.sentenceSegments,
-          segmentRange,
+          annotation.sentenceSegments,
           incursorSegmentIndex,
+          incursorCharPosition,
           textPaneProvider.cursor,
           cursorPositionInfo,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
@@ -461,6 +462,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
           ),
         ];
       }
+
+      incursorSegmentIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
 
       if (index < rangeList.length - 1) {
         sentenceRowWidgets.add(
@@ -496,8 +499,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
   List<Widget> sentenceLineWidgets(
     List<SentenceSegment> segments,
-    SegmentRange range,
     int incursorSegmentIndex,
+    int incursorCharPosition,
     TextPaneCursor cursor,
     PositionTypeInfo cursorPositionInfo,
     Color wordCursorColor,
@@ -507,9 +510,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
     TextStyle timingPointIncursorTextStyle,
   ) {
     List<Widget> widgets = [];
-    int incursorCharPosition = getIncursorCharPosition(segments, cursor);
 
-    for (int index = range.startIndex; index <= range.endIndex; index++) {
+    for (int index = 0; index < segments.length; index++) {
       String segmentWord = segments[index].word;
       if (cursor.isSegmentSelectionMode) {
         widgets.add(
@@ -550,7 +552,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
         );
       }
 
-      if (index < range.endIndex) {
+      if (index < segments.length - 1) {
         widgets.add(
           Text(
             "\xa0${TextPaneProvider.timingPointChar}\xa0",
