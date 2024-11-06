@@ -332,7 +332,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
               color: vocalistColor,
             ),
             Container(
-              width: maxWidth,
+              //width: maxWidth,
               color: id == textPaneProvider.cursor.linePosition ? Colors.yellowAccent : null,
               child: snippetEditLine(id, snippet),
             ),
@@ -377,6 +377,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     List<Widget> sentenceRowWidgets = [];
     List<Widget> annotationRowWidgets = [];
     List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotations, snippet.sentenceSegments.length);
+    int incursorSegmentIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
     for (int index = 0; index < rangeList.length; index++) {
       Tuple2<SegmentRange, Annotation?> element = rangeList[index];
       SegmentRange segmentRange = element.item1;
@@ -384,8 +385,9 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
       if (annotation == null) {
         sentenceRowWidgets += sentenceLineWidgets(
-          snippet,
+          snippet.sentenceSegments,
           segmentRange,
+          incursorSegmentIndex,
           textPaneProvider.cursor,
           cursorPositionInfo,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
@@ -396,8 +398,9 @@ class _TextPaneState extends ConsumerState<TextPane> {
         );
 
         annotationRowWidgets += sentenceLineWidgets(
-          snippet,
+          snippet.sentenceSegments,
           segmentRange,
+          incursorSegmentIndex,
           textPaneProvider.cursor,
           cursorPositionInfo,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
@@ -409,12 +412,12 @@ class _TextPaneState extends ConsumerState<TextPane> {
       } else {
         String sentenceString = snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1).map((SentenceSegment segment) => segment.word).join('');
         String sentenceTimingPointString = "\xa0${TextPaneProvider.timingPointChar}\xa0" * (segmentRange.endIndex - segmentRange.startIndex);
-
-        double sentenceRowWidth = getSizeFromTextStyle(sentenceString, textStyle).width + getSizeFromTextStyle(sentenceTimingPointString, textStyle).width + 1;
+        double sentenceRowWidth = getSizeFromTextStyle(sentenceString, textStyle).width + getSizeFromTextStyle(sentenceTimingPointString, textStyle).width + 10;
 
         List<Widget> sentenceRow = sentenceLineWidgets(
-          snippet,
+          snippet.sentenceSegments,
           segmentRange,
+          incursorSegmentIndex,
           textPaneProvider.cursor,
           cursorPositionInfo,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
@@ -425,8 +428,9 @@ class _TextPaneState extends ConsumerState<TextPane> {
         );
 
         List<Widget> annotationRow = sentenceLineWidgets(
-          snippet,
+          snippet.sentenceSegments,
           segmentRange,
+          incursorSegmentIndex,
           textPaneProvider.cursor,
           cursorPositionInfo,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
@@ -491,8 +495,9 @@ class _TextPaneState extends ConsumerState<TextPane> {
   }
 
   List<Widget> sentenceLineWidgets(
-    LyricSnippet snippet,
+    List<SentenceSegment> segments,
     SegmentRange range,
+    int incursorSegmentIndex,
     TextPaneCursor cursor,
     PositionTypeInfo cursorPositionInfo,
     Color wordCursorColor,
@@ -501,12 +506,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     TextStyle timingPointTextStyle,
     TextStyle timingPointIncursorTextStyle,
   ) {
-    MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
-    TimingService timingService = ref.read(timingMasterProvider);
-
     List<Widget> widgets = [];
-    List<SentenceSegment> segments = snippet.sentenceSegments;
-    int incursorSegmentIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
     int incursorCharPosition = getIncursorCharPosition(segments, cursor);
 
     for (int index = range.startIndex; index <= range.endIndex; index++) {
