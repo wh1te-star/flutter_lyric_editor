@@ -464,6 +464,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
       }
 
       incursorSegmentIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
+      int segmentCharLength = snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1).map((segment) => segment.word.length).reduce((a, b) => a + b);
+      cursorPositionInfo.index -= segmentCharLength;
 
       if (index < rangeList.length - 1) {
         sentenceRowWidgets.add(
