@@ -379,17 +379,23 @@ class _TextPaneState extends ConsumerState<TextPane> {
     List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotations, snippet.sentenceSegments.length);
     int incursorSegmentIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
     int incursorCharPosition = getIncursorCharPosition(snippet.sentenceSegments, textPaneProvider.cursor);
+    TextPaneCursor cursor = textPaneProvider.cursor.copyWith();
     for (int index = 0; index < rangeList.length; index++) {
       Tuple2<SegmentRange, Annotation?> element = rangeList[index];
       SegmentRange segmentRange = element.item1;
       Annotation? annotation = element.item2;
 
+      List<SentenceSegment> currentSegmentPartSentence = snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1);
+      String sentenceString = currentSegmentPartSentence.map((SentenceSegment segment) => segment.word).join('');
+      String sentenceTimingPointString = "\xa0${TextPaneProvider.timingPointChar}\xa0" * (segmentRange.endIndex - segmentRange.startIndex);
+      double sentenceRowWidth = getSizeFromTextStyle(sentenceString, textStyle).width + getSizeFromTextStyle(sentenceTimingPointString, textStyle).width + 10;
+
       if (annotation == null) {
         sentenceRowWidgets += sentenceLineWidgets(
-          snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1),
+          currentSegmentPartSentence,
           incursorSegmentIndex,
           incursorCharPosition,
-          textPaneProvider.cursor,
+          cursor,
           cursorPositionInfo,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
           textStyle,
@@ -399,10 +405,10 @@ class _TextPaneState extends ConsumerState<TextPane> {
         );
 
         annotationRowWidgets += sentenceLineWidgets(
-          snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1),
+          currentSegmentPartSentence,
           incursorSegmentIndex,
           incursorCharPosition,
-          textPaneProvider.cursor,
+          cursor,
           cursorPositionInfo,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
           annotationDummyTextStyle,
@@ -411,15 +417,13 @@ class _TextPaneState extends ConsumerState<TextPane> {
           annotationDummyTextStyle,
         );
       } else {
-        String sentenceString = snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1).map((SentenceSegment segment) => segment.word).join('');
-        String sentenceTimingPointString = "\xa0${TextPaneProvider.timingPointChar}\xa0" * (segmentRange.endIndex - segmentRange.startIndex);
-        double sentenceRowWidth = getSizeFromTextStyle(sentenceString, textStyle).width + getSizeFromTextStyle(sentenceTimingPointString, textStyle).width + 10;
+        List<SentenceSegment> currentSegmentPartAnnotation = annotation.sentenceSegments;
 
         List<Widget> sentenceRow = sentenceLineWidgets(
-          snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1),
+          currentSegmentPartSentence,
           incursorSegmentIndex,
           incursorCharPosition,
-          textPaneProvider.cursor,
+          cursor,
           cursorPositionInfo,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
           textStyle,
@@ -429,10 +433,10 @@ class _TextPaneState extends ConsumerState<TextPane> {
         );
 
         List<Widget> annotationRow = sentenceLineWidgets(
-          annotation.sentenceSegments,
+          currentSegmentPartAnnotation,
           incursorSegmentIndex,
           incursorCharPosition,
-          textPaneProvider.cursor,
+          cursor,
           cursorPositionInfo,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
           textStyle,
@@ -463,24 +467,25 @@ class _TextPaneState extends ConsumerState<TextPane> {
         ];
       }
 
-      incursorSegmentIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
-      int segmentCharLength = snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1).map((segment) => segment.word.length).reduce((a, b) => a + b);
-      cursorPositionInfo.index -= segmentCharLength;
-
       if (index < rangeList.length - 1) {
         sentenceRowWidgets.add(
           Text(
             "\xa0${TextPaneProvider.annotationEdgeChar}\xa0",
-            style: textStyle,
+            style: sentenceString.length == cursor.charPosition ? textStyleIncursor : textStyle,
           ),
         );
         annotationRowWidgets.add(
           Text(
             "\xa0${TextPaneProvider.annotationEdgeChar}\xa0",
-            style: textStyle,
+            style: sentenceString.length == cursor.charPosition ? textStyleIncursor : textStyle,
           ),
         );
       }
+
+      incursorSegmentIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
+      int segmentCharLength = snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1).map((segment) => segment.word.length).reduce((a, b) => a + b);
+      cursorPositionInfo.index -= segmentCharLength;
+      cursor.charPosition -= segmentCharLength;
     }
 
     return Column(
@@ -729,6 +734,28 @@ class TextPaneCursor {
     this.startSegmentIndex,
     this.endSegmentIndex,
   );
+
+  TextPaneCursor copyWith({
+    SnippetID? linePosition,
+    bool? isAnnotationSelection,
+    bool? isSegmentSelectionMode,
+    bool? isRangeSelection,
+    int? charPosition,
+    Option? option,
+    int? startSegmentIndex,
+    int? endSegmentIndex,
+  }) {
+    return TextPaneCursor(
+      linePosition ?? this.linePosition,
+      isAnnotationSelection ?? this.isAnnotationSelection,
+      isSegmentSelectionMode ?? this.isSegmentSelectionMode,
+      isRangeSelection ?? this.isRangeSelection,
+      charPosition ?? this.charPosition,
+      option ?? this.option,
+      startSegmentIndex ?? this.startSegmentIndex,
+      endSegmentIndex ?? this.endSegmentIndex,
+    );
+  }
 
   String toString() {
     if (!isSegmentSelectionMode) {
