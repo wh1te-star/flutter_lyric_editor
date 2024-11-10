@@ -150,7 +150,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             MapEntry<SnippetID, LyricSnippet> target = currentSnippets.entries.firstWhere(
               (entry) {
                 VocalistID currentVocalistID = entry.value.vocalistID;
-                VocalistID textPaneVocalistID = timingService.lyricSnippetList[textPaneProvider.cursor.linePosition]!.vocalistID;
+                VocalistID textPaneVocalistID = timingService.lyricSnippetList[textPaneProvider.cursor.snippetID]!.vocalistID;
                 textPaneProvider.cursor.isSegmentSelectionMode = false;
                 textPaneProvider.cursor.isRangeSelection = false;
                 return currentVocalistID == textPaneVocalistID;
