@@ -307,7 +307,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
     double maxWidth = 0.0;
     TextStyle style = TextStyle(letterSpacing: 2.0);
 
-    double rowHeight = getSizeFromTextStyle("dummy text", style).height;
+    double singleRowHeight = getSizeFromTextStyle("dummy text", style).height;
+
     for (var entry in currentSnippets.entries) {
       LyricSnippet snippet = entry.value;
       String timingPointString = TextPaneProvider.timingPointChar * (snippet.timingPoints.length - 2);
@@ -321,6 +322,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
       SnippetID id = entry.key;
       LyricSnippet snippet = entry.value;
       Color vocalistColor = Color(timingService.vocalistColorMap[snippet.vocalistID]!.color);
+
+      double rowHeight = snippet.annotations.isEmpty ? singleRowHeight : 2*singleRowHeight;
       elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -328,7 +331,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
           children: [
             Container(
               width: sideBandWidth,
-              height: 2 * rowHeight,
+              height: rowHeight,
               color: vocalistColor,
             ),
             Container(
@@ -338,7 +341,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
             ),
             Container(
               width: sideBandWidth,
-              height: 2 * rowHeight,
+              height: rowHeight,
               color: vocalistColor,
             ),
           ],
@@ -405,19 +408,21 @@ class _TextPaneState extends ConsumerState<TextPane> {
           textStyleIncursor,
         );
 
-        annotationRowWidgets += sentenceLineWidgets(
-          currentSegmentPartSentence,
-          incursorSegmentIndex,
-          incursorCharPosition,
-          cursor,
-          true,
-          cursorPositionInfo,
-          textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
-          annotationDummyTextStyle,
-          annotationDummyTextStyle,
-          annotationDummyTextStyle,
-          annotationDummyTextStyle,
-        );
+        if (snippet.annotations.isNotEmpty) {
+          annotationRowWidgets += sentenceLineWidgets(
+            currentSegmentPartSentence,
+            incursorSegmentIndex,
+            incursorCharPosition,
+            cursor,
+            true,
+            cursorPositionInfo,
+            textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
+            annotationDummyTextStyle,
+            annotationDummyTextStyle,
+            annotationDummyTextStyle,
+            annotationDummyTextStyle,
+          );
+        }
       } else {
         List<SentenceSegment> currentSegmentPartAnnotation = annotation.sentenceSegments;
 
@@ -427,20 +432,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
           incursorCharPosition,
           cursor,
           false,
-          cursorPositionInfo,
-          textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
-          textStyle,
-          textStyleIncursor,
-          textStyle,
-          textStyleIncursor,
-        );
-
-        List<Widget> annotationRow = sentenceLineWidgets(
-          currentSegmentPartAnnotation,
-          incursorSegmentIndex,
-          incursorCharPosition,
-          cursor,
-          true,
           cursorPositionInfo,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
           textStyle,
@@ -459,29 +450,48 @@ class _TextPaneState extends ConsumerState<TextPane> {
             ),
           ),
         ];
-        annotationRowWidgets += [
-          SizedBox(
-            width: sentenceRowWidth,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: annotationRow,
-            ),
-          ),
-        ];
+
+        if (snippet.annotations.isNotEmpty) {
+          List<Widget> annotationRow = sentenceLineWidgets(
+            currentSegmentPartAnnotation,
+            incursorSegmentIndex,
+            incursorCharPosition,
+            cursor,
+            true,
+            cursorPositionInfo,
+            textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
+            textStyle,
+            textStyleIncursor,
+            textStyle,
+            textStyleIncursor,
+          );
+
+          if (snippet.annotations.isNotEmpty) {
+            annotationRowWidgets += [
+              SizedBox(
+                width: sentenceRowWidth,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: annotationRow,
+                ),
+              ),
+            ];
+          }
+        }
       }
 
       if (index < rangeList.length - 1) {
         sentenceRowWidgets.add(
           Text(
             "\xa0${TextPaneProvider.annotationEdgeChar}\xa0",
-            style: sentenceString.length == cursor.charPosition ? textStyleIncursor : textStyle,
+            style: cursor.isAnnotationSelection == false && sentenceString.length == cursor.charPosition ? textStyleIncursor : textStyle,
           ),
         );
         annotationRowWidgets.add(
           Text(
             "\xa0${TextPaneProvider.annotationEdgeChar}\xa0",
-            style: sentenceString.length == cursor.charPosition ? textStyleIncursor : textStyle,
+            style: cursor.isAnnotationSelection == true && sentenceString.length == cursor.charPosition ? textStyleIncursor : textStyle,
           ),
         );
       }
