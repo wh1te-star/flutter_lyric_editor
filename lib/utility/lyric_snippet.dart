@@ -35,6 +35,18 @@ class LyricSnippet with TimingObject {
     );
   }
 
+  MapEntry<SegmentRange, Annotation>? getAnnotationFromSeekPosition(int seekPosition) {
+    for (MapEntry<SegmentRange, Annotation> entry in annotations.entries) {
+      Annotation annotation = entry.value;
+      int startSeekPosition = annotation.timingPoints.first.seekPosition;
+      int endSeekPosition = annotation.timingPoints.last.seekPosition;
+      if (startSeekPosition <= seekPosition && seekPosition < endSeekPosition) {
+        return entry;
+      }
+    }
+    return null;
+  }
+
   void addAnnotation(String annotationString, int startIndex, int endIndex) {
     SentenceSegment segment = sentenceSegments[startIndex];
     TimingPoint justBeforeTimingPoint = timingPoints[startIndex];

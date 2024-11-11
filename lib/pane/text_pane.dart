@@ -52,10 +52,10 @@ class TextPaneProvider with ChangeNotifier {
     }
 
     if (!currentSnippets.keys.toList().contains(cursor.snippetID)) {
-      cursor.snippetID = currentSnippets.keys.toList()[0];
+      cursor.snippetID = currentSnippets.keys.first;
     }
 
-    LyricSnippet snippet = currentSnippets.values.toList()[0];
+    LyricSnippet snippet = currentSnippets.values.first;
     int currentSnippetPosition = snippet.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
     PositionTypeInfo nextSnippetPosition = snippet.getCharPositionIndex(cursor.charPosition);
     if (currentSnippetPosition != nextSnippetPosition.index) {
@@ -323,7 +323,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
       LyricSnippet snippet = entry.value;
       Color vocalistColor = Color(timingService.vocalistColorMap[snippet.vocalistID]!.color);
 
-      double rowHeight = snippet.annotations.isEmpty ? singleRowHeight : 2*singleRowHeight;
+      double rowHeight = snippet.annotations.isEmpty ? singleRowHeight : 2 * singleRowHeight;
       elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
