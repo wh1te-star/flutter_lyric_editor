@@ -89,17 +89,24 @@ class TextPaneProvider with ChangeNotifier {
   void moveUpCursor() {
     if (!cursor.isSegmentSelectionMode) {
       Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
-      int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.snippetID);
-      if (index == -1) {
-        return;
-      }
-      if (index - 1 < 0) {
-        return;
-      }
-      cursor.snippetID = currentSnippets.keys.toList()[index - 1];
-      cursor = getDefaultCursorPosition(cursor.snippetID);
+      LyricSnippet cursorSnippet = timingService.lyricSnippetList[cursor.snippetID]!;
+      MapEntry<SegmentRange, Annotation>? cursorAnnotationEntry = cursorSnippet.getAnnotationFromSeekPosition(musicPlayerProvider.seekPosition);
 
-      notifyListeners();
+      if (cursorAnnotationEntry == null) {
+        int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.snippetID);
+        if (index == -1) {
+          return;
+        }
+        if (index - 1 < 0) {
+          return;
+        }
+        cursor.snippetID = currentSnippets.keys.toList()[index - 1];
+        cursor = getDefaultCursorPosition(cursor.snippetID);
+
+        notifyListeners();
+      }else{
+        
+      }
     }
   }
 
