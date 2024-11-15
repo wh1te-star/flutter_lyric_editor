@@ -66,12 +66,32 @@ class TextPaneProvider with ChangeNotifier {
 
   TextPaneCursor getDefaultCursorPosition(SnippetID id) {
     TextPaneCursor defaultCursor = TextPaneCursor.emptyValue;
+    defaultCursor.isAnnotationSelection = false;
 
     LyricSnippet snippet = getSnippetWithID(id);
     int currentSnippetPosition = snippet.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
     defaultCursor.charPosition = snippet.timingPoints[currentSnippetPosition].charPosition + 1;
     defaultCursor.startSegmentIndex = currentSnippetPosition;
     defaultCursor.endSegmentIndex = currentSnippetPosition;
+    defaultCursor.option = Option.former;
+
+    return defaultCursor;
+  }
+
+  TextPaneCursor getDefaultCursorPositionOfAnnotation(SnippetID id) {
+    TextPaneCursor defaultCursor = TextPaneCursor.emptyValue;
+
+    defaultCursor.isAnnotationSelection = true;
+
+    LyricSnippet snippet = getSnippetWithID(id);
+    int? annotationIndex = snippet.getAnnotationIndexFromSeekPosition(musicPlayerProvider.seekPosition);
+    MapEntry<SegmentRange, Annotation>? cursorAnnotationEntry = snippet.getAnnotationWords(annotationIndex!);
+    SegmentRange range = cursorAnnotationEntry.key;
+    Annotation annotation = cursorAnnotationEntry.value;
+
+    defaultCursor.snippetID = id;
+    defaultCursor.annotationSegmentRange = range;
+    defaultCursor.charPosition = 1;
     defaultCursor.option = Option.former;
 
     return defaultCursor;
@@ -90,9 +110,9 @@ class TextPaneProvider with ChangeNotifier {
     if (!cursor.isSegmentSelectionMode) {
       Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
       LyricSnippet cursorSnippet = timingService.lyricSnippetList[cursor.snippetID]!;
-      MapEntry<SegmentRange, Annotation>? cursorAnnotationEntry = cursorSnippet.getAnnotationFromSeekPosition(musicPlayerProvider.seekPosition);
+      int? annotationIndex = cursorSnippet.getAnnotationIndexFromSeekPosition(musicPlayerProvider.seekPosition);
 
-      if (cursorAnnotationEntry == null) {
+      if (annotationIndex == null) {
         int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.snippetID);
         if (index == -1) {
           return;
@@ -104,15 +124,23 @@ class TextPaneProvider with ChangeNotifier {
         cursor = getDefaultCursorPosition(cursor.snippetID);
 
         notifyListeners();
-      }else{
-        
+      } else {
+        cursor = getDefaultCursorPositionOfAnnotation(cursor.snippetID);
       }
     }
+
+    debugPrint("${cursor}");
+    cursorBlinker.restartCursorTimer();
+    notifyListeners();
   }
 
   void moveDownCursor() {
     if (!cursor.isSegmentSelectionMode) {
+      if(!cursor.isAnnotationSelection){
+        
+      }
       Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
+      LyricSnippet cursorSnippet = timingService.lyricSnippetList[cursor.snippetID]!;
       int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.snippetID);
       if (index == -1) {
         return;
@@ -120,11 +148,21 @@ class TextPaneProvider with ChangeNotifier {
       if (index + 1 >= currentSnippets.length) {
         return;
       }
-      cursor.snippetID = currentSnippets.keys.toList()[index + 1];
-      cursor = getDefaultCursorPosition(cursor.snippetID);
+      SnippetID nextSnippetID = currentSnippets.keys.toList()[index + 1];
 
-      notifyListeners();
+      int? annotationIndex = cursorSnippet.getAnnotationIndexFromSeekPosition(musicPlayerProvider.seekPosition);
+
+      if (annotationIndex == null) {
+        cursor.snippetID = currentSnippets.keys.toList()[index + 1];
+        cursor = getDefaultCursorPosition(cursor.snippetID);
+      } else {
+        cursor = getDefaultCursorPositionOfAnnotation(cursor.snippetID);
+      }
     }
+
+    debugPrint("${cursor}");
+    cursorBlinker.restartCursorTimer();
+    notifyListeners();
   }
 
   void moveLeftCursor() {
@@ -743,7 +781,7 @@ class TextPaneCursor {
   int endSegmentIndex;
 
   bool isAnnotationSelection;
-  SegmentRange annotationPosition;
+  SegmentRange annotationSegmentRange;
 
   bool isInRange(int index) {
     if (startSegmentIndex <= endSegmentIndex) {
@@ -762,7 +800,7 @@ class TextPaneCursor {
     this.startSegmentIndex,
     this.endSegmentIndex,
     this.isAnnotationSelection,
-    this.annotationPosition,
+    this.annotationSegmentRange,
   );
 
   TextPaneCursor copyWith({
@@ -774,7 +812,7 @@ class TextPaneCursor {
     int? startSegmentIndex,
     int? endSegmentIndex,
     bool? isAnnotationSelection,
-    SegmentRange? annotationPosition,
+    SegmentRange? annotationSegmentRange,
   }) {
     return TextPaneCursor(
       snippetID ?? this.snippetID,
@@ -785,19 +823,19 @@ class TextPaneCursor {
       startSegmentIndex ?? this.startSegmentIndex,
       endSegmentIndex ?? this.endSegmentIndex,
       isAnnotationSelection ?? this.isAnnotationSelection,
-      annotationPosition ?? this.annotationPosition,
+      annotationSegmentRange ?? this.annotationSegmentRange,
     );
   }
 
   String toString() {
     if (!isAnnotationSelection) {
       if (!isSegmentSelectionMode) {
-        return "snippetID: ${snippetID}, charPosition: ${charPosition}, option: ${option}";
+        return "SnippetSelection-> snippetID: ${snippetID}, charPosition: ${charPosition}, option: ${option}";
       } else {
-        return "snippetID: ${snippetID}, segment range: ${startSegmentIndex} - ${endSegmentIndex}";
+        return "SegmentSelection-> snippetID: ${snippetID}, segment range: ${startSegmentIndex} - ${endSegmentIndex}";
       }
     } else {
-      return "snippetID: ${snippetID}, annotationRange: ${annotationPosition}, charPosition: ${charPosition}, option: ${option}";
+      return "AnnotationSelection-> snippetID: ${snippetID}, annotationRange: ${annotationSegmentRange}, charPosition: ${charPosition}, option: ${option}";
     }
   }
 
