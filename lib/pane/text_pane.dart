@@ -112,7 +112,7 @@ class TextPaneProvider with ChangeNotifier {
       LyricSnippet cursorSnippet = timingService.lyricSnippetList[cursor.snippetID]!;
       int? annotationIndex = cursorSnippet.getAnnotationIndexFromSeekPosition(musicPlayerProvider.seekPosition);
 
-      if (annotationIndex == null) {
+      if (annotationIndex == null && cursor.isAnnotationSelection) {
         int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.snippetID);
         if (index == -1) {
           return;
@@ -124,7 +124,7 @@ class TextPaneProvider with ChangeNotifier {
         cursor = getDefaultCursorPosition(cursor.snippetID);
 
         notifyListeners();
-      } else {
+      }else {
         cursor = getDefaultCursorPositionOfAnnotation(cursor.snippetID);
       }
     }
