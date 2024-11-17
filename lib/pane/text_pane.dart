@@ -110,21 +110,23 @@ class TextPaneProvider with ChangeNotifier {
     if (!cursor.isSegmentSelectionMode) {
       Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
       LyricSnippet cursorSnippet = timingService.lyricSnippetList[cursor.snippetID]!;
-      int? annotationIndex = cursorSnippet.getAnnotationIndexFromSeekPosition(musicPlayerProvider.seekPosition);
 
-      if (annotationIndex == null && cursor.isAnnotationSelection) {
-        int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.snippetID);
-        if (index == -1) {
-          return;
-        }
-        if (index - 1 < 0) {
-          return;
-        }
-        cursor.snippetID = currentSnippets.keys.toList()[index - 1];
-        cursor = getDefaultCursorPosition(cursor.snippetID);
+      if (cursor.isAnnotationSelection) {
+        int? annotationIndex = cursorSnippet.getAnnotationIndexFromSeekPosition(musicPlayerProvider.seekPosition);
 
-        notifyListeners();
-      }else {
+        if (annotationIndex == null) {
+          int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.snippetID);
+          if (index == -1) {
+            return;
+          }
+          if (index - 1 < 0) {
+            return;
+          }
+          cursor.snippetID = currentSnippets.keys.toList()[index - 1];
+          cursor = getDefaultCursorPosition(cursor.snippetID);
+        } else {
+
+        }
         cursor = getDefaultCursorPositionOfAnnotation(cursor.snippetID);
       }
     }
@@ -136,9 +138,7 @@ class TextPaneProvider with ChangeNotifier {
 
   void moveDownCursor() {
     if (!cursor.isSegmentSelectionMode) {
-      if(!cursor.isAnnotationSelection){
-        
-      }
+      if (!cursor.isAnnotationSelection) {}
       Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
       LyricSnippet cursorSnippet = timingService.lyricSnippetList[cursor.snippetID]!;
       int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.snippetID);
