@@ -111,23 +111,19 @@ class TextPaneProvider with ChangeNotifier {
       Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
       LyricSnippet cursorSnippet = timingService.lyricSnippetList[cursor.snippetID]!;
 
-      if (cursor.isAnnotationSelection) {
-        int? annotationIndex = cursorSnippet.getAnnotationIndexFromSeekPosition(musicPlayerProvider.seekPosition);
+      int? annotationIndex = cursorSnippet.getAnnotationIndexFromSeekPosition(musicPlayerProvider.seekPosition);
 
-        if (annotationIndex == null) {
-          int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.snippetID);
-          if (index == -1) {
-            return;
-          }
-          if (index - 1 < 0) {
-            return;
-          }
+      if (cursor.isAnnotationSelection && annotationIndex == null) {
+        cursor.isAnnotationSelection = false;
+
+        int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.snippetID);
+        if (index > 0) {
           cursor.snippetID = currentSnippets.keys.toList()[index - 1];
           cursor = getDefaultCursorPosition(cursor.snippetID);
-        } else {
-
         }
-        cursor = getDefaultCursorPositionOfAnnotation(cursor.snippetID);
+      } else {
+        cursor.isAnnotationSelection = true;
+          cursor = getDefaultCursorPositionOfAnnotation(cursor.snippetID);
       }
     }
 
