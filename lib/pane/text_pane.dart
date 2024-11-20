@@ -124,6 +124,7 @@ class TextPaneProvider with ChangeNotifier {
       } else {
         cursor.isAnnotationSelection = true;
         cursor = getDefaultCursorPositionOfAnnotation(cursor.snippetID);
+        cursor = getDefaultCursorPositionOfAnnotation(cursor.snippetID);
       }
     }
 
