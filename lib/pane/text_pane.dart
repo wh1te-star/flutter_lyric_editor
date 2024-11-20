@@ -123,7 +123,7 @@ class TextPaneProvider with ChangeNotifier {
         }
       } else {
         cursor.isAnnotationSelection = true;
-          cursor = getDefaultCursorPositionOfAnnotation(cursor.snippetID);
+        cursor = getDefaultCursorPositionOfAnnotation(cursor.snippetID);
       }
     }
 
@@ -134,25 +134,28 @@ class TextPaneProvider with ChangeNotifier {
 
   void moveDownCursor() {
     if (!cursor.isSegmentSelectionMode) {
-      if (!cursor.isAnnotationSelection) {}
-      Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
-      LyricSnippet cursorSnippet = timingService.lyricSnippetList[cursor.snippetID]!;
-      int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.snippetID);
-      if (index == -1) {
-        return;
-      }
-      if (index + 1 >= currentSnippets.length) {
-        return;
-      }
-      SnippetID nextSnippetID = currentSnippets.keys.toList()[index + 1];
-
-      int? annotationIndex = cursorSnippet.getAnnotationIndexFromSeekPosition(musicPlayerProvider.seekPosition);
-
-      if (annotationIndex == null) {
-        cursor.snippetID = currentSnippets.keys.toList()[index + 1];
-        cursor = getDefaultCursorPosition(cursor.snippetID);
-      } else {
+      if (!cursor.isAnnotationSelection) {
+        cursor.isAnnotationSelection = true;
         cursor = getDefaultCursorPositionOfAnnotation(cursor.snippetID);
+      } else {
+        Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
+        LyricSnippet cursorSnippet = timingService.lyricSnippetList[cursor.snippetID]!;
+
+        int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.snippetID);
+        if (index != -1 && index + 1 < currentSnippets.length) {
+          LyricSnippet nextSnippet = currentSnippets.values.toList()[index + 1];
+
+          int? annotationIndex = nextSnippet.getAnnotationIndexFromSeekPosition(musicPlayerProvider.seekPosition);
+          if (annotationIndex == null) {
+            cursor.snippetID = currentSnippets.keys.toList()[index + 1];
+
+            cursor.isAnnotationSelection = false;
+            cursor = getDefaultCursorPosition(cursor.snippetID);
+          } else {
+            cursor.isAnnotationSelection = true;
+            cursor = getDefaultCursorPositionOfAnnotation(cursor.snippetID);
+          }
+        }
       }
     }
 
