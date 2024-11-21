@@ -39,7 +39,7 @@ class LyricSnippet with TimingObject {
     for (MapEntry<SegmentRange, Annotation> entry in annotations.entries) {
       SegmentRange range = entry.key;
       Annotation annotation = entry.value;
-      int startSeekPosition =startTimestamp + timingPoints[range.startIndex].seekPosition + annotation.timingPoints.first.seekPosition;
+      int startSeekPosition = startTimestamp + timingPoints[range.startIndex].seekPosition + annotation.timingPoints.first.seekPosition;
       int endSeekPosition = startTimestamp + timingPoints[range.startIndex].seekPosition + annotation.timingPoints.last.seekPosition;
       if (startSeekPosition <= seekPosition && seekPosition < endSeekPosition) {
         return range.startIndex;
@@ -499,6 +499,11 @@ class SegmentRange {
   int startIndex;
   int endIndex;
   SegmentRange(this.startIndex, this.endIndex);
+
+  @override
+  String toString() {
+    return "${startIndex}<=>${endIndex}";
+  }
 }
 
 enum PositionType {
