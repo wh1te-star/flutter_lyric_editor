@@ -113,17 +113,13 @@ class TextPaneProvider with ChangeNotifier {
 
       int? annotationIndex = cursorSnippet.getAnnotationIndexFromSeekPosition(musicPlayerProvider.seekPosition);
 
-      if (cursor.isAnnotationSelection && annotationIndex == null) {
-        cursor.isAnnotationSelection = false;
-
+      if (cursor.isAnnotationSelection || annotationIndex == null) {
         int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.snippetID);
         if (index > 0) {
-          cursor.snippetID = currentSnippets.keys.toList()[index - 1];
-          cursor = getDefaultCursorPosition(cursor.snippetID);
+          SnippetID nextSnippetID = currentSnippets.keys.toList()[index - 1];
+          cursor = getDefaultCursorPosition(nextSnippetID);
         }
       } else {
-        cursor.isAnnotationSelection = true;
-        cursor = getDefaultCursorPositionOfAnnotation(cursor.snippetID);
         cursor = getDefaultCursorPositionOfAnnotation(cursor.snippetID);
       }
     }
@@ -136,7 +132,6 @@ class TextPaneProvider with ChangeNotifier {
   void moveDownCursor() {
     if (!cursor.isSegmentSelectionMode) {
       if (cursor.isAnnotationSelection) {
-        cursor.isAnnotationSelection = false;
         cursor = getDefaultCursorPosition(cursor.snippetID);
       } else {
         Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
@@ -148,10 +143,8 @@ class TextPaneProvider with ChangeNotifier {
 
           int? annotationIndex = nextSnippet.getAnnotationIndexFromSeekPosition(musicPlayerProvider.seekPosition);
           if (annotationIndex == null) {
-            cursor.isAnnotationSelection = false;
             cursor = getDefaultCursorPosition(nextSnippetID);
           } else {
-            cursor.isAnnotationSelection = true;
             cursor = getDefaultCursorPositionOfAnnotation(nextSnippetID);
           }
         }
