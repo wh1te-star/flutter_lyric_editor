@@ -176,17 +176,17 @@ class TextPaneProvider with ChangeNotifier {
         if (cursor.charPosition - 1 > 0) {
           cursor.charPosition--;
 
-          if (snippet.getCharPositionIndex(cursor.charPosition).duplicate) {
+          if (object.getCharPositionIndex(cursor.charPosition).duplicate) {
             cursor.option = Option.latter;
           } else {
             cursor.option = Option.former;
           }
         }
       } else {
-        if (snippet.timingPoints[charPositionIndex - 1].charPosition > 0) {
-          cursor.charPosition = snippet.timingPoints[charPositionIndex - 1].charPosition;
+        if (object.timingPoints[charPositionIndex - 1].charPosition > 0) {
+          cursor.charPosition = object.timingPoints[charPositionIndex - 1].charPosition;
 
-          if (snippet.getCharPositionIndex(cursor.charPosition).duplicate) {
+          if (object.getCharPositionIndex(cursor.charPosition).duplicate) {
             cursor.option = Option.latter;
           } else {
             cursor.option = Option.former;
@@ -231,13 +231,13 @@ class TextPaneProvider with ChangeNotifier {
       if (snippetPositionInfo.duplicate && cursor.option == Option.former) {
         cursor.option = Option.latter;
       } else if (snippetPositionInfo.type == PositionType.sentenceSegment || charPositionIndex == seekPositionInfo) {
-        if (cursor.charPosition + 1 < snippet.sentence.length) {
+        if (cursor.charPosition + 1 < object.sentence.length) {
           cursor.charPosition++;
           cursor.option = Option.former;
         }
       } else {
-        if (snippet.timingPoints[charPositionIndex + 1].charPosition < snippet.sentence.length) {
-          cursor.charPosition = snippet.timingPoints[charPositionIndex + 1].charPosition;
+        if (object.timingPoints[charPositionIndex + 1].charPosition < object.sentence.length) {
+          cursor.charPosition = object.timingPoints[charPositionIndex + 1].charPosition;
           cursor.option = Option.former;
         }
       }

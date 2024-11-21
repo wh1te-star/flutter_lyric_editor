@@ -52,7 +52,7 @@ class LyricSnippet with TimingObject {
     SentenceSegment segment = sentenceSegments[startIndex];
     TimingPoint justBeforeTimingPoint = timingPoints[startIndex];
     SegmentRange annotationKey = SegmentRange(startIndex, endIndex);
-    annotations[annotationKey] = Annotation(startTimestamp: justBeforeTimingPoint.seekPosition, sentenceSegments: [
+    annotations[annotationKey] = Annotation(startTimestamp: startTimestamp + justBeforeTimingPoint.seekPosition, sentenceSegments: [
       SentenceSegment(
         annotationString,
         segment.duration,
