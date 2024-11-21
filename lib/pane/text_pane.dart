@@ -195,15 +195,15 @@ class TextPaneProvider with ChangeNotifier {
       }
     } else {
       if (!cursor.isRangeSelection) {
-        int nextSegmentIndex = cursor.startSegmentIndex - 1;
+        int nextSegmentIndex = cursor.annotationSegmentRange.startIndex - 1;
         if (nextSegmentIndex >= 0) {
-          cursor.startSegmentIndex = nextSegmentIndex;
-          cursor.endSegmentIndex = nextSegmentIndex;
+          cursor.annotationSegmentRange.startIndex = nextSegmentIndex;
+          cursor.annotationSegmentRange.endIndex = nextSegmentIndex;
         }
       } else {
-        int nextSegmentIndex = cursor.endSegmentIndex - 1;
+        int nextSegmentIndex = cursor.annotationSegmentRange.endIndex - 1;
         if (nextSegmentIndex >= 0) {
-          cursor.endSegmentIndex = nextSegmentIndex;
+          cursor.annotationSegmentRange.endIndex = nextSegmentIndex;
         }
       }
     }
@@ -243,15 +243,15 @@ class TextPaneProvider with ChangeNotifier {
       }
     } else {
       if (!cursor.isRangeSelection) {
-        int nextSegmentIndex = cursor.startSegmentIndex + 1;
+        int nextSegmentIndex = cursor.annotationSegmentRange.startIndex + 1;
         if (nextSegmentIndex < snippet.sentenceSegments.length) {
-          cursor.startSegmentIndex = nextSegmentIndex;
-          cursor.endSegmentIndex = nextSegmentIndex;
+          cursor.annotationSegmentRange.startIndex = nextSegmentIndex;
+          cursor.annotationSegmentRange.endIndex = nextSegmentIndex;
         }
       } else {
-        int nextSegmentIndex = cursor.endSegmentIndex + 1;
+        int nextSegmentIndex = cursor.annotationSegmentRange.endIndex + 1;
         if (nextSegmentIndex < snippet.sentenceSegments.length) {
-          cursor.endSegmentIndex = nextSegmentIndex;
+          cursor.annotationSegmentRange.endIndex= nextSegmentIndex;
         }
       }
     }
@@ -769,17 +769,15 @@ class TextPaneCursor {
 
   bool isSegmentSelectionMode;
   bool isRangeSelection;
-  int startSegmentIndex;
-  int endSegmentIndex;
 
   bool isAnnotationSelection;
   SegmentRange annotationSegmentRange;
 
   bool isInRange(int index) {
-    if (startSegmentIndex <= endSegmentIndex) {
-      return startSegmentIndex <= index && index <= endSegmentIndex;
+    if (annotationSegmentRange.startIndex <= annotationSegmentRange.endIndex) {
+      return annotationSegmentRange.startIndex <= index && index <= annotationSegmentRange.endIndex;
     } else {
-      return endSegmentIndex <= index && index <= startSegmentIndex;
+      return annotationSegmentRange.endIndex <= index && index <= annotationSegmentRange.startIndex;
     }
   }
 
@@ -789,8 +787,6 @@ class TextPaneCursor {
     this.option,
     this.isSegmentSelectionMode,
     this.isRangeSelection,
-    this.startSegmentIndex,
-    this.endSegmentIndex,
     this.isAnnotationSelection,
     this.annotationSegmentRange,
   );
@@ -801,8 +797,6 @@ class TextPaneCursor {
     Option? option,
     bool? isSegmentSelectionMode,
     bool? isRangeSelection,
-    int? startSegmentIndex,
-    int? endSegmentIndex,
     bool? isAnnotationSelection,
     SegmentRange? annotationSegmentRange,
   }) {
@@ -812,8 +806,6 @@ class TextPaneCursor {
       option ?? this.option,
       isSegmentSelectionMode ?? this.isSegmentSelectionMode,
       isRangeSelection ?? this.isRangeSelection,
-      startSegmentIndex ?? this.startSegmentIndex,
-      endSegmentIndex ?? this.endSegmentIndex,
       isAnnotationSelection ?? this.isAnnotationSelection,
       annotationSegmentRange ?? this.annotationSegmentRange,
     );
@@ -825,7 +817,7 @@ class TextPaneCursor {
       if (!isSegmentSelectionMode) {
         return "SnippetSelection-> snippetID: ${snippetID}, charPosition: ${charPosition}, option: ${option}";
       } else {
-        return "SegmentSelection-> snippetID: ${snippetID}, segment range: ${startSegmentIndex} - ${endSegmentIndex}";
+        return "SegmentSelection-> snippetID: ${snippetID}, segment range: ${annotationSegmentRange}";
       }
     } else {
       return "AnnotationSelection-> snippetID: ${snippetID}, annotationRange: ${annotationSegmentRange}, charPosition: ${charPosition}, option: ${option}";
@@ -839,8 +831,6 @@ class TextPaneCursor {
       Option.former,
       false,
       false,
-      0,
-      0,
       false,
       SegmentRange(-1, -1),
     );

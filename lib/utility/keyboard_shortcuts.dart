@@ -168,7 +168,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
 
             String annotationString = (await displayDialog(context, [""]))[0];
             if (annotationString != "") {
-              timingService.addAnnotation(targetID, annotationString, textPaneProvider.cursor.startSegmentIndex, textPaneProvider.cursor.endSegmentIndex);
+              timingService.addAnnotation(targetID, annotationString, textPaneProvider.cursor.annotationSegmentRange.startIndex, textPaneProvider.cursor.annotationSegmentRange.endIndex);
             }
 
             textPaneProvider.cursor.isSegmentSelectionMode = false;
