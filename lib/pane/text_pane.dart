@@ -251,7 +251,7 @@ class TextPaneProvider with ChangeNotifier {
       } else {
         int nextSegmentIndex = cursor.annotationSegmentRange.endIndex + 1;
         if (nextSegmentIndex < snippet.sentenceSegments.length) {
-          cursor.annotationSegmentRange.endIndex= nextSegmentIndex;
+          cursor.annotationSegmentRange.endIndex = nextSegmentIndex;
         }
       }
     }
@@ -346,7 +346,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
     double singleRowHeight = getSizeFromTextStyle("dummy text", style).height;
 
-    for (var entry in currentSnippets.entries) {
+    for (MapEntry<SnippetID, LyricSnippet> entry in currentSnippets.entries) {
       LyricSnippet snippet = entry.value;
       String timingPointString = TextPaneProvider.timingPointChar * (snippet.timingPoints.length - 2);
       double sentenceWidth = getSizeFromTextStyle(snippet.sentence + timingPointString, style).width + 10.0;
@@ -355,7 +355,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
       }
     }
     double sideBandWidth = 30.0;
-    for (var entry in currentSnippets.entries) {
+    for (MapEntry<SnippetID, LyricSnippet> entry in currentSnippets.entries) {
       SnippetID id = entry.key;
       LyricSnippet snippet = entry.value;
       Color vocalistColor = Color(timingService.vocalistColorMap[snippet.vocalistID]!.color);
@@ -417,8 +417,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     List<Widget> sentenceRowWidgets = [];
     List<Widget> annotationRowWidgets = [];
     List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotations, snippet.sentenceSegments.length);
-    int incursorSegmentIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
-    int incursorCharPosition = getIncursorCharPosition(snippet.sentenceSegments, textPaneProvider.cursor);
+    int highlightSegmentIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
     TextPaneCursor cursor = textPaneProvider.cursor.copyWith();
     for (int index = 0; index < rangeList.length; index++) {
       Tuple2<SegmentRange, Annotation?> element = rangeList[index];
@@ -430,14 +429,14 @@ class _TextPaneState extends ConsumerState<TextPane> {
       String sentenceTimingPointString = "\xa0${TextPaneProvider.timingPointChar}\xa0" * (segmentRange.endIndex - segmentRange.startIndex);
       double sentenceRowWidth = getSizeFromTextStyle(sentenceString, textStyle).width + getSizeFromTextStyle(sentenceTimingPointString, textStyle).width + 10;
 
+      int segmentCharLength = 0;
+
       if (annotation == null) {
         sentenceRowWidgets += sentenceLineWidgets(
           currentSegmentPartSentence,
-          incursorSegmentIndex,
-          incursorCharPosition,
-          cursor,
           false,
-          cursorPositionInfo,
+          cursor,
+          highlightSegmentIndex,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
           textStyle,
           textStyleIncursor,
@@ -448,11 +447,9 @@ class _TextPaneState extends ConsumerState<TextPane> {
         if (snippet.annotations.isNotEmpty) {
           annotationRowWidgets += sentenceLineWidgets(
             currentSegmentPartSentence,
-            incursorSegmentIndex,
-            incursorCharPosition,
-            cursor,
             true,
-            cursorPositionInfo,
+            cursor,
+            highlightSegmentIndex,
             textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
             annotationDummyTextStyle,
             annotationDummyTextStyle,
@@ -460,16 +457,16 @@ class _TextPaneState extends ConsumerState<TextPane> {
             annotationDummyTextStyle,
           );
         }
+
+        segmentCharLength = currentSegmentPartSentence.map((segment) => segment.word.length).reduce((a, b) => a + b);
       } else {
         List<SentenceSegment> currentSegmentPartAnnotation = annotation.sentenceSegments;
 
         List<Widget> sentenceRow = sentenceLineWidgets(
           currentSegmentPartSentence,
-          incursorSegmentIndex,
-          incursorCharPosition,
-          cursor,
           false,
-          cursorPositionInfo,
+          cursor,
+          highlightSegmentIndex,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
           textStyle,
           textStyleIncursor,
@@ -491,11 +488,9 @@ class _TextPaneState extends ConsumerState<TextPane> {
         if (snippet.annotations.isNotEmpty) {
           List<Widget> annotationRow = sentenceLineWidgets(
             currentSegmentPartAnnotation,
-            incursorSegmentIndex,
-            incursorCharPosition,
-            cursor,
             true,
-            cursorPositionInfo,
+            cursor,
+            highlightSegmentIndex,
             textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
             textStyle,
             textStyleIncursor,
@@ -516,6 +511,12 @@ class _TextPaneState extends ConsumerState<TextPane> {
             ];
           }
         }
+
+        if (!cursor.isAnnotationSelection) {
+          segmentCharLength = currentSegmentPartSentence.map((segment) => segment.word.length).reduce((a, b) => a + b);
+        } else {
+          segmentCharLength = currentSegmentPartAnnotation.map((segment) => segment.word.length).reduce((a, b) => a + b);
+        }
       }
 
       if (index < rangeList.length - 1) {
@@ -533,8 +534,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
         );
       }
 
-      incursorSegmentIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
-      int segmentCharLength = snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1).map((segment) => segment.word.length).reduce((a, b) => a + b);
+      highlightSegmentIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
       cursorPositionInfo.index -= segmentCharLength;
       cursor.charPosition -= segmentCharLength;
     }
@@ -557,11 +557,9 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
   List<Widget> sentenceLineWidgets(
     List<SentenceSegment> segments,
-    int incursorSegmentIndex,
-    int incursorCharPosition,
+    bool isAnnotationLine,
     TextPaneCursor cursor,
-    bool isAnnotationSelection,
-    PositionTypeInfo cursorPositionInfo,
+    int highlightSegmentIndex,
     Color wordCursorColor,
     TextStyle wordTextStyle,
     TextStyle wordIncursorTextStyle,
@@ -569,7 +567,16 @@ class _TextPaneState extends ConsumerState<TextPane> {
     TextStyle timingPointIncursorTextStyle,
   ) {
     List<Widget> widgets = [];
-    int currentCharPosition = cursor.charPosition;
+    int incursorSegmentIndex = 0;
+    int incursorSegmentCharPosition = cursor.charPosition;
+    for (int index = 0; index < segments.length; index++) {
+      if (incursorSegmentCharPosition - segments[index].word.length >= 0) {
+        incursorSegmentIndex++;
+        incursorSegmentCharPosition -= segments[index].word.length;
+      } else {
+        break;
+      }
+    }
 
     for (int index = 0; index < segments.length; index++) {
       SentenceSegment currentSegment = segments[index];
@@ -578,13 +585,13 @@ class _TextPaneState extends ConsumerState<TextPane> {
         widgets.add(
           Text(
             segmentWord,
-            style: cursor.isInRange(index) && cursor.isAnnotationSelection == isAnnotationSelection ? wordIncursorTextStyle : wordTextStyle,
+            style: cursor.isInRange(index) && cursor.isAnnotationSelection == isAnnotationLine ? wordIncursorTextStyle : wordTextStyle,
           ),
         );
       } else {
         const double cursorWidth = 1.0;
         const double cursorHeight = 15.0;
-        double cursorCoordinate = calculateCursorPosition(segmentWord, incursorCharPosition, wordTextStyle);
+        double cursorCoordinate = calculateCursorPosition(segmentWord, incursorSegmentCharPosition, wordTextStyle);
 
         widgets.add(
           Stack(
@@ -592,13 +599,13 @@ class _TextPaneState extends ConsumerState<TextPane> {
             children: [
               Text(
                 segmentWord,
-                style: index == incursorSegmentIndex && cursor.isAnnotationSelection == isAnnotationSelection
+                style: index == highlightSegmentIndex && cursor.isAnnotationSelection == isAnnotationLine
                     ? wordTextStyle.copyWith(
                         decoration: TextDecoration.underline,
                       )
                     : wordTextStyle,
               ),
-              index == incursorSegmentIndex && 0 < incursorCharPosition && incursorCharPosition < segmentWord.length && cursor.isAnnotationSelection == isAnnotationSelection
+              index == highlightSegmentIndex && 0 < incursorSegmentCharPosition && incursorSegmentCharPosition < segmentWord.length && cursor.isAnnotationSelection == isAnnotationLine
                   ? Positioned(
                       left: cursorCoordinate - cursorWidth / 2,
                       child: Container(
@@ -617,12 +624,10 @@ class _TextPaneState extends ConsumerState<TextPane> {
         widgets.add(
           Text(
             "\xa0${TextPaneProvider.timingPointChar}\xa0",
-            style: currentCharPosition == segmentWord.length ? timingPointIncursorTextStyle : timingPointTextStyle,
+            style: index == incursorSegmentIndex - 1 && incursorSegmentCharPosition == 0 ? timingPointIncursorTextStyle : timingPointTextStyle,
           ),
         );
       }
-
-      currentCharPosition -= segmentWord.length;
     }
 
     return widgets;
