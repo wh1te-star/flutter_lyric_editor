@@ -134,7 +134,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         EnterSegmentSelectionIntent: CallbackAction<EnterSegmentSelectionIntent>(
           onInvoke: (EnterSegmentSelectionIntent intent) => () {
-            textPaneProvider.cursor.isSegmentSelectionMode = true;
+            textPaneProvider.cursor.enterSegmentSelectionMode();
             setState(() {});
           }(),
         ),

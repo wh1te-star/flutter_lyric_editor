@@ -504,6 +504,14 @@ class SegmentRange {
   String toString() {
     return "${startIndex}<=>${endIndex}";
   }
+  
+  @override
+  SegmentRange copyWith({int? startIndex, int? endIndex}) {
+    return SegmentRange(
+      startIndex ?? this.startIndex,
+      endIndex ?? this.endIndex,
+    );
+  }
 }
 
 enum PositionType {

@@ -419,6 +419,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotations, snippet.sentenceSegments.length);
     int highlightSegmentIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
     TextPaneCursor cursor = textPaneProvider.cursor.copyWith();
+
     for (int index = 0; index < rangeList.length; index++) {
       Tuple2<SegmentRange, Annotation?> element = rangeList[index];
       SegmentRange segmentRange = element.item1;
@@ -534,8 +535,11 @@ class _TextPaneState extends ConsumerState<TextPane> {
         );
       }
 
-      highlightSegmentIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
       cursorPositionInfo.index -= segmentCharLength;
+
+      highlightSegmentIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
+      cursor.annotationSegmentRange.startIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
+      cursor.annotationSegmentRange.endIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
       cursor.charPosition -= segmentCharLength;
     }
 
@@ -778,6 +782,12 @@ class TextPaneCursor {
   bool isAnnotationSelection;
   SegmentRange annotationSegmentRange;
 
+  void enterSegmentSelectionMode() {
+    isSegmentSelectionMode = true;
+    annotationSegmentRange.startIndex = 0;
+    annotationSegmentRange.endIndex = 0;
+  }
+
   bool isInRange(int index) {
     if (annotationSegmentRange.startIndex <= annotationSegmentRange.endIndex) {
       return annotationSegmentRange.startIndex <= index && index <= annotationSegmentRange.endIndex;
@@ -812,7 +822,7 @@ class TextPaneCursor {
       isSegmentSelectionMode ?? this.isSegmentSelectionMode,
       isRangeSelection ?? this.isRangeSelection,
       isAnnotationSelection ?? this.isAnnotationSelection,
-      annotationSegmentRange ?? this.annotationSegmentRange,
+      annotationSegmentRange ?? this.annotationSegmentRange.copyWith(),
     );
   }
 
