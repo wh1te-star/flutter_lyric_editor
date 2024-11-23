@@ -535,12 +535,13 @@ class _TextPaneState extends ConsumerState<TextPane> {
         );
       }
 
-      cursorPositionInfo.index -= segmentCharLength;
-
       highlightSegmentIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
-      cursor.annotationSegmentRange.startIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
-      cursor.annotationSegmentRange.endIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
-      cursor.charPosition -= segmentCharLength;
+      if (!cursor.isAnnotationSelection) {
+        cursor.annotationSegmentRange.startIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
+        cursor.annotationSegmentRange.endIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
+        cursorPositionInfo.index -= segmentCharLength;
+        cursor.charPosition -= segmentCharLength;
+      }
     }
 
     return Column(
@@ -573,12 +574,14 @@ class _TextPaneState extends ConsumerState<TextPane> {
     List<Widget> widgets = [];
     int incursorSegmentIndex = 0;
     int incursorSegmentCharPosition = cursor.charPosition;
-    for (int index = 0; index < segments.length; index++) {
-      if (incursorSegmentCharPosition - segments[index].word.length >= 0) {
-        incursorSegmentIndex++;
-        incursorSegmentCharPosition -= segments[index].word.length;
-      } else {
-        break;
+    if (!isAnnotationLine) {
+      for (int index = 0; index < segments.length; index++) {
+        if (incursorSegmentCharPosition - segments[index].word.length >= 0) {
+          incursorSegmentIndex++;
+          incursorSegmentCharPosition -= segments[index].word.length;
+        } else {
+          break;
+        }
       }
     }
 
