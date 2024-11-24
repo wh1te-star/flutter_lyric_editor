@@ -743,7 +743,6 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
       musicPlayerService.audioDuration.toDouble(),
       intervalLength,
       intervalDuration.toDouble(),
-      snippetTimelineScrollController[vocalistID]!,
     );
   }
 

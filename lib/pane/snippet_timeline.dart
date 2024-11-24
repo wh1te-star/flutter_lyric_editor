@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/widgets.dart';
+import 'package:lyric_editor/painter/rectangle_painter.dart';
+import 'package:lyric_editor/service/timing_service.dart';
+import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 
 class SnippetTimeline extends ConsumerStatefulWidget {
@@ -9,7 +12,6 @@ class SnippetTimeline extends ConsumerStatefulWidget {
   final double songDuration;
   final double intervalLength;
   final double intervalDuration;
-  final ScrollController scrollController;
 
   SnippetTimeline(
     this.snippets,
@@ -17,7 +19,6 @@ class SnippetTimeline extends ConsumerStatefulWidget {
     this.songDuration,
     this.intervalLength,
     this.intervalDuration,
-    this.scrollController,
   );
 
   @override
@@ -27,7 +28,6 @@ class SnippetTimeline extends ConsumerStatefulWidget {
         songDuration,
         intervalLength,
         intervalDuration,
-        scrollController,
       );
 }
 
@@ -37,7 +37,6 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
   double songDuration;
   double intervalLength;
   double intervalDuration;
-  ScrollController scrollController;
 
   _SnippetTimelineState(
     this.snippets,
@@ -45,13 +44,36 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     this.songDuration,
     this.intervalLength,
     this.intervalDuration,
-    this.scrollController,
   );
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: vocalistColor,
+    final TimingService timingService = ref.read(timingMasterProvider);
+
+    List<Widget> snippetItemWidgets = [];
+    for (LyricSnippet snippet in snippets) {
+      Size itemSize = Size(
+        (snippet.endTimestamp - snippet.startTimestamp) * intervalLength / intervalDuration,
+        30.0,
+      );
+      Widget snippetItem = CustomPaint(
+        size: itemSize,
+        painter: RectanglePainter(
+          sentence: snippet.sentence,
+          color: vocalistColor,
+          isSelected: false,
+          borderLineWidth: 2.0,
+        ),
+      );
+      snippetItemWidgets.add(
+        Positioned(
+          left: snippet.startTimestamp * intervalLength / intervalDuration,
+          child: snippetItem,
+        ),
+      );
+    }
+    return Stack(
+      children: snippetItemWidgets,
     );
   }
 }
