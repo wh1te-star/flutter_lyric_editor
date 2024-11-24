@@ -60,16 +60,8 @@ class LyricSnippet with TimingObject {
     ]);
   }
 
-  void deleteAnnotation(int charPosition) {
-    /*
-    Annotation deleteAnnotation = annotations.firstWhere((Annotation annotation) {
-      int startCharPosition = annotation.snippetStartTimingPointRef.charPosition;
-      int endCharPosition = annotation.snippetEndTimingPointRef.charPosition;
-      return startCharPosition <= charPosition && charPosition <= endCharPosition;
-    });
-
-    annotations.remove(deleteAnnotation);
-    */
+  void deleteAnnotation(SegmentRange range) {
+    annotations.remove(range);
   }
 
   LyricSnippet copyWith({

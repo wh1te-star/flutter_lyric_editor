@@ -577,11 +577,11 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void deleteAnnotation(SnippetID snippetID, int charPosition) {
+  void deleteAnnotation(SnippetID snippetID, SegmentRange range) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
 
     LyricSnippet snippet = getSnippetWithID(snippetID);
-    snippet.deleteAnnotation(charPosition);
+    snippet.deleteAnnotation(range);
 
     notifyListeners();
   }

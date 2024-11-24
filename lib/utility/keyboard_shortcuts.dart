@@ -177,8 +177,10 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         DeleteAnnotationIntent: CallbackAction<DeleteAnnotationIntent>(
           onInvoke: (DeleteAnnotationIntent intent) => () {
-            //timingService.deleteAnnotation( timelinePaneProvider.selectingSnippets[0],);
-            textPaneProvider.cursor.isSegmentSelectionMode = false;
+            TextPaneCursor cursor = textPaneProvider.cursor;
+            if (cursor.isAnnotationSelection){
+              timingService.deleteAnnotation(cursor.snippetID, cursor.annotationSegmentRange);
+            }
           }(),
         ),
         SnippetStartMoveIntent: CallbackAction<SnippetStartMoveIntent>(

@@ -34,7 +34,11 @@ class TextPaneProvider with ChangeNotifier {
     required this.timingService,
   }) {
     musicPlayerProvider.addListener(() {
-      updateCursorIfNeed();
+      updateCursorIfNeedBySeekPosition();
+    });
+
+    timingService.addListener(() {
+      updateCursorIfNeedByItemDeletion();
     });
 
     cursorBlinker = CursorBlinker(
@@ -45,7 +49,7 @@ class TextPaneProvider with ChangeNotifier {
     );
   }
 
-  void updateCursorIfNeed() {
+  void updateCursorIfNeedBySeekPosition() {
     Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
     if (currentSnippets.isEmpty) {
       return;
@@ -61,6 +65,24 @@ class TextPaneProvider with ChangeNotifier {
     if (currentSnippetPosition != nextSnippetPosition.index) {
       cursor = getDefaultCursor(cursor.snippetID);
       cursorBlinker.restartCursorTimer();
+    }
+  }
+
+  void updateCursorIfNeedByItemDeletion() {
+    LyricSnippet? snippet = timingService.lyricSnippetList[cursor.snippetID];
+    if (snippet == null) {
+      cursor = getDefaultCursor(SnippetID(1));
+      return;
+    }
+
+    if (!cursor.isAnnotationSelection) {
+      return;
+    }
+
+    Annotation? annotation = snippet.annotations[cursor.annotationSegmentRange];
+    if (annotation == null) {
+      cursor = getDefaultCursor(cursor.snippetID);
+      return;
     }
   }
 
