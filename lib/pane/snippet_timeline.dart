@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lyric_editor/painter/rectangle_painter.dart';
 import 'package:lyric_editor/painter/triangle_painter.dart';
+import 'package:lyric_editor/pane/text_pane.dart';
+import 'package:lyric_editor/pane/timeline_pane.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 
 class SnippetTimeline extends ConsumerStatefulWidget {
-  final List<LyricSnippet> snippets;
+  Map<SnippetID, LyricSnippet> snippets;
   final Color vocalistColor;
   final double songDuration;
   final double intervalLength;
@@ -33,7 +35,7 @@ class SnippetTimeline extends ConsumerStatefulWidget {
 }
 
 class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
-  List<LyricSnippet> snippets;
+  Map<SnippetID, LyricSnippet> snippets;
   Color vocalistColor;
   double songDuration;
   double intervalLength;
@@ -57,22 +59,23 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
 
   @override
   Widget build(BuildContext context) {
-    final TimingService timingService = ref.read(timingMasterProvider);
-
     List<Widget> snippetItemWidgets = [];
     List<Widget> timingPointIndicatorWidgets = [];
-    for (LyricSnippet snippet in snippets) {
-      snippetItemWidgets.add(getSnippetItemWidget(snippet));
-      if (timingPointIndicatorWidgets.isEmpty) {
-        timingPointIndicatorWidgets += getTimingPointIndicatorWidgets(snippet);
-      }
+    for (MapEntry<SnippetID, LyricSnippet> entry in snippets.entries) {
+      SnippetID snippetID = entry.key;
+      LyricSnippet snippet = entry.value;
+
+      snippetItemWidgets.add(getSnippetItemWidget(snippetID, snippet));
+      timingPointIndicatorWidgets += getTimingPointIndicatorWidgets(snippet);
     }
     return Stack(
       children: snippetItemWidgets + timingPointIndicatorWidgets,
     );
   }
 
-  Widget getSnippetItemWidget(LyricSnippet snippet) {
+  Widget getSnippetItemWidget(SnippetID snippetID, LyricSnippet snippet) {
+    final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
+
     Size itemSize = Size(
       duration2Length(snippet.endTimestamp - snippet.startTimestamp),
       30.0,
@@ -80,13 +83,24 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     Widget snippetItem = Positioned(
       left: duration2Length(snippet.startTimestamp),
       top: 5.0,
-      child: CustomPaint(
-        size: itemSize,
-        painter: RectanglePainter(
-          sentence: snippet.sentence,
-          color: vocalistColor,
-          isSelected: false,
-          borderLineWidth: 2.0,
+      child: GestureDetector(
+        onTap: () {
+          List<SnippetID> selectingSnippets = timelinePaneProvider.selectingSnippets;
+          if (selectingSnippets.contains(snippetID)) {
+            timelinePaneProvider.selectingSnippets.remove(snippetID);
+          } else {
+            timelinePaneProvider.selectingSnippets.add(snippetID);
+          }
+          setState(() {});
+        },
+        child: CustomPaint(
+          size: itemSize,
+          painter: RectanglePainter(
+            sentence: snippet.sentence,
+            color: vocalistColor,
+            isSelected: timelinePaneProvider.selectingSnippets.contains(snippetID),
+            borderLineWidth: 2.0,
+          ),
         ),
       ),
     );

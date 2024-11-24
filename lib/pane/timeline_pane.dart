@@ -738,7 +738,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
 
     return SnippetTimeline(
-      timingService.snippetsForeachVocalist[vocalistID]!.values.toList(),
+      timingService.snippetsForeachVocalist[vocalistID]!,
       Color(vocalistColorMap[vocalistID]!.color),
       musicPlayerService.audioDuration.toDouble(),
       intervalLength,
