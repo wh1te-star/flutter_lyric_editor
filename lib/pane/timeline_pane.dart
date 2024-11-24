@@ -7,6 +7,7 @@ import 'package:lyric_editor/painter/current_position_indicator_painter.dart';
 import 'package:lyric_editor/painter/rectangle_painter.dart';
 import 'package:lyric_editor/painter/scale_mark.dart';
 import 'package:lyric_editor/painter/timeline_painter.dart';
+import 'package:lyric_editor/pane/snippet_timeline.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/color_utilities.dart';
@@ -733,65 +734,16 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final double intervalLength = timelinePaneProvider.intervalLength;
     final int intervalDuration = timelinePaneProvider.intervalDuration;
     final SnippetID cursorPosition = timelinePaneProvider.cursorPosition;
-
-    final Map<VocalistID, Vocalist> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
+    final Map<VocalistID, Vocalist> vocalistColorMap = timingService.vocalistColorMap;
     final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
-    double topMargin = 10;
-    double bottomMargin = 10;
-    return GestureDetector(
-      onTapDown: (TapDownDetails details) {
-        Offset localPosition = details.localPosition;
-        final int touchedSeekPosition = (localPosition.dx * intervalDuration / intervalLength).toInt();
-        Map<SnippetID, LyricSnippet> touchedSnippets = timingService.getSnippetsAtSeekPosition(seekPosition: touchedSeekPosition, vocalistID: vocalistID);
-        Map<SnippetID, int> tracks = timingService.getTrackNumber(snippetsForeachVocalist[vocalistID]!, 0, 0);
 
-        final int height = 60 * timingService.getLanes(vocalistID: vocalistID);
-        final int touchedTrack = (localPosition.dy / (height / touchedSnippets.length)).toInt();
-        final SnippetID touchedID = touchedSnippets.keys.toList().firstWhere((snippetID) {
-          return tracks[snippetID] == touchedTrack;
-        });
-
-        if (selectingSnippets.contains(touchedID)) {
-          selectingSnippets.remove(touchedID);
-        } else {
-          selectingSnippets.add(touchedID);
-        }
-        setState(() {});
-      },
-      onDoubleTapDown: (TapDownDetails details) async {
-        /*
-        Offset localPosition = details.localPosition;
-        if (snippets.isEmpty) {
-          return;
-        }
-        for (MapEntry<SnippetID, LyricSnippet> entry in snippets.entries) {
-          final SnippetID id = entry.key;
-          final LyricSnippet snippet = entry.value;
-          final endtime = snippet.startTimestamp + snippet.sentenceSegments.map((point) => point.duration).reduce((a, b) => a + b);
-          final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
-          if (snippet.startTimestamp <= touchedSeekPosition && touchedSeekPosition <= endtime) {
-            List<String> sentence = await displayDialog(context, [snippet.sentence]);
-            final TimingService timingService = ref.read(timingMasterProvider);
-            timingService.editSentence(id, sentence[0]);
-          }
-        }
-        setState(() {});
-        */
-      },
-      child: CustomPaint(
-        size: const Size(double.infinity, double.infinity),
-        painter: TimelinePainter(
-          snippets: snippetsForeachVocalist[vocalistID]!,
-          selectingId: selectingSnippets,
-          intervalLength: intervalLength,
-          intervalDuration: intervalDuration,
-          color: Color(vocalistColorMap[vocalistID]!.color),
-          frameThickness: 3.0,
-          topMargin: topMargin,
-          bottomMargin: bottomMargin,
-          cursorPosition: cursorBlinker.isCursorVisible ? cursorPosition : null,
-        ),
-      ),
+    return SnippetTimeline(
+      timingService.snippetsForeachVocalist[vocalistID]!.values.toList(),
+      Color(vocalistColorMap[vocalistID]!.color),
+      musicPlayerService.audioDuration.toDouble(),
+      intervalLength,
+      intervalDuration.toDouble(),
+      snippetTimelineScrollController[vocalistID]!,
     );
   }
 

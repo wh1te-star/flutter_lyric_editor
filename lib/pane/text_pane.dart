@@ -69,6 +69,11 @@ class TextPaneProvider with ChangeNotifier {
   }
 
   void updateCursorIfNeedByItemDeletion() {
+    Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
+    if (currentSnippets.isEmpty) {
+      return;
+    }
+
     LyricSnippet? snippet = timingService.lyricSnippetList[cursor.snippetID];
     if (snippet == null) {
       cursor = getDefaultCursor(SnippetID(1));
