@@ -115,10 +115,12 @@ class TimelinePaneProvider with ChangeNotifier {
 
   void zoomIn() {
     intervalDuration = intervalDuration * 2;
+    notifyListeners();
   }
 
   void zoomOut() {
     intervalDuration = intervalDuration ~/ 2;
+    notifyListeners();
   }
 }
 
@@ -726,23 +728,12 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   Widget cellSnippetTimeline(int index) {
-    final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     final TimingService timingService = ref.read(timingMasterProvider);
-    final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
-    final Map<VocalistID, Map<SnippetID, LyricSnippet>> snippetsForeachVocalist = timelinePaneProvider.snippetsForeachVocalist;
-    final List<SnippetID> selectingSnippets = timelinePaneProvider.selectingSnippets;
-    final double intervalLength = timelinePaneProvider.intervalLength;
-    final int intervalDuration = timelinePaneProvider.intervalDuration;
-    final SnippetID cursorPosition = timelinePaneProvider.cursorPosition;
     final Map<VocalistID, Vocalist> vocalistColorMap = timingService.vocalistColorMap;
     final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
 
     return SnippetTimeline(
-      timingService.snippetsForeachVocalist[vocalistID]!,
-      Color(vocalistColorMap[vocalistID]!.color),
-      musicPlayerService.audioDuration.toDouble(),
-      intervalLength,
-      intervalDuration.toDouble(),
+        vocalistID,
     );
   }
 

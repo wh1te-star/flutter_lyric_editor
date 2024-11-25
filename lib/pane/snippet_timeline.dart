@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/widgets.dart';
@@ -10,58 +12,43 @@ import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 
 class SnippetTimeline extends ConsumerStatefulWidget {
-  Map<SnippetID, LyricSnippet> snippets;
-  final Color vocalistColor;
-  final double songDuration;
-  final double intervalLength;
-  final double intervalDuration;
+  VocalistID vocalistID;
 
-  SnippetTimeline(
-    this.snippets,
-    this.vocalistColor,
-    this.songDuration,
-    this.intervalLength,
-    this.intervalDuration,
-  );
+  SnippetTimeline(this.vocalistID);
 
   @override
   _SnippetTimelineState createState() => _SnippetTimelineState(
-        snippets,
-        vocalistColor,
-        songDuration,
-        intervalLength,
-        intervalDuration,
+        vocalistID,
       );
 }
 
 class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
-  Map<SnippetID, LyricSnippet> snippets;
-  Color vocalistColor;
-  double songDuration;
-  double intervalLength;
-  double intervalDuration;
+  VocalistID vocalistID;
 
   _SnippetTimelineState(
-    this.snippets,
-    this.vocalistColor,
-    this.songDuration,
-    this.intervalLength,
-    this.intervalDuration,
+    this.vocalistID,
   );
 
   double length2Duration(double length) {
+    final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
+    int intervalDuration = timelinePaneProvider.intervalDuration;
+    double intervalLength = timelinePaneProvider.intervalLength;
     return length * intervalDuration / intervalLength;
   }
 
   double duration2Length(int duration) {
+    final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
+    int intervalDuration = timelinePaneProvider.intervalDuration;
+    double intervalLength = timelinePaneProvider.intervalLength;
     return duration.toDouble() * intervalLength / intervalDuration;
   }
 
   @override
   Widget build(BuildContext context) {
+    final TimingService timingService = ref.read(timingMasterProvider);
     List<Widget> snippetItemWidgets = [];
     List<Widget> timingPointIndicatorWidgets = [];
-    for (MapEntry<SnippetID, LyricSnippet> entry in snippets.entries) {
+    for (MapEntry<SnippetID, LyricSnippet> entry in timingService.snippetsForeachVocalist[vocalistID]!.entries) {
       SnippetID snippetID = entry.key;
       LyricSnippet snippet = entry.value;
 
@@ -74,7 +61,10 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
   }
 
   Widget getSnippetItemWidget(SnippetID snippetID, LyricSnippet snippet) {
+    final TimingService timingService = ref.read(timingMasterProvider);
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
+
+    final Color vocalistColor = Color(timingService.vocalistColorMap[vocalistID]!.color);
 
     Size itemSize = Size(
       duration2Length(snippet.endTimestamp - snippet.startTimestamp),
