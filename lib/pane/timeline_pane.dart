@@ -6,7 +6,6 @@ import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:lyric_editor/painter/current_position_indicator_painter.dart';
 import 'package:lyric_editor/painter/rectangle_painter.dart';
 import 'package:lyric_editor/painter/scale_mark.dart';
-import 'package:lyric_editor/painter/timeline_painter.dart';
 import 'package:lyric_editor/pane/snippet_timeline.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
