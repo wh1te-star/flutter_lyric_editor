@@ -29,10 +29,14 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
   double annotationSnippetMargin = 1.0;
   double snippetItemHeight = 30.0;
   double bottomMargin = 2.0;
+  double get trackHeight {
+    return topMargin + timingPointIndicatorHeight + annotationItemHeight + annotationSnippetMargin + snippetItemHeight + bottomMargin;
+  }
 
   double timingPointIndicatorWidth = 5.0;
 
   VocalistID vocalistID;
+  Map<SnippetID, int> snippetTracks = {};
 
   _SnippetTimelineState(
     this.vocalistID,
@@ -59,18 +63,48 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     List<Widget> timingPointIndicatorWidgets = [];
     List<Widget> annotationItemWidgets = [];
     List<Widget> annotationTimingPointIndicatorWidgets = [];
-    for (MapEntry<SnippetID, LyricSnippet> entry in timingService.snippetsForeachVocalist[vocalistID]!.entries) {
+
+    Map<SnippetID, LyricSnippet> snippets = timingService.snippetsForeachVocalist[vocalistID]!;
+    snippetTracks = getTrack(snippets);
+    for (MapEntry<SnippetID, LyricSnippet> entry in snippets.entries) {
       SnippetID snippetID = entry.key;
       LyricSnippet snippet = entry.value;
 
       snippetItemWidgets.add(getSnippetItemWidget(snippetID, snippet));
-      timingPointIndicatorWidgets += getTimingPointIndicatorWidgets(snippet);
+      timingPointIndicatorWidgets += getTimingPointIndicatorWidgets(snippetID, snippet);
       annotationItemWidgets += getAnnotationItemWidget(snippetID, snippet);
-      annotationTimingPointIndicatorWidgets += getAnnotationTimingPointIndicatorWidgets(snippet);
+      annotationTimingPointIndicatorWidgets += getAnnotationTimingPointIndicatorWidgets(snippetID, snippet);
     }
     return Stack(
       children: snippetItemWidgets + timingPointIndicatorWidgets + annotationItemWidgets + annotationTimingPointIndicatorWidgets,
     );
+  }
+
+  Map<SnippetID, int> getTrack(Map<SnippetID, LyricSnippet> snippets) {
+    Map<SnippetID, int> tracks = {};
+    int currentTrack = 0;
+    int previousEndtime = 0;
+    for (MapEntry<SnippetID, LyricSnippet> entry in snippets.entries) {
+      SnippetID id = entry.key;
+      LyricSnippet snippet = entry.value;
+
+      if (snippet.sentence == "") {
+        tracks[id] = -1;
+        continue;
+      }
+
+      final endtime = snippet.endTimestamp;
+      if (snippet.startTimestamp < previousEndtime) {
+        currentTrack++;
+      } else {
+        currentTrack = 0;
+        previousEndtime = endtime;
+      }
+
+      tracks[id] = currentTrack;
+    }
+
+    return tracks;
   }
 
   Widget getSnippetItemWidget(SnippetID snippetID, LyricSnippet snippet) {
@@ -85,7 +119,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     );
     Widget snippetItem = Positioned(
       left: duration2Length(snippet.startTimestamp),
-      top: topMargin + timingPointIndicatorHeight + annotationItemHeight + annotationSnippetMargin,
+      top: trackHeight * snippetTracks[snippetID]! + topMargin + timingPointIndicatorHeight + annotationItemHeight + annotationSnippetMargin,
       child: GestureDetector(
         onTap: () {
           List<SnippetID> selectingSnippets = timelinePaneProvider.selectingSnippets;
@@ -127,7 +161,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
       );
       Widget annotationItem = Positioned(
         left: duration2Length(annotation.startTimestamp),
-        top: topMargin + timingPointIndicatorHeight,
+        top: trackHeight * snippetTracks[snippetID]! + topMargin + timingPointIndicatorHeight,
         child: GestureDetector(
           onTap: () {
             List<SnippetID> selectingSnippets = timelinePaneProvider.selectingSnippets;
@@ -154,7 +188,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     return annotaitonItems;
   }
 
-  List<Widget> getTimingPointIndicatorWidgets(LyricSnippet snippet) {
+  List<Widget> getTimingPointIndicatorWidgets(SnippetID snippetID, LyricSnippet snippet) {
     Size itemSize = Size(
       timingPointIndicatorWidth,
       timingPointIndicatorHeight,
@@ -165,7 +199,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
       TimingPoint timingPoint = snippet.timingPoints[index];
       Widget indicator = Positioned(
         left: duration2Length(snippet.startTimestamp + timingPoint.seekPosition),
-        top: topMargin + timingPointIndicatorHeight + annotationItemHeight + annotationSnippetMargin + snippetItemHeight,
+        top: trackHeight * snippetTracks[snippetID]! + topMargin + timingPointIndicatorHeight + annotationItemHeight + annotationSnippetMargin + snippetItemHeight,
         child: CustomPaint(
           size: itemSize,
           painter: TrianglePainter(
@@ -181,7 +215,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     return indicatorWidgets;
   }
 
-  List<Widget> getAnnotationTimingPointIndicatorWidgets(LyricSnippet snippet) {
+  List<Widget> getAnnotationTimingPointIndicatorWidgets(SnippetID snippetID, LyricSnippet snippet) {
     Size itemSize = Size(
       timingPointIndicatorWidth,
       timingPointIndicatorHeight,
@@ -195,7 +229,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
         TimingPoint timingPoint = annotation.timingPoints[index];
         Widget indicator = Positioned(
           left: duration2Length(annotation.startTimestamp + timingPoint.seekPosition),
-          top: topMargin,
+          top: trackHeight * snippetTracks[snippetID]! + topMargin,
           child: CustomPaint(
             size: itemSize,
             painter: TrianglePainter(
