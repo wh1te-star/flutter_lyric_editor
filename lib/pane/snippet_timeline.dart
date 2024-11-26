@@ -171,8 +171,8 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
           painter: TrianglePainter(
             x: 0.0,
             y: 0.0,
-            width: 5.0,
-            height: -5.0,
+            width: timingPointIndicatorWidth,
+            height: -timingPointIndicatorHeight,
           ),
         ),
       );
@@ -201,8 +201,8 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
             painter: TrianglePainter(
               x: 0.0,
               y: timingPointIndicatorHeight,
-              width: 5.0,
-              height: 5.0,
+              width: timingPointIndicatorWidth,
+              height: timingPointIndicatorHeight,
             ),
           ),
         );
