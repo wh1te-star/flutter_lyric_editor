@@ -49,13 +49,13 @@ class LyricSnippet with TimingObject {
   }
 
   void addAnnotation(String annotationString, int startIndex, int endIndex) {
-    SentenceSegment segment = sentenceSegments[startIndex];
+int duration = sentenceSegments.sublist(startIndex, endIndex + 1).fold(0, (sum, segment) => sum + segment.duration);
     TimingPoint justBeforeTimingPoint = timingPoints[startIndex];
     SegmentRange annotationKey = SegmentRange(startIndex, endIndex);
     annotations[annotationKey] = Annotation(startTimestamp: startTimestamp + justBeforeTimingPoint.seekPosition, sentenceSegments: [
       SentenceSegment(
         annotationString,
-        segment.duration,
+        duration,
       ),
     ]);
   }
@@ -496,7 +496,7 @@ class SegmentRange {
   String toString() {
     return "${startIndex}<=>${endIndex}";
   }
-  
+
   @override
   SegmentRange copyWith({int? startIndex, int? endIndex}) {
     return SegmentRange(
