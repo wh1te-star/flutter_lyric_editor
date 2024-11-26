@@ -610,11 +610,10 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   Widget cellFunctionButton() {
     final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
-    bool autoCurrentSelectMode = timelinePaneProvider.autoCurrentSelectMode;
 
     return GestureDetector(
       onTapDown: (TapDownDetails details) {
-        autoCurrentSelectMode = !autoCurrentSelectMode;
+        timelinePaneProvider.autoCurrentSelectMode = !timelinePaneProvider.autoCurrentSelectMode;
         setState(() {});
       },
       child: CustomPaint(
@@ -622,8 +621,8 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
           rect: const Rect.fromLTRB(0.0, 0.0, 155, 30),
           sentence: musicPlayerService.seekPosition.toString(),
           color: Colors.purpleAccent,
-          isSelected: autoCurrentSelectMode,
-          borderLineWidth: 1.0,
+          isSelected: timelinePaneProvider.autoCurrentSelectMode,
+          borderLineWidth: 3.0,
         ),
       ),
     );
@@ -732,7 +731,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
 
     return SnippetTimeline(
-        vocalistID,
+      vocalistID,
     );
   }
 
