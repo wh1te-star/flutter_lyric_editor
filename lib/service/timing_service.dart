@@ -550,7 +550,12 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addTimingPoint(SnippetID snippetID, int characterPosition, int seekPosition) {
+  void addTimingPoint({
+    required SnippetID snippetID,
+    SegmentRange? range,
+    required int characterPosition,
+    required int seekPosition,
+  }) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
 
     LyricSnippet snippet = getSnippetWithID(snippetID);
