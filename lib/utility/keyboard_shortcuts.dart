@@ -178,7 +178,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         DeleteAnnotationIntent: CallbackAction<DeleteAnnotationIntent>(
           onInvoke: (DeleteAnnotationIntent intent) => () {
             TextPaneCursor cursor = textPaneProvider.cursor;
-            if (cursor.isAnnotationSelection){
+            if (cursor.isAnnotationSelection) {
               timingService.deleteAnnotation(cursor.snippetID, cursor.annotationSegmentRange);
             }
           }(),
@@ -267,8 +267,20 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         TimingPointAddIntent: CallbackAction<TimingPointAddIntent>(
           onInvoke: (TimingPointAddIntent intent) => () {
             int seekPosition = musicPlayerProvider.seekPosition;
-            for (var id in timelinePaneProvider.selectingSnippets) {
-              timingService.addTimingPoint(id, textPaneProvider.cursor.charPosition, seekPosition);
+            TextPaneCursor cursor = textPaneProvider.cursor;
+            if (!cursor.isAnnotationSelection) {
+              timingService.addTimingPoint(
+                snippetID: cursor.snippetID,
+                characterPosition: textPaneProvider.cursor.charPosition,
+                seekPosition: seekPosition,
+              );
+            }else{
+              timingService.addTimingPoint(
+                snippetID: cursor.snippetID,
+                annotationRange: cursor.annotationSegmentRange,
+                characterPosition: textPaneProvider.cursor.charPosition,
+                seekPosition: seekPosition,
+              );
             }
           }(),
         ),

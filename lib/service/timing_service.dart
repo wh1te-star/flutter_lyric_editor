@@ -552,14 +552,19 @@ class TimingService extends ChangeNotifier {
 
   void addTimingPoint({
     required SnippetID snippetID,
-    SegmentRange? range,
+    SegmentRange? annotationRange,
     required int characterPosition,
     required int seekPosition,
   }) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
 
     LyricSnippet snippet = getSnippetWithID(snippetID);
-    snippet.addTimingPoint(characterPosition, seekPosition);
+
+    if (annotationRange == null) {
+      snippet.addTimingPoint(characterPosition, seekPosition);
+    } else {
+      snippet.annotations[annotationRange]!.addTimingPoint(characterPosition, seekPosition);
+    }
 
     notifyListeners();
   }
