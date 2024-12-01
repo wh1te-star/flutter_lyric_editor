@@ -520,10 +520,10 @@ class _TextPaneState extends ConsumerState<TextPane> {
             cursor,
             highlightSegmentIndex,
             textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
-            textStyle,
-            textStyleIncursor,
-            textStyle,
-            textStyleIncursor,
+            annotationTextStyle,
+            annotationTextStyleIncursor,
+            annotationTextStyle,
+            annotationTextStyleIncursor,
           );
 
           if (snippet.annotations.isNotEmpty) {
