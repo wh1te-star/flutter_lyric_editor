@@ -516,11 +516,12 @@ class _TextPaneState extends ConsumerState<TextPane> {
         ];
 
         if (snippet.annotations.isNotEmpty) {
+          int annotationHighlightSegmentIndex = annotation.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
           List<Widget> annotationRow = sentenceLineWidgets(
             currentSegmentPartAnnotation,
             true,
             cursor,
-            highlightSegmentIndex,
+            annotationHighlightSegmentIndex,
             textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
             annotationTextStyle,
             annotationTextStyleIncursor,
