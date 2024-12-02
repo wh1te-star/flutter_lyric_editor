@@ -554,13 +554,13 @@ class _TextPaneState extends ConsumerState<TextPane> {
         sentenceRowWidgets.add(
           Text(
             "\xa0${TextPaneProvider.annotationEdgeChar}\xa0",
-            style: cursor.isAnnotationSelection == false && sentenceString.length == cursor.charPosition ? textStyleIncursor : textStyle,
+            style: cursor.isSegmentSelectionMode == false && cursor.isAnnotationSelection == false && sentenceString.length == cursor.charPosition ? textStyleIncursor : textStyle,
           ),
         );
         annotationRowWidgets.add(
           Text(
             "\xa0${TextPaneProvider.annotationEdgeChar}\xa0",
-            style: cursor.isAnnotationSelection == true && annotation != null && sentenceString.length == cursor.charPosition ? textStyleIncursor : textStyle,
+            style: cursor.isSegmentSelectionMode == false && cursor.isAnnotationSelection == true && annotation != null && sentenceString.length == cursor.charPosition ? textStyleIncursor : textStyle,
           ),
         );
       }
@@ -659,7 +659,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
         widgets.add(
           Text(
             "\xa0${TextPaneProvider.timingPointChar}\xa0",
-            style:cursor.isAnnotationSelection == isAnnotationLine && index == incursorSegmentIndex - 1 && incursorSegmentCharPosition == 0 ? timingPointIncursorTextStyle : timingPointTextStyle,
+            style:cursor.isSegmentSelectionMode == false && cursor.isAnnotationSelection == isAnnotationLine && index == incursorSegmentIndex - 1 && incursorSegmentCharPosition == 0 ? timingPointIncursorTextStyle : timingPointTextStyle,
           ),
         );
       }
