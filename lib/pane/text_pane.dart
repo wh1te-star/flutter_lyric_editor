@@ -115,9 +115,11 @@ class TextPaneProvider with ChangeNotifier {
     SegmentRange range = cursorAnnotationEntry.key;
     Annotation annotation = cursorAnnotationEntry.value;
 
+    int index = annotation.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
+
     defaultCursor.snippetID = id;
     defaultCursor.annotationSegmentRange = range;
-    defaultCursor.charPosition = 1;
+    defaultCursor.charPosition = annotation.timingPoints[index].charPosition + 1;
     defaultCursor.option = Option.former;
 
     return defaultCursor;
@@ -477,7 +479,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
             currentSegmentPartSentence,
             true,
             cursor,
-            highlightSegmentIndex,
+            -1,
             textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
             annotationDummyTextStyle,
             annotationDummyTextStyle,
@@ -601,14 +603,12 @@ class _TextPaneState extends ConsumerState<TextPane> {
     List<Widget> widgets = [];
     int incursorSegmentIndex = 0;
     int incursorSegmentCharPosition = cursor.charPosition;
-    if (!isAnnotationLine) {
-      for (int index = 0; index < segments.length; index++) {
-        if (incursorSegmentCharPosition - segments[index].word.length >= 0) {
-          incursorSegmentIndex++;
-          incursorSegmentCharPosition -= segments[index].word.length;
-        } else {
-          break;
-        }
+    for (int index = 0; index < segments.length; index++) {
+      if (incursorSegmentCharPosition - segments[index].word.length >= 0) {
+        incursorSegmentIndex++;
+        incursorSegmentCharPosition -= segments[index].word.length;
+      } else {
+        break;
       }
     }
 
