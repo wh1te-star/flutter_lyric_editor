@@ -560,7 +560,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
         annotationRowWidgets.add(
           Text(
             "\xa0${TextPaneProvider.annotationEdgeChar}\xa0",
-            style: cursor.isAnnotationSelection == true && sentenceString.length == cursor.charPosition ? textStyleIncursor : textStyle,
+            style: cursor.isAnnotationSelection == true && annotation != null && sentenceString.length == cursor.charPosition ? textStyleIncursor : textStyle,
           ),
         );
       }
@@ -656,21 +656,12 @@ class _TextPaneState extends ConsumerState<TextPane> {
       }
 
       if (index < segments.length - 1) {
-        if (!cursor.isAnnotationSelection) {
-          widgets.add(
-            Text(
-              "\xa0${TextPaneProvider.timingPointChar}\xa0",
-              style: index == incursorSegmentIndex - 1 && incursorSegmentCharPosition == 0 ? timingPointIncursorTextStyle : timingPointTextStyle,
-            ),
-          );
-        } else {
-          widgets.add(
-            Text(
-              "\xa0${TextPaneProvider.timingPointChar}\xa0",
-              style: index == incursorSegmentIndex - 1 && incursorSegmentCharPosition == 0 ? timingPointIncursorTextStyle : timingPointTextStyle,
-            ),
-          );
-        }
+        widgets.add(
+          Text(
+            "\xa0${TextPaneProvider.timingPointChar}\xa0",
+            style:cursor.isAnnotationSelection == isAnnotationLine && index == incursorSegmentIndex - 1 && incursorSegmentCharPosition == 0 ? timingPointIncursorTextStyle : timingPointTextStyle,
+          ),
+        );
       }
     }
 
