@@ -564,7 +564,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
         annotationRowWidgets.add(
           Text(
             "\xa0${TextPaneProvider.annotationEdgeChar}\xa0",
-            style: cursor.isSegmentSelectionMode == false && cursor.isAnnotationSelection == true && annotation != null && sentenceString.length == cursor.charPosition ? textStyleIncursor : textStyle,
+            style: textStyle,
           ),
         );
       }
