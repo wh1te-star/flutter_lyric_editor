@@ -458,7 +458,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
       String sentenceString = currentSegmentPartSentence.map((SentenceSegment segment) => segment.word).join('');
       String sentenceTimingPointString = "\xa0${TextPaneProvider.timingPointChar}\xa0" * (segmentRange.endIndex - segmentRange.startIndex);
       double sentenceRowWidth = getSizeFromTextStyle(sentenceString, textStyle).width + getSizeFromTextStyle(sentenceTimingPointString, textStyle).width + 10;
-
       int segmentCharLength = 0;
 
       if (annotation == null) {
@@ -491,6 +490,11 @@ class _TextPaneState extends ConsumerState<TextPane> {
         segmentCharLength = currentSegmentPartSentence.map((segment) => segment.word.length).reduce((a, b) => a + b);
       } else {
         List<SentenceSegment> currentSegmentPartAnnotation = annotation.sentenceSegments;
+        String annotationString = currentSegmentPartAnnotation.map((SentenceSegment segment) => segment.word).join('');
+        String annotationTimingPointString = "\xa0${TextPaneProvider.timingPointChar}\xa0" * (annotation.sentenceSegments.length - 1);
+        double annotationRowWidth = getSizeFromTextStyle(annotationString, annotationTextStyle).width + getSizeFromTextStyle(annotationTimingPointString, annotationTextStyle).width + 10;
+
+        double rowWidth = sentenceRowWidth > annotationRowWidth ? sentenceRowWidth : annotationRowWidth;
 
         List<Widget> sentenceRow = sentenceLineWidgets(
           currentSegmentPartSentence,
@@ -506,7 +510,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
         sentenceRowWidgets += [
           SizedBox(
-            width: sentenceRowWidth,
+            width: rowWidth,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -532,7 +536,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
           if (snippet.annotations.isNotEmpty) {
             annotationRowWidgets += [
               SizedBox(
-                width: sentenceRowWidth,
+                width: rowWidth,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -659,7 +663,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
         widgets.add(
           Text(
             "\xa0${TextPaneProvider.timingPointChar}\xa0",
-            style:cursor.isSegmentSelectionMode == false && cursor.isAnnotationSelection == isAnnotationLine && index == incursorSegmentIndex - 1 && incursorSegmentCharPosition == 0 ? timingPointIncursorTextStyle : timingPointTextStyle,
+            style: cursor.isSegmentSelectionMode == false && cursor.isAnnotationSelection == isAnnotationLine && index == incursorSegmentIndex - 1 && incursorSegmentCharPosition == 0 ? timingPointIncursorTextStyle : timingPointTextStyle,
           ),
         );
       }
