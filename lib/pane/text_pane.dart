@@ -819,6 +819,12 @@ class TextPaneCursor {
     annotationSegmentRange.endIndex = 0;
   }
 
+  void exitSegmentSelectionMode() {
+    isSegmentSelectionMode = false;
+    annotationSegmentRange.startIndex = 0;
+    annotationSegmentRange.endIndex = 0;
+  }
+
   bool isInRange(int index) {
     if (annotationSegmentRange.startIndex <= annotationSegmentRange.endIndex) {
       return annotationSegmentRange.startIndex <= index && index <= annotationSegmentRange.endIndex;

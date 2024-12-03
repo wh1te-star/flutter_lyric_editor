@@ -102,6 +102,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyR): DeleteSectionIntent(),
         LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyD): DisplayModeSwitchIntent(),
         LogicalKeySet(LogicalKeyboardKey.enter): AddAnnotationIntent(),
+        LogicalKeySet(LogicalKeyboardKey.escape): CancelIntent(),
       };
 
   Map<Type, Action<Intent>> get actions => {
@@ -274,7 +275,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
                 characterPosition: textPaneProvider.cursor.charPosition,
                 seekPosition: seekPosition,
               );
-            }else{
+            } else {
               timingService.addTimingPoint(
                 snippetID: cursor.snippetID,
                 annotationRange: cursor.annotationSegmentRange,
@@ -324,6 +325,13 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         TimelineCursorMoveRight: CallbackAction<TimelineCursorMoveRight>(
           onInvoke: (TimelineCursorMoveRight intent) => () {
             timelinePaneProvider.moveRightCursor();
+          }(),
+        ),
+        CancelIntent: CallbackAction<CancelIntent>(
+          onInvoke: (CancelIntent intent) => () {
+            if (textPaneProvider.cursor.isSegmentSelectionMode) {
+              textPaneProvider.cursor.exitSegmentSelectionMode();
+            }
           }(),
         ),
       };
@@ -415,3 +423,5 @@ class TimelineCursorMoveDown extends Intent {}
 class TimelineCursorMoveUp extends Intent {}
 
 class TimelineCursorMoveRight extends Intent {}
+
+class CancelIntent extends Intent {}
