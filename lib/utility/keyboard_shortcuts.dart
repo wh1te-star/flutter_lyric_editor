@@ -272,14 +272,14 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             if (!cursor.isAnnotationSelection) {
               timingService.addTimingPoint(
                 snippetID: cursor.snippetID,
-                characterPosition: textPaneProvider.cursor.charPosition,
+                charPosition: textPaneProvider.cursor.charPosition,
                 seekPosition: seekPosition,
               );
             } else {
               timingService.addTimingPoint(
                 snippetID: cursor.snippetID,
                 annotationRange: cursor.annotationSegmentRange,
-                characterPosition: textPaneProvider.cursor.charPosition,
+                charPosition: textPaneProvider.cursor.charPosition,
                 seekPosition: seekPosition,
               );
             }
@@ -288,7 +288,21 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         TimingPointDeleteIntent: CallbackAction<TimingPointDeleteIntent>(
           onInvoke: (TimingPointDeleteIntent intent) => () {
             for (var id in timelinePaneProvider.selectingSnippets) {
-              timingService.deleteTimingPoint(id, textPaneProvider.cursor.charPosition);
+              TextPaneCursor cursor = textPaneProvider.cursor;
+              if (!cursor.isAnnotationSelection) {
+                timingService.deleteTimingPoint(
+                  snippetID: id,
+                  charPosition: cursor.charPosition,
+                  option: cursor.option,
+                );
+              } else {
+                timingService.deleteTimingPoint(
+                  snippetID: id,
+                  annotationRange: cursor.annotationSegmentRange,
+                  charPosition: cursor.charPosition,
+                  option: cursor.option,
+                );
+              }
             }
           }(),
         ),

@@ -48,8 +48,24 @@ class LyricSnippet with TimingObject {
     return null;
   }
 
+  @override
+  void addTimingPoint(int charPosition, int seekPosition) {
+    super.addTimingPoint(charPosition, seekPosition);
+    carryUpAnnotationSegments(charPosition);
+  }
+
+  @override
+  void deleteTimingPoint(int charPosition, Option option) {
+    super.deleteTimingPoint(charPosition, option);
+    carryDownAnnotationSegments(charPosition);
+  }
+
+  void carryUpAnnotationSegments(int charPosition) {}
+
+  void carryDownAnnotationSegments(int charPosition) {}
+
   void addAnnotation(String annotationString, int startIndex, int endIndex) {
-int duration = sentenceSegments.sublist(startIndex, endIndex + 1).fold(0, (sum, segment) => sum + segment.duration);
+    int duration = sentenceSegments.sublist(startIndex, endIndex + 1).fold(0, (sum, segment) => sum + segment.duration);
     TimingPoint justBeforeTimingPoint = timingPoints[startIndex];
     SegmentRange annotationKey = SegmentRange(startIndex, endIndex);
     annotations[annotationKey] = Annotation(startTimestamp: startTimestamp + justBeforeTimingPoint.seekPosition, sentenceSegments: [

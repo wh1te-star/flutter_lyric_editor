@@ -553,7 +553,7 @@ class TimingService extends ChangeNotifier {
   void addTimingPoint({
     required SnippetID snippetID,
     SegmentRange? annotationRange,
-    required int characterPosition,
+    required int charPosition,
     required int seekPosition,
   }) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
@@ -561,19 +561,28 @@ class TimingService extends ChangeNotifier {
     LyricSnippet snippet = getSnippetWithID(snippetID);
 
     if (annotationRange == null) {
-      snippet.addTimingPoint(characterPosition, seekPosition);
+      snippet.addTimingPoint(charPosition, seekPosition);
     } else {
-      snippet.annotations[annotationRange]!.addTimingPoint(characterPosition, seekPosition);
+      snippet.annotations[annotationRange]!.addTimingPoint(charPosition, seekPosition);
     }
 
     notifyListeners();
   }
 
-  void deleteTimingPoint(SnippetID snippetID, int characterPosition, {Option option = Option.former}) {
+  void deleteTimingPoint({
+    required SnippetID snippetID,
+    SegmentRange? annotationRange,
+    required int charPosition,
+    Option option = Option.former,
+  }) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
 
     LyricSnippet snippet = getSnippetWithID(snippetID);
-    snippet.deleteTimingPoint(characterPosition, option);
+    if (annotationRange == null) {
+      snippet.deleteTimingPoint(charPosition, option);
+    } else {
+      snippet.annotations[annotationRange]!.deleteTimingPoint(charPosition, option);
+    }
 
     notifyListeners();
   }
