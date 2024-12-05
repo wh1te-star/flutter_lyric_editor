@@ -60,9 +60,15 @@ class LyricSnippet with TimingObject {
     carryDownAnnotationSegments(charPosition);
   }
 
-  void carryUpAnnotationSegments(int charPosition) {
-
+  Map<SegmentRange, Annotation> copyAnnotationMap() {
+    return annotations.map((SegmentRange key, Annotation value) {
+      SegmentRange newKey = key.copyWith();
+      Annotation newValue = value.copyWith();
+      return MapEntry(newKey, newValue);
+    });
   }
+
+  void carryUpAnnotationSegments(int charPosition) {}
 
   void carryDownAnnotationSegments(int charPosition) {}
 
@@ -470,7 +476,7 @@ class SentenceSegment {
     return 'SentenceSegment(wordLength: $word, wordDuration: $duration)';
   }
 
-  SentenceSegment copyWith({String? word, int? duration}){
+  SentenceSegment copyWith({String? word, int? duration}) {
     return SentenceSegment(
       word ?? this.word,
       duration ?? this.duration,
@@ -503,8 +509,8 @@ class TimingPoint {
   String toString() {
     return 'TimingPoint(charPosition: $charPosition, seekPosition: $seekPosition)';
   }
-  
-  TimingPoint copyWith({int? charPosition, int? seekPosition}){
+
+  TimingPoint copyWith({int? charPosition, int? seekPosition}) {
     return TimingPoint(
       charPosition ?? this.charPosition,
       seekPosition ?? this.seekPosition,
