@@ -68,9 +68,13 @@ class LyricSnippet with TimingObject {
     });
   }
 
-  void carryUpAnnotationSegments(int charPosition) {}
+  void carryUpAnnotationSegments(int charPosition) {
 
-  void carryDownAnnotationSegments(int charPosition) {}
+  }
+
+  void carryDownAnnotationSegments(int charPosition) {
+    
+  }
 
   void addAnnotation(String annotationString, int startIndex, int endIndex) {
     int duration = sentenceSegments.sublist(startIndex, endIndex + 1).fold(0, (sum, segment) => sum + segment.duration);
