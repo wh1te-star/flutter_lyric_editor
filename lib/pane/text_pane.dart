@@ -61,7 +61,7 @@ class TextPaneProvider with ChangeNotifier {
 
     LyricSnippet snippet = currentSnippets.values.first;
     int currentSnippetPosition = snippet.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
-    PositionTypeInfo nextSnippetPosition = snippet.getCharPositionIndex(cursor.charPosition);
+    PositionTypeInfo nextSnippetPosition = snippet.getPositionTypeInfo(cursor.charPosition);
     if (currentSnippetPosition != nextSnippetPosition.index) {
       cursor = getDefaultCursor(cursor.snippetID);
       cursorBlinker.restartCursorTimer();
@@ -192,7 +192,7 @@ class TextPaneProvider with ChangeNotifier {
 
     if (!cursor.isSegmentSelectionMode) {
       TimingObject object = !cursor.isAnnotationSelection ? snippet : snippet.annotations[cursor.annotationSegmentRange]!;
-      PositionTypeInfo snippetPositionInfo = object.getCharPositionIndex(cursor.charPosition);
+      PositionTypeInfo snippetPositionInfo = object.getPositionTypeInfo(cursor.charPosition);
       int seekPositionInfo = object.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
       int charPositionIndex = snippetPositionInfo.index;
       if (cursor.option == Option.latter && snippetPositionInfo.duplicate) {
@@ -205,7 +205,7 @@ class TextPaneProvider with ChangeNotifier {
         if (cursor.charPosition - 1 > 0) {
           cursor.charPosition--;
 
-          if (object.getCharPositionIndex(cursor.charPosition).duplicate) {
+          if (object.getPositionTypeInfo(cursor.charPosition).duplicate) {
             cursor.option = Option.latter;
           } else {
             cursor.option = Option.former;
@@ -215,7 +215,7 @@ class TextPaneProvider with ChangeNotifier {
         if (object.timingPoints[charPositionIndex - 1].charPosition > 0) {
           cursor.charPosition = object.timingPoints[charPositionIndex - 1].charPosition;
 
-          if (object.getCharPositionIndex(cursor.charPosition).duplicate) {
+          if (object.getPositionTypeInfo(cursor.charPosition).duplicate) {
             cursor.option = Option.latter;
           } else {
             cursor.option = Option.former;
@@ -250,7 +250,7 @@ class TextPaneProvider with ChangeNotifier {
 
     if (!cursor.isSegmentSelectionMode) {
       TimingObject object = !cursor.isAnnotationSelection ? snippet : snippet.annotations[cursor.annotationSegmentRange]!;
-      PositionTypeInfo snippetPositionInfo = object.getCharPositionIndex(cursor.charPosition);
+      PositionTypeInfo snippetPositionInfo = object.getPositionTypeInfo(cursor.charPosition);
       int seekPositionInfo = object.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
       int charPositionIndex = snippetPositionInfo.index;
       if (cursor.option == Option.latter && snippetPositionInfo.duplicate) {
@@ -424,7 +424,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     TimingService timingService = ref.read(timingMasterProvider);
     TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
-    PositionTypeInfo cursorPositionInfo = snippet.getCharPositionIndex(textPaneProvider.cursor.charPosition);
+    PositionTypeInfo cursorPositionInfo = snippet.getPositionTypeInfo(textPaneProvider.cursor.charPosition);
 
     TextStyle textStyle = TextStyle(
       color: Colors.black,

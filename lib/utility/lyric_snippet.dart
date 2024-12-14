@@ -50,14 +50,14 @@ class LyricSnippet with TimingObject {
 
   @override
   void addTimingPoint(int charPosition, int seekPosition) {
-    super.addTimingPoint(charPosition, seekPosition);
     carryUpAnnotationSegments(charPosition);
+    super.addTimingPoint(charPosition, seekPosition);
   }
 
   @override
   void deleteTimingPoint(int charPosition, Option option) {
-    super.deleteTimingPoint(charPosition, option);
     carryDownAnnotationSegments(charPosition);
+    super.deleteTimingPoint(charPosition, option);
   }
 
   Map<SegmentRange, Annotation> copyAnnotationMap() {
@@ -69,12 +69,44 @@ class LyricSnippet with TimingObject {
   }
 
   void carryUpAnnotationSegments(int charPosition) {
+    PositionTypeInfo info = getPositionTypeInfo(charPosition);
+    Map<SegmentRange, Annotation> updatedAnnotations = {};
+    int index = info.index;
 
+    annotations.forEach((SegmentRange key, Annotation value) {
+      SegmentRange newKey = key.copyWith();
+
+      switch (info.type) {
+        case PositionType.sentenceSegment:
+          {
+            if (index < key.startIndex) {
+              newKey.startIndex++;
+              newKey.endIndex++;
+            } else if (index <= key.endIndex) {
+              newKey.endIndex++;
+            }
+          }
+          break;
+        case PositionType.timingPoint:
+          {
+            int startIndex = key.startIndex;
+            int endIndex = key.endIndex + 1;
+            if (index <= startIndex) {
+              newKey.startIndex++;
+              newKey.endIndex++;
+            } else if (index < endIndex) {
+              newKey.endIndex++;
+            }
+          }
+          break;
+      }
+      updatedAnnotations[newKey] = value;
+    });
+
+    annotations = updatedAnnotations;
   }
 
-  void carryDownAnnotationSegments(int charPosition) {
-    
-  }
+  void carryDownAnnotationSegments(int charPosition) {}
 
   void addAnnotation(String annotationString, int startIndex, int endIndex) {
     int duration = sentenceSegments.sublist(startIndex, endIndex + 1).fold(0, (sum, segment) => sum + segment.duration);
@@ -299,7 +331,7 @@ mixin TimingObject {
     return sentenceSegments.length;
   }
 
-  PositionTypeInfo getCharPositionIndex(int charPosition) {
+  PositionTypeInfo getPositionTypeInfo(int charPosition) {
     if (charPosition < 0 || sentence.length < charPosition) {
       return PositionTypeInfo(PositionType.sentenceSegment, -1, false);
     }
