@@ -226,12 +226,18 @@ class TextPaneProvider with ChangeNotifier {
       if (!cursor.isRangeSelection) {
         int nextSegmentIndex = cursor.annotationSegmentRange.startIndex - 1;
         if (nextSegmentIndex >= 0) {
+          if (snippet.sentenceSegments[nextSegmentIndex].word.isEmpty) {
+            nextSegmentIndex--;
+          }
           cursor.annotationSegmentRange.startIndex = nextSegmentIndex;
           cursor.annotationSegmentRange.endIndex = nextSegmentIndex;
         }
       } else {
         int nextSegmentIndex = cursor.annotationSegmentRange.endIndex - 1;
-        if (nextSegmentIndex >= 0) {
+        if (nextSegmentIndex >= cursor.annotationSegmentRange.startIndex) {
+          if (snippet.sentenceSegments[nextSegmentIndex].word.isEmpty) {
+            nextSegmentIndex--;
+          }
           cursor.annotationSegmentRange.endIndex = nextSegmentIndex;
         }
       }
@@ -273,13 +279,19 @@ class TextPaneProvider with ChangeNotifier {
     } else {
       if (!cursor.isRangeSelection) {
         int nextSegmentIndex = cursor.annotationSegmentRange.startIndex + 1;
-        if (nextSegmentIndex < snippet.sentenceSegments.length) {
+        if (nextSegmentIndex <= snippet.sentenceSegments.length) {
+          if (snippet.sentenceSegments[nextSegmentIndex].word.isEmpty) {
+            nextSegmentIndex++;
+          }
           cursor.annotationSegmentRange.startIndex = nextSegmentIndex;
           cursor.annotationSegmentRange.endIndex = nextSegmentIndex;
         }
       } else {
         int nextSegmentIndex = cursor.annotationSegmentRange.endIndex + 1;
         if (nextSegmentIndex < snippet.sentenceSegments.length) {
+          if (snippet.sentenceSegments[nextSegmentIndex].word.isEmpty) {
+            nextSegmentIndex++;
+          }
           cursor.annotationSegmentRange.endIndex = nextSegmentIndex;
         }
       }
