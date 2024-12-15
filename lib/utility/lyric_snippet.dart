@@ -78,25 +78,21 @@ class LyricSnippet with TimingObject {
 
       switch (info.type) {
         case PositionType.sentenceSegment:
-          {
-            if (index < key.startIndex) {
-              newKey.startIndex++;
-              newKey.endIndex++;
-            } else if (index <= key.endIndex) {
-              newKey.endIndex++;
-            }
+          if (index < key.startIndex) {
+            newKey.startIndex++;
+            newKey.endIndex++;
+          } else if (index <= key.endIndex) {
+            newKey.endIndex++;
           }
           break;
         case PositionType.timingPoint:
-          {
-            int startIndex = key.startIndex;
-            int endIndex = key.endIndex + 1;
-            if (index <= startIndex) {
-              newKey.startIndex++;
-              newKey.endIndex++;
-            } else if (index < endIndex) {
-              newKey.endIndex++;
-            }
+          int startIndex = key.startIndex;
+          int endIndex = key.endIndex + 1;
+          if (index <= startIndex) {
+            newKey.startIndex++;
+            newKey.endIndex++;
+          } else if (index < endIndex) {
+            newKey.endIndex++;
           }
           break;
       }
@@ -106,7 +102,33 @@ class LyricSnippet with TimingObject {
     annotations = updatedAnnotations;
   }
 
-  void carryDownAnnotationSegments(int charPosition) {}
+  void carryDownAnnotationSegments(int charPosition) {
+    PositionTypeInfo info = getPositionTypeInfo(charPosition);
+    Map<SegmentRange, Annotation> updatedAnnotations = {};
+    int timingPointIndex = info.index;
+
+    annotations.forEach((SegmentRange key, Annotation value) {
+      SegmentRange newKey = key.copyWith();
+      int startIndex = key.startIndex;
+      int endIndex = key.endIndex + 1;
+      if (timingPointIndex == startIndex && timingPointIndex == endIndex + 1) {
+        if (info.duplicate) {
+            newKey.startIndex--;
+            newKey.endIndex--;
+        } else {
+          return;
+        }
+      } else if (timingPointIndex < startIndex) {
+        newKey.startIndex--;
+        newKey.endIndex--;
+      } else if (timingPointIndex < endIndex) {
+        newKey.endIndex--;
+      }
+      updatedAnnotations[newKey] = value;
+    });
+
+    annotations = updatedAnnotations;
+  }
 
   void addAnnotation(String annotationString, int startIndex, int endIndex) {
     int duration = sentenceSegments.sublist(startIndex, endIndex + 1).fold(0, (sum, segment) => sum + segment.duration);
