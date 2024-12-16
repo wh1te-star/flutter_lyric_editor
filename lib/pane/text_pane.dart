@@ -26,8 +26,8 @@ class TextPaneProvider with ChangeNotifier {
 
   TextPaneCursor cursor = TextPaneCursor.emptyValue;
 
-  static const String timingPointChar = '|';
-  static const String annotationEdgeChar = '▲';
+  static const String timingPointChar = '🕛';
+  static const String annotationEdgeChar = '🔷';
 
   TextPaneProvider({
     required this.musicPlayerProvider,
@@ -459,6 +459,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     List<Widget> annotationRowWidgets = [];
     List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotations, snippet.sentenceSegments.length);
     int highlightSegmentIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
+
     TextPaneCursor cursor = textPaneProvider.cursor.copyWith();
 
     for (int index = 0; index < rangeList.length; index++) {
@@ -476,7 +477,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
         sentenceRowWidgets += sentenceLineWidgets(
           currentSegmentPartSentence,
           false,
-          cursor,
+          !cursor.isAnnotationSelection ? cursor : TextPaneCursor.emptyValue,
           highlightSegmentIndex,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
           textStyle,
@@ -489,7 +490,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
           annotationRowWidgets += sentenceLineWidgets(
             currentSegmentPartSentence,
             true,
-            cursor,
+          cursor.isAnnotationSelection ? cursor : TextPaneCursor.emptyValue,
             -1,
             textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
             annotationDummyTextStyle,
@@ -511,7 +512,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
         List<Widget> sentenceRow = sentenceLineWidgets(
           currentSegmentPartSentence,
           false,
-          cursor,
+          !cursor.isAnnotationSelection ? cursor : TextPaneCursor.emptyValue,
           highlightSegmentIndex,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
           textStyle,
@@ -536,7 +537,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
           List<Widget> annotationRow = sentenceLineWidgets(
             currentSegmentPartAnnotation,
             true,
-            cursor,
+          cursor.isAnnotationSelection ? cursor : TextPaneCursor.emptyValue,
             annotationHighlightSegmentIndex,
             textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
             annotationTextStyle,
