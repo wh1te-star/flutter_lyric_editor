@@ -490,7 +490,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
           annotationRowWidgets += sentenceLineWidgets(
             currentSegmentPartSentence,
             true,
-          cursor.isAnnotationSelection ? cursor : TextPaneCursor.emptyValue,
+            cursor.isAnnotationSelection ? cursor : TextPaneCursor.emptyValue,
             -1,
             textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
             annotationDummyTextStyle,
@@ -533,11 +533,11 @@ class _TextPaneState extends ConsumerState<TextPane> {
         ];
 
         if (snippet.annotations.isNotEmpty) {
-          int annotationHighlightSegmentIndex = annotation.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
+          int annotationHighlightSegmentIndex = textPaneProvider.cursor.annotationSegmentRange == segmentRange ? annotation.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition) : -1;
           List<Widget> annotationRow = sentenceLineWidgets(
             currentSegmentPartAnnotation,
             true,
-          cursor.isAnnotationSelection ? cursor : TextPaneCursor.emptyValue,
+            cursor.isAnnotationSelection ? cursor : TextPaneCursor.emptyValue,
             annotationHighlightSegmentIndex,
             textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
             annotationTextStyle,
@@ -584,10 +584,13 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
       highlightSegmentIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
       if (!cursor.isAnnotationSelection) {
-        cursor.annotationSegmentRange.startIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
-        cursor.annotationSegmentRange.endIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
         cursorPositionInfo.index -= segmentCharLength;
         cursor.charPosition -= segmentCharLength;
+        cursor.annotationSegmentRange.startIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
+        cursor.annotationSegmentRange.endIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
+      } else {
+        cursor.annotationSegmentRange.startIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
+        cursor.annotationSegmentRange.endIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
       }
     }
 
