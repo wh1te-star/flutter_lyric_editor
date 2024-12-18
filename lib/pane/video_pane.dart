@@ -251,7 +251,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     }
   }
 
-  Widget outlinedText(LyricSnippet snippet, double fontSize, String fontFamily) {
+  Widget snippetItem(LyricSnippet snippet, double fontSize, String fontFamily) {
     int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
     Color fontColor = const Color(0x00000000);
     final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap;
@@ -310,7 +310,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
               orElse: () => SnippetID(0),
             );
         LyricSnippet targetSnippet = targetSnippetID == SnippetID(0) ? LyricSnippet.emptySnippet : lyricSnippetList[targetSnippetID]!;
-        content[i] = outlinedText(targetSnippet, fontSize, fontFamily);
+        content[i] = snippetItem(targetSnippet, fontSize, fontFamily);
       }
 
       return Focus(
