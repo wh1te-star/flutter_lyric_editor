@@ -15,7 +15,7 @@ final videoPaneMasterProvider = ChangeNotifierProvider((ref) {
 });
 
 class VideoPaneProvider with ChangeNotifier {
-  DisplayMode displayMode = DisplayMode.verticalScroll;
+  DisplayMode displayMode = DisplayMode.appearDissappear;
 
   VideoPaneProvider();
 
