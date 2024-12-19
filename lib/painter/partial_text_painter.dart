@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 
 class PartialTextPainter extends CustomPainter {
   final String text;
-  final int start;
-  final int end;
-  final double percent;
+  final double rate;
   final String fontFamily;
   final double fontSize;
   final Color fontBaseColor;
@@ -21,9 +19,7 @@ class PartialTextPainter extends CustomPainter {
 
   PartialTextPainter({
     required this.text,
-    required this.start,
-    required this.end,
-    required this.percent,
+    required this.rate,
     required this.fontFamily,
     required this.fontSize,
     required this.fontBaseColor,
@@ -113,13 +109,13 @@ class PartialTextPainter extends CustomPainter {
       painter.paint(canvas, centerOffset);
     }
 
-    final startOffset = textPaintersAfter[0].getOffsetForCaret(TextPosition(offset: start), Rect.zero).dx;
-    final endOffset = textPaintersAfter[0].getOffsetForCaret(TextPosition(offset: end), Rect.zero).dx;
-    final sliceWidth = actualX + startOffset + (endOffset - startOffset) * percent;
+    final sliceWidth = textWidth * rate;
 
-    if (percent < 0 && sliceWidth > 0) {
-      debugPrint("percent: $percent, sliceWidth: $sliceWidth");
+    /*
+    if (rate < 0 && sliceWidth > 0) {
+      debugPrint("percent: $rate, sliceWidth: $sliceWidth");
     }
+    */
 
     canvas.clipRect(Rect.fromLTWH(0, 0, sliceWidth, size.height));
 

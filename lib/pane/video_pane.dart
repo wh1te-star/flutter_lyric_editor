@@ -148,9 +148,9 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
   PartialTextPainter getBeforeSnippetPainter(LyricSnippet snippet, fontFamily, Color fontColor) {
     return PartialTextPainter(
       text: snippet.sentence,
-      start: 0,
-      end: 0,
-      percent: 0.0,
+      //start: 0,
+      //end: 0,
+      rate: 0.0,
       fontFamily: fontFamily,
       fontSize: 40,
       fontBaseColor: fontColor,
@@ -162,9 +162,9 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
   PartialTextPainter getAfterSnippetPainter(LyricSnippet snippet, fontFamily, Color fontColor) {
     return PartialTextPainter(
       text: snippet.sentence,
-      start: 0,
-      end: snippet.sentence.length,
-      percent: 1.0,
+      //start: 0,
+      //end: snippet.sentence.length,
+      rate: 1.0,
       fontFamily: fontFamily,
       fontSize: 40,
       fontBaseColor: fontColor,
@@ -215,9 +215,9 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
           CustomPaint(
             painter: PartialTextPainter(
               text: snippet.sentence,
-              start: startChar,
-              end: startChar + snippet.sentenceSegments[wordIndex].word.length,
-              percent: percent,
+              //start: startChar,
+              //end: startChar + snippet.sentenceSegments[wordIndex].word.length,
+              rate: percent,
               fontFamily: fontFamily,
               fontSize: fontSize,
               fontBaseColor: fontColor,
@@ -234,9 +234,9 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
                 : CustomPaint(
                     painter: PartialTextPainter(
                       text: snippet.annotations.entries.first.value.sentence,
-                      start: 0,
-                      end: snippet.annotations.entries.first.value.sentence.length,
-                      percent: percent,
+                      //start: 0,
+                      //end: snippet.annotations.entries.first.value.sentence.length,
+                      rate: percent,
                       fontFamily: fontFamily,
                       fontSize: fontSize / 2.0,
                       fontBaseColor: fontColor,
@@ -263,9 +263,9 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
         child: CustomPaint(
           painter: PartialTextPainter(
             text: "",
-            start: 0,
-            end: 0,
-            percent: 0.0,
+            //start: 0,
+            //end: 0,
+            rate: 0.0,
             fontFamily: fontFamily,
             fontSize: fontSize,
             fontBaseColor: fontColor,
