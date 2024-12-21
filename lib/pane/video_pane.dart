@@ -149,7 +149,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       text: snippet.sentence,
       //start: 0,
       //end: 0,
-      rate: 0.0,
+      progress: 0.0,
       fontFamily: fontFamily,
       fontSize: 40,
       fontBaseColor: fontColor,
@@ -163,7 +163,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       text: snippet.sentence,
       //start: 0,
       //end: snippet.sentence.length,
-      rate: 1.0,
+      progress: 1.0,
       fontFamily: fontFamily,
       fontSize: 40,
       fontBaseColor: fontColor,
@@ -183,102 +183,49 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     return sumPosition - getSizeFromTextStyle(snippet.sentence, TextStyle(fontSize: 40)).width / 2;
   }
 
-  Widget getColorHilightedText(LyricSnippet snippet, int seekPosition, double fontSize, String fontFamily, Color fontColor) {
-    int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
-    Size annotationSize = getSizeFromFontInfo(snippet.sentence, fontSize / 2, fontFamily);
-    Size sentenceSize = getSizeFromFontInfo(snippet.sentence, fontSize, fontFamily);
-    Size snippetSize = Size(sentenceSize.width, sentenceSize.height + annotationSize.height);
-    if (seekPosition < snippet.startTimestamp) {
-      return CustomPaint(
-        painter: getBeforeSnippetPainter(snippet, fontFamily, fontColor),
-        size: snippetSize,
-      );
-    } else if (snippet.endTimestamp < seekPosition) {
-      return CustomPaint(
-        painter: getAfterSnippetPainter(snippet, fontFamily, fontColor),
-        size: snippetSize,
-      );
-    } else {
-      int wordIndex = 0;
-      int startChar = 0;
-      int restDuration = seekPosition - snippet.startTimestamp;
-      while (restDuration - snippet.sentenceSegments[wordIndex].duration > 0) {
-        startChar += snippet.sentenceSegments[wordIndex].word.length;
-        restDuration -= snippet.sentenceSegments[wordIndex].duration;
-        wordIndex++;
-      }
-      double percent;
-      percent = restDuration / snippet.sentenceSegments[wordIndex].duration;
-      return Stack(
-        children: [
-          CustomPaint(
-            painter: PartialTextPainter(
-              text: snippet.sentence,
-              //start: startChar,
-              //end: startChar + snippet.sentenceSegments[wordIndex].word.length,
-              rate: percent,
-              fontFamily: fontFamily,
-              fontSize: fontSize,
-              fontBaseColor: fontColor,
-              firstOutlineWidth: 2,
-              secondOutlineWidth: 4,
-            ),
-            size: snippetSize,
-          ),
-          Positioned(
-            left: snippet.annotations.length == 0 ? 5.0 : getAnnotationSizePosition(snippet, 0),
-            top: -30.0,
-            child: snippet.annotations.isEmpty
-                ? CustomPaint()
-                : CustomPaint(
-                    painter: PartialTextPainter(
-                      text: snippet.annotations.entries.first.value.sentence,
-                      //start: 0,
-                      //end: snippet.annotations.entries.first.value.sentence.length,
-                      rate: percent,
-                      fontFamily: fontFamily,
-                      fontSize: fontSize / 2.0,
-                      fontBaseColor: fontColor,
-                      firstOutlineWidth: 2,
-                      secondOutlineWidth: 4,
-                    ),
-                    size: snippetSize,
-                  ),
-          ),
-        ],
-      );
-    }
-  }
-
   Widget snippetItem(LyricSnippet snippet, double fontSize, String fontFamily) {
-    int seekPosition = ref.read(musicPlayerMasterProvider).seekPosition;
+    final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
+    int seekPosition = musicPlayerService.seekPosition;
+
     Color fontColor = const Color(0x00000000);
     final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap;
     if (vocalistColorList.containsKey(snippet.vocalistID)) {
       fontColor = Color(vocalistColorList[snippet.vocalistID]!.color);
     }
-    if (snippet.sentence == "") {
-      return Expanded(
-        child: CustomPaint(
+    List<Widget> segmentWidgets = [];
+    for (int index = 0; index < snippet.sentenceSegments.length; index++) {
+      SentenceSegment segment = snippet.sentenceSegments[index];
+      Size size = getSizeFromFontInfo(segment.word, fontSize, fontFamily);
+
+      double progress = 0.0;
+      int segmentStartPosition = snippet.startTimestamp + snippet.timingPoints[index].seekPosition;
+      int segmentEndPosition = snippet.startTimestamp + snippet.timingPoints[index + 1].seekPosition;
+      if (seekPosition < segmentStartPosition) {
+        progress = 0.0;
+      } else if (seekPosition < segmentEndPosition) {
+        progress = (seekPosition - segmentStartPosition) / segment.duration;
+      } else {
+        progress = 1.0;
+      }
+
+      segmentWidgets.add(
+        CustomPaint(
+          size: size,
           painter: PartialTextPainter(
-            text: "",
-            //start: 0,
-            //end: 0,
-            rate: 0.0,
+            text: segment.word,
+            progress: progress,
             fontFamily: fontFamily,
             fontSize: fontSize,
             fontBaseColor: fontColor,
             firstOutlineWidth: 2,
             secondOutlineWidth: 4,
           ),
-          size: const Size(double.infinity, double.infinity),
         ),
       );
-    } else {
-      return Expanded(
-        child: getColorHilightedText(snippet, seekPosition, fontSize, fontFamily, fontColor),
-      );
     }
+    return Wrap(
+      children: segmentWidgets,
+    );
   }
 
   @override
@@ -297,35 +244,62 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     double fontSize = 40.0;
     String fontFamily = "Times New Roman";
     final VideoPaneProvider videoPaneProvider = ref.read(videoPaneMasterProvider);
+
     DisplayMode displayMode = videoPaneProvider.displayMode;
-    if (displayMode == DisplayMode.appearDissappear) {
-      final Map<SnippetID, int> tracks = timingService.getTrackNumber(timingService.lyricSnippetList, startBulge, endBulge);
+    //if (displayMode == DisplayMode.appearDissappear) {
+    final Map<SnippetID, int> tracks = timingService.getTrackNumber(timingService.lyricSnippetList, startBulge, endBulge);
 
-      List<Widget> content = List<Widget>.generate(maxLanes, (index) => Container());
+    List<Widget> content = List<Widget>.generate(maxLanes, (index) => Container());
 
-      for (int i = 0; i < maxLanes; i++) {
-        SnippetID targetSnippetID = currentSnippets.keys.toList().firstWhere(
-              (SnippetID id) => tracks[id] == i,
-              orElse: () => SnippetID(0),
-            );
-        LyricSnippet targetSnippet = targetSnippetID == SnippetID(0) ? LyricSnippet.emptySnippet : lyricSnippetList[targetSnippetID]!;
-        content[i] = snippetItem(targetSnippet, fontSize, fontFamily);
-      }
-
-      return Focus(
-        focusNode: focusNode,
-        child: GestureDetector(
-          onTap: () {
-            musicPlayerService.playPause();
-            focusNode.requestFocus();
-            debugPrint("The video pane is focused");
-          },
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: content,
+    for (int i = 0; i < maxLanes; i++) {
+      SnippetID targetSnippetID = currentSnippets.keys.toList().firstWhere(
+            (SnippetID id) => tracks[id] == i,
+            orElse: () => SnippetID(0),
+          );
+      if (targetSnippetID != SnippetID(0)) {
+        LyricSnippet targetSnippet = timingService.getSnippetWithID(targetSnippetID);
+        content[i] = Expanded(
+          child: Center(
+            child: snippetItem(
+              targetSnippet,
+              fontSize,
+              fontFamily,
+            ),
           ),
+        );
+      } else {
+        content[i] = Expanded(
+          child: Center(
+            child: snippetItem(
+              LyricSnippet(
+                vocalistID: VocalistID(0),
+                startTimestamp: seekPosition,
+                sentenceSegments: [SentenceSegment(" ", 1)],
+                annotations: {},
+              ),
+              fontSize,
+              fontFamily,
+            ),
+          ),
+        );
+      }
+    }
+
+    return Focus(
+      focusNode: focusNode,
+      child: GestureDetector(
+        onTap: () {
+          musicPlayerService.playPause();
+          focusNode.requestFocus();
+          debugPrint("The video pane is focused");
+        },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: content,
         ),
-      );
+      ),
+    );
+    /*
     } else {
       double height = 60;
       List<Widget> columnSnippets = [];
@@ -362,15 +336,16 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
         ),
       );
     }
+      */
   }
-  
+
   Size getLogicalSize() {
-  double pixelRatio = window.devicePixelRatio;
-  Size physicalSize = window.physicalSize;
-  double logicalWidth = physicalSize.width / pixelRatio;
-  double logicalHeight = physicalSize.height / pixelRatio;
-  return Size(logicalWidth, logicalHeight);
-}
+    double pixelRatio = window.devicePixelRatio;
+    Size physicalSize = window.physicalSize;
+    double logicalWidth = physicalSize.width / pixelRatio;
+    double logicalHeight = physicalSize.height / pixelRatio;
+    return Size(logicalWidth, logicalHeight);
+  }
 
   void _onScroll() {
     MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);

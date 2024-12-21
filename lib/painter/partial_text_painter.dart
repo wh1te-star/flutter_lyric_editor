@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class PartialTextPainter extends CustomPainter {
   final String text;
-  final double rate;
+  final double progress;
   final String fontFamily;
   final double fontSize;
   final Color fontBaseColor;
@@ -19,7 +19,7 @@ class PartialTextPainter extends CustomPainter {
 
   PartialTextPainter({
     required this.text,
-    required this.rate,
+    required this.progress,
     required this.fontFamily,
     required this.fontSize,
     required this.fontBaseColor,
@@ -109,7 +109,7 @@ class PartialTextPainter extends CustomPainter {
       painter.paint(canvas, centerOffset);
     }
 
-    final sliceWidth = textWidth * rate;
+    final sliceWidth = textWidth * progress;
 
     /*
     if (rate < 0 && sliceWidth > 0) {
