@@ -9,7 +9,7 @@ import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/sorted_list.dart';
-import 'package:lyric_editor/utility/text_size_functions.dart';
+import 'package:lyric_editor/utility/utility_functions.dart';
 import 'package:tuple/tuple.dart';
 
 final textPaneMasterProvider = ChangeNotifierProvider((ref) {
@@ -706,53 +706,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
       index++;
     }
     return charPosition;
-  }
-
-  List<Tuple2<SegmentRange, Annotation?>> getRangeListForAnnotations(Map<SegmentRange, Annotation> annotations, int numberOfSegments) {
-    if (annotations.isEmpty) {
-      return [
-        Tuple2(
-          SegmentRange(0, numberOfSegments - 1),
-          null,
-        ),
-      ];
-    }
-
-    List<Tuple2<SegmentRange, Annotation?>> rangeList = [];
-    int previousEnd = -1;
-
-    for (MapEntry<SegmentRange, Annotation> entry in annotations.entries) {
-      SegmentRange segmentRange = entry.key;
-      Annotation annotation = entry.value;
-
-      if (previousEnd + 1 <= segmentRange.startIndex - 1) {
-        rangeList.add(
-          Tuple2(
-            SegmentRange(previousEnd + 1, segmentRange.startIndex - 1),
-            null,
-          ),
-        );
-      }
-      rangeList.add(
-        Tuple2(
-          segmentRange,
-          annotation,
-        ),
-      );
-
-      previousEnd = segmentRange.endIndex;
-    }
-
-    if (previousEnd + 1 <= numberOfSegments - 1) {
-      rangeList.add(
-        Tuple2(
-          SegmentRange(previousEnd + 1, numberOfSegments - 1),
-          null,
-        ),
-      );
-    }
-
-    return rangeList;
   }
 
   List<Widget> getSegmentRangeTextWidgets(List<SentenceSegment> segments, SegmentRange range, TextStyle style) {

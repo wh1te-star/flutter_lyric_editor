@@ -7,7 +7,8 @@ import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
-import 'package:lyric_editor/utility/text_size_functions.dart';
+import 'package:lyric_editor/utility/utility_functions.dart';
+import 'package:tuple/tuple.dart';
 
 final videoPaneMasterProvider = ChangeNotifierProvider((ref) {
   return VideoPaneProvider();
@@ -192,14 +193,21 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     if (vocalistColorList.containsKey(snippet.vocalistID)) {
       fontColor = Color(vocalistColorList[snippet.vocalistID]!.color);
     }
+
+    bool doesAnnotationExist = false;
+    if (snippet.annotations.isNotEmpty){doesAnnotationExist = true;}
     List<Widget> segmentWidgets = [];
+
+    List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotations, snippet.sentenceSegments.length);
+
     for (int index = 0; index < snippet.sentenceSegments.length; index++) {
       SentenceSegment segment = snippet.sentenceSegments[index];
-      Size size = getSizeFromFontInfo(segment.word, fontSize, fontFamily);
+      Size sentenceSize = getSizeFromFontInfo(segment.word, fontSize, fontFamily);
+      Size size = doesAnnotationExist ? Size(sentenceSize.width, sentenceSize.height + )
 
-      double progress = 0.0;
       int segmentStartPosition = snippet.startTimestamp + snippet.timingPoints[index].seekPosition;
       int segmentEndPosition = snippet.startTimestamp + snippet.timingPoints[index + 1].seekPosition;
+      double progress = 0.0;
       if (seekPosition < segmentStartPosition) {
         progress = 0.0;
       } else if (seekPosition < segmentEndPosition) {
