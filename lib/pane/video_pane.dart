@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'dart:ui';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -364,6 +363,14 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       );
     }
   }
+  
+  Size getLogicalSize() {
+  double pixelRatio = window.devicePixelRatio;
+  Size physicalSize = window.physicalSize;
+  double logicalWidth = physicalSize.width / pixelRatio;
+  double logicalHeight = physicalSize.height / pixelRatio;
+  return Size(logicalWidth, logicalHeight);
+}
 
   void _onScroll() {
     MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
