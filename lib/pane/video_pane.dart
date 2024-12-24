@@ -200,7 +200,13 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
     List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotations, snippet.sentenceSegments.length);
 
-    for (int index = 0; index < snippet.sentenceSegments.length; index++) {
+    for (int index = 0; index < rangeList.length; index++) {
+      Tuple2<SegmentRange, Annotation?> element = rangeList[index];
+      SegmentRange segmentRange = element.item1;
+      Annotation? annotation = element.item2;
+
+      if (annotation == null) {
+      }else{}
       SentenceSegment segment = snippet.sentenceSegments[index];
       Size sentenceSize = getSizeFromFontInfo(segment.word, fontSize, fontFamily);
       Size size = doesAnnotationExist ? Size(sentenceSize.width, sentenceSize.height + )
