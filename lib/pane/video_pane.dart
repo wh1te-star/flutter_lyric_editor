@@ -184,7 +184,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     return sumPosition - getSizeFromTextStyle(snippet.sentence, TextStyle(fontSize: 40)).width / 2;
   }
 
-  Widget snippetItem(LyricSnippet snippet, double fontSize, String fontFamily) {
+  Widget snippetItem(LyricSnippet snippet, double sentenceFontSize, double annotationFontSize, String fontFamily) {
     final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     int seekPosition = musicPlayerService.seekPosition;
 
@@ -210,9 +210,8 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       if (annotation == null) {
         for (int index = segmentRange.startIndex; index <= segmentRange.endIndex; index++) {
           SentenceSegment segment = snippet.sentenceSegments[index];
-          Size sentenceSize = getSizeFromFontInfo(segment.word, fontSize, fontFamily);
-          Size annotationSize = getSizeFromFontInfo(segment.word, fontSize/2, fontFamily);
-          Size size = Size(sentenceSize.width, sentenceSize.height);
+          Size sentenceSize = getSizeFromFontInfo(segment.word, sentenceFontSize, fontFamily);
+          Size annotationSize = Size(sentenceSize.width, getSizeFromFontInfo("", annotationFontSize, fontFamily).height);
 
           int segmentStartPosition = snippet.startTimestamp + snippet.timingPoints[index].seekPosition;
           int segmentEndPosition = snippet.startTimestamp + snippet.timingPoints[index + 1].seekPosition;
@@ -228,13 +227,17 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
           segmentWidgets.add(
             Column(
               children: [
+                SizedBox(
+                  width: annotationSize.width,
+                  height: annotationSize.height,
+                ),
                 CustomPaint(
-                  size: size,
+                  size: sentenceSize,
                   painter: PartialTextPainter(
                     text: segment.word,
                     progress: progress,
                     fontFamily: fontFamily,
-                    fontSize: fontSize,
+                    fontSize: sentenceFontSize,
                     fontBaseColor: fontColor,
                     firstOutlineWidth: 2,
                     secondOutlineWidth: 4,
@@ -245,33 +248,68 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
           );
         }
       } else {
-        SentenceSegment segment = snippet.sentenceSegments[segmentRange.startIndex];
-        Size sentenceSize = getSizeFromFontInfo(segment.word, fontSize, fontFamily);
-        Size size = Size(sentenceSize.width, sentenceSize.height);
+        String partSentence = snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1).map((segment) => segment.word).join(' ');
+        Size sentenceSize = getSizeFromFontInfo(partSentence, sentenceFontSize, fontFamily);
+        Size annotationSize = getSizeFromFontInfo(annotation.sentence, annotationFontSize, fontFamily);
+        double width = max(sentenceSize.width, annotationSize.width);
 
-        int segmentStartPosition = snippet.startTimestamp + snippet.timingPoints[rangeIndex].seekPosition;
-        int segmentEndPosition = snippet.startTimestamp + snippet.timingPoints[rangeIndex + 1].seekPosition;
-        double progress = 0.0;
-        if (seekPosition < segmentStartPosition) {
-          progress = 0.0;
-        } else if (seekPosition < segmentEndPosition) {
-          progress = (seekPosition - segmentStartPosition) / segment.duration;
-        } else {
-          progress = 1.0;
-        }
+        Size upperSize = Size(width, annotationSize.height);
+        Size lowerSize = Size(width, sentenceSize.height);
 
-        segmentWidgets.add(
-          CustomPaint(
-            size: size,
-            painter: PartialTextPainter(
-              text: segment.word,
-              progress: progress,
-              fontFamily: fontFamily,
-              fontSize: fontSize,
-              fontBaseColor: fontColor,
-              firstOutlineWidth: 2,
-              secondOutlineWidth: 4,
+        /*
+        List<Widget> partSentenceWidgets = [];
+        for (int index = segmentRange.startIndex; index <= segmentRange.endIndex; index++) {
+          SentenceSegment segment = snippet.sentenceSegments[index];
+          int segmentStartPosition = snippet.startTimestamp + snippet.timingPoints[index].seekPosition;
+          int segmentEndPosition = snippet.startTimestamp + snippet.timingPoints[index + 1].seekPosition;
+          double progress = 0.0;
+          if (seekPosition < segmentStartPosition) {
+            progress = 0.0;
+          } else if (seekPosition < segmentEndPosition) {
+            progress = (seekPosition - segmentStartPosition) / segment.duration;
+          } else {
+            progress = 1.0;
+          }
+
+          partSentenceWidgets.add(
+            CustomPaint(
+              size: getSizeFromFontInfo(segment.word, sentenceFontSize, fontFamily),
+              painter: PartialTextPainter(
+                text: segment.word,
+                progress: progress,
+                fontFamily: fontFamily,
+                fontSize: sentenceFontSize,
+                fontBaseColor: fontColor,
+                firstOutlineWidth: 2,
+                secondOutlineWidth: 4,
+              ),
             ),
+          );
+        }
+        Widget annotationWidget = CustomPaint(
+          size: upperSize,
+          painter: PartialTextPainter(
+            text: annotation.sentence,
+            progress: 0.5,
+            fontFamily: fontFamily,
+            fontSize: sentenceFontSize,
+            fontBaseColor: fontColor,
+            firstOutlineWidth: 2,
+            secondOutlineWidth: 4,
+          ),
+        );
+        */
+
+        //List<Widget> partSentenceWidgets = [Container(width: lowerSize.width, height: lowerSize.height)];
+        Widget annotationWidget = Container(color: Colors.greenAccent, width: upperSize.width, height: upperSize.height);
+        Widget partSentenceWidgets = Container(color: Colors.blueAccent, width: lowerSize.width, height: lowerSize.height);
+        segmentWidgets.add(
+          Column(
+            children: [
+              annotationWidget,
+              partSentenceWidgets,
+              //Row(children: partSentenceWidgets),
+            ],
           ),
         );
       }
@@ -316,6 +354,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
             child: snippetItem(
               targetSnippet,
               fontSize,
+              fontSize / 2,
               fontFamily,
             ),
           ),
@@ -331,6 +370,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
                 annotations: {},
               ),
               fontSize,
+              fontSize / 2,
               fontFamily,
             ),
           ),
