@@ -256,7 +256,6 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
         Size upperSize = Size(width, annotationSize.height);
         Size lowerSize = Size(width, sentenceSize.height);
 
-        /*
         List<Widget> partSentenceWidgets = [];
         for (int index = segmentRange.startIndex; index <= segmentRange.endIndex; index++) {
           SentenceSegment segment = snippet.sentenceSegments[index];
@@ -298,17 +297,15 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
             secondOutlineWidth: 4,
           ),
         );
-        */
 
-        //List<Widget> partSentenceWidgets = [Container(width: lowerSize.width, height: lowerSize.height)];
-        Widget annotationWidget = Container(color: Colors.greenAccent, width: upperSize.width, height: upperSize.height);
-        Widget partSentenceWidgets = Container(color: Colors.blueAccent, width: lowerSize.width, height: lowerSize.height);
         segmentWidgets.add(
           Column(
             children: [
               annotationWidget,
-              partSentenceWidgets,
-              //Row(children: partSentenceWidgets),
+              Container(
+                width: width,
+                child: Row(children: partSentenceWidgets),
+              ),
             ],
           ),
         );
