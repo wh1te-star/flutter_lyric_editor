@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lyric_editor/utility/color_utilities.dart';
+import 'package:lyric_editor/utility/utility_functions.dart';
 
 class RectanglePainter extends CustomPainter {
   final Rect? rect;

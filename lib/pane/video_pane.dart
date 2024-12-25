@@ -195,47 +195,86 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     }
 
     bool doesAnnotationExist = false;
-    if (snippet.annotations.isNotEmpty){doesAnnotationExist = true;}
+    if (snippet.annotations.isNotEmpty) {
+      doesAnnotationExist = true;
+    }
     List<Widget> segmentWidgets = [];
 
     List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotations, snippet.sentenceSegments.length);
 
-    for (int index = 0; index < rangeList.length; index++) {
-      Tuple2<SegmentRange, Annotation?> element = rangeList[index];
+    for (int rangeIndex = 0; rangeIndex < rangeList.length; rangeIndex++) {
+      Tuple2<SegmentRange, Annotation?> element = rangeList[rangeIndex];
       SegmentRange segmentRange = element.item1;
       Annotation? annotation = element.item2;
 
       if (annotation == null) {
-      }else{}
-      SentenceSegment segment = snippet.sentenceSegments[index];
-      Size sentenceSize = getSizeFromFontInfo(segment.word, fontSize, fontFamily);
-      Size size = doesAnnotationExist ? Size(sentenceSize.width, sentenceSize.height + )
+        for (int index = segmentRange.startIndex; index <= segmentRange.endIndex; index++) {
+          SentenceSegment segment = snippet.sentenceSegments[index];
+          Size sentenceSize = getSizeFromFontInfo(segment.word, fontSize, fontFamily);
+          Size annotationSize = getSizeFromFontInfo(segment.word, fontSize/2, fontFamily);
+          Size size = Size(sentenceSize.width, sentenceSize.height);
 
-      int segmentStartPosition = snippet.startTimestamp + snippet.timingPoints[index].seekPosition;
-      int segmentEndPosition = snippet.startTimestamp + snippet.timingPoints[index + 1].seekPosition;
-      double progress = 0.0;
-      if (seekPosition < segmentStartPosition) {
-        progress = 0.0;
-      } else if (seekPosition < segmentEndPosition) {
-        progress = (seekPosition - segmentStartPosition) / segment.duration;
+          int segmentStartPosition = snippet.startTimestamp + snippet.timingPoints[index].seekPosition;
+          int segmentEndPosition = snippet.startTimestamp + snippet.timingPoints[index + 1].seekPosition;
+          double progress = 0.0;
+          if (seekPosition < segmentStartPosition) {
+            progress = 0.0;
+          } else if (seekPosition < segmentEndPosition) {
+            progress = (seekPosition - segmentStartPosition) / segment.duration;
+          } else {
+            progress = 1.0;
+          }
+
+          segmentWidgets.add(
+            Column(
+              children: [
+                CustomPaint(
+                  size: size,
+                  painter: PartialTextPainter(
+                    text: segment.word,
+                    progress: progress,
+                    fontFamily: fontFamily,
+                    fontSize: fontSize,
+                    fontBaseColor: fontColor,
+                    firstOutlineWidth: 2,
+                    secondOutlineWidth: 4,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
       } else {
-        progress = 1.0;
-      }
+        SentenceSegment segment = snippet.sentenceSegments[segmentRange.startIndex];
+        Size sentenceSize = getSizeFromFontInfo(segment.word, fontSize, fontFamily);
+        Size size = Size(sentenceSize.width, sentenceSize.height);
 
-      segmentWidgets.add(
-        CustomPaint(
-          size: size,
-          painter: PartialTextPainter(
-            text: segment.word,
-            progress: progress,
-            fontFamily: fontFamily,
-            fontSize: fontSize,
-            fontBaseColor: fontColor,
-            firstOutlineWidth: 2,
-            secondOutlineWidth: 4,
+        int segmentStartPosition = snippet.startTimestamp + snippet.timingPoints[rangeIndex].seekPosition;
+        int segmentEndPosition = snippet.startTimestamp + snippet.timingPoints[rangeIndex + 1].seekPosition;
+        double progress = 0.0;
+        if (seekPosition < segmentStartPosition) {
+          progress = 0.0;
+        } else if (seekPosition < segmentEndPosition) {
+          progress = (seekPosition - segmentStartPosition) / segment.duration;
+        } else {
+          progress = 1.0;
+        }
+
+        segmentWidgets.add(
+          CustomPaint(
+            size: size,
+            painter: PartialTextPainter(
+              text: segment.word,
+              progress: progress,
+              fontFamily: fontFamily,
+              fontSize: fontSize,
+              fontBaseColor: fontColor,
+              firstOutlineWidth: 2,
+              secondOutlineWidth: 4,
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
     return Wrap(
       children: segmentWidgets,

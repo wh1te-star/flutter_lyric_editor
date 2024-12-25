@@ -9,7 +9,7 @@ import 'package:lyric_editor/painter/scale_mark.dart';
 import 'package:lyric_editor/pane/snippet_timeline.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
-import 'package:lyric_editor/utility/color_utilities.dart';
+import 'package:lyric_editor/utility/utility_functions.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:lyric_editor/utility/dialogbox_utility.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
