@@ -11,7 +11,7 @@ import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
-import 'package:lyric_editor/utility/dialogbox_utility.dart';
+import 'package:lyric_editor/dialog/text_field_dialog.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/svg_icon.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
@@ -697,7 +697,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
             },
             onDoubleTap: () async {
               List<String> oldVocalistNames = vocalistName.split(", ");
-              List<String> newVocalistNames = await displayDialog(context, oldVocalistNames);
+              List<String> newVocalistNames = await displayTextFieldDialog(context, oldVocalistNames);
               for (int i = 0; i < oldVocalistNames.length; i++) {
                 String oldName = oldVocalistNames[i];
                 String newName = newVocalistNames[i];
@@ -755,7 +755,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
           setState(() {});
         },
         onTap: () async {
-          String newVocalistName = (await displayDialog(context, [""]))[0];
+          String newVocalistName = (await displayTextFieldDialog(context, [""]))[0];
           final TimingService timingService = ref.read(timingMasterProvider);
           timingService.addVocalist(newVocalistName);
         },

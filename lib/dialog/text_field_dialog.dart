@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-Future<List<String>> displayDialog(BuildContext context, List<String> texts) async {
+Future<List<String>> displayTextFieldDialog(BuildContext context, List<String> texts) async {
   return await showDialog(
     context: context,
     builder: (BuildContext context) {

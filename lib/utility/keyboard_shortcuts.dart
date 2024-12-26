@@ -6,7 +6,7 @@ import 'package:lyric_editor/pane/timeline_pane.dart';
 import 'package:lyric_editor/pane/video_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
-import 'package:lyric_editor/utility/dialogbox_utility.dart';
+import 'package:lyric_editor/dialog/text_field_dialog.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 
@@ -160,7 +160,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             SnippetID targetID = cursor.snippetID;
             LyricSnippet targetSnippet = timingService.getSnippetWithID(targetID);
 
-            String annotationString = (await displayDialog(context, [""]))[0];
+            String annotationString = (await displayTextFieldDialog(context, [""]))[0];
             if (annotationString != "") {
               timingService.addAnnotation(targetID, annotationString, cursor.annotationSegmentRange.startIndex, textPaneProvider.cursor.annotationSegmentRange.endIndex);
             }
