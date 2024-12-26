@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/painter/partial_text_painter.dart';
+import 'package:lyric_editor/pane/text_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
@@ -57,6 +58,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
     final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     final TimingService timingService = ref.read(timingMasterProvider);
+    final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
     final VideoPaneProvider videoPaneProvider = ref.read(videoPaneMasterProvider);
 
     musicPlayerService.addListener(() {
@@ -71,6 +73,10 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
     timingService.addListener(() {
       maxLanes = getMaxRequiredLanes(timingService.getTrackNumber(timingService.lyricSnippetList, startBulge, endBulge)) + 1;
+      setState(() {});
+    });
+
+    textPaneProvider.addListener(() {
       setState(() {});
     });
 
@@ -252,9 +258,6 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
         Size sentenceSize = getSizeFromFontInfo(partSentence, sentenceFontSize, fontFamily);
         Size annotationSize = getSizeFromFontInfo(annotation.sentence, annotationFontSize, fontFamily);
         double width = max(sentenceSize.width, annotationSize.width);
-
-        Size upperSize = Size(width, annotationSize.height);
-        Size lowerSize = Size(width, sentenceSize.height);
 
         List<Widget> partSentenceWidgets = [];
         for (int index = segmentRange.startIndex; index <= segmentRange.endIndex; index++) {
