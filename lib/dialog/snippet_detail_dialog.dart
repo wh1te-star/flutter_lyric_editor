@@ -1,50 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lyric_editor/service/timing_service.dart';
+import 'package:lyric_editor/utility/id_generator.dart';
+import 'package:lyric_editor/utility/lyric_snippet.dart';
 
-Future<List<String>> displaySnippetDetailDialog(BuildContext context, List<String> texts) async {
+Future<List<String>> displaySnippetDetailDialog(BuildContext context, LyricSnippet snippet) async {
   return await showDialog(
     context: context,
     builder: (BuildContext context) {
-      return _SnippetDetailDialog(texts: texts);
+      return _SnippetDetailDialog(snippet: snippet);
     },
   );
 }
 
-class _SnippetDetailDialog extends StatefulWidget {
-  final List<String> texts;
+class _SnippetDetailDialog extends ConsumerStatefulWidget {
+  final LyricSnippet snippet;
 
-  const _SnippetDetailDialog({required this.texts});
+  const _SnippetDetailDialog({required this.snippet});
 
   @override
   __SnippetDetailDialogState createState() => __SnippetDetailDialogState();
 }
 
-class __SnippetDetailDialogState extends State<_SnippetDetailDialog> {
+class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   late List<FocusNode> focusNodes;
   late List<TextEditingController> controllers;
-  late List<Widget> textFields;
+  late List<bool> checkboxValues;
+  late TextEditingController editableTextController;
 
   @override
   void initState() {
     super.initState();
     focusNodes = [];
     controllers = [];
-    textFields = [];
+    checkboxValues = List<bool>.filled(5, false);
+    editableTextController = TextEditingController();
 
-    for (String text in widget.texts) {
+    final TimingService timingService = ref.read(timingMasterProvider);
+
+    for (MapEntry<VocalistID, Vocalist> entry in timingService.vocalistColorMap.entries) {
+      VocalistID vocalistID = entry.key;
+      Vocalist vocalist = entry.value;
+
       FocusNode node = FocusNode();
       focusNodes.add(node);
 
       TextEditingController controller = TextEditingController();
       controllers.add(controller);
 
-      controller.text = text;
-      textFields.add(
-        TextField(
-          controller: controller,
-          focusNode: node,
-        ),
-      );
+      controller.text = vocalist.name;
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -60,14 +65,15 @@ class __SnippetDetailDialogState extends State<_SnippetDetailDialog> {
     for (var controller in controllers) {
       controller.dispose();
     }
+    editableTextController.dispose();
     super.dispose();
   }
 
   void extractControllerTexts(List<String> resultTexts) {
     for (var controller in controllers) {
       resultTexts.add(controller.text);
-      debugPrint(controller.text);
     }
+    resultTexts.add(editableTextController.text);
   }
 
   @override
@@ -76,28 +82,45 @@ class __SnippetDetailDialogState extends State<_SnippetDetailDialog> {
 
     return AlertDialog(
       title: const Text('Enter your text'),
-      content: KeyboardListener(
-        focusNode: FocusNode(),
-        onKeyEvent: (KeyEvent event) {
-          if (event is KeyDownEvent) {
-            if (event.logicalKey == LogicalKeyboardKey.enter) {
-              extractControllerTexts(resultTexts);
-              Navigator.of(context).pop(resultTexts);
-            } else if (event.logicalKey == LogicalKeyboardKey.escape) {
-              Navigator.of(context).pop();
-            }
-          }
-        },
+      content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: textFields,
+          children: [
+            ...controllers.map((controller) => TextField(
+                  controller: controller,
+                  focusNode: focusNodes[controllers.indexOf(controller)],
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                )),
+            const SizedBox(height: 10),
+            ...List.generate(checkboxValues.length, (index) {
+              return CheckboxListTile(
+                title: Text('Option ${index + 1}'),
+                value: checkboxValues[index],
+                onChanged: (bool? value) {
+                  setState(() {
+                    checkboxValues[index] = value ?? false;
+                  });
+                },
+              );
+            }),
+            const SizedBox(height: 10),
+            TextField(
+              controller: editableTextController,
+              decoration: const InputDecoration(labelText: 'Editable Text'),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              height: 50,
+              color: Colors.blue,
+            ),
+          ],
         ),
       ),
       actions: <Widget>[
         TextButton(
           child: const Text('Cancel'),
           onPressed: () {
-            debugPrint('Input cancelled.');
             Navigator.of(context).pop();
           },
         ),

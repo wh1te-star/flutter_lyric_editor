@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/widgets.dart';
+import 'package:lyric_editor/dialog/snippet_detail_dialog.dart';
 import 'package:lyric_editor/painter/rectangle_painter.dart';
 import 'package:lyric_editor/painter/triangle_painter.dart';
 import 'package:lyric_editor/pane/text_pane.dart';
@@ -129,6 +130,9 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
             timelinePaneProvider.selectingSnippets.add(snippetID);
           }
           setState(() {});
+        },
+        onDoubleTap: () {
+          displaySnippetDetailDialog(context, snippet);
         },
         child: CustomPaint(
           size: itemSize,
