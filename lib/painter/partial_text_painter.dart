@@ -9,13 +9,13 @@ class PartialTextPainter extends CustomPainter {
   final double firstOutlineWidth;
   final double secondOutlineWidth;
 
-  late final List<TextStyle> textStylesBefore;
-  late final List<TextSpan> textSpansBefore;
-  late final List<TextPainter> textPaintersBefore;
+  List<TextStyle>? textStylesBefore;
+  List<TextSpan>? textSpansBefore;
+  List<TextPainter>? textPaintersBefore;
 
-  late final List<TextStyle> textStylesAfter;
-  late final List<TextSpan> textSpansAfter;
-  late final List<TextPainter> textPaintersAfter;
+  List<TextStyle>? textStylesAfter;
+  List<TextSpan>? textSpansAfter;
+  List<TextPainter>? textPaintersAfter;
 
   PartialTextPainter({
     required this.text,
@@ -36,23 +36,25 @@ class PartialTextPainter extends CustomPainter {
   }
 
   void setupTextStyles() {
-    Shadow shadow = Shadow(
-      color: fontBaseColor,
-      blurRadius: 30.0,
-      offset: const Offset(0.0, 0.0),
-    );
+    if (textStylesBefore == null || textStylesAfter == null) {
+      Shadow shadow = Shadow(
+        color: fontBaseColor,
+        blurRadius: 30.0,
+        offset: const Offset(0.0, 0.0),
+      );
 
-    textStylesBefore = [
-      createTextStyle(color: Colors.white),
-      createTextStyle(strokeWidth: firstOutlineWidth, strokeColor: Colors.black),
-      createTextStyle(strokeWidth: firstOutlineWidth + secondOutlineWidth, strokeColor: fontBaseColor, shadow: shadow),
-    ];
+      textStylesBefore = [
+        createTextStyle(color: Colors.white),
+        createTextStyle(strokeWidth: firstOutlineWidth, strokeColor: Colors.black),
+        createTextStyle(strokeWidth: firstOutlineWidth + secondOutlineWidth, strokeColor: fontBaseColor, shadow: shadow),
+      ];
 
-    textStylesAfter = [
-      createTextStyle(color: fontBaseColor),
-      createTextStyle(strokeWidth: firstOutlineWidth, strokeColor: Colors.white),
-      createTextStyle(strokeWidth: firstOutlineWidth + secondOutlineWidth, strokeColor: Colors.black, shadow: shadow),
-    ];
+      textStylesAfter = [
+        createTextStyle(color: fontBaseColor),
+        createTextStyle(strokeWidth: firstOutlineWidth, strokeColor: Colors.white),
+        createTextStyle(strokeWidth: firstOutlineWidth + secondOutlineWidth, strokeColor: Colors.black, shadow: shadow),
+      ];
+    }
   }
 
   TextStyle createTextStyle({
@@ -76,27 +78,31 @@ class PartialTextPainter extends CustomPainter {
   }
 
   void setupTextSpans() {
-    textSpansBefore = textStylesBefore.map((style) => TextSpan(text: text, style: style)).toList();
-    textSpansAfter = textStylesAfter.map((style) => TextSpan(text: text, style: style)).toList();
+    if (textSpansBefore == null || textSpansAfter == null) {
+      textSpansBefore = textStylesBefore!.map((style) => TextSpan(text: text, style: style)).toList();
+      textSpansAfter = textStylesAfter!.map((style) => TextSpan(text: text, style: style)).toList();
+    }
   }
 
   void setupTextPainters(Size size) {
-    textPaintersBefore = textSpansBefore.map((span) {
-      final painter = TextPainter(text: span, textAlign: TextAlign.center, textDirection: TextDirection.ltr);
-      painter.layout(maxWidth: size.width);
-      return painter;
-    }).toList();
+    if (textPaintersBefore == null || textPaintersAfter == null) {
+      textPaintersBefore = textSpansBefore!.map((span) {
+        final painter = TextPainter(text: span, textAlign: TextAlign.center, textDirection: TextDirection.ltr);
+        painter.layout(maxWidth: size.width);
+        return painter;
+      }).toList();
 
-    textPaintersAfter = textSpansAfter.map((span) {
-      final painter = TextPainter(text: span, textAlign: TextAlign.center, textDirection: TextDirection.ltr);
-      painter.layout(maxWidth: size.width);
-      return painter;
-    }).toList();
+      textPaintersAfter = textSpansAfter!.map((span) {
+        final painter = TextPainter(text: span, textAlign: TextAlign.center, textDirection: TextDirection.ltr);
+        painter.layout(maxWidth: size.width);
+        return painter;
+      }).toList();
+    }
   }
 
   void paintText(Canvas canvas, Size size) {
-    final textWidth = textPaintersBefore[0].width;
-    final textHeight = textPaintersBefore[0].height;
+    final textWidth = textPaintersBefore![0].width;
+    final textHeight = textPaintersBefore![0].height;
 
     final actualX = (size.width - textWidth) / 2;
     final actualY = (size.height - textHeight) / 2;
@@ -105,21 +111,15 @@ class PartialTextPainter extends CustomPainter {
 
     canvas.clipRect(Rect.fromLTWH(0, 0, size.width, size.height));
 
-    for (var painter in textPaintersBefore.reversed) {
+    for (var painter in textPaintersBefore!.reversed) {
       painter.paint(canvas, centerOffset);
     }
 
     final sliceWidth = textWidth * progress;
 
-    /*
-    if (rate < 0 && sliceWidth > 0) {
-      debugPrint("percent: $rate, sliceWidth: $sliceWidth");
-    }
-    */
-
     canvas.clipRect(Rect.fromLTWH(0, 0, sliceWidth, size.height));
 
-    for (var painter in textPaintersAfter.reversed) {
+    for (var painter in textPaintersAfter!.reversed) {
       painter.paint(canvas, centerOffset);
     }
   }

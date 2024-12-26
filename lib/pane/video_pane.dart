@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/painter/partial_text_painter.dart';
 import 'package:lyric_editor/pane/text_pane.dart';
+import 'package:lyric_editor/pane/timeline_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
+import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 import 'package:tuple/tuple.dart';
@@ -58,8 +60,10 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
     final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     final TimingService timingService = ref.read(timingMasterProvider);
-    final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
     final VideoPaneProvider videoPaneProvider = ref.read(videoPaneMasterProvider);
+    final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
+    final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
+    final KeyboardShortcutsNotifier keyboardShortcutsNotifier = ref.read(keyboardShortcutsMasterProvider);
 
     musicPlayerService.addListener(() {
       final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
@@ -76,11 +80,19 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       setState(() {});
     });
 
+    videoPaneProvider.addListener(() {
+      setState(() {});
+    });
+
     textPaneProvider.addListener(() {
       setState(() {});
     });
 
-    videoPaneProvider.addListener(() {
+    timelinePaneProvider.addListener(() {
+      setState(() {});
+    });
+
+    keyboardShortcutsNotifier.addListener(() {
       setState(() {});
     });
   }
