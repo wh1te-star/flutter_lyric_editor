@@ -248,7 +248,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
           );
         }
       } else {
-        String partSentence = snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1).map((segment) => segment.word).join(' ');
+        String partSentence = snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1).map((segment) => segment.word).join('');
         Size sentenceSize = getSizeFromFontInfo(partSentence, sentenceFontSize, fontFamily);
         Size annotationSize = getSizeFromFontInfo(annotation.sentence, annotationFontSize, fontFamily);
         double width = max(sentenceSize.width, annotationSize.width);
@@ -285,26 +285,55 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
             ),
           );
         }
-        Widget annotationWidget = CustomPaint(
-          size: upperSize,
-          painter: PartialTextPainter(
-            text: annotation.sentence,
-            progress: 0.5,
-            fontFamily: fontFamily,
-            fontSize: sentenceFontSize,
-            fontBaseColor: fontColor,
-            firstOutlineWidth: 2,
-            secondOutlineWidth: 4,
-          ),
-        );
+
+        List<Widget> partAnnotationWidgets = [];
+        for (int index = 0; index < annotation.sentenceSegments.length; index++) {
+          SentenceSegment segment = annotation.sentenceSegments[index];
+          int segmentStartPosition = annotation.startTimestamp + annotation.timingPoints[index].seekPosition;
+          int segmentEndPosition = annotation.startTimestamp + annotation.timingPoints[index + 1].seekPosition;
+          double progress = 0.0;
+          if (seekPosition < segmentStartPosition) {
+            progress = 0.0;
+          } else if (seekPosition < segmentEndPosition) {
+            progress = (seekPosition - segmentStartPosition) / segment.duration;
+          } else {
+            progress = 1.0;
+          }
+
+          partAnnotationWidgets.add(
+            CustomPaint(
+              size: getSizeFromFontInfo(segment.word, annotationFontSize, fontFamily),
+              painter: PartialTextPainter(
+                text: segment.word,
+                progress: progress,
+                fontFamily: fontFamily,
+                fontSize: annotationFontSize,
+                fontBaseColor: fontColor,
+                firstOutlineWidth: 2,
+                secondOutlineWidth: 4,
+              ),
+            ),
+          );
+        }
 
         segmentWidgets.add(
           Column(
             children: [
-              annotationWidget,
               Container(
                 width: width,
-                child: Row(children: partSentenceWidgets),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: partAnnotationWidgets,
+                ),
+              ),
+              Container(
+                width: width,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: partSentenceWidgets,
+                ),
               ),
             ],
           ),
