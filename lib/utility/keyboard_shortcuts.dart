@@ -135,7 +135,16 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         EnterSegmentSelectionIntent: CallbackAction<EnterSegmentSelectionIntent>(
           onInvoke: (EnterSegmentSelectionIntent intent) => () {
-            textPaneProvider.cursor.enterSegmentSelectionMode();
+            TextPaneCursor cursor = textPaneProvider.cursor;
+            if (!cursor.isAnnotationSelection) {
+              cursor.enterSegmentSelectionMode();
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("You cannot add an annotation to an annotation."),
+                ),
+              );
+            }
             setState(() {});
           }(),
         ),
@@ -147,29 +156,13 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         AddAnnotationIntent: CallbackAction<AddAnnotationIntent>(
           onInvoke: (AddAnnotationIntent intent) => () async {
-            Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
-            MapEntry<SnippetID, LyricSnippet> target = currentSnippets.entries.firstWhere(
-              (entry) {
-                VocalistID currentVocalistID = entry.value.vocalistID;
-                VocalistID textPaneVocalistID = timingService.lyricSnippetList[textPaneProvider.cursor.snippetID]!.vocalistID;
-                textPaneProvider.cursor.isSegmentSelectionMode = false;
-                textPaneProvider.cursor.isRangeSelection = false;
-                return currentVocalistID == textPaneVocalistID;
-              },
-              orElse: () => MapEntry(SnippetID(0), LyricSnippet.emptySnippet),
-            );
-
-            SnippetID targetID = target.key;
-            LyricSnippet targetSnippet = target.value;
-            if (targetSnippet == LyricSnippet.emptySnippet) {
-              textPaneProvider.cursor.isSegmentSelectionMode = false;
-              textPaneProvider.cursor.isRangeSelection = false;
-              return;
-            }
+            TextPaneCursor cursor = textPaneProvider.cursor;
+            SnippetID targetID = cursor.snippetID;
+            LyricSnippet targetSnippet = timingService.getSnippetWithID(targetID);
 
             String annotationString = (await displayDialog(context, [""]))[0];
             if (annotationString != "") {
-              timingService.addAnnotation(targetID, annotationString, textPaneProvider.cursor.annotationSegmentRange.startIndex, textPaneProvider.cursor.annotationSegmentRange.endIndex);
+              timingService.addAnnotation(targetID, annotationString, cursor.annotationSegmentRange.startIndex, textPaneProvider.cursor.annotationSegmentRange.endIndex);
             }
 
             textPaneProvider.cursor.isSegmentSelectionMode = false;
