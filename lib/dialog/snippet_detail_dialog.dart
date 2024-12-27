@@ -29,11 +29,9 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   late FocusNode endTimestampFocusNode;
   late TextEditingController startTimestampController;
   late TextEditingController endTimestampController;
-  late TextField startTimestampTextFiled;
-  late TextField endTimestampTextFiled;
 
   List<bool> vocalistCheckValues = [];
-  List<Widget> vocalistCheckboxList = [];
+  List<String> vocalistNameList = [];
 
   @override
   void initState() {
@@ -48,58 +46,10 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
     startTimestampController.text = widget.snippet.startTimestamp.toString();
     endTimestampController.text = widget.snippet.endTimestamp.toString();
 
-    startTimestampTextFiled = TextField(
-      controller: startTimestampController,
-      focusNode: startTimestampFocusNode,
-      keyboardType: TextInputType.number,
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      textAlign: TextAlign.center,
-    );
-    endTimestampTextFiled = TextField(
-      controller: endTimestampController,
-      focusNode: endTimestampFocusNode,
-      keyboardType: TextInputType.number,
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      textAlign: TextAlign.center,
-    );
-
-    List<String> vocalistNameList = timingService.vocalistColorMap.values.map((Vocalist vocalist) {
+    vocalistNameList = timingService.vocalistColorMap.values.map((Vocalist vocalist) {
       return vocalist.name;
     }).toList();
     vocalistCheckValues = List<bool>.filled(vocalistNameList.length, false);
-    vocalistCheckboxList = List.generate(vocalistNameList.length, (index) {
-      return CheckboxListTile(
-        title: Text(vocalistNameList[index]),
-        value: vocalistCheckValues[index],
-        onChanged: (bool? value) {
-          setState(() {
-            vocalistCheckValues[index] = value ?? false;
-          });
-        },
-      );
-    });
-
-    /*
-    checkboxValues = timingService.vocalistColorMap.entries
-    editableTextController = TextEditingController();
-
-    for (MapEntry<VocalistID, Vocalist> entry in .entries) {
-      VocalistID vocalistID = entry.key;
-      Vocalist vocalist = entry.value;
-
-      FocusNode node = FocusNode();
-      focusNodes.add(node);
-
-      TextEditingController controller = TextEditingController();
-      controllers.add(controller);
-
-      controller.text = vocalist.name;
-    }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      focusNodes[0].requestFocus();
-    });
-    */
   }
 
   @override
@@ -108,31 +58,11 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
     endTimestampFocusNode.dispose();
     startTimestampController.dispose();
     endTimestampController.dispose();
-    /*
-    for (var node in focusNodes) {
-      node.dispose();
-    }
-    for (var controller in controllers) {
-      controller.dispose();
-    }
-    editableTextController.dispose();
-    */
     super.dispose();
-  }
-
-  void extractControllerTexts(List<String> resultTexts) {
-    /*
-    for (var controller in controllers) {
-      resultTexts.add(controller.text);
-    }
-    resultTexts.add(editableTextController.text);
-    */
   }
 
   @override
   Widget build(BuildContext context) {
-    List<String> resultTexts = [];
-
     return AlertDialog(
       title: const Text('Snippet Details'),
       content: SingleChildScrollView(
@@ -143,28 +73,40 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Expanded(
-                  child: startTimestampTextFiled,
+                  child: TextField(
+                    controller: startTimestampController,
+                    focusNode: startTimestampFocusNode,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    textAlign: TextAlign.center,
+                  ),
                 ),
                 const Text("～"),
                 Expanded(
-                  child: endTimestampTextFiled,
+                  child: TextField(
+                    controller: endTimestampController,
+                    focusNode: endTimestampFocusNode,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ],
             ),
-            ...vocalistCheckboxList,
+            Column(
+              children: List.generate(vocalistNameList.length, (index) {
+                return CheckboxListTile(
+                  title: Text(vocalistNameList[index]),
+                  value: vocalistCheckValues[index],
+                  onChanged: (bool? value) {
+                    setState(() {
+                      vocalistCheckValues[index] = value ?? false;
+                    });
+                  },
+                );
+              }),
+            ),
           ],
-          /*
-            const SizedBox(height: 10),
-            TextField(
-              controller: editableTextController,
-              decoration: const InputDecoration(labelText: 'Editable Text'),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              height: 50,
-              color: Colors.blue,
-            ),
-            */
         ),
       ),
       actions: <Widget>[
@@ -177,8 +119,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
         TextButton(
           child: const Text('OK'),
           onPressed: () {
-            extractControllerTexts(resultTexts);
-            Navigator.of(context).pop(resultTexts);
+            Navigator.of(context).pop(vocalistCheckValues);
           },
         ),
       ],
