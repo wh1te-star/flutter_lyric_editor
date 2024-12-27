@@ -46,10 +46,19 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
     startTimestampController.text = widget.snippet.startTimestamp.toString();
     endTimestampController.text = widget.snippet.endTimestamp.toString();
 
-    vocalistNameList = timingService.vocalistColorMap.values.map((Vocalist vocalist) {
-      return vocalist.name;
+    vocalistCheckValues = [];
+    vocalistNameList = timingService.vocalistColorMap.entries.where((entry) {
+      int singleVocalistID = entry.key.id;
+      if (isPowerOf2(singleVocalistID)) {
+        int snippetVocalistID = widget.snippet.vocalistID.id;
+        vocalistCheckValues.add(hasBit(snippetVocalistID, singleVocalistID));
+        return true;
+      } else {
+        return false;
+      }
+    }).map((entry) {
+      return entry.value.name;
     }).toList();
-    vocalistCheckValues = List<bool>.filled(vocalistNameList.length, false);
   }
 
   @override
@@ -128,5 +137,9 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
 
   bool isPowerOf2(int x) {
     return x > 0 && (x & (x - 1)) == 0;
+  }
+
+  bool hasBit(int number, int bit) {
+    return number & bit != 0;
   }
 }
