@@ -93,7 +93,6 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
                 ),
               ],
             ),
-<<<<<<< HEAD
             Column(
               children: List.generate(vocalistNameList.length, (index) {
                 return CheckboxListTile(
@@ -106,24 +105,6 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
                   },
                 );
               }),
-=======
-            StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) {
-                return Column(
-                  children: List.generate(vocalistNameList.length, (index) {
-                    return CheckboxListTile(
-                      title: Text(vocalistNameList[index]),
-                      value: vocalistCheckValues[index],
-                      onChanged: (bool? value) {
-                        setState(() {
-                          vocalistCheckValues[index] = value ?? false;
-                        });
-                      },
-                    );
-                  }),
-                );
-              },
->>>>>>> bec87ce78fbb038f517df43dc82461339e3b312a
             ),
           ],
         ),
