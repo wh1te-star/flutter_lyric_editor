@@ -48,15 +48,12 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
 
     vocalistCheckValues = [];
     vocalistNameList = timingService.vocalistColorMap.entries.where((entry) {
-      int singleVocalistID = entry.key.id;
-      if (isPowerOf2(singleVocalistID)) {
-        int snippetVocalistID = widget.snippet.vocalistID.id;
-        vocalistCheckValues.add(hasBit(snippetVocalistID, singleVocalistID));
-        return true;
-      } else {
-        return false;
-      }
+      int id = entry.key.id;
+      return isPowerOf2(id);
     }).map((entry) {
+      int singleVocalistID = entry.key.id;
+      int snippetVocalistID = widget.snippet.vocalistID.id;
+      vocalistCheckValues.add(hasBit(snippetVocalistID, singleVocalistID));
       return entry.value.name;
     }).toList();
   }
