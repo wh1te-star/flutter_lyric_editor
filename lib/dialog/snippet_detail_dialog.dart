@@ -71,48 +71,68 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Snippet Details'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: startTimestampController,
-                    focusNode: startTimestampFocusNode,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    textAlign: TextAlign.center,
-                  ),
+      content: Container(
+        width: 300,
+        height: 300,
+        child: DefaultTabController(
+          length: 2,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TabBar(
+                tabs: [
+                  Tab(text: 'Timestamps'),
+                  Tab(text: 'Vocalists'),
+                ],
+              ),
+              Container(
+                height: 200, // Set a fixed height for the TabBarView
+                child: TabBarView(
+                  children: [
+                    // Tab 1: Timestamp Input
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: startTimestampController,
+                            focusNode: startTimestampFocusNode,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const Text("～"),
+                        Expanded(
+                          child: TextField(
+                            controller: endTimestampController,
+                            focusNode: endTimestampFocusNode,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Tab 2: Vocalist Selection
+                    Column(
+                      children: List.generate(vocalistNameList.length, (index) {
+                        return CheckboxListTile(
+                          title: Text(vocalistNameList[index]),
+                          value: vocalistCheckValues[index],
+                          onChanged: (bool? value) {
+                            setState(() {
+                              vocalistCheckValues[index] = value ?? false;
+                            });
+                          },
+                        );
+                      }),
+                    ),
+                  ],
                 ),
-                const Text("～"),
-                Expanded(
-                  child: TextField(
-                    controller: endTimestampController,
-                    focusNode: endTimestampFocusNode,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
-            ),
-            Column(
-              children: List.generate(vocalistNameList.length, (index) {
-                return CheckboxListTile(
-                  title: Text(vocalistNameList[index]),
-                  value: vocalistCheckValues[index],
-                  onChanged: (bool? value) {
-                    setState(() {
-                      vocalistCheckValues[index] = value ?? false;
-                    });
-                  },
-                );
-              }),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
       actions: <Widget>[
