@@ -73,7 +73,6 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
       title: const Text('Snippet Details'),
       content: Container(
         width: 300,
-        height: 300,
         child: DefaultTabController(
           length: 2,
           child: Column(
@@ -81,53 +80,64 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
             children: [
               TabBar(
                 tabs: [
-                  Tab(text: 'Timestamps'),
-                  Tab(text: 'Vocalists'),
+                  Tab(text: 'Overall'),
+                  Tab(text: 'Segments'),
                 ],
               ),
               Container(
-                height: 200, // Set a fixed height for the TabBarView
+                height: 300,
                 child: TabBarView(
                   children: [
-                    // Tab 1: Timestamp Input
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
+                    Column(
                       children: [
-                        Expanded(
-                          child: TextField(
-                            controller: startTimestampController,
-                            focusNode: startTimestampFocusNode,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                            textAlign: TextAlign.center,
-                          ),
+                        SizedBox(height: 30),
+                      Text("Start and End Timestamp"),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: startTimestampController,
+                                focusNode: startTimestampFocusNode,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            const Text("～"),
+                            Expanded(
+                              child: TextField(
+                                controller: endTimestampController,
+                                focusNode: endTimestampFocusNode,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
                         ),
-                        const Text("～"),
-                        Expanded(
-                          child: TextField(
-                            controller: endTimestampController,
-                            focusNode: endTimestampFocusNode,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                            textAlign: TextAlign.center,
-                          ),
+                        SizedBox(height: 20),
+                        Text("Vocalists"),
+                        Column(
+                          children: List.generate(vocalistNameList.length, (index) {
+                            return CheckboxListTile(
+                              title: Text(vocalistNameList[index]),
+                              value: vocalistCheckValues[index],
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  vocalistCheckValues[index] = value ?? false;
+                                });
+                              },
+                            );
+                          }),
                         ),
                       ],
                     ),
-                    // Tab 2: Vocalist Selection
-                    Column(
-                      children: List.generate(vocalistNameList.length, (index) {
-                        return CheckboxListTile(
-                          title: Text(vocalistNameList[index]),
-                          value: vocalistCheckValues[index],
-                          onChanged: (bool? value) {
-                            setState(() {
-                              vocalistCheckValues[index] = value ?? false;
-                            });
-                          },
-                        );
-                      }),
-                    ),
+                    Column(children: [
+                      Text("A"),
+                      Text("B"),
+                      Text("C"),
+                    ]),
                   ],
                 ),
               ),
