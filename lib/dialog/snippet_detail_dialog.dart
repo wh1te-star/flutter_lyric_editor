@@ -91,7 +91,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
                     Column(
                       children: [
                         SizedBox(height: 30),
-                      Text("Start and End Timestamp"),
+                        Text("Start and End Timestamp"),
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -134,9 +134,32 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
                       ],
                     ),
                     Column(children: [
-                      Text("A"),
-                      Text("B"),
-                      Text("C"),
+                      SizedBox(height: 30),
+                      Table(
+                        border: TableBorder.all(),
+                        columnWidths: {
+                          0: FixedColumnWidth(100.0),
+                          1: FixedColumnWidth(100.0),
+                        },
+                        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                        children: [
+                          TableRow(
+                            decoration: BoxDecoration(color: Colors.grey[300]),
+                            children: [
+                              Text('Header 1', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
+                              Text('Header 2', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          TableRow(children: [
+                            Text('Row 1, Col 1', textAlign: TextAlign.center),
+                            Text('Row 1, Col 2', textAlign: TextAlign.center),
+                          ]),
+                          TableRow(children: [
+                            Text('Row 2, Col 1', textAlign: TextAlign.center),
+                            Text('Row 2, Col 2', textAlign: TextAlign.center),
+                          ]),
+                        ],
+                      ),
                     ]),
                   ],
                 ),
