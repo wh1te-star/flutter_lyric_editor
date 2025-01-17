@@ -146,8 +146,8 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
                           TableRow(
                             decoration: BoxDecoration(color: Colors.grey[300]),
                             children: [
-                              Text('Header 1', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
-                              Text('Header 2', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
+                              Text('Segment Text', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
+                              Text('Vocalist Name', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
                             ],
                           ),
                           TableRow(children: [
