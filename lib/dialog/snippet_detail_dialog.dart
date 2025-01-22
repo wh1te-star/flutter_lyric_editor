@@ -33,18 +33,23 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   List<bool> vocalistCheckValues = [];
   List<String> vocalistNameList = [];
 
+  List<String> segmentTexts = [];
+  List<Vocalist> vocalists = [];
+  List<TableRow> vocalistTabRows = [];
+
   @override
   void initState() {
     super.initState();
 
     final TimingService timingService = ref.read(timingMasterProvider);
+    final LyricSnippet snippet = widget.snippet;
 
     startTimestampFocusNode = FocusNode();
     endTimestampFocusNode = FocusNode();
     startTimestampController = TextEditingController();
     endTimestampController = TextEditingController();
-    startTimestampController.text = widget.snippet.startTimestamp.toString();
-    endTimestampController.text = widget.snippet.endTimestamp.toString();
+    startTimestampController.text = snippet.startTimestamp.toString();
+    endTimestampController.text = snippet.endTimestamp.toString();
 
     vocalistCheckValues = [];
     vocalistNameList = timingService.vocalistColorMap.entries.where((entry) {
@@ -52,10 +57,22 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
       return isPowerOf2(id);
     }).map((entry) {
       int singleVocalistID = entry.key.id;
-      int snippetVocalistID = widget.snippet.vocalistID.id;
+      int snippetVocalistID = snippet.vocalistID.id;
       vocalistCheckValues.add(hasBit(snippetVocalistID, singleVocalistID));
       return entry.value.name;
     }).toList();
+
+    for (SentenceSegment segment in snippet.sentenceSegments) {
+      segmentTexts.add(segment.word);
+      vocalistTabRows.add(
+        TableRow(
+          children: [
+            Text(segment.word),
+            SizedBox(width: 10.0,height: 10.0,),
+          ],
+        ),
+      );
+    }
   }
 
   @override
@@ -150,16 +167,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
                               Text('Vocalist Name', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
                             ],
                           ),
-                          TableRow(children: [
-                            Text('Row 1, Col 1', textAlign: TextAlign.center),
-                            Text('Row 1, Col 2', textAlign: TextAlign.center),
-                          ]),
-                          TableRow(children: [
-                            Text('Row 2, Col 1', textAlign: TextAlign.center),
-                            Text('Row 2, Col 2', textAlign: TextAlign.center),
-                          ]),
-                        ],
-                      ),
+                        ] + vocalistTabRows),
                     ]),
                   ],
                 ),
