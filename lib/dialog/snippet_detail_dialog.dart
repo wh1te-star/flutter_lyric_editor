@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,6 +37,8 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
 
   List<String> segmentTexts = [];
   List<Vocalist> vocalists = [];
+
+  late TableRow vocalistTabHeader;
   List<TableRow> vocalistTabRows = [];
 
   @override
@@ -62,14 +66,51 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
       return entry.value.name;
     }).toList();
 
+    List<Vocalist> headerVocalists = [];
+    for (int id = 1; id < pow(2, timingService.vocalistColorMap.length); id *= 2) {
+      VocalistID vocalistID = snippet.vocalistID;
+      if ((vocalistID.id & id) != 0) {
+        headerVocalists.add(timingService.vocalistColorMap[VocalistID(id)]!);
+      }
+    }
+    List<Widget> headerVocalistWidgets = headerVocalists.map((Vocalist vocalist) {
+      return Text(
+        vocalist.name,
+        textAlign: TextAlign.center,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      );
+    }).toList();
+
+    vocalistTabHeader = TableRow(
+      decoration: BoxDecoration(color: Colors.grey[300]),
+      children: <Widget>[Text('word', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold))] + headerVocalistWidgets,
+    );
+
     for (SentenceSegment segment in snippet.sentenceSegments) {
       segmentTexts.add(segment.word);
+
+      List<Widget> segmentWiseVocalistCheckboxes = [];
+      for (Vocalist vocalist in headerVocalists) {
+        segmentWiseVocalistCheckboxes.add(Checkbox(
+          value: true,
+          onChanged: (bool? value) {
+            setState(() {});
+          },
+          activeColor: Color(vocalist.color),
+        ));
+      }
       vocalistTabRows.add(
         TableRow(
-          children: [
-            Text(segment.word),
-            SizedBox(width: 10.0,height: 10.0,),
-          ],
+          children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.only(right: 4.0),
+                  child: Text(
+                    segment.word,
+                    textAlign: TextAlign.right,
+                  ),
+                )
+              ] +
+              segmentWiseVocalistCheckboxes,
         ),
       );
     }
@@ -153,21 +194,13 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
                     Column(children: [
                       SizedBox(height: 30),
                       Table(
-                        border: TableBorder.all(),
-                        columnWidths: {
-                          0: FixedColumnWidth(100.0),
-                          1: FixedColumnWidth(100.0),
-                        },
-                        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                        children: [
-                          TableRow(
-                            decoration: BoxDecoration(color: Colors.grey[300]),
-                            children: [
-                              Text('Segment Text', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
-                              Text('Vocalist Name', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                        ] + vocalistTabRows),
+                          border: TableBorder.all(),
+                          columnWidths: {
+                            0: FixedColumnWidth(100.0),
+                            1: FixedColumnWidth(100.0),
+                          },
+                          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                          children: [vocalistTabHeader] + vocalistTabRows),
                     ]),
                   ],
                 ),
