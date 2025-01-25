@@ -79,7 +79,7 @@ AppBar buildAppBarWithMenu(
 }
 
 void openAudio(BuildContext context, MusicPlayerService musicPlayerSerivce) async {
-  final XTypeGroup typeGroup = const XTypeGroup(
+  const XTypeGroup typeGroup = XTypeGroup(
     label: 'audio',
     extensions: ['mp3', 'wav', 'flac'],
     mimeTypes: ['audio/mpeg', 'audio/x-wav', 'audio/flac'],

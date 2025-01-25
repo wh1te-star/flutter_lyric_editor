@@ -152,7 +152,7 @@ class TextPaneProvider with ChangeNotifier {
       }
     }
 
-    debugPrint("${cursor}");
+    debugPrint("$cursor");
     cursorBlinker.restartCursorTimer();
     notifyListeners();
   }
@@ -179,7 +179,7 @@ class TextPaneProvider with ChangeNotifier {
       }
     }
 
-    debugPrint("${cursor}");
+    debugPrint("$cursor");
     cursorBlinker.restartCursorTimer();
     notifyListeners();
   }
@@ -243,7 +243,7 @@ class TextPaneProvider with ChangeNotifier {
       }
     }
 
-    debugPrint("${cursor}");
+    debugPrint("$cursor");
     cursorBlinker.restartCursorTimer();
     notifyListeners();
   }
@@ -297,7 +297,7 @@ class TextPaneProvider with ChangeNotifier {
       }
     }
 
-    debugPrint("${cursor}");
+    debugPrint("$cursor");
     cursorBlinker.restartCursorTimer();
     notifyListeners();
   }
@@ -306,7 +306,7 @@ class TextPaneProvider with ChangeNotifier {
 class TextPane extends ConsumerStatefulWidget {
   final FocusNode focusNode;
 
-  TextPane({required this.focusNode}) : super(key: const Key('TextPane'));
+  const TextPane({required this.focusNode}) : super(key: const Key('TextPane'));
 
   @override
   _TextPaneState createState() => _TextPaneState(focusNode);
@@ -383,7 +383,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     List<Widget> elements = [];
     var currentSnippets = timingService.getSnippetsAtSeekPosition();
     double maxWidth = 0.0;
-    TextStyle style = TextStyle(letterSpacing: 2.0);
+    TextStyle style = const TextStyle(letterSpacing: 2.0);
 
     double singleRowHeight = getSizeFromTextStyle("dummy text", style).height;
 
@@ -438,17 +438,17 @@ class _TextPaneState extends ConsumerState<TextPane> {
     TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
     PositionTypeInfo cursorPositionInfo = snippet.getPositionTypeInfo(textPaneProvider.cursor.charPosition);
 
-    TextStyle textStyle = TextStyle(
+    TextStyle textStyle = const TextStyle(
       color: Colors.black,
     );
     TextStyle textStyleIncursor = TextStyle(
       color: textPaneProvider.cursorBlinker.isCursorVisible ? Colors.white : Colors.black,
       background: textPaneProvider.cursorBlinker.isCursorVisible ? (Paint()..color = Colors.black) : null,
     );
-    TextStyle annotationTextStyle = TextStyle(
+    TextStyle annotationTextStyle = const TextStyle(
       color: Colors.black,
     );
-    TextStyle annotationDummyTextStyle = TextStyle(
+    TextStyle annotationDummyTextStyle = const TextStyle(
       color: Colors.transparent,
     );
     TextStyle annotationTextStyleIncursor = TextStyle(
@@ -840,12 +840,12 @@ class TextPaneCursor {
   String toString() {
     if (!isAnnotationSelection) {
       if (!isSegmentSelectionMode) {
-        return "SnippetSelection-> snippetID: ${snippetID}, charPosition: ${charPosition}, option: ${option}";
+        return "SnippetSelection-> snippetID: $snippetID, charPosition: $charPosition, option: $option";
       } else {
-        return "SegmentSelection-> snippetID: ${snippetID}, segment range: ${annotationSegmentRange}";
+        return "SegmentSelection-> snippetID: $snippetID, segment range: $annotationSegmentRange";
       }
     } else {
-      return "AnnotationSelection-> snippetID: ${snippetID}, annotationRange: ${annotationSegmentRange}, charPosition: ${charPosition}, option: ${option}";
+      return "AnnotationSelection-> snippetID: $snippetID, annotationRange: $annotationSegmentRange, charPosition: $charPosition, option: $option";
     }
   }
 

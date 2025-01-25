@@ -126,7 +126,7 @@ class TimelinePaneProvider with ChangeNotifier {
 class TimelinePane extends ConsumerStatefulWidget {
   final FocusNode focusNode;
 
-  TimelinePane({required this.focusNode}) : super(key: const Key('TimelinePane'));
+  const TimelinePane({required this.focusNode}) : super(key: const Key('TimelinePane'));
 
   @override
   _TimelinePaneState createState() => _TimelinePaneState(focusNode);

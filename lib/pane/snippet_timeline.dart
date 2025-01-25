@@ -15,7 +15,7 @@ import 'package:lyric_editor/utility/lyric_snippet.dart';
 class SnippetTimeline extends ConsumerStatefulWidget {
   VocalistID vocalistID;
 
-  SnippetTimeline(this.vocalistID);
+  SnippetTimeline(this.vocalistID, {super.key});
 
   @override
   _SnippetTimelineState createState() => _SnippetTimelineState(

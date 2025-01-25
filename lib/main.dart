@@ -12,7 +12,7 @@ import 'pane/adjustable_pane_border.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 void main() {
-  runApp(ProviderScope(child: MyApp()));
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends ConsumerWidget {
@@ -41,7 +41,7 @@ class MyApp extends ConsumerWidget {
 }
 
 class AdjustablePaneLayout extends ConsumerStatefulWidget {
-  AdjustablePaneLayout() : super(key: const Key('Main'));
+  const AdjustablePaneLayout() : super(key: const Key('Main'));
 
   @override
   _AdjustablePaneLayoutState createState() => _AdjustablePaneLayoutState();

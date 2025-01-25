@@ -83,7 +83,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
 
     vocalistTabHeader = TableRow(
       decoration: BoxDecoration(color: Colors.grey[300]),
-      children: <Widget>[Text('word', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold))] + headerVocalistWidgets,
+      children: <Widget>[const Text('word', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold))] + headerVocalistWidgets,
     );
 
     for (SentenceSegment segment in snippet.sentenceSegments) {
@@ -103,7 +103,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
         TableRow(
           children: <Widget>[
                 Padding(
-                  padding: EdgeInsets.only(right: 4.0),
+                  padding: const EdgeInsets.only(right: 4.0),
                   child: Text(
                     segment.word,
                     textAlign: TextAlign.right,
@@ -129,27 +129,27 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Snippet Details'),
-      content: Container(
+      content: SizedBox(
         width: 300,
         child: DefaultTabController(
           length: 2,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TabBar(
+              const TabBar(
                 tabs: [
                   Tab(text: 'Overall'),
                   Tab(text: 'Segments'),
                 ],
               ),
-              Container(
+              SizedBox(
                 height: 300,
                 child: TabBarView(
                   children: [
                     Column(
                       children: [
-                        SizedBox(height: 30),
-                        Text("Start and End Timestamp"),
+                        const SizedBox(height: 30),
+                        const Text("Start and End Timestamp"),
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -174,8 +174,8 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
                             ),
                           ],
                         ),
-                        SizedBox(height: 20),
-                        Text("Vocalists"),
+                        const SizedBox(height: 20),
+                        const Text("Vocalists"),
                         Column(
                           children: List.generate(vocalistNameList.length, (index) {
                             return CheckboxListTile(
@@ -192,15 +192,16 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
                       ],
                     ),
                     Column(children: [
-                      SizedBox(height: 30),
+                      const SizedBox(height: 30),
                       Table(
                           border: TableBorder.all(),
-                          columnWidths: {
-                            0: FixedColumnWidth(100.0),
-                            1: FixedColumnWidth(100.0),
+                          columnWidths: const {
+                            0: const FixedColumnWidth(100.0),
+                            1: const FixedColumnWidth(100.0),
                           },
                           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                          children: [vocalistTabHeader] + vocalistTabRows),
+                          children: [vocalistTabHeader] + vocalistTabRows,
+                          ),
                     ]),
                   ],
                 ),

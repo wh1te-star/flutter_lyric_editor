@@ -35,7 +35,7 @@ class VideoPaneProvider with ChangeNotifier {
 class VideoPane extends ConsumerStatefulWidget {
   final FocusNode focusNode;
 
-  VideoPane({required this.focusNode}) : super(key: const Key('VideoPane'));
+  const VideoPane({required this.focusNode}) : super(key: const Key('VideoPane'));
 
   @override
   _VideoPaneState createState() => _VideoPaneState(focusNode);
@@ -196,10 +196,10 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     double sumPosition = 0;
     int index = 0;
     for (index = 0; index < startIndex; index++) {
-      sumPosition += getSizeFromTextStyle(snippet.sentenceSegments[index].word, TextStyle(fontSize: 40)).width;
+      sumPosition += getSizeFromTextStyle(snippet.sentenceSegments[index].word, const TextStyle(fontSize: 40)).width;
     }
-    sumPosition += getSizeFromTextStyle(snippet.sentenceSegments[index].word, TextStyle(fontSize: 40)).width / 2;
-    return sumPosition - getSizeFromTextStyle(snippet.sentence, TextStyle(fontSize: 40)).width / 2;
+    sumPosition += getSizeFromTextStyle(snippet.sentenceSegments[index].word, const TextStyle(fontSize: 40)).width / 2;
+    return sumPosition - getSizeFromTextStyle(snippet.sentence, const TextStyle(fontSize: 40)).width / 2;
   }
 
   Widget snippetItem(LyricSnippet snippet, double sentenceFontSize, double annotationFontSize, String fontFamily) {
@@ -334,7 +334,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
         segmentWidgets.add(
           Column(
             children: [
-              Container(
+              SizedBox(
                 width: width,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -342,7 +342,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
                   children: partAnnotationWidgets,
                 ),
               ),
-              Container(
+              SizedBox(
                 width: width,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,

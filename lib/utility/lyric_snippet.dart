@@ -590,7 +590,7 @@ class SegmentRange {
 
   @override
   String toString() {
-    return "${startIndex}<=>${endIndex}";
+    return "$startIndex<=>$endIndex";
   }
 
   SegmentRange copyWith({int? startIndex, int? endIndex}) {
