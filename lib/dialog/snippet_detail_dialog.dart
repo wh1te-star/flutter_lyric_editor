@@ -194,14 +194,14 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
                     Column(children: [
                       const SizedBox(height: 30),
                       Table(
-                          border: TableBorder.all(),
-                          columnWidths: const {
-                            0: const FixedColumnWidth(100.0),
-                            1: const FixedColumnWidth(100.0),
-                          },
-                          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                          children: [vocalistTabHeader] + vocalistTabRows,
-                          ),
+                        border: TableBorder.all(),
+                        columnWidths: const {
+                          0: IntrinsicColumnWidth(),
+                          1: IntrinsicColumnWidth(),
+                        },
+                        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                        children: [vocalistTabHeader] + vocalistTabRows,
+                      ),
                     ]),
                   ],
                 ),
