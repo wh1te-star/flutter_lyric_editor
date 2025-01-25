@@ -33,7 +33,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   late TextEditingController startTimestampController;
   late TextEditingController endTimestampController;
 
-  late TextStyle textStyle;
+  late TextStyle textStyle = TextStyle();
 
   List<bool> vocalistCheckValues = [];
   List<String> vocalistNameList = [];
@@ -44,6 +44,8 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   late TableRow vocalistTabHeader;
   List<TableRow> vocalistTabRows = [];
   double checkboxCellWidth = 0.0;
+
+  Map<VocalistID, List<bool>> segmentWiseVocalistCheckValues = {};
 
   @override
   void initState() {
@@ -59,8 +61,6 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
     startTimestampController.text = snippet.startTimestamp.toString();
     endTimestampController.text = snippet.endTimestamp.toString();
 
-    textStyle = TextStyle();
-
     vocalistCheckValues = [];
     vocalistNameList = timingService.vocalistColorMap.entries.where((entry) {
       int id = entry.key.id;
@@ -72,37 +72,53 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
       return entry.value.name;
     }).toList();
 
-    List<Vocalist> headerVocalists = [];
+    Map<VocalistID, Vocalist> headerVocalists = {};
     for (int id = 1; id < pow(2, timingService.vocalistColorMap.length); id *= 2) {
       VocalistID vocalistID = snippet.vocalistID;
       if ((vocalistID.id & id) != 0) {
-        headerVocalists.add(timingService.vocalistColorMap[VocalistID(id)]!);
+        headerVocalists[vocalistID] = (timingService.vocalistColorMap[VocalistID(id)]!);
       }
     }
-    List<Widget> headerVocalistWidgets = headerVocalists.map((Vocalist vocalist) {
+    List<Widget> headerVocalistWidgets = headerVocalists.values.map((Vocalist vocalist) {
       return Text(
         vocalist.name,
         textAlign: TextAlign.center,
-        style: const TextStyle(fontWeight: FontWeight.bold),
+        style: textStyle.copyWith(fontWeight: FontWeight.bold),
       );
     }).toList();
 
     vocalistTabHeader = TableRow(
       decoration: BoxDecoration(color: Colors.grey[300]),
-      children: <Widget>[const Text('word', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold))] + headerVocalistWidgets,
+      children: <Widget>[Text('word', textAlign: TextAlign.center, style: textStyle.copyWith(fontWeight: FontWeight.bold))] + headerVocalistWidgets,
     );
 
-    for (SentenceSegment segment in snippet.sentenceSegments) {
+    for (MapEntry<VocalistID, Vocalist> entry in headerVocalists.entries) {
+      VocalistID vocalistID = entry.key;
+      Vocalist vocalist = entry.value;
+      segmentWiseVocalistCheckValues[vocalistID] = List.filled(snippet.sentenceSegments.length, true);
+    }
+
+    for (int i = 0; i < snippet.sentenceSegments.length; i++) {
+      SentenceSegment segment = snippet.sentenceSegments[i];
       segmentTexts.add(segment.word);
 
       List<Widget> segmentWiseVocalistCheckboxes = [];
-      for (Vocalist vocalist in headerVocalists) {
-        segmentWiseVocalistCheckboxes.add(Checkbox(
-          value: true,
-          onChanged: (bool? value) {
-            setState(() {});
+      for (MapEntry<VocalistID, Vocalist> entry in headerVocalists.entries) {
+        VocalistID vocalistID = entry.key;
+        Vocalist vocalist = entry.value;
+
+        segmentWiseVocalistCheckboxes.add(StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Checkbox(
+              value: segmentWiseVocalistCheckValues[vocalistID]![i],
+              onChanged: (bool? value) {
+                setState(() {
+                  segmentWiseVocalistCheckValues[vocalistID]![i] = value ?? false;
+                });
+              },
+              activeColor: Color(vocalist.color),
+            );
           },
-          activeColor: Color(vocalist.color),
         ));
       }
 
