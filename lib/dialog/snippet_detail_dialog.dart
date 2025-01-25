@@ -30,8 +30,10 @@ class _SnippetDetailDialog extends ConsumerStatefulWidget {
 class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   late FocusNode startTimestampFocusNode;
   late FocusNode endTimestampFocusNode;
+  late FocusNode sentenceFocusNode;
   late TextEditingController startTimestampController;
   late TextEditingController endTimestampController;
+  late TextEditingController sentenceController;
 
   late TextStyle textStyle = TextStyle();
 
@@ -56,10 +58,13 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
 
     startTimestampFocusNode = FocusNode();
     endTimestampFocusNode = FocusNode();
+    sentenceFocusNode = FocusNode();
     startTimestampController = TextEditingController();
     endTimestampController = TextEditingController();
+    sentenceController = TextEditingController();
     startTimestampController.text = snippet.startTimestamp.toString();
     endTimestampController.text = snippet.endTimestamp.toString();
+    sentenceController.text = snippet.sentence;
 
     vocalistCheckValues = [];
     vocalistNameList = timingService.vocalistColorMap.entries.where((entry) {
@@ -122,8 +127,8 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
         ));
       }
 
-      double rightPadding = 4.0;
-      double width = getSizeFromTextStyle(segment.word, textStyle).width + rightPadding;
+      double padding = 4.0;
+      double width = getSizeFromTextStyle(segment.word, textStyle).width + 2 * padding;
       if (width > checkboxCellWidth) {
         checkboxCellWidth = width;
       }
@@ -132,7 +137,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
         TableRow(
           children: <Widget>[
                 Padding(
-                  padding: EdgeInsets.only(right: rightPadding),
+                  padding: EdgeInsets.only(left: padding, right: padding),
                   child: Text(
                     segment.word,
                     style: textStyle,
@@ -150,8 +155,10 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   void dispose() {
     startTimestampFocusNode.dispose();
     endTimestampFocusNode.dispose();
+    sentenceFocusNode.dispose();
     startTimestampController.dispose();
     endTimestampController.dispose();
+    sentenceController.dispose();
     super.dispose();
   }
 
@@ -162,14 +169,15 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
       content: SizedBox(
         width: 300,
         child: DefaultTabController(
-          length: 2,
+          length: 3,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const TabBar(
                 tabs: [
                   Tab(text: 'Overall'),
-                  Tab(text: 'Segments'),
+                  Tab(text: 'Vocalist'),
+                  Tab(text: 'Sentence'),
                 ],
               ),
               SizedBox(
@@ -233,6 +241,15 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
                         children: [vocalistTabHeader] + vocalistTabRows,
                       )
                     ]),
+                    Column(
+                      children: [
+                        TextField(
+                          controller: sentenceController,
+                          focusNode: sentenceFocusNode,
+                          textAlign: TextAlign.center,
+                        )
+                      ],
+                    )
                   ],
                 ),
               ),
