@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
+import 'package:lyric_editor/utility/utility_functions.dart';
 
 Future<List<String>> displaySnippetDetailDialog(BuildContext context, LyricSnippet snippet) async {
   return await showDialog(
@@ -32,6 +33,8 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   late TextEditingController startTimestampController;
   late TextEditingController endTimestampController;
 
+  late TextStyle textStyle;
+
   List<bool> vocalistCheckValues = [];
   List<String> vocalistNameList = [];
 
@@ -40,6 +43,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
 
   late TableRow vocalistTabHeader;
   List<TableRow> vocalistTabRows = [];
+  double checkboxCellWidth = 0.0;
 
   @override
   void initState() {
@@ -54,6 +58,8 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
     endTimestampController = TextEditingController();
     startTimestampController.text = snippet.startTimestamp.toString();
     endTimestampController.text = snippet.endTimestamp.toString();
+
+    textStyle = TextStyle();
 
     vocalistCheckValues = [];
     vocalistNameList = timingService.vocalistColorMap.entries.where((entry) {
@@ -99,13 +105,21 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
           activeColor: Color(vocalist.color),
         ));
       }
+
+      double rightPadding = 4.0;
+      double width = getSizeFromTextStyle(segment.word, textStyle).width + rightPadding;
+      if (width > checkboxCellWidth) {
+        checkboxCellWidth = width;
+      }
+
       vocalistTabRows.add(
         TableRow(
           children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.only(right: 4.0),
+                  padding: EdgeInsets.only(right: rightPadding),
                   child: Text(
                     segment.word,
+                    style: textStyle,
                     textAlign: TextAlign.right,
                   ),
                 )
@@ -195,13 +209,13 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
                       const SizedBox(height: 30),
                       Table(
                         border: TableBorder.all(),
-                        columnWidths: const {
+                        columnWidths: {
                           0: IntrinsicColumnWidth(),
-                          1: IntrinsicColumnWidth(),
+                          for (int i = 1; i <= vocalistTabRows.length; i++) i: FixedColumnWidth(checkboxCellWidth),
                         },
                         defaultVerticalAlignment: TableCellVerticalAlignment.middle,
                         children: [vocalistTabHeader] + vocalistTabRows,
-                      ),
+                      )
                     ]),
                   ],
                 ),
