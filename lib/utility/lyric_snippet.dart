@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
+import 'package:lyric_editor/utility/utility_functions.dart';
 
 class LyricSnippet with TimingObject {
   VocalistID vocalistID;
@@ -113,8 +114,8 @@ class LyricSnippet with TimingObject {
       int endIndex = key.endIndex + 1;
       if (timingPointIndex == startIndex && timingPointIndex == endIndex + 1) {
         if (info.duplicate) {
-            newKey.startIndex--;
-            newKey.endIndex--;
+          newKey.startIndex--;
+          newKey.endIndex--;
         } else {
           return;
         }
@@ -297,41 +298,6 @@ mixin TimingObject {
     }
 
     sentenceSegments = result;
-  }
-
-  List<int> getCharPositionTranslation(String oldSentence, String newSentence) {
-    int oldLength = oldSentence.length;
-    int newLength = newSentence.length;
-
-    List<List<int>> lcsMap = List.generate(oldLength + 1, (_) => List.filled(newLength + 1, 0));
-
-    for (int i = 1; i <= oldLength; i++) {
-      for (int j = 1; j <= newLength; j++) {
-        if (oldSentence[i - 1] == newSentence[j - 1]) {
-          lcsMap[i][j] = lcsMap[i - 1][j - 1] + 1;
-        } else {
-          lcsMap[i][j] = max(lcsMap[i - 1][j], lcsMap[i][j - 1]);
-        }
-      }
-    }
-
-    List<int> indexTranslation = List.filled(oldLength + 1, -1);
-    int i = oldLength, j = newLength;
-
-    while (i > 0 && j > 0) {
-      if (oldSentence[i - 1] == newSentence[j - 1]) {
-        indexTranslation[i] = j;
-        indexTranslation[i - 1] = j - 1;
-        i--;
-        j--;
-      } else if (lcsMap[i - 1][j] >= lcsMap[i][j - 1]) {
-        i--;
-      } else {
-        j--;
-      }
-    }
-
-    return indexTranslation;
   }
 
   String getSegmentWord(int index) {

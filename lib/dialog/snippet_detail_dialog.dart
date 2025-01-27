@@ -51,6 +51,8 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
 
   Map<VocalistID, List<bool>> segmentWiseVocalistCheckValues = {};
 
+  late String currentSentence;
+
   @override
   void initState() {
     super.initState();
@@ -67,6 +69,9 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
     startTimestampController.text = snippet.startTimestamp.toString();
     endTimestampController.text = snippet.endTimestamp.toString();
     sentenceController.text = snippet.sentence;
+    sentenceController.addListener(() {
+      setState(() {});
+    });
 
     vocalistCheckValues = [];
     vocalistNameList = timingService.vocalistColorMap.entries.where((entry) {
@@ -151,6 +156,8 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
         ),
       );
     }
+
+    currentSentence = snippet.sentence;
   }
 
   @override
@@ -284,7 +291,46 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
           focusNode: sentenceFocusNode,
           textAlign: TextAlign.center,
         ),
+        sentenceComparison(currentSentence, sentenceController.text),
       ],
+    );
+  }
+
+  Widget sentenceComparison(String before, String after) {
+    List<int> charPositionTranslation = getCharPositionTranslation(before, after);
+    bool editPrevious = false;
+    String beforeSubstr = "";
+    String afterSubstr = "";
+    List<Widget> beforeWidget = [];
+    List<Widget> afterWidget = [];
+    TextStyle plainStyle = TextStyle(color: Colors.black);
+    TextStyle addStyle = TextStyle(color: Colors.green);
+    TextStyle deleteStyle = TextStyle(color: Colors.red);
+    TextStyle editStyle = TextStyle(color: Colors.blue);
+
+    for (int beforeIndex = 0; beforeIndex < charPositionTranslation.length - 1; beforeIndex++) {
+      if (charPositionTranslation[beforeIndex] == beforeIndex) {
+        beforeSubstr += before[beforeIndex];
+        afterSubstr += before[beforeIndex];
+        editPrevious = false;
+      } else {
+        if (editPrevious == false) {
+          beforeWidget.add(Text(beforeSubstr, style: plainStyle));
+          afterWidget.add(Text(afterSubstr, style: plainStyle));
+        }
+        editPrevious = true;
+      }
+    }
+
+    return StatefulBuilder(
+      builder: (BuildContext context, StateSetter setState) {
+        return Column(
+          children: [
+            Row(children: beforeWidget),
+            Row(children: afterWidget),
+          ],
+        );
+      },
     );
   }
 
