@@ -1,8 +1,10 @@
 import 'dart:math';
 
 import 'package:collection/collection.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
@@ -184,72 +186,9 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
                 height: 300,
                 child: TabBarView(
                   children: [
-                    Column(
-                      children: [
-                        const SizedBox(height: 30),
-                        const Text("Start and End Timestamp"),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: startTimestampController,
-                                focusNode: startTimestampFocusNode,
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            const Text("～"),
-                            Expanded(
-                              child: TextField(
-                                controller: endTimestampController,
-                                focusNode: endTimestampFocusNode,
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        const Text("Vocalists"),
-                        Column(
-                          children: List.generate(vocalistNameList.length, (index) {
-                            return CheckboxListTile(
-                              title: Text(vocalistNameList[index]),
-                              value: vocalistCheckValues[index],
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  vocalistCheckValues[index] = value ?? false;
-                                });
-                              },
-                            );
-                          }),
-                        ),
-                      ],
-                    ),
-                    Column(children: [
-                      const SizedBox(height: 30),
-                      Table(
-                        border: TableBorder.all(),
-                        columnWidths: {
-                          0: IntrinsicColumnWidth(),
-                          for (int i = 1; i <= vocalistTabRows.length; i++) i: FixedColumnWidth(checkboxCellWidth),
-                        },
-                        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                        children: [vocalistTabHeader] + vocalistTabRows,
-                      )
-                    ]),
-                    Column(
-                      children: [
-                        TextField(
-                          controller: sentenceController,
-                          focusNode: sentenceFocusNode,
-                          textAlign: TextAlign.center,
-                        )
-                      ],
-                    )
+                    overallTab(),
+                    vocalistTab(),
+                    sentenceTab(),
                   ],
                 ),
               ),
@@ -269,6 +208,81 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
           onPressed: () {
             Navigator.of(context).pop(vocalistCheckValues);
           },
+        ),
+      ],
+    );
+  }
+
+  Widget overallTab() {
+    return Column(
+      children: [
+        const SizedBox(height: 30),
+        const Text("Start and End Timestamp"),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              child: TextField(
+                controller: startTimestampController,
+                focusNode: startTimestampFocusNode,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const Text("～"),
+            Expanded(
+              child: TextField(
+                controller: endTimestampController,
+                focusNode: endTimestampFocusNode,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        const Text("Vocalists"),
+        Column(
+          children: List.generate(vocalistNameList.length, (index) {
+            return CheckboxListTile(
+              title: Text(vocalistNameList[index]),
+              value: vocalistCheckValues[index],
+              onChanged: (bool? value) {
+                setState(() {
+                  vocalistCheckValues[index] = value ?? false;
+                });
+              },
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget vocalistTab() {
+    return Column(children: [
+      const SizedBox(height: 30),
+      Table(
+        border: TableBorder.all(),
+        columnWidths: {
+          0: IntrinsicColumnWidth(),
+          for (int i = 1; i <= vocalistTabRows.length; i++) i: FixedColumnWidth(checkboxCellWidth),
+        },
+        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+        children: [vocalistTabHeader] + vocalistTabRows,
+      )
+    ]);
+  }
+
+  Widget sentenceTab() {
+    return Column(
+      children: [
+        TextField(
+          controller: sentenceController,
+          focusNode: sentenceFocusNode,
+          textAlign: TextAlign.center,
         ),
       ],
     );
