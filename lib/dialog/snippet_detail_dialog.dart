@@ -299,8 +299,6 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   Widget sentenceComparison(String before, String after) {
     List<int> charPositionTranslation = getCharPositionTranslation(before, after);
     bool editPrevious = false;
-    String beforeSubstr = "";
-    String afterSubstr = "";
     List<Widget> beforeWidget = [];
     List<Widget> afterWidget = [];
     TextStyle plainStyle = TextStyle(color: Colors.black);
@@ -308,18 +306,28 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
     TextStyle deleteStyle = TextStyle(color: Colors.red);
     TextStyle editStyle = TextStyle(color: Colors.blue);
 
-    for (int beforeIndex = 0; beforeIndex < charPositionTranslation.length - 1; beforeIndex++) {
-      if (charPositionTranslation[beforeIndex] == beforeIndex) {
-        beforeSubstr += before[beforeIndex];
-        afterSubstr += before[beforeIndex];
-        editPrevious = false;
-      } else {
-        if (editPrevious == false) {
-          beforeWidget.add(Text(beforeSubstr, style: plainStyle));
-          afterWidget.add(Text(afterSubstr, style: plainStyle));
+    int beforeIndex = 0;
+    int afterIndex = 0;
+    while (beforeIndex < before.length && afterIndex < after.length) {
+      String beforeSubstr = "";
+      String afterSubstr = "";
+      if (charPositionTranslation[beforeIndex] == afterIndex) {
+        while (beforeIndex < before.length && afterIndex < after.length && charPositionTranslation[beforeIndex] == afterIndex) {
+          beforeSubstr += before[beforeIndex];
+          afterSubstr += after[afterIndex];
+          beforeIndex++;
+          afterIndex++;
         }
-        editPrevious = true;
+      } else if (charPositionTranslation[beforeIndex] > afterIndex) {
+        beforeIndex++;
+        afterIndex++;
+      } else {
+        beforeIndex++;
+        afterIndex++;
       }
+
+      beforeWidget.add(Text(beforeSubstr));
+      afterWidget.add(Text(afterSubstr));
     }
 
     return StatefulBuilder(
