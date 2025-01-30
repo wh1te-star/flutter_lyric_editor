@@ -11,17 +11,14 @@ class CharDiff {
     int prefixLength = 0;
     int suffixLength = 0;
 
-    // Find common prefix
     while (prefixLength < beforeStr.length && prefixLength < afterStr.length && beforeStr[prefixLength] == afterStr[prefixLength]) {
       prefixLength++;
     }
 
-    // Find common suffix
     while (suffixLength < (beforeStr.length - prefixLength) && suffixLength < (afterStr.length - prefixLength) && beforeStr[beforeStr.length - 1 - suffixLength] == afterStr[afterStr.length - 1 - suffixLength]) {
       suffixLength++;
     }
 
-    // Add common prefix segment
     if (prefixLength > 0) {
       segments.add(DiffSegment(
         beforeStr.substring(0, prefixLength),
@@ -29,14 +26,12 @@ class CharDiff {
       ));
     }
 
-    // Add differing middle segment
     String beforeMiddle = beforeStr.substring(prefixLength, beforeStr.length - suffixLength);
     String afterMiddle = afterStr.substring(prefixLength, afterStr.length - suffixLength);
     if (beforeMiddle.isNotEmpty || afterMiddle.isNotEmpty) {
       segments.add(DiffSegment(beforeMiddle, afterMiddle));
     }
 
-    // Add common suffix segment
     if (suffixLength > 0) {
       segments.add(DiffSegment(
         beforeStr.substring(beforeStr.length - suffixLength),
@@ -50,7 +45,9 @@ class CharDiff {
 class DiffSegment {
   String beforeStr;
   String afterStr;
-  DiffSegment(this.beforeStr, this.afterStr);
+  DiffSegment(this.beforeStr, this.afterStr) {
+    assert(beforeStr != "" || afterStr != "");
+  }
 
   @override
   String toString() {

@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/service/timing_service.dart';
+import 'package:lyric_editor/utility/char_diff.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
@@ -297,44 +298,31 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   }
 
   Widget sentenceComparison(String before, String after) {
-    List<int> charPositionTranslation = getCharPositionTranslation(before, after);
-    bool editPrevious = false;
-    List<Widget> beforeWidget = [];
-    List<Widget> afterWidget = [];
-    TextStyle plainStyle = TextStyle(color: Colors.black);
-    TextStyle addStyle = TextStyle(color: Colors.green);
-    TextStyle deleteStyle = TextStyle(color: Colors.red);
-    TextStyle editStyle = TextStyle(color: Colors.blue);
+    TextStyle plainStyle = const TextStyle(color: Colors.black);
+    TextStyle addStyle = const TextStyle(color: Colors.green);
+    TextStyle deleteStyle = const TextStyle(color: Colors.red);
+    TextStyle editStyle = const TextStyle(color: Colors.blue);
 
-    int beforeIndex = 0;
-    int afterIndex = 0;
-    while (beforeIndex < before.length && afterIndex < after.length) {
-      String beforeSubstr = "";
-      String afterSubstr = "";
-      if (charPositionTranslation[beforeIndex] == afterIndex) {
-        while (beforeIndex < before.length && afterIndex < after.length && charPositionTranslation[beforeIndex] == afterIndex) {
-          beforeSubstr += before[beforeIndex];
-          afterSubstr += after[afterIndex];
-          beforeIndex++;
-          afterIndex++;
-        }
-      } else if (charPositionTranslation[beforeIndex] > afterIndex) {
-        beforeIndex++;
-        afterIndex++;
-      } else {
-        beforeIndex++;
-        afterIndex++;
+    CharDiff charDiff = CharDiff(before, after);
+    List<Widget> diffSegmentWidgets = charDiff.segments.map((DiffSegment diffSegment) {
+      String beforeStr = diffSegment.beforeStr;
+      String afterStr = diffSegment.afterStr;
+      TextStyle textStyle = plainStyle;
+      if (beforeStr == "") {
+        textStyle = addStyle;
+      } else if (afterStr == "") {
+        textStyle = deleteStyle;
+      } else if (beforeStr != afterStr) {
+        textStyle = editStyle;
       }
+      return Column(children: [
+        Text(diffSegment.beforeStr, style: textStyle),
+        Text(diffSegment.afterStr, style: textStyle),
+      ]);
+    }).toList();
 
-      beforeWidget.add(Text(beforeSubstr));
-      afterWidget.add(Text(afterSubstr));
-    }
-
-    return Column(
-      children: [
-        Row(children: beforeWidget),
-        Row(children: afterWidget),
-      ],
+    return Row(
+      children: diffSegmentWidgets,
     );
   }
 
