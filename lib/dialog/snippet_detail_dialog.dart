@@ -12,25 +12,30 @@ import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 
-Future<void> displaySnippetDetailDialog(BuildContext context, LyricSnippet snippet) async {
-  return await showDialog <void>(
+Future<void> displaySnippetDetailDialog(BuildContext context, SnippetID snippetID, LyricSnippet snippet) async {
+  return await showDialog<void>(
     context: context,
     builder: (BuildContext context) {
-      return _SnippetDetailDialog(snippet: snippet);
+      return _SnippetDetailDialog(snippetID: snippetID, snippet: snippet);
     },
   );
 }
 
 class _SnippetDetailDialog extends ConsumerStatefulWidget {
+  final SnippetID snippetID;
   final LyricSnippet snippet;
 
-  const _SnippetDetailDialog({required this.snippet});
+  const _SnippetDetailDialog({required this.snippetID, required this.snippet});
 
   @override
   __SnippetDetailDialogState createState() => __SnippetDetailDialogState();
 }
 
 class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
+  late TimingService timingService;
+  late final SnippetID snippetID;
+  late final LyricSnippet snippet;
+
   late FocusNode startTimestampFocusNode;
   late FocusNode endTimestampFocusNode;
   late FocusNode sentenceFocusNode;
@@ -58,8 +63,10 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   void initState() {
     super.initState();
 
-    final TimingService timingService = ref.read(timingMasterProvider);
-    final LyricSnippet snippet = widget.snippet;
+    timingService = ref.read(timingMasterProvider);
+
+    snippetID = widget.snippetID;
+    snippet = widget.snippet;
 
     startTimestampFocusNode = FocusNode();
     endTimestampFocusNode = FocusNode();
@@ -214,6 +221,8 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
         TextButton(
           child: const Text('OK'),
           onPressed: () {
+            timingService = ref.read(timingMasterProvider);
+            timingService.editSentence(snippetID, sentenceController.text);
             Navigator.of(context).pop();
           },
         ),

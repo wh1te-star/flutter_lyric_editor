@@ -132,7 +132,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
           setState(() {});
         },
         onDoubleTap: () {
-          displaySnippetDetailDialog(context, snippet);
+          displaySnippetDetailDialog(context, snippetID, snippet);
         },
         child: CustomPaint(
           size: itemSize,
