@@ -330,15 +330,11 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
       afterWidget.add(Text(afterSubstr));
     }
 
-    return StatefulBuilder(
-      builder: (BuildContext context, StateSetter setState) {
-        return Column(
-          children: [
-            Row(children: beforeWidget),
-            Row(children: afterWidget),
-          ],
-        );
-      },
+    return Column(
+      children: [
+        Row(children: beforeWidget),
+        Row(children: afterWidget),
+      ],
     );
   }
 
