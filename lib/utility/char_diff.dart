@@ -8,31 +8,40 @@ class CharDiff {
 
   List<DiffSegment> getDiffSegments(String beforeStr, String afterStr) {
     List<DiffSegment> segments = [];
-    int beforeIndex = 0, afterIndex = 0;
-    while (beforeIndex < beforeStr.length || afterIndex < afterStr.length) {
-      if (beforeIndex < beforeStr.length && afterIndex < afterStr.length && beforeStr[beforeIndex] == afterStr[afterIndex]) {
-        // Find the length of the unchanged segment
-        int start = beforeIndex;
-        while (beforeIndex < beforeStr.length && afterIndex < afterStr.length && beforeStr[beforeIndex] == afterStr[afterIndex]) {
-          beforeIndex++;
-          afterIndex++;
-        }
-        segments.add(DiffSegment(beforeStr.substring(start, beforeIndex), afterStr.substring(start, afterIndex)));
-      } else {
-        // Handle edits, deletions, and additions
-        int startBefore = beforeIndex;
-        int startAfter = afterIndex;
-        while (beforeIndex < beforeStr.length && (afterIndex >= afterStr.length || beforeStr[beforeIndex] != afterStr[afterIndex])) {
-          beforeIndex++;
-        }
-        while (afterIndex < afterStr.length && (beforeIndex >= beforeStr.length || beforeStr[beforeIndex] != afterStr[afterIndex])) {
-          afterIndex++;
-        }
-        segments.add(DiffSegment(
-          beforeStr.substring(startBefore, beforeIndex),
-          afterStr.substring(startAfter, afterIndex),
-        ));
-      }
+    int prefixLength = 0;
+    int suffixLength = 0;
+
+    // Find common prefix
+    while (prefixLength < beforeStr.length && prefixLength < afterStr.length && beforeStr[prefixLength] == afterStr[prefixLength]) {
+      prefixLength++;
+    }
+
+    // Find common suffix
+    while (suffixLength < (beforeStr.length - prefixLength) && suffixLength < (afterStr.length - prefixLength) && beforeStr[beforeStr.length - 1 - suffixLength] == afterStr[afterStr.length - 1 - suffixLength]) {
+      suffixLength++;
+    }
+
+    // Add common prefix segment
+    if (prefixLength > 0) {
+      segments.add(DiffSegment(
+        beforeStr.substring(0, prefixLength),
+        afterStr.substring(0, prefixLength),
+      ));
+    }
+
+    // Add differing middle segment
+    String beforeMiddle = beforeStr.substring(prefixLength, beforeStr.length - suffixLength);
+    String afterMiddle = afterStr.substring(prefixLength, afterStr.length - suffixLength);
+    if (beforeMiddle.isNotEmpty || afterMiddle.isNotEmpty) {
+      segments.add(DiffSegment(beforeMiddle, afterMiddle));
+    }
+
+    // Add common suffix segment
+    if (suffixLength > 0) {
+      segments.add(DiffSegment(
+        beforeStr.substring(beforeStr.length - suffixLength),
+        afterStr.substring(afterStr.length - suffixLength),
+      ));
     }
     return segments;
   }
