@@ -12,8 +12,8 @@ import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/lyric_snippet.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 
-Future<List<String>> displaySnippetDetailDialog(BuildContext context, LyricSnippet snippet) async {
-  return await showDialog(
+Future<void> displaySnippetDetailDialog(BuildContext context, LyricSnippet snippet) async {
+  return await showDialog <void>(
     context: context,
     builder: (BuildContext context) {
       return _SnippetDetailDialog(snippet: snippet);
@@ -214,7 +214,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
         TextButton(
           child: const Text('OK'),
           onPressed: () {
-            Navigator.of(context).pop(vocalistCheckValues);
+            Navigator.of(context).pop();
           },
         ),
       ],
