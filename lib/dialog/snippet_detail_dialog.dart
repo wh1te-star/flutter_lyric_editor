@@ -36,14 +36,14 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   late final SnippetID snippetID;
   late final LyricSnippet snippet;
 
-  late FocusNode startTimestampFocusNode;
-  late FocusNode endTimestampFocusNode;
-  late FocusNode sentenceFocusNode;
-  late TextEditingController startTimestampController;
-  late TextEditingController endTimestampController;
-  late TextEditingController sentenceController;
+  late final FocusNode startTimestampFocusNode;
+  late final FocusNode endTimestampFocusNode;
+  late final FocusNode sentenceFocusNode;
+  late final TextEditingController startTimestampController;
+  late final TextEditingController endTimestampController;
+  late final TextEditingController sentenceController;
 
-  late TextStyle textStyle = TextStyle();
+  late final TextStyle textStyle = TextStyle();
 
   List<bool> vocalistCheckValues = [];
   List<String> vocalistNameList = [];
