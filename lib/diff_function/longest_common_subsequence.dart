@@ -10,14 +10,28 @@ class LongestCommonSequence {
     required this.secondStr,
   }) {
     assert(firstStr != "" || secondStr != "");
-
     lcmTable = constructLCMTable(firstStr, secondStr);
   }
 
   List<List<LCMCell>> constructLCMTable(String firstStr, String secondStr) {
     int rowCount = firstStr.length;
     int columnCount = secondStr.length;
-    List<List<LCMCell>> lcmTable = List.generate(
+    List<List<LCMCell>> table = initLCMTable(rowCount, columnCount);
+
+    for (int firstIndex = 1; firstIndex <= rowCount; firstIndex++) {
+      for (int secondIndex = 1; secondIndex <= columnCount; secondIndex++) {
+        if (firstStr[firstIndex - 1] == secondStr[secondIndex - 1]) {
+          table[firstIndex][secondIndex] = handleMatch(table, firstIndex, secondIndex);
+        } else {
+          table[firstIndex][secondIndex] = handleUnmatch(table, firstIndex, secondIndex);
+        }
+      }
+    }
+    return table;
+  }
+
+  List<List<LCMCell>> initLCMTable(int rowCount, int columnCount) {
+    return List.generate(
       rowCount + 1,
       (_) => List.generate(
         columnCount + 1,
@@ -29,45 +43,41 @@ class LongestCommonSequence {
         ),
       ),
     );
+  }
 
-    for (int firstIndex = 1; firstIndex <= rowCount; firstIndex++) {
-      for (int secondIndex = 1; secondIndex <= columnCount; secondIndex++) {
-        if (firstStr[firstIndex - 1] == secondStr[secondIndex - 1]) {
-          lcmTable[firstIndex][secondIndex] = LCMCell(
-            fromLeft: false,
-            fromUpper: false,
-            fromLeftUpper: true,
-            lcmLength: lcmTable[firstIndex - 1][secondIndex - 1].lcmLength + 1,
-          );
-        } else {
-          int leftValue = lcmTable[firstIndex][secondIndex - 1].lcmLength;
-          int upperValue = lcmTable[firstIndex - 1][secondIndex].lcmLength;
-          if (leftValue > upperValue) {
-            lcmTable[firstIndex][secondIndex] = LCMCell(
-              fromLeft: true,
-              fromUpper: false,
-              fromLeftUpper: false,
-              lcmLength: leftValue,
-            );
-          } else if (leftValue < upperValue) {
-            lcmTable[firstIndex][secondIndex] = LCMCell(
-              fromLeft: false,
-              fromUpper: true,
-              fromLeftUpper: false,
-              lcmLength: upperValue,
-            );
-          } else {
-            lcmTable[firstIndex][secondIndex] = LCMCell(
-              fromLeft: true,
-              fromUpper: true,
-              fromLeftUpper: false,
-              lcmLength: leftValue,
-            );
-          }
-        }
-      }
+  LCMCell handleMatch(List<List<LCMCell>> table, int firstIndex, int secondIndex) {
+    return LCMCell(
+      fromLeft: false,
+      fromUpper: false,
+      fromLeftUpper: true,
+      lcmLength: table[firstIndex - 1][secondIndex - 1].lcmLength + 1,
+    );
+  }
+
+  LCMCell handleUnmatch(List<List<LCMCell>> table, int firstIndex, int secondIndex) {
+    int leftValue = table[firstIndex][secondIndex - 1].lcmLength;
+    int upperValue = table[firstIndex - 1][secondIndex].lcmLength;
+
+    if (leftValue > upperValue) {
+      return LCMCell(
+        fromLeft: true,
+        fromUpper: false,
+        fromLeftUpper: false,
+        lcmLength: leftValue,
+      );
+    } else if (leftValue < upperValue) {
+      return LCMCell(
+        fromLeft: false,
+        fromUpper: true,
+        fromLeftUpper: false,
+        lcmLength: upperValue,
+      );
     }
-
-    return lcmTable;
+    return LCMCell(
+      fromLeft: true,
+      fromUpper: true,
+      fromLeftUpper: false,
+      lcmLength: leftValue,
+    );
   }
 }
