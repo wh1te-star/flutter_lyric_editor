@@ -15,12 +15,12 @@ class LongestCommonSequence {
   }
 
   List<List<LCMCell>> constructLCMTable(String firstStr, String secondStr) {
-    int m = firstStr.length;
-    int n = secondStr.length;
+    int rowCount = firstStr.length;
+    int columnCount = secondStr.length;
     List<List<LCMCell>> lcmTable = List.generate(
-      m + 1,
+      rowCount + 1,
       (_) => List.generate(
-        n + 1,
+        columnCount + 1,
         (_) => LCMCell(
           fromLeft: false,
           fromUpper: false,
@@ -30,8 +30,8 @@ class LongestCommonSequence {
       ),
     );
 
-    for (int firstIndex = 1; firstIndex <= m; firstIndex++) {
-      for (int secondIndex = 1; secondIndex <= n; secondIndex++) {
+    for (int firstIndex = 1; firstIndex <= rowCount; firstIndex++) {
+      for (int secondIndex = 1; secondIndex <= columnCount; secondIndex++) {
         if (firstStr[firstIndex - 1] == secondStr[secondIndex - 1]) {
           lcmTable[firstIndex][secondIndex] = LCMCell(
             fromLeft: false,
@@ -40,26 +40,28 @@ class LongestCommonSequence {
             lcmLength: lcmTable[firstIndex - 1][secondIndex - 1].lcmLength + 1,
           );
         } else {
-          if (lcmTable[firstIndex - 1][secondIndex].lcmLength > lcmTable[firstIndex][secondIndex - 1].lcmLength) {
+          int leftValue = lcmTable[firstIndex][secondIndex - 1].lcmLength;
+          int upperValue = lcmTable[firstIndex - 1][secondIndex].lcmLength;
+          if (leftValue > upperValue) {
             lcmTable[firstIndex][secondIndex] = LCMCell(
               fromLeft: true,
               fromUpper: false,
               fromLeftUpper: false,
-              lcmLength: lcmTable[firstIndex - 1][secondIndex].lcmLength,
+              lcmLength: leftValue,
             );
-          } else if (lcmTable[firstIndex - 1][secondIndex].lcmLength < lcmTable[firstIndex][secondIndex - 1].lcmLength) {
+          } else if (leftValue < upperValue) {
             lcmTable[firstIndex][secondIndex] = LCMCell(
               fromLeft: false,
               fromUpper: true,
               fromLeftUpper: false,
-              lcmLength: lcmTable[firstIndex][secondIndex - 1].lcmLength,
+              lcmLength: upperValue,
             );
           } else {
             lcmTable[firstIndex][secondIndex] = LCMCell(
               fromLeft: true,
               fromUpper: true,
               fromLeftUpper: false,
-              lcmLength: lcmTable[firstIndex - 1][secondIndex].lcmLength,
+              lcmLength: leftValue,
             );
           }
         }
