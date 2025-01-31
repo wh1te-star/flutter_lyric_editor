@@ -1,6 +1,7 @@
 class DiffSegment {
-  String beforeStr;
-  String afterStr;
+  final String beforeStr;
+  final String afterStr;
+
   DiffSegment(this.beforeStr, this.afterStr) {
     assert(beforeStr != "" || afterStr != "");
   }

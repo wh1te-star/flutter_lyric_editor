@@ -1,4 +1,4 @@
-import 'package:lyric_editor/diff_function/DiffSegment';
+import 'package:lyric_editor/diff_function/diff_segment.dart';
 
 class CharDiff {
   String beforeStr;

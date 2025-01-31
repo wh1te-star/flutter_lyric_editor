@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lyric_editor/diff_function/diff_segment.dart';
 import 'package:lyric_editor/diff_function/char_diff.dart';
 
 void main() {
