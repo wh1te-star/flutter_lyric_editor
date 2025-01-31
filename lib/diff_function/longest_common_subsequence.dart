@@ -1,19 +1,22 @@
+import 'package:lyric_editor/diff_function/backtrack_cell.dart';
 import 'package:lyric_editor/diff_function/lcm_cell.dart';
 
 class LongestCommonSequence {
   final String firstStr;
   final String secondStr;
   late List<List<LCMCell>> lcmTable;
+  late List<BacktrackCell> backtrackSteps;
 
   LongestCommonSequence({
     required this.firstStr,
     required this.secondStr,
   }) {
     assert(firstStr != "" || secondStr != "");
-    lcmTable = constructLCMTable(firstStr, secondStr);
+    lcmTable = constructLCMTable();
+    backtrackSteps = backtrackLCMTable();
   }
 
-  List<List<LCMCell>> constructLCMTable(String firstStr, String secondStr) {
+  List<List<LCMCell>> constructLCMTable() {
     int rowCount = firstStr.length;
     int columnCount = secondStr.length;
     List<List<LCMCell>> table = initLCMTable(rowCount, columnCount);
@@ -79,5 +82,10 @@ class LongestCommonSequence {
       fromLeftUpper: false,
       lcmLength: leftValue,
     );
+  }
+
+  List<BacktrackCell> backtrackLCMTable() {
+    List<BacktrackCell> steps = [];
+    return steps;
   }
 }
