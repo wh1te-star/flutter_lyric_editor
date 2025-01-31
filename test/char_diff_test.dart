@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyric_editor/utility/char_diff.dart';
+import 'package:lyric_editor/diff_function/char_diff.dart';
 
 void main() {
   group('diff function test', () {
