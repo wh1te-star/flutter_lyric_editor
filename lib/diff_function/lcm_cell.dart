@@ -16,13 +16,13 @@ class LCMCell {
   @override
   String toString() {
     if (fromLeftUpper) {
-      return "↖↖";
+      return "↖↖$lcmLength";
     } else {
       String leftChar = " ";
       String upperChar = " ";
       if (fromLeft) leftChar = "←";
       if (fromUpper) upperChar = "↑";
-      return "$leftChar$upperChar";
+      return "$leftChar$upperChar$lcmLength";
     }
   }
 
