@@ -1,7 +1,12 @@
-class BacktrackCell {
-  List<String> possibleStrings;
+class BacktrackStep {
+  int first;
+  int second;
 
-  BacktrackCell({
-    required this.possibleStrings,
-  });
+  BacktrackStep({
+    required this.first,
+    required this.second,
+  }) {
+    assert(first >= 0);
+    assert(second >= 0);
+  }
 }
