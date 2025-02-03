@@ -5,7 +5,6 @@ class LongestCommonSequence {
   final String _firstStr;
   final String _secondStr;
   late List<List<LCMCell>> _lcmTable;
-  late List<List<BacktrackCell>> _backtrackSteps;
 
   LongestCommonSequence({
     required String firstStr,
@@ -14,7 +13,6 @@ class LongestCommonSequence {
         _firstStr = firstStr {
     assert(_firstStr != "" || _secondStr != "");
     _lcmTable = constructLCMTable();
-    _backtrackSteps = constructBacktrackSteps();
   }
 
   get firstStr => _firstStr;
