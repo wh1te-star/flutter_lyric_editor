@@ -2,28 +2,33 @@ import 'package:lyric_editor/diff_function/backtrack_cell.dart';
 import 'package:lyric_editor/diff_function/lcm_cell.dart';
 
 class LongestCommonSequence {
-  final String firstStr;
-  final String secondStr;
-  late List<List<LCMCell>> lcmTable;
-  late List<List<BacktrackStep>> backtrackSteps;
+  final String _firstStr;
+  final String _secondStr;
+  late List<List<LCMCell>> _lcmTable;
+  late List<List<BacktrackCell>> _backtrackSteps;
 
   LongestCommonSequence({
-    required this.firstStr,
-    required this.secondStr,
-  }) {
-    assert(firstStr != "" || secondStr != "");
-    lcmTable = constructLCMTable();
-    backtrackSteps = constructBacktrackSteps();
+    required String firstStr,
+    required String secondStr,
+  })  : _secondStr = secondStr,
+        _firstStr = firstStr {
+    assert(_firstStr != "" || _secondStr != "");
+    _lcmTable = constructLCMTable();
+    _backtrackSteps = constructBacktrackSteps();
+  }
+
+  LCMCell cell(int row, int column) {
+    return _lcmTable[row][column];
   }
 
   List<List<LCMCell>> constructLCMTable() {
-    int rowCount = firstStr.length;
-    int columnCount = secondStr.length;
+    int rowCount = _firstStr.length;
+    int columnCount = _secondStr.length;
     List<List<LCMCell>> table = initLCMTable(rowCount, columnCount);
 
     for (int firstIndex = 1; firstIndex <= rowCount; firstIndex++) {
       for (int secondIndex = 1; secondIndex <= columnCount; secondIndex++) {
-        if (firstStr[firstIndex - 1] == secondStr[secondIndex - 1]) {
+        if (_firstStr[firstIndex - 1] == _secondStr[secondIndex - 1]) {
           table[firstIndex][secondIndex] = handleMatch(table, firstIndex, secondIndex);
         } else {
           table[firstIndex][secondIndex] = handleUnmatch(table, firstIndex, secondIndex);
@@ -84,8 +89,8 @@ class LongestCommonSequence {
     );
   }
 
-  List<List<BacktrackStep>> constructBacktrackSteps() {
-    List<List<BacktrackStep>> steps = [];
+  List<List<BacktrackCell>> constructBacktrackSteps() {
+    List<List<BacktrackCell>> steps = [];
     return steps;
   }
 }

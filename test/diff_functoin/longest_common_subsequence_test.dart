@@ -48,7 +48,7 @@ void main() {
         ],
       ];
 
-      expect(lcm.lcmTable, equals(expected));
+      expect(lcm._lcmTable, equals(expected));
     });
   });
 }
