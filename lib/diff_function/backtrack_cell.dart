@@ -1,36 +1,27 @@
 import 'package:lyric_editor/diff_function/longest_common_subsequence.dart';
 
-class BacktrackTree {
-  BacktrackNode treeNodes;
+class BacktrackTable {
   LongestCommonSequence lcm;
-  List<BacktrackNode> route = [];
+  List<BacktrackCell> routes = [];
 
-  BacktrackTree({required this.lcm, required this.root}) {
-    constructTree();
+  BacktrackTable({required this.lcm}) {
+    establishRoute();
   }
 
-  void constructTree() {
-    lcm.cell(0, 0);
+  void establishRoute() {
   }
 }
 
-class BacktrackNode {
-  int first;
-  int second;
-  BacktrackNode leftNode = BacktrackNode(first: -1, second: -1);
-  BacktrackNode rightNode = BacktrackNode(first: -1, second: -1);
+class BacktrackCell {
+  List<BacktrackPoint> routes=[];
+}
 
-  BacktrackNode({
-    required this.first,
-    required this.second,
-  }) {
-    if (first != -1 || second != -1) {
-      assert(first >= 0);
-      assert(second >= 0);
-    }
-  }
+class BacktrackPoint {
+  int row;
+  int column;
 
-  static BacktrackNode emptyNode() {
-    return BacktrackNode(first: -1, second: -1);
+  BacktrackPoint(this.row, this.column) {
+    assert(row >= 0);
+    assert(column >= 0);
   }
 }
