@@ -17,6 +17,8 @@ class LongestCommonSequence {
     _backtrackSteps = constructBacktrackSteps();
   }
 
+  get firstStr => _firstStr;
+  get secondStr => _secondStr;
   LCMCell cell(int row, int column) {
     return _lcmTable[row][column];
   }
