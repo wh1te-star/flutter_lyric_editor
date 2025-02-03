@@ -48,7 +48,14 @@ void main() {
         ],
       ];
 
-      expect(lcm._lcmTable, equals(expected));
+      List<List<LCMCell>> result = List.generate(
+        firstStr.length + 1,
+        (rowIndex) => List.generate(
+          secondStr.length + 1,
+          (colIndex) => lcm.cell(rowIndex, colIndex),
+        ),
+      );
+      expect(result, equals(expected));
     });
   });
 }
