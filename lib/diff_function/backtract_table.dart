@@ -4,7 +4,6 @@ import 'package:lyric_editor/diff_function/backtrack_route.dart';
 import 'package:lyric_editor/diff_function/lcm_cell.dart';
 import 'package:lyric_editor/diff_function/longest_common_subsequence.dart';
 
-
 class BacktrackTable {
   final LongestCommonSequence _lcm;
   List<List<BacktrackCell>> _backtrackTable = [];
@@ -17,19 +16,19 @@ class BacktrackTable {
   void establishRoute() {
     int rowCount = _lcm.firstStr.length;
     int columnCount = _lcm.secondStr.length;
-_backtrackTable = List.generate(
-  rowCount + 1,
-  (rowIndex) => List.generate(
-    columnCount + 1,
-    (columnIndex) {
-      if (rowIndex == rowCount && columnIndex == columnCount) {
-        return BacktrackCell([BacktrackRoute.dummyRoute()]);
-      } else {
-        return BacktrackCell([]);
-      }
-    },
-  ),
-);
+    _backtrackTable = List.generate(
+      rowCount + 1,
+      (rowIndex) => List.generate(
+        columnCount + 1,
+        (columnIndex) {
+          if (rowIndex == rowCount && columnIndex == columnCount) {
+            return BacktrackCell([BacktrackRoute.dummyRoute()]);
+          } else {
+            return BacktrackCell([]);
+          }
+        },
+      ),
+    );
 
     for (int firstIndex = rowCount; firstIndex >= 0; firstIndex--) {
       for (int secondIndex = columnCount; secondIndex >= 0; secondIndex--) {
@@ -66,27 +65,13 @@ _backtrackTable = List.generate(
       }
     }
 
-    /*
-    _routes = normalizeRouteList(_backtrackTable[0][0]);
+    _routes += _backtrackTable[0][0].normalizedRoutes();
     for (int row = 1; row <= rowCount; row++) {
-      _routes += normalizeRouteList(_backtrackTable[row][0]);
+      _routes += _backtrackTable[row][0].normalizedRoutes();
     }
     for (int column = 1; column <= rowCount; column++) {
-      _routes += normalizeRouteList(_backtrackTable[0][column]);
+      _routes += _backtrackTable[0][column].normalizedRoutes();
     }
-    */
-  }
-
-  BacktrackRoute normalizeRoute(BacktrackRoute route) {
-    List<BacktrackPoint> dummyRemovedRoute = route.points;
-    dummyRemovedRoute.removeAt(0);
-    return BacktrackRoute(dummyRemovedRoute.reversed.toList());
-  }
-
-  List<BacktrackRoute> normalizeRouteList(List<BacktrackRoute> routes) {
-    return routes.map((BacktrackRoute route) {
-      return normalizeRoute(route);
-    }).toList();
   }
 
   List<BacktrackRoute> getCommonIndex() {

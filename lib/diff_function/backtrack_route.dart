@@ -7,6 +7,12 @@ class BacktrackRoute {
   BacktrackRoute(this.points);
 
   static BacktrackRoute dummyRoute() => BacktrackRoute([BacktrackPoint.dummyPoint()]);
+  
+  BacktrackRoute normalize(){
+    List<BacktrackPoint> routeWithoutDummy = points;
+    routeWithoutDummy.removeAt(0);
+    return BacktrackRoute(routeWithoutDummy.reversed.toList());
+  }
 
   @override
   String toString() {

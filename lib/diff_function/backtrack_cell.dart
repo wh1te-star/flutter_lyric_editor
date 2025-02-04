@@ -1,8 +1,6 @@
+import 'package:collection/collection.dart';
 import 'package:lyric_editor/diff_function/backtrack_point.dart';
 import 'package:lyric_editor/diff_function/backtrack_route.dart';
-import 'package:lyric_editor/diff_function/lcm_cell.dart';
-import 'package:lyric_editor/diff_function/longest_common_subsequence.dart';
-
 
 class BacktrackCell {
   List<BacktrackRoute> _routes = [];
@@ -28,7 +26,19 @@ class BacktrackCell {
     _routes += appendedRoutes;
     return BacktrackCell(appendedRoutes);
   }
-  
+
+  List<BacktrackRoute> normalizedRoutes() {
+    return _routes.map((BacktrackRoute route) {
+      return route.normalize();
+    }).toList();
+  }
+
+  @override
+  String toString() {
+    return _routes.join("\n");
+  }
+
+  @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! BacktrackCell) return false;
@@ -37,5 +47,7 @@ class BacktrackCell {
       return entry.value == other._routes[entry.key];
     });
   }
-}
 
+  @override
+  int get hashCode => const ListEquality().hash(_routes);
+}
