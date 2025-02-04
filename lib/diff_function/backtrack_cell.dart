@@ -1,128 +1,41 @@
+import 'package:lyric_editor/diff_function/backtrack_point.dart';
+import 'package:lyric_editor/diff_function/backtrack_route.dart';
 import 'package:lyric_editor/diff_function/lcm_cell.dart';
 import 'package:lyric_editor/diff_function/longest_common_subsequence.dart';
 
-class BacktrackTable {
-  final LongestCommonSequence _lcm;
-  List<BacktrackRoute> _routes = [];
-
-  BacktrackTable({required LongestCommonSequence lcm}) : _lcm = lcm {
-    establishRoute();
-  }
-
-  void establishRoute() {
-    int rowCount = _lcm.firstStr.length;
-    int columnCount = _lcm.secondStr.length;
-    List<List<BacktrackCell>> backtrackTable = List.generate(
-      rowCount + 1,
-      (_) => List.generate(
-        columnCount + 1,
-        (_) => BacktrackCell([]),
-      ),
-    );
-    backtrackTable[rowCount][columnCount].routes = [BacktrackRoute.dummyRoute()];
-
-    for (int firstIndex = rowCount; firstIndex >= 0; firstIndex--) {
-      for (int secondIndex = columnCount; secondIndex >= 0; secondIndex--) {
-        LCMCell lcmCell = _lcm.cell(firstIndex, secondIndex);
-        BacktrackCell backtrackCell = backtrackTable[firstIndex][secondIndex];
-
-        bool isLowerIn = firstIndex + 1 <= rowCount;
-        bool isRightIn = secondIndex + 1 <= columnCount;
-        LCMCell? rightLCMCell;
-        LCMCell? lowerLCMCell;
-        LCMCell? rightLowerLCMCell;
-        if (isRightIn) {
-          rightLCMCell = _lcm.cell(firstIndex, secondIndex + 1);
-        }
-        if (isLowerIn) {
-          lowerLCMCell = _lcm.cell(firstIndex + 1, secondIndex);
-        }
-        if (isRightIn && isLowerIn) {
-          rightLowerLCMCell = _lcm.cell(firstIndex + 1, secondIndex + 1);
-        }
-
-        if (rightLCMCell != null && rightLCMCell.fromLeft) {
-          BacktrackCell previousBacktrackCell = backtrackTable[firstIndex][secondIndex + 1];
-          backtrackCell.routes += previousBacktrackCell.routes;
-        }
-        if (lowerLCMCell != null && lowerLCMCell.fromUpper) {
-          BacktrackCell previousBacktrackCell = backtrackTable[firstIndex + 1][secondIndex];
-          backtrackCell.routes += previousBacktrackCell.routes;
-        }
-        if (rightLCMCell != null && lowerLCMCell != null && rightLowerLCMCell != null && rightLowerLCMCell.fromLeftUpper) {
-          BacktrackCell previousBacktrackCell = backtrackTable[firstIndex + 1][secondIndex + 1];
-          List<BacktrackRoute> appendedRoutes = previousBacktrackCell.routes.map((BacktrackRoute route) {
-            BacktrackRoute appendedRoute = route;
-            appendedRoute.points.add(BacktrackPoint(firstIndex, secondIndex));
-            return appendedRoute;
-          }).toList();
-          backtrackCell.routes += appendedRoutes;
-        }
-      }
-    }
-
-    _routes = normalizeRouteList(backtrackTable[0][0].routes);
-    for (int row = 1; row <= rowCount; row++) {
-      _routes += normalizeRouteList(backtrackTable[row][0].routes);
-    }
-    for (int column = 1; column <= rowCount; column++) {
-      _routes += normalizeRouteList(backtrackTable[0][column].routes);
-    }
-  }
-
-  BacktrackRoute normalizeRoute(BacktrackRoute route) {
-    List<BacktrackPoint> dummyRemovedRoute = route.points;
-    dummyRemovedRoute.removeAt(0);
-    return BacktrackRoute(dummyRemovedRoute.reversed.toList());
-  }
-
-  List<BacktrackRoute> normalizeRouteList(List<BacktrackRoute> routes) {
-    return routes.map((BacktrackRoute route) {
-      return normalizeRoute(route);
-    }).toList();
-  }
-
-  List<BacktrackRoute> getCommonIndex() {
-    return _routes;
-  }
-}
 
 class BacktrackCell {
-  List<BacktrackRoute> routes = [];
+  List<BacktrackRoute> _routes = [];
 
-  BacktrackCell(this.routes);
-}
+  BacktrackCell(this._routes);
 
-class BacktrackRoute {
-  List<BacktrackPoint> points = [];
-
-  BacktrackRoute(this.points);
-
-  static BacktrackRoute dummyRoute() => BacktrackRoute([BacktrackPoint.dummyPoint()]);
-
-  @override
-  String toString() {
-    return points.map((BacktrackPoint point) {
-      return point.toString();
-    }).join("->");
-  }
-}
-
-class BacktrackPoint {
-  int row;
-  int column;
-
-  BacktrackPoint(this.row, this.column) {
-    if (row != -1 || column != -1) {
-      assert(row >= 0);
-      assert(column >= 0);
+  BacktrackCell inheritRoutes(BacktrackCell cell) {
+    BacktrackCell inheritedCell = BacktrackCell(_routes);
+    for (BacktrackRoute route in cell._routes) {
+      if (!inheritedCell._routes.contains(route)) {
+        inheritedCell._routes.add(route);
+      }
     }
+    return inheritedCell;
   }
 
-  static BacktrackPoint dummyPoint() => BacktrackPoint(-1, -1);
-
-  @override
-  String toString() {
-    return "($row, $column)";
+  BacktrackCell addNewPoint(int firstIndex, int secondIndex) {
+    List<BacktrackRoute> appendedRoutes = _routes.map((BacktrackRoute route) {
+      BacktrackRoute appendedRoute = route;
+      appendedRoute.points.add(BacktrackPoint(firstIndex, secondIndex));
+      return appendedRoute;
+    }).toList();
+    _routes += appendedRoutes;
+    return BacktrackCell(appendedRoutes);
+  }
+  
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! BacktrackCell) return false;
+    if (_routes.length != other._routes.length) return false;
+    return _routes.asMap().entries.every((entry) {
+      return entry.value == other._routes[entry.key];
+    });
   }
 }
+
