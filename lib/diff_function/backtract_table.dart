@@ -51,16 +51,16 @@ class BacktrackTable {
         }
 
         if (rightLCMCell != null && rightLCMCell.fromLeft) {
-          BacktrackCell previousBacktrackCell = _backtrackTable[firstIndex][secondIndex + 1];
-          backtrackCell = previousBacktrackCell.inheritRoutes(backtrackCell);
+          BacktrackCell newBacktrackCell = backtrackCell.inheritRoutes(_backtrackTable[firstIndex][secondIndex + 1]);
+          _backtrackTable[firstIndex][secondIndex] = newBacktrackCell;
         }
         if (lowerLCMCell != null && lowerLCMCell.fromUpper) {
-          BacktrackCell previousBacktrackCell = _backtrackTable[firstIndex + 1][secondIndex];
-          backtrackCell = previousBacktrackCell.inheritRoutes(backtrackCell);
+          BacktrackCell newBacktrackCell = backtrackCell.inheritRoutes(_backtrackTable[firstIndex + 1][secondIndex]);
+          _backtrackTable[firstIndex][secondIndex] = newBacktrackCell;
         }
         if (rightLCMCell != null && lowerLCMCell != null && rightLowerLCMCell != null && rightLowerLCMCell.fromLeftUpper) {
-          BacktrackCell previousBacktrackCell = _backtrackTable[firstIndex + 1][secondIndex + 1];
-          backtrackCell = previousBacktrackCell.addNewPoint(firstIndex, secondIndex);
+          BacktrackCell newBacktrackCell = _backtrackTable[firstIndex + 1][secondIndex + 1].addNewPoint(firstIndex, secondIndex);
+          _backtrackTable[firstIndex][secondIndex] = newBacktrackCell;
         }
       }
     }
@@ -76,5 +76,17 @@ class BacktrackTable {
 
   List<BacktrackRoute> getCommonIndex() {
     return _routes;
+  }
+
+  @override
+  String toString() {
+    String output = "";
+    for (var row in _backtrackTable) {
+      for (var cell in row) {
+        output += "${cell.routes}, ";
+      }
+      output += "\n";
+    }
+    return output; // Return the constructed output string
   }
 }

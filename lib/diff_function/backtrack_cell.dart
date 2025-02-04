@@ -7,6 +7,8 @@ class BacktrackCell {
 
   BacktrackCell(this._routes);
 
+  get routes => _routes;
+
   BacktrackCell inheritRoutes(BacktrackCell cell) {
     BacktrackCell inheritedCell = BacktrackCell(_routes);
     for (BacktrackRoute route in cell._routes) {
@@ -23,7 +25,6 @@ class BacktrackCell {
       appendedRoute.points.add(BacktrackPoint(firstIndex, secondIndex));
       return appendedRoute;
     }).toList();
-    _routes += appendedRoutes;
     return BacktrackCell(appendedRoutes);
   }
 
