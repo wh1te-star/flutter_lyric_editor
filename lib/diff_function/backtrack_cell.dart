@@ -25,24 +25,38 @@ class BacktrackTable {
       for (int secondIndex = columnCount; secondIndex >= 0; secondIndex--) {
         LCMCell lcmCell = _lcm.cell(firstIndex, secondIndex);
         BacktrackCell backtrackCell = backtrackTable[firstIndex][secondIndex];
-        if (lcmCell.fromLeft) {
+
+        bool isLowerIn = firstIndex + 1 <= rowCount;
+        bool isRightIn = secondIndex + 1 <= columnCount;
+        LCMCell? rightLCMCell;
+        LCMCell? lowerLCMCell;
+        LCMCell? rightLowerLCMCell;
+        if (isRightIn) {
+          rightLCMCell = _lcm.cell(firstIndex, secondIndex + 1);
+        }
+        if (isLowerIn) {
+          lowerLCMCell = _lcm.cell(firstIndex + 1, secondIndex);
+        }
+        if (isRightIn && isLowerIn) {
+          rightLowerLCMCell = _lcm.cell(firstIndex + 1, secondIndex + 1);
+        }
+
+        if (rightLCMCell != null && rightLCMCell.fromLeft) {
           BacktrackCell previousBacktrackCell = backtrackTable[firstIndex][secondIndex + 1];
           backtrackCell.routes += previousBacktrackCell.routes;
         }
-        if (lcmCell.fromUpper) {
+        if (lowerLCMCell != null && lowerLCMCell.fromUpper) {
           BacktrackCell previousBacktrackCell = backtrackTable[firstIndex + 1][secondIndex];
           backtrackCell.routes += previousBacktrackCell.routes;
         }
-        if (lcmCell.fromLeftUpper) {
+        if (rightLCMCell != null && lowerLCMCell != null && rightLowerLCMCell != null && rightLowerLCMCell.fromLeftUpper) {
           BacktrackCell previousBacktrackCell = backtrackTable[firstIndex + 1][secondIndex + 1];
-          BacktrackCell appendedRoutes = BacktrackCell(
-            previousBacktrackCell.routes.map((BacktrackRoute route) {
-              BacktrackRoute appendedRoute = route;
-              appendedRoute.points.add(BacktrackPoint(firstIndex, secondIndex));
-              return appendedRoute;
-            }).toList(),
-          );
-          backtrackCell = appendedRoutes;
+          List<BacktrackRoute> appendedRoutes = previousBacktrackCell.routes.map((BacktrackRoute route) {
+            BacktrackRoute appendedRoute = route;
+            appendedRoute.points.add(BacktrackPoint(firstIndex, secondIndex));
+            return appendedRoute;
+          }).toList();
+          backtrackCell.routes += appendedRoutes;
         }
       }
     }
@@ -85,6 +99,13 @@ class BacktrackRoute {
   BacktrackRoute(this.points);
 
   static BacktrackRoute dummyRoute() => BacktrackRoute([BacktrackPoint.dummyPoint()]);
+
+  @override
+  String toString() {
+    return points.map((BacktrackPoint point) {
+      return point.toString();
+    }).join("->");
+  }
 }
 
 class BacktrackPoint {
@@ -99,4 +120,9 @@ class BacktrackPoint {
   }
 
   static BacktrackPoint dummyPoint() => BacktrackPoint(-1, -1);
+
+  @override
+  String toString() {
+    return "($row, $column)";
+  }
 }
