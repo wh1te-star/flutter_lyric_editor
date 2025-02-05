@@ -1,4 +1,3 @@
-
 import 'package:lyric_editor/diff_function/backtrack_point.dart';
 
 class BacktrackRoute {
@@ -7,11 +6,18 @@ class BacktrackRoute {
   BacktrackRoute(this.points);
 
   static BacktrackRoute dummyRoute() => BacktrackRoute([BacktrackPoint.dummyPoint()]);
-  
-  BacktrackRoute normalize(){
+
+  BacktrackRoute normalize() {
     List<BacktrackPoint> routeWithoutDummy = points;
     routeWithoutDummy.removeAt(0);
     return BacktrackRoute(routeWithoutDummy.reversed.toList());
+  }
+
+  BacktrackRoute copyWith({
+    List<BacktrackPoint>? points,
+  }) {
+    final List<BacktrackPoint> newPoints = points ?? List.from(this.points.map((point) => point.copyWith()));
+    return BacktrackRoute(newPoints);
   }
 
   @override

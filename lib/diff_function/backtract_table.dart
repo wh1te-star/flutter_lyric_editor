@@ -10,10 +10,18 @@ class BacktrackTable {
   List<BacktrackRoute> _routes = [];
 
   BacktrackTable({required LongestCommonSequence lcm}) : _lcm = lcm {
-    establishRoute();
+    foundRoute();
   }
 
-  void establishRoute() {
+  void foundRoute() {
+    initBacktrackTable();
+
+    fillBacktrackTable();
+
+    _routes = normalizeFoundRoutes();
+  }
+
+  void initBacktrackTable() {
     int rowCount = _lcm.firstStr.length;
     int columnCount = _lcm.secondStr.length;
     _backtrackTable = List.generate(
@@ -29,12 +37,13 @@ class BacktrackTable {
         },
       ),
     );
+  }
 
+  void fillBacktrackTable() {
+    int rowCount = _lcm.firstStr.length;
+    int columnCount = _lcm.secondStr.length;
     for (int firstIndex = rowCount; firstIndex >= 0; firstIndex--) {
       for (int secondIndex = columnCount; secondIndex >= 0; secondIndex--) {
-        LCMCell lcmCell = _lcm.cell(firstIndex, secondIndex);
-        BacktrackCell backtrackCell = _backtrackTable[firstIndex][secondIndex];
-
         bool isLowerIn = firstIndex + 1 <= rowCount;
         bool isRightIn = secondIndex + 1 <= columnCount;
         LCMCell? rightLCMCell;
@@ -51,11 +60,11 @@ class BacktrackTable {
         }
 
         if (rightLCMCell != null && rightLCMCell.fromLeft) {
-          BacktrackCell newBacktrackCell = backtrackCell.inheritRoutes(_backtrackTable[firstIndex][secondIndex + 1]);
+          BacktrackCell newBacktrackCell = _backtrackTable[firstIndex][secondIndex].inheritRoutes(_backtrackTable[firstIndex][secondIndex + 1]);
           _backtrackTable[firstIndex][secondIndex] = newBacktrackCell;
         }
         if (lowerLCMCell != null && lowerLCMCell.fromUpper) {
-          BacktrackCell newBacktrackCell = backtrackCell.inheritRoutes(_backtrackTable[firstIndex + 1][secondIndex]);
+          BacktrackCell newBacktrackCell = _backtrackTable[firstIndex][secondIndex].inheritRoutes(_backtrackTable[firstIndex + 1][secondIndex]);
           _backtrackTable[firstIndex][secondIndex] = newBacktrackCell;
         }
         if (rightLCMCell != null && lowerLCMCell != null && rightLowerLCMCell != null && rightLowerLCMCell.fromLeftUpper) {
@@ -64,14 +73,20 @@ class BacktrackTable {
         }
       }
     }
+  }
 
-    _routes += _backtrackTable[0][0].normalizedRoutes();
+  List<BacktrackRoute> normalizeFoundRoutes() {
+    int rowCount = _lcm.firstStr.length;
+    int columnCount = _lcm.secondStr.length;
+    List<BacktrackRoute> routes = [];
+    routes += _backtrackTable[0][0].normalizedRoutes();
     for (int row = 1; row <= rowCount; row++) {
-      _routes += _backtrackTable[row][0].normalizedRoutes();
+      routes += _backtrackTable[row][0].normalizedRoutes();
     }
-    for (int column = 1; column <= rowCount; column++) {
-      _routes += _backtrackTable[0][column].normalizedRoutes();
+    for (int column = 1; column <= columnCount; column++) {
+      routes += _backtrackTable[0][column].normalizedRoutes();
     }
+    return routes;
   }
 
   List<BacktrackRoute> getCommonIndex() {

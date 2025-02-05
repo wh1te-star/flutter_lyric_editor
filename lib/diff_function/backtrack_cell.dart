@@ -3,35 +3,35 @@ import 'package:lyric_editor/diff_function/backtrack_point.dart';
 import 'package:lyric_editor/diff_function/backtrack_route.dart';
 
 class BacktrackCell {
-  List<BacktrackRoute> _routes = [];
+  final List<BacktrackRoute> _routes;
 
   BacktrackCell(this._routes);
 
   get routes => _routes;
 
   BacktrackCell inheritRoutes(BacktrackCell cell) {
-    BacktrackCell inheritedCell = BacktrackCell(_routes);
-    for (BacktrackRoute route in cell._routes) {
-      if (!inheritedCell._routes.contains(route)) {
-        inheritedCell._routes.add(route);
-      }
-    }
-    return inheritedCell;
+    return copyWith(routes: [
+      ..._routes.map((route) => route.copyWith()),
+      ...cell._routes.where((route) => !_routes.contains(route)).map((route) => route.copyWith()),
+    ]);
   }
 
   BacktrackCell addNewPoint(int firstIndex, int secondIndex) {
-    List<BacktrackRoute> appendedRoutes = _routes.map((BacktrackRoute route) {
-      BacktrackRoute appendedRoute = route;
-      appendedRoute.points.add(BacktrackPoint(firstIndex, secondIndex));
-      return appendedRoute;
-    }).toList();
-    return BacktrackCell(appendedRoutes);
+    return copyWith(routes: _routes.map((route) => route.copyWith(points: [...route.points, BacktrackPoint(firstIndex, secondIndex)])).toList());
   }
 
   List<BacktrackRoute> normalizedRoutes() {
     return _routes.map((BacktrackRoute route) {
       return route.normalize();
     }).toList();
+  }
+
+  BacktrackCell copyWith({
+    List<BacktrackRoute>? routes,
+  }) {
+    return BacktrackCell(
+      routes ?? _routes.map((route) => route.copyWith()).toList(),
+    );
   }
 
   @override

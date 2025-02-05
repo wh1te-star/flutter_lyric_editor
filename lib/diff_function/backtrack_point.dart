@@ -11,6 +11,13 @@ class BacktrackPoint {
 
   static BacktrackPoint dummyPoint() => BacktrackPoint(-1, -1);
 
+  BacktrackPoint copyWith({
+    int? row,
+    int? column,
+  }) {
+    return BacktrackPoint(row ?? this.row, column ?? this.column);
+  }
+
   @override
   String toString() {
     return "($row, $column)";

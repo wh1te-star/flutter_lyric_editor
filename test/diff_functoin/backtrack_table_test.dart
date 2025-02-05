@@ -30,8 +30,6 @@ void main() {
         ]),
       ];
 
-      print(backtrackTable.toString());
-
       expect(result, unorderedEquals(candidate));
     });
   });
