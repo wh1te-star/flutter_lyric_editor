@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lyric_editor/diff_function/backtract_table.dart';
+import 'package:lyric_editor/diff_function/longest_common_subsequence.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/diff_function/char_diff.dart';
 import 'package:lyric_editor/diff_function/diff_segment.dart';
@@ -313,8 +315,9 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
     TextStyle deleteStyle = const TextStyle(color: Colors.red);
     TextStyle editStyle = const TextStyle(color: Colors.blue);
 
-    CharDiff charDiff = CharDiff(before, after);
-    List<Widget> diffSegmentWidgets = charDiff.segments.map((DiffSegment diffSegment) {
+    CharDiff diff = CharDiff(before, after);
+
+    List<Widget> diffSegmentWidgets = diff.getDiffSegments().map((DiffSegment diffSegment) {
       String beforeStr = diffSegment.beforeStr;
       String afterStr = diffSegment.afterStr;
       TextStyle textStyle = plainStyle;

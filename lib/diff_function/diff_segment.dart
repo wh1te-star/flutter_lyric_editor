@@ -6,6 +6,17 @@ class DiffSegment {
     assert(beforeStr != "" || afterStr != "");
   }
 
+  DiffSegment copyWith({
+    String? beforeStr,
+    String? afterStr,
+  }) {
+    assert((beforeStr ?? beforeStr) != "" || (afterStr ?? afterStr) != "");
+    return DiffSegment(
+      beforeStr ?? this.beforeStr,
+      afterStr ?? this.afterStr,
+    );
+  }
+
   @override
   String toString() {
     return "$beforeStr -> $afterStr";
