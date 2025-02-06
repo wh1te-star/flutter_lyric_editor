@@ -12,7 +12,7 @@ import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/diff_function/char_diff.dart';
 import 'package:lyric_editor/diff_function/diff_segment.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
-import 'package:lyric_editor/utility/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 
 Future<void> displaySnippetDetailDialog(BuildContext context, SnippetID snippetID, LyricSnippet snippet) async {

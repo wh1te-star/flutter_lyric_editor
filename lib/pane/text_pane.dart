@@ -7,7 +7,7 @@ import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
-import 'package:lyric_editor/utility/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/utility/sorted_list.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 import 'package:tuple/tuple.dart';

@@ -10,7 +10,7 @@ import 'package:lyric_editor/pane/text_pane.dart';
 import 'package:lyric_editor/pane/timeline_pane.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
-import 'package:lyric_editor/utility/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet.dart';
 
 class SnippetTimeline extends ConsumerStatefulWidget {
   VocalistID vocalistID;

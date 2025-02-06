@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:lyric_editor/utility/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet.dart';
 import 'package:tuple/tuple.dart';
 
 

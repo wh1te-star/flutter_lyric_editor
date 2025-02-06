@@ -14,7 +14,7 @@ import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:lyric_editor/dialog/text_field_dialog.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/svg_icon.dart';
-import 'package:lyric_editor/utility/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet.dart';
 
 final timelinePaneMasterProvider = ChangeNotifierProvider((ref) {
   final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
