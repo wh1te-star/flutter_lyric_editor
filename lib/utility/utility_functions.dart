@@ -1,7 +1,6 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/annotation.dart';
+import 'package:lyric_editor/lyric_snippet/segment_range.dart';
 import 'package:tuple/tuple.dart';
 
 

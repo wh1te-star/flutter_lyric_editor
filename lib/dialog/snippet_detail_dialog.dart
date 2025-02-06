@@ -8,6 +8,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/diff_function/backtract_table.dart';
 import 'package:lyric_editor/diff_function/longest_common_subsequence.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment.dart';
+import 'package:lyric_editor/lyric_snippet/vocalist.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/diff_function/char_diff.dart';
 import 'package:lyric_editor/diff_function/diff_segment.dart';

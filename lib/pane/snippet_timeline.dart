@@ -1,12 +1,12 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lyric_editor/dialog/snippet_detail_dialog.dart';
+import 'package:lyric_editor/lyric_snippet/annotation.dart';
+import 'package:lyric_editor/lyric_snippet/segment_range.dart';
+import 'package:lyric_editor/lyric_snippet/timing_point.dart';
 import 'package:lyric_editor/painter/rectangle_painter.dart';
 import 'package:lyric_editor/painter/triangle_painter.dart';
-import 'package:lyric_editor/pane/text_pane.dart';
 import 'package:lyric_editor/pane/timeline_pane.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
