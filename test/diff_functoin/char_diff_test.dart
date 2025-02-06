@@ -15,7 +15,7 @@ void main() {
         DiffSegment("abcdefgh", "abcdefgh"),
       ];
 
-      expect(diff.segments, equals(expected));
+      expect(diff.getDiffSegments(), equals(expected));
     });
 
     test('When editting a part of the before string. (e -> xx)', () {
@@ -29,12 +29,12 @@ void main() {
         DiffSegment("fgh", "fgh"),
       ];
 
-      expect(diff.segments, equals(expected));
+      expect(diff.getDiffSegments(), equals(expected));
     });
 
     test('When deleting a part of the before string. (delete e)', () {
       const String beforeStr = "abcdefgh";
-      const String afterStr  = "abcdfgh";
+      const String afterStr = "abcdfgh";
       final CharDiff diff = CharDiff(beforeStr, afterStr);
 
       final List<DiffSegment> expected = [
@@ -43,7 +43,7 @@ void main() {
         DiffSegment("fgh", "fgh"),
       ];
 
-      expect(diff.segments, equals(expected));
+      expect(diff.getDiffSegments(), equals(expected));
     });
 
     test('When adding a part of the before string. (add xx)', () {
@@ -57,7 +57,23 @@ void main() {
         DiffSegment("fgh", "fgh"),
       ];
 
-      expect(diff.segments, equals(expected));
+      expect(diff.getDiffSegments(), equals(expected));
+    });
+
+    test('When editting 2 parts of the before string. (add xx and delete fg)', () {
+      const String beforeStr = "abcdefgh";
+      const String afterStr = "abxxcdeh";
+      final CharDiff diff = CharDiff(beforeStr, afterStr);
+
+      final List<DiffSegment> expected = [
+        DiffSegment("ab", "ab"),
+        DiffSegment("", "xx"),
+        DiffSegment("cde", "cde"),
+        DiffSegment("fg", ""),
+        DiffSegment("h", "h"),
+      ];
+
+      expect(diff.getDiffSegments(), equals(expected));
     });
   });
 }
