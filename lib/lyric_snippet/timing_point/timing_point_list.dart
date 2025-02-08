@@ -1,12 +1,11 @@
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
 
 class TimingPointList {
-  List<TimingPoint> list;
-  
-  TimingPointList(this.list){
-    assert(all of listitem);
-  }
+  final List<TimingPoint> list;
 
+  TimingPointList(this.list);
+
+  /*
   BacktrackCell copyWith({
     List<BacktrackRoute>? routes,
   }) {
@@ -32,4 +31,5 @@ class TimingPointList {
 
   @override
   int get hashCode => const ListEquality().hash(_routes);
+  */
 }
