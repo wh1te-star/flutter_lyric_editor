@@ -12,7 +12,7 @@ class BacktrackCell {
   BacktrackCell inheritRoutes(BacktrackCell cell) {
     return copyWith(routes: [
       ..._routes.map((route) => route.copyWith()),
-      ...cell._routes.where((route) => !_routes.contains(route)).map((route) => route.copyWith()),
+      ...cell._routes.where((route) => (!_routes.contains(route))).map((route) => route.copyWith()),
     ]);
   }
 
