@@ -1,6 +1,6 @@
 class TimingPoint {
-  int charPosition;
-  int seekPosition;
+  final int charPosition;
+  final int seekPosition;
 
   TimingPoint(this.charPosition, this.seekPosition) {
     if (!isEmpty()) {
@@ -25,16 +25,16 @@ class TimingPoint {
   }
 
   @override
+  String toString() {
+    return 'TimingPoint(charPosition: $charPosition, seekPosition: $seekPosition)';
+  }
+
+  @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
     final TimingPoint otherSentenceSegments = other as TimingPoint;
     return charPosition == otherSentenceSegments.charPosition && seekPosition == otherSentenceSegments.seekPosition;
-  }
-
-  @override
-  String toString() {
-    return 'TimingPoint(charPosition: $charPosition, seekPosition: $seekPosition)';
   }
 
   @override

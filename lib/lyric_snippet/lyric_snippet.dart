@@ -4,7 +4,7 @@ import 'package:lyric_editor/lyric_snippet/position_type_info.dart';
 import 'package:lyric_editor/lyric_snippet/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/timing_object.dart';
-import 'package:lyric_editor/lyric_snippet/timing_point.dart';
+import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 
