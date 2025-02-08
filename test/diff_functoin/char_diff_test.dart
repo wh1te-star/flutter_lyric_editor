@@ -76,6 +76,34 @@ void main() {
       expect(diff.getDiffSegments(), equals(expected));
     });
 
+    test('Edit the first part', () {
+      const String beforeStr = "abcdefgh";
+      const String afterStr = "xxcdefgh";
+      final CharDiff diff = CharDiff(beforeStr, afterStr);
+
+      final List<DiffSegment> expected = [
+        DiffSegment("ab", "xx"),
+        DiffSegment("cdefgh", "cdefgh"),
+      ];
+
+      expect(diff.getDiffSegments(), equals(expected));
+    });
+
+    test('Edit the end part', () {
+      const String beforeStr = "abcdefgh";
+      const String afterStr = "abcdefxx";
+      final CharDiff diff = CharDiff(beforeStr, afterStr);
+
+      final List<DiffSegment> expected = [
+        DiffSegment("abcdef", "abcdef"),
+        DiffSegment("gh", "xx"),
+      ];
+
+      print(diff);
+
+      expect(diff.getDiffSegments(), equals(expected));
+    });
+
     test('The diff should have has at least 2 routes but only one route was found.', skip: true, () {
       const String beforeStr = "Welcometeatime";
       const String afterStr = "Welcometime";

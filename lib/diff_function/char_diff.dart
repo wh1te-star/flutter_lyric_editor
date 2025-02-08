@@ -27,6 +27,13 @@ class CharDiff {
 
     BacktrackPoint start = points.first;
     BacktrackPoint previous = points.first;
+
+    if (start.row != 0 || start.column != 0) {
+      segments.add(DiffSegment(
+        beforeStr.substring(0, start.row),
+        afterStr.substring(0, start.column),
+      ));
+    }
     for (int i = 1; i < points.length; i++) {
       BacktrackPoint current = points[i];
 
@@ -45,9 +52,15 @@ class CharDiff {
       previous = current;
     }
     segments.add(DiffSegment(
-      beforeStr.substring(start.row),
-      afterStr.substring(start.column),
+      beforeStr.substring(start.row, previous.row + 1),
+      afterStr.substring(start.column, previous.column + 1),
     ));
+    if (previous.row + 1 != beforeStr.length || previous.column + 1 != afterStr.length) {
+      segments.add(DiffSegment(
+        beforeStr.substring(previous.row + 1),
+        afterStr.substring(previous.column + 1),
+      ));
+    }
     return segments;
   }
 

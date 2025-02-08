@@ -45,20 +45,23 @@ class BacktrackTable {
         bool isRightIn = secondIndex + 1 <= columnCount;
 
         if (isLowerIn && isRightIn) {
-          LCSCell rightLCSCell = _lcs.cell(firstIndex, secondIndex + 1);
-          LCSCell lowerLCSCell = _lcs.cell(firstIndex + 1, secondIndex);
           LCSCell rightLowerLCSCell = _lcs.cell(firstIndex + 1, secondIndex + 1);
-
           if (rightLowerLCSCell.fromLeftUpper) {
             BacktrackCell newRoutes = _backtrackTable[firstIndex + 1][secondIndex + 1].addNewPoint(firstIndex, secondIndex);
             _backtrackTable[firstIndex][secondIndex] = newRoutes;
           }
+        }
 
+        if (isRightIn) {
+          LCSCell rightLCSCell = _lcs.cell(firstIndex, secondIndex + 1);
           if (rightLCSCell.fromLeft) {
             BacktrackCell newRoutes = _backtrackTable[firstIndex][secondIndex + 1].inheritRoutes(_backtrackTable[firstIndex][secondIndex]);
             _backtrackTable[firstIndex][secondIndex] = newRoutes;
           }
+        }
 
+        if (isLowerIn) {
+          LCSCell lowerLCSCell = _lcs.cell(firstIndex + 1, secondIndex);
           if (lowerLCSCell.fromUpper) {
             BacktrackCell newRoutes = _backtrackTable[firstIndex + 1][secondIndex].inheritRoutes(_backtrackTable[firstIndex][secondIndex]);
             _backtrackTable[firstIndex][secondIndex] = newRoutes;
