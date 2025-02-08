@@ -72,6 +72,6 @@ class CharDiff {
 
   @override
   String toString() {
-    return _lcs.toString();
+    return backtrackTable.toString();
   }
 }

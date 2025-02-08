@@ -95,7 +95,7 @@ class BacktrackTable {
       for (int column = 0; column <= columnCount; column++) {
         BacktrackCell backtrackCell = _backtrackTable[row][column];
         LCSCell lcsCell = _lcs.cell(row, column);
-        output += "${lcsCell}${backtrackCell.routes.length}, ";
+        output += "$lcsCell/${backtrackCell.routes.length}, ";
       }
       output += "\n";
     }
