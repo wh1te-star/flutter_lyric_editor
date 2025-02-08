@@ -2,19 +2,19 @@ import 'package:lyric_editor/diff_function/backtrack_point.dart';
 import 'package:lyric_editor/diff_function/backtrack_route.dart';
 import 'package:lyric_editor/diff_function/backtract_table.dart';
 import 'package:lyric_editor/diff_function/diff_segment.dart';
-import 'package:lyric_editor/diff_function/lcm_cell.dart';
+import 'package:lyric_editor/diff_function/lcs_cell.dart';
 import 'package:lyric_editor/diff_function/longest_common_subsequence.dart';
 import 'package:lyric_editor/lyric_snippet/segment_range.dart';
 
 class CharDiff {
   String beforeStr;
   String afterStr;
-  late LongestCommonSequence _lcm;
+  late LongestCommonSequence _lcs;
   late BacktrackTable backtrackTable;
 
   CharDiff(this.beforeStr, this.afterStr) {
-    _lcm = LongestCommonSequence(firstStr: beforeStr, secondStr: afterStr);
-    backtrackTable = BacktrackTable(lcm: _lcm);
+    _lcs = LongestCommonSequence(firstStr: beforeStr, secondStr: afterStr);
+    backtrackTable = BacktrackTable(lcs: _lcs);
   }
 
   List<DiffSegment> translateRouteToSegment(BacktrackRoute route) {
@@ -72,6 +72,6 @@ class CharDiff {
 
   @override
   String toString() {
-    return backtrackTable.toString();
+    return _lcs.toString();
   }
 }

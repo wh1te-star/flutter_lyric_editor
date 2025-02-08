@@ -1,10 +1,10 @@
 import 'package:lyric_editor/diff_function/backtrack_cell.dart';
-import 'package:lyric_editor/diff_function/lcm_cell.dart';
+import 'package:lyric_editor/diff_function/lcs_cell.dart';
 
 class LongestCommonSequence {
   final String _firstStr;
   final String _secondStr;
-  late List<List<LCMCell>> _lcmTable;
+  late List<List<LCSCell>> _lcsTable;
 
   LongestCommonSequence({
     required String firstStr,
@@ -12,19 +12,19 @@ class LongestCommonSequence {
   })  : _secondStr = secondStr,
         _firstStr = firstStr {
     assert(_firstStr != "" || _secondStr != "");
-    _lcmTable = constructLCMTable();
+    _lcsTable = constructLCSTable();
   }
 
   get firstStr => _firstStr;
   get secondStr => _secondStr;
-  LCMCell cell(int row, int column) {
-    return _lcmTable[row][column];
+  LCSCell cell(int row, int column) {
+    return _lcsTable[row][column];
   }
 
-  List<List<LCMCell>> constructLCMTable() {
+  List<List<LCSCell>> constructLCSTable() {
     int rowCount = _firstStr.length;
     int columnCount = _secondStr.length;
-    List<List<LCMCell>> table = initLCMTable(rowCount, columnCount);
+    List<List<LCSCell>> table = initLCSTable(rowCount, columnCount);
 
     for (int firstIndex = 1; firstIndex <= rowCount; firstIndex++) {
       for (int secondIndex = 1; secondIndex <= columnCount; secondIndex++) {
@@ -38,64 +38,65 @@ class LongestCommonSequence {
     return table;
   }
 
-  List<List<LCMCell>> initLCMTable(int rowCount, int columnCount) {
+  List<List<LCSCell>> initLCSTable(int rowCount, int columnCount) {
     return List.generate(
       rowCount + 1,
       (_) => List.generate(
         columnCount + 1,
-        (_) => LCMCell(
+        (_) => LCSCell(
           fromLeft: false,
           fromUpper: false,
           fromLeftUpper: false,
-          lcmLength: 0,
+          lcsLength: 0,
         ),
       ),
     );
   }
 
-  LCMCell handleMatch(List<List<LCMCell>> table, int firstIndex, int secondIndex) {
-    return LCMCell(
+  LCSCell handleMatch(List<List<LCSCell>> table, int firstIndex, int secondIndex) {
+    return LCSCell(
       fromLeft: false,
       fromUpper: false,
       fromLeftUpper: true,
-      lcmLength: table[firstIndex - 1][secondIndex - 1].lcmLength + 1,
+      lcsLength: table[firstIndex - 1][secondIndex - 1].lcsLength + 1,
     );
   }
 
-  LCMCell handleUnmatch(List<List<LCMCell>> table, int firstIndex, int secondIndex) {
-    int leftValue = table[firstIndex][secondIndex - 1].lcmLength;
-    int upperValue = table[firstIndex - 1][secondIndex].lcmLength;
+  LCSCell handleUnmatch(List<List<LCSCell>> table, int firstIndex, int secondIndex) {
+    int leftValue = table[firstIndex][secondIndex - 1].lcsLength;
+    int upperValue = table[firstIndex - 1][secondIndex].lcsLength;
 
     if (leftValue > upperValue) {
-      return LCMCell(
+      return LCSCell(
         fromLeft: true,
         fromUpper: false,
         fromLeftUpper: false,
-        lcmLength: leftValue,
+        lcsLength: leftValue,
       );
     } else if (leftValue < upperValue) {
-      return LCMCell(
+      return LCSCell(
         fromLeft: false,
         fromUpper: true,
         fromLeftUpper: false,
-        lcmLength: upperValue,
+        lcsLength: upperValue,
+      );
+    } else {
+      return LCSCell(
+        fromLeft: true,
+        fromUpper: true,
+        fromLeftUpper: false,
+        lcsLength: leftValue,
       );
     }
-    return LCMCell(
-      fromLeft: true,
-      fromUpper: true,
-      fromLeftUpper: false,
-      lcmLength: leftValue,
-    );
   }
 
   List<List<BacktrackCell>> constructBacktrackSteps() {
     List<List<BacktrackCell>> steps = [];
     return steps;
   }
-  
-@override
-String toString() {
-  return _lcmTable.map((row) => row.join("\t")).join("\n");
-}
+
+  @override
+  String toString() {
+    return _lcsTable.map((row) => row.join("\t")).join("\n");
+  }
 }

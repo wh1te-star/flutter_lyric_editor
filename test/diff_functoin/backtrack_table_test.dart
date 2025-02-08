@@ -10,8 +10,8 @@ void main() {
     test('Normal String Test', () {
       const String firstStr = "GAC";
       const String secondStr = "AGCAT";
-      final LongestCommonSequence lcm = LongestCommonSequence(firstStr: firstStr, secondStr: secondStr);
-      final BacktrackTable backtrackTable = BacktrackTable(lcm: lcm);
+      final LongestCommonSequence lcs = LongestCommonSequence(firstStr: firstStr, secondStr: secondStr);
+      final BacktrackTable backtrackTable = BacktrackTable(lcs: lcs);
 
       List<BacktrackRoute> result = backtrackTable.getCommonIndex();
 

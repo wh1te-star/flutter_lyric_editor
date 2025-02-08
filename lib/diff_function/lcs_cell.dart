@@ -1,28 +1,28 @@
-class LCMCell {
+class LCSCell {
   final bool fromLeft;
   final bool fromUpper;
   final bool fromLeftUpper;
-  final int lcmLength;
+  final int lcsLength;
 
-  LCMCell({
+  LCSCell({
     required this.fromLeft,
     required this.fromUpper,
     required this.fromLeftUpper,
-    required this.lcmLength,
+    required this.lcsLength,
   }) {
-    assert(lcmLength >= 0);
+    assert(lcsLength >= 0);
   }
 
   @override
   String toString() {
     if (fromLeftUpper) {
-      return "↖↖";
+      return "↖↖$lcsLength";
     } else {
       String leftChar = " ";
       String upperChar = " ";
       if (fromLeft) leftChar = "←";
       if (fromUpper) upperChar = "↑";
-      return "$leftChar$upperChar";
+      return "$leftChar$upperChar$lcsLength";
     }
   }
 
@@ -30,12 +30,12 @@ class LCMCell {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    if (other is! LCMCell) return false;
+    if (other is! LCSCell) return false;
     if (runtimeType != other.runtimeType) return false;
     if (fromLeft != other.fromLeft) return false;
     if (fromUpper != other.fromUpper) return false;
     if (fromLeftUpper != other.fromLeftUpper) return false;
-    if (lcmLength != other.lcmLength) return false;
+    if (lcsLength != other.lcsLength) return false;
     return true;
   }
 
@@ -44,7 +44,7 @@ class LCMCell {
     int hash = fromLeft.hashCode;
     hash ^= fromUpper.hashCode;
     hash ^= fromLeftUpper.hashCode;
-    hash ^= lcmLength.hashCode;
+    hash ^= lcsLength.hashCode;
     return hash;
   }
 }
