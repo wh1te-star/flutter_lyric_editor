@@ -59,16 +59,16 @@ class BacktrackTable {
           rightLowerLCMCell = _lcm.cell(firstIndex + 1, secondIndex + 1);
         }
 
+        if (rightLCMCell != null && lowerLCMCell != null && rightLowerLCMCell != null && rightLowerLCMCell.fromLeftUpper) {
+          BacktrackCell newBacktrackCell = _backtrackTable[firstIndex + 1][secondIndex + 1].addNewPoint(firstIndex, secondIndex);
+          _backtrackTable[firstIndex][secondIndex] = newBacktrackCell;
+        }
         if (rightLCMCell != null && rightLCMCell.fromLeft) {
           BacktrackCell newBacktrackCell = _backtrackTable[firstIndex][secondIndex].inheritRoutes(_backtrackTable[firstIndex][secondIndex + 1]);
           _backtrackTable[firstIndex][secondIndex] = newBacktrackCell;
         }
         if (lowerLCMCell != null && lowerLCMCell.fromUpper) {
           BacktrackCell newBacktrackCell = _backtrackTable[firstIndex][secondIndex].inheritRoutes(_backtrackTable[firstIndex + 1][secondIndex]);
-          _backtrackTable[firstIndex][secondIndex] = newBacktrackCell;
-        }
-        if (rightLCMCell != null && lowerLCMCell != null && rightLowerLCMCell != null && rightLowerLCMCell.fromLeftUpper) {
-          BacktrackCell newBacktrackCell = _backtrackTable[firstIndex + 1][secondIndex + 1].addNewPoint(firstIndex, secondIndex);
           _backtrackTable[firstIndex][secondIndex] = newBacktrackCell;
         }
       }
@@ -95,13 +95,17 @@ class BacktrackTable {
 
   @override
   String toString() {
+    int rowCount = _lcm.firstStr.length;
+    int columnCount = _lcm.secondStr.length;
     String output = "";
-    for (var row in _backtrackTable) {
-      for (var cell in row) {
-        output += "${cell.routes}, ";
+    for (int row = 0; row <= rowCount; row++) {
+      for (int column = 0; column <= columnCount; column++) {
+        BacktrackCell backtrackCell = _backtrackTable[row][column];
+        LCMCell lcmCell = _lcm.cell(row, column);
+        output += "${lcmCell}${backtrackCell.routes.length}, ";
       }
       output += "\n";
     }
-    return output; // Return the constructed output string
+    return output;
   }
 }

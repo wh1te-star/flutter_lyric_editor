@@ -2,7 +2,9 @@ import 'package:lyric_editor/diff_function/backtrack_point.dart';
 import 'package:lyric_editor/diff_function/backtrack_route.dart';
 import 'package:lyric_editor/diff_function/backtract_table.dart';
 import 'package:lyric_editor/diff_function/diff_segment.dart';
+import 'package:lyric_editor/diff_function/lcm_cell.dart';
 import 'package:lyric_editor/diff_function/longest_common_subsequence.dart';
+import 'package:lyric_editor/lyric_snippet/segment_range.dart';
 
 class CharDiff {
   String beforeStr;
@@ -50,7 +52,26 @@ class CharDiff {
   }
 
   List<DiffSegment> getDiffSegments() {
-    BacktrackRoute route = backtrackTable.getCommonIndex()[0];
+    BacktrackRoute route = backtrackTable.getCommonIndex().last;
     return translateRouteToSegment(route);
+  }
+
+  List<DiffSegment> getLeastSegmentOne() {
+    int INT_MAX = 9223372036854775807;
+    List<DiffSegment> minSegmentRoute = [];
+    int minSegmentCount = INT_MAX;
+    for (BacktrackRoute route in backtrackTable.getCommonIndex()) {
+      List<DiffSegment> segments = translateRouteToSegment(route);
+      if (segments.length < minSegmentCount) {
+        minSegmentRoute = segments;
+        minSegmentCount = segments.length;
+      }
+    }
+    return minSegmentRoute;
+  }
+
+  @override
+  String toString() {
+    return backtrackTable.toString();
   }
 }

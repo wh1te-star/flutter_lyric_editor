@@ -319,7 +319,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
 
     CharDiff diff = CharDiff(before, after);
 
-    List<Widget> diffSegmentWidgets = diff.getDiffSegments().map((DiffSegment diffSegment) {
+    List<Widget> diffSegmentWidgets = diff.getLeastSegmentOne().map((DiffSegment diffSegment) {
       String beforeStr = diffSegment.beforeStr;
       String afterStr = diffSegment.afterStr;
       TextStyle textStyle = plainStyle;

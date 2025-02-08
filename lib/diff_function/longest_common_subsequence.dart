@@ -93,4 +93,9 @@ class LongestCommonSequence {
     List<List<BacktrackCell>> steps = [];
     return steps;
   }
+  
+@override
+String toString() {
+  return _lcmTable.map((row) => row.join("\t")).join("\n");
+}
 }

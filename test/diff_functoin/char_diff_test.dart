@@ -75,5 +75,21 @@ void main() {
 
       expect(diff.getDiffSegments(), equals(expected));
     });
+
+    test('Unintentional error (no route is found)', () {
+      const String beforeStr = "Welcometeatime";
+      const String afterStr = "Welcometime";
+      final CharDiff diff = CharDiff(beforeStr, afterStr);
+
+      final List<DiffSegment> expected = [
+        DiffSegment("Welcome", "Welcome"),
+        DiffSegment("tea", ""),
+        DiffSegment("time", "time"),
+      ];
+
+      print(diff);
+
+      expect(diff.getLeastSegmentOne(), equals(expected));
+    });
   });
 }
