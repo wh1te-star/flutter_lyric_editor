@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:collection/collection.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
 
