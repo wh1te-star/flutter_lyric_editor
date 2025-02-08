@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet.dart';
-import 'package:lyric_editor/lyric_snippet/sentence_segment.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/timing_object.dart';
 
 class Annotation with TimingObject {

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/lyric_snippet/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/segment_range.dart';
-import 'package:lyric_editor/lyric_snippet/sentence_segment.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/vocalist.dart';
 import 'package:lyric_editor/painter/partial_text_painter.dart';
 import 'package:lyric_editor/pane/text_pane.dart';
