@@ -2,15 +2,23 @@ import 'package:collection/collection.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 
 class SentenceSegmentList {
-  final List<SentenceSegment> list;
+  final List<SentenceSegment> _list;
 
-  SentenceSegmentList(this.list) {
+  SentenceSegmentList(this._list) {
     assert(!has2ConseqentEmpty());
   }
 
+  List<SentenceSegment> get items => _list;
+
+  String get sentence {
+    return _list.map((SentenceSegment segment) {
+      return segment.word;
+    }).join("");
+  }
+
   bool has2ConseqentEmpty() {
-    for (int index = 0; index < list.length - 1; index++) {
-      if (list[index].word == "" || list[index + 1].word == "") {
+    for (int index = 0; index < _list.length - 1; index++) {
+      if (_list[index].word == "" || _list[index + 1].word == "") {
         return true;
       }
     }
@@ -21,27 +29,27 @@ class SentenceSegmentList {
     SentenceSegmentList? sentenceSegmentList,
   }) {
     return SentenceSegmentList(
-      sentenceSegmentList?.list.map((SentenceSegment sentenceSegment) => sentenceSegment.copyWith()).toList() ?? list,
+      sentenceSegmentList?._list.map((SentenceSegment sentenceSegment) => sentenceSegment.copyWith()).toList() ?? _list,
     );
   }
 
   @override
   String toString() {
-    return list.join("\n");
+    return _list.join("\n");
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! SentenceSegmentList) return false;
-    if (list.length != other.list.length) return false;
-    return list.asMap().entries.every((MapEntry<int, SentenceSegment> entry) {
+    if (_list.length != other._list.length) return false;
+    return _list.asMap().entries.every((MapEntry<int, SentenceSegment> entry) {
       int index = entry.key;
       SentenceSegment timingPoint = entry.value;
-      return timingPoint == other.list[index];
+      return timingPoint == other._list[index];
     });
   }
 
   @override
-  int get hashCode => const ListEquality().hash(list);
+  int get hashCode => const ListEquality().hash(_list);
 }

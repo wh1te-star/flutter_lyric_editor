@@ -1,33 +1,32 @@
 import 'package:flutter/foundation.dart';
-import 'package:lyric_editor/lyric_snippet/annotation.dart';
+import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/position_type_info.dart';
 import 'package:lyric_editor/lyric_snippet/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/lyric_snippet/timing_object.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 
-class LyricSnippet with TimingObject {
+class LyricSnippet {
   VocalistID vocalistID;
+  Timing timing;
   Map<SegmentRange, Annotation> annotations;
 
   LyricSnippet({
     required this.vocalistID,
-    required startTimestamp,
-    required List<SentenceSegment> sentenceSegments,
+    required this.timing,
     required this.annotations,
-  }) {
-    this.startTimestamp = startTimestamp;
-    this.sentenceSegments = sentenceSegments;
-    updateTimingPoints();
-  }
+  });
 
   static LyricSnippet get emptySnippet {
     return LyricSnippet(
       vocalistID: VocalistID(0),
-      startTimestamp: 0,
-      sentenceSegments: [],
+      timing: Timing(
+        startTimestamp: 0,
+        sentenceSegmentList: SentenceSegmentList([]),
+      ),
       annotations: {},
     );
   }
@@ -35,7 +34,7 @@ class LyricSnippet with TimingObject {
   MapEntry<SegmentRange, Annotation> getAnnotationWords(int index) {
     return annotations.entries.firstWhere(
       (entry) => entry.key.startIndex <= index && index <= entry.key.endIndex,
-      orElse: () => MapEntry(SegmentRange(-1, -1), Annotation.emptySnippet),
+      orElse: () => MapEntry(SegmentRange(-1, -1), Annotation.emptyAnnotation),
     );
   }
 
@@ -43,8 +42,11 @@ class LyricSnippet with TimingObject {
     for (MapEntry<SegmentRange, Annotation> entry in annotations.entries) {
       SegmentRange range = entry.key;
       Annotation annotation = entry.value;
-      int startSeekPosition = startTimestamp + timingPoints[range.startIndex].seekPosition + annotation.timingPoints.first.seekPosition;
-      int endSeekPosition = startTimestamp + timingPoints[range.startIndex].seekPosition + annotation.timingPoints.last.seekPosition;
+      int startTimestamp = timing.startTimestamp;
+      List<TimingPoint> timingPoints = timing.timingPointList.items;
+      List<TimingPoint> annotationTimingPoints = annotation.timing.timingPointList.items;
+      int startSeekPosition = startTimestamp + timingPoints[range.startIndex].seekPosition + annotationTimingPoints.first.seekPosition;
+      int endSeekPosition = startTimestamp + timingPoints[range.startIndex].seekPosition + annotationTimingPoints.last.seekPosition;
       if (startSeekPosition <= seekPosition && seekPosition < endSeekPosition) {
         return range.startIndex;
       }
@@ -52,16 +54,14 @@ class LyricSnippet with TimingObject {
     return null;
   }
 
-  @override
   void addTimingPoint(int charPosition, int seekPosition) {
     carryUpAnnotationSegments(charPosition);
-    super.addTimingPoint(charPosition, seekPosition);
+    timing.addTimingPoint(charPosition, seekPosition);
   }
 
-  @override
   void deleteTimingPoint(int charPosition, Option option) {
     carryDownAnnotationSegments(charPosition);
-    super.deleteTimingPoint(charPosition, option);
+    timing.deleteTimingPoint(charPosition, option);
   }
 
   Map<SegmentRange, Annotation> copyAnnotationMap() {
@@ -73,7 +73,7 @@ class LyricSnippet with TimingObject {
   }
 
   void carryUpAnnotationSegments(int charPosition) {
-    PositionTypeInfo info = getPositionTypeInfo(charPosition);
+    PositionTypeInfo info = timing.getPositionTypeInfo(charPosition);
     Map<SegmentRange, Annotation> updatedAnnotations = {};
     int index = info.index;
 
@@ -107,7 +107,7 @@ class LyricSnippet with TimingObject {
   }
 
   void carryDownAnnotationSegments(int charPosition) {
-    PositionTypeInfo info = getPositionTypeInfo(charPosition);
+    PositionTypeInfo info = timing.getPositionTypeInfo(charPosition);
     Map<SegmentRange, Annotation> updatedAnnotations = {};
     int timingPointIndex = info.index;
 
@@ -166,13 +166,13 @@ class LyricSnippet with TimingObject {
 
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)){
+    if (identical(this, other)) {
       return true;
     }
-    if(other is! LyricSnippet){
+    if (other is! LyricSnippet) {
       return false;
     }
-    if(runtimeType != other.runtimeType){
+    if (runtimeType != other.runtimeType) {
       return false;
     }
     return vocalistID == other.vocalistID && sentence == other.sentence && startTimestamp == other.startTimestamp && listEquals(sentenceSegments, other.sentenceSegments);

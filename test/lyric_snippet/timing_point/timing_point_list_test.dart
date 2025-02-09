@@ -13,8 +13,8 @@ void main() {
         TimingPoint(-1, 0),
       ]);
 
-      expect(list.list.first.charPosition, -1);
-      
+      expect(list._list.first.charPosition, -1);
+
       expect(() => TimingPoint(-1, 0), throwsAssertionError);
     });
   });

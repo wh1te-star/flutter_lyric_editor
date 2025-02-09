@@ -1,72 +1,74 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_snippet/position_type_info.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
+import 'package:lyric_editor/lyric_snippet/timing_point/timing_point_list.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point_exception.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 
-mixin TimingObject {
-  List<SentenceSegment> _sentenceSegments = [];
-  List<TimingPoint> _timingPoints = [];
-  int startTimestamp = 0;
+class Timing {
+  final int startTimestamp;
+  final SentenceSegmentList sentenceSegmentList;
+  late TimingPointList timingPointList;
 
-  String get sentence {
-    return sentenceSegments.map((segment) => segment.word).join();
+  Timing({
+    required this.startTimestamp,
+    required this.sentenceSegmentList,
+  }) {
+    timingPointList = constructTimingPointList(sentenceSegmentList);
   }
 
-  List<TimingPoint> get timingPoints => _timingPoints;
-  List<SentenceSegment> get sentenceSegments => _sentenceSegments;
-  set sentenceSegments(List<SentenceSegment> segments) {
-    _sentenceSegments.clear();
-    _sentenceSegments.addAll(segments);
-    updateTimingPoints();
-  }
+  String get sentence => sentenceSegmentList.sentence;
 
   int get endTimestamp {
-    return startTimestamp + _timingPoints.last.seekPosition;
+    return startTimestamp + timingPointList.items.last.seekPosition;
   }
 
-  void updateTimingPoints() {
-    List<TimingPoint> newTimingPoints = [];
+  TimingPointList constructTimingPointList(SentenceSegmentList sentenceSegmentList) {
+    List<TimingPoint> timingPoints = [];
     int charPosition = 0;
     int seekPosition = 0;
-    for (var segment in sentenceSegments) {
-      newTimingPoints.add(TimingPoint(charPosition, seekPosition));
+    for (var segment in sentenceSegmentList.items) {
+      timingPoints.add(TimingPoint(charPosition, seekPosition));
       charPosition += segment.word.length;
       seekPosition += segment.duration;
     }
-    newTimingPoints.add(TimingPoint(charPosition, seekPosition));
+    timingPoints.add(TimingPoint(charPosition, seekPosition));
 
-    _timingPoints = newTimingPoints;
+    return TimingPointList(timingPoints);
   }
 
-  void updateSentenceSegments() {
-    List<SentenceSegment> newSentenceSegments = [];
+  SentenceSegmentList syncSentenceSegments(TimingPointList timingPointList) {
+    List<SentenceSegment> sentenceSegments = [];
+    List<TimingPoint> timingPoints = timingPointList.items;
     for (int index = 0; index < timingPoints.length - 1; index++) {
       String word = sentence.substring(timingPoints[index].charPosition, timingPoints[index + 1].charPosition);
       int duration = timingPoints[index + 1].seekPosition - timingPoints[index].seekPosition;
-      newSentenceSegments.add(SentenceSegment(word, duration));
+      sentenceSegments.add(SentenceSegment(word, duration));
     }
 
-    _sentenceSegments = newSentenceSegments;
+    return SentenceSegmentList(sentenceSegments);
   }
 
-  void editSentence(String newSentence) {
+  Timing editSentence(String newSentence) {
     List<int> charPositionTranslation = getCharPositionTranslation(sentence, newSentence);
 
-    List<TimingPoint> timingPointsCopy = List.from(timingPoints);
-    for (var charPositions in timingPointsCopy) {
-      int currentCharPosition = charPositions.charPosition;
+    SentenceSegmentList sentenceSegmentList = this.sentenceSegmentList;
+    List<SentenceSegment> sentenceSegments = sentenceSegmentList.items;
+    List<TimingPoint> timingPoints = timingPointList.items;
+    Timing timing = Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
+    for (TimingPoint timingPoint in timingPointList.items) {
+      int currentCharPosition = timingPoint.charPosition;
       if (charPositionTranslation[currentCharPosition] == -1) {
         try {
-          deleteTimingPoint(currentCharPosition, Option.former);
+          timing = timing.deleteTimingPoint(currentCharPosition, Option.former);
         } on TimingPointException catch (_, e) {
           debugPrint(e.toString());
         }
         try {
-          deleteTimingPoint(currentCharPosition, Option.latter);
+          timing = timing.deleteTimingPoint(currentCharPosition, Option.latter);
         } on TimingPointException catch (_, e) {
           debugPrint(e.toString());
         }
@@ -76,10 +78,11 @@ mixin TimingObject {
     for (int index = 0; index < sentenceSegments.length; index++) {
       int leftCharPosition = charPositionTranslation[timingPoints[index].charPosition];
       int rightCharPosition = charPositionTranslation[timingPoints[index + 1].charPosition];
-      sentenceSegments[index].word = newSentence.substring(leftCharPosition, rightCharPosition);
+      timing.sentenceSegmentList.items[index].word = newSentence.substring(leftCharPosition, rightCharPosition);
     }
-    integrate2OrMoreTimingPoints();
-    updateTimingPoints();
+    timing = timing.integrate2OrMoreTimingPoints();
+
+    return timing;
   }
 
   List<int> getCharPositionTranslation(String oldSentence, String newSentence) {
@@ -117,11 +120,11 @@ mixin TimingObject {
     return indexTranslation;
   }
 
-  void integrate2OrMoreTimingPoints() {
+  Timing integrate2OrMoreTimingPoints() {
     List<SentenceSegment> result = [];
     int accumulatedSum = 0;
 
-    for (var sentenceSegment in sentenceSegments) {
+    for (SentenceSegment sentenceSegment in sentenceSegmentList.items) {
       if (sentenceSegment.word == "") {
         accumulatedSum += sentenceSegment.duration;
       } else {
@@ -137,20 +140,19 @@ mixin TimingObject {
       result.add(SentenceSegment("", accumulatedSum));
     }
 
-    sentenceSegments = result;
+    return Timing(startTimestamp: startTimestamp, sentenceSegmentList: SentenceSegmentList(result));
   }
 
   String getSegmentWord(int index) {
-    return sentence.substring(
-      timingPoints[index].charPosition,
-      timingPoints[index + 1].charPosition,
-    );
+    return sentenceSegmentList.items[index].word;
   }
 
   int getSegmentIndexFromSeekPosition(int seekPosition) {
     if (seekPosition < startTimestamp || endTimestamp < seekPosition) {
       return -1;
     }
+    List<SentenceSegment> sentenceSegments = sentenceSegmentList.items;
+    List<TimingPoint> timingPoints = timingPointList.items;
     for (int index = 0; index < sentenceSegments.length; index++) {
       if (seekPosition <= startTimestamp + timingPoints[index + 1].seekPosition) {
         return index;
@@ -163,6 +165,9 @@ mixin TimingObject {
     if (charPosition < 0 || sentence.length < charPosition) {
       return PositionTypeInfo(PositionType.sentenceSegment, -1, false);
     }
+
+    List<SentenceSegment> sentenceSegments = sentenceSegmentList.items;
+    List<TimingPoint> timingPoints = timingPointList.items;
     for (int index = 0; index < sentenceSegments.length; index++) {
       int leftSegmentPosition = timingPoints[index].charPosition;
       int rightSegmentPosition = timingPoints[index + 1].charPosition;
@@ -180,24 +185,34 @@ mixin TimingObject {
     return PositionTypeInfo(PositionType.timingPoint, sentenceSegments.length, false);
   }
 
-  void moveSnippet(int shiftDuration) {
-    startTimestamp += shiftDuration;
+  Timing moveSnippet(int shiftDuration) {
+    return Timing(
+      startTimestamp: startTimestamp + shiftDuration,
+      sentenceSegmentList: sentenceSegmentList,
+    );
   }
 
-  void extendSnippet(SnippetEdge snippetEdge, int extendDuration) {
+  Timing extendSnippet(SnippetEdge snippetEdge, int extendDuration) {
     assert(extendDuration >= 0, "Should be shorten function.");
+
+    int startTimestamp = this.startTimestamp;
+    SentenceSegmentList sentenceSegmentList = this.sentenceSegmentList;
     if (snippetEdge == SnippetEdge.start) {
       startTimestamp -= extendDuration;
-      sentenceSegments.first.duration += extendDuration;
+      sentenceSegmentList.items.first.duration += extendDuration;
     } else {
-      sentenceSegments.last.duration += extendDuration;
+      sentenceSegmentList.items.last.duration += extendDuration;
     }
 
-    updateTimingPoints();
+    return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
   }
 
-  void shortenSnippet(SnippetEdge snippetEdge, int shortenDuration) {
+  Timing shortenSnippet(SnippetEdge snippetEdge, int shortenDuration) {
     assert(shortenDuration >= 0, "Should be extend function.");
+
+    int startTimestamp = this.startTimestamp;
+    SentenceSegmentList sentenceSegmentList = this.sentenceSegmentList;
+    List<SentenceSegment> sentenceSegments = sentenceSegmentList.items;
     if (snippetEdge == SnippetEdge.start) {
       int index = 0;
       int rest = shortenDuration;
@@ -219,36 +234,34 @@ mixin TimingObject {
       sentenceSegments.last.duration -= rest;
     }
 
-    updateTimingPoints();
+    return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
   }
 
-  void addTimingPoint(int charPosition, int seekPosition) {
+  Timing addTimingPoint(int charPosition, int seekPosition) {
     if (charPosition <= 0 || sentence.length <= charPosition) {
-      debugPrint("The char position is out of the valid range.");
-      return;
+      throw TimingPointException("The char position is out of the valid range.");
     }
     if (seekPosition <= startTimestamp || endTimestamp <= seekPosition) {
-      debugPrint("The seek position is out of the valid range.");
-      return;
+      throw TimingPointException("The seek position is out of the valid range.");
     }
 
+    List<TimingPoint> timingPoints = timingPointList.items;
     seekPosition -= startTimestamp;
     for (int index = 0; index < timingPoints.length - 1; index++) {
       if (charPosition == timingPoints[index].charPosition) {
         if (timingPoints[index].charPosition == timingPoints[index + 1].charPosition) {
-          debugPrint("A timing point cannot be inserted three times or more at the same char position.");
-          return;
+          throw TimingPointException("A timing point cannot be inserted three times or more at the same char position.");
+        }
+        if (seekPosition == timingPoints[index].seekPosition) {
+          throw TimingPointException("A timing point cannot be inserted twice or more at the same seek position.");
         }
 
         if (seekPosition < timingPoints[index].seekPosition) {
           timingPoints.insert(index, TimingPoint(charPosition, seekPosition));
           break;
-        } else if (seekPosition > timingPoints[index].seekPosition) {
+        } else {
           timingPoints.insert(index + 1, TimingPoint(charPosition, seekPosition));
           break;
-        } else {
-          debugPrint("A timing point cannot be inserted twice or more at the same seek position.");
-          return;
         }
       }
 
@@ -258,20 +271,52 @@ mixin TimingObject {
       }
     }
 
-    updateSentenceSegments();
+    SentenceSegmentList sentenceSegmentList = syncSentenceSegments(TimingPointList(timingPoints));
+    return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
   }
 
-  void deleteTimingPoint(int charPosition, Option option) {
+  Timing deleteTimingPoint(int charPosition, Option option) {
+    List<TimingPoint> timingPoints = timingPointList.items;
     int index = timingPoints.indexWhere((timingPoint) => timingPoint.charPosition == charPosition);
     if (index == -1) {
-      debugPrint("There is not the specified timing point.");
-      return;
+      throw TimingPointException("There is not the specified timing point.");
     }
+
     if (option == Option.latter) {
       index++;
     }
     timingPoints.removeAt(index);
 
-    updateSentenceSegments();
+    SentenceSegmentList sentenceSegmentList = syncSentenceSegments(TimingPointList(timingPoints));
+    return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
   }
+
+  Timing copyWith({
+    int? startTimestamp,
+    SentenceSegmentList? sentenceSegmentList,
+  }) {
+    return Timing(
+      startTimestamp: startTimestamp ?? this.startTimestamp,
+      sentenceSegmentList: sentenceSegmentList?.copyWith() ?? this.sentenceSegmentList,
+    );
+  }
+
+  @override
+  String toString() {
+    return "$startTimestamp/$sentenceSegmentList";
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Timing) {
+      return false;
+    }
+    return startTimestamp == other.startTimestamp && sentenceSegmentList == other.sentenceSegmentList;
+  }
+
+  @override
+  int get hashCode => startTimestamp.hashCode ^ sentenceSegmentList.hashCode;
 }
