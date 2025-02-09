@@ -4,7 +4,18 @@ import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dar
 class SentenceSegmentList {
   final List<SentenceSegment> list;
 
-  SentenceSegmentList(this.list);
+  SentenceSegmentList(this.list) {
+    assert(!has2ConseqentEmpty());
+  }
+
+  bool has2ConseqentEmpty() {
+    for (int index = 0; index < list.length - 1; index++) {
+      if (list[index].word == "" || list[index + 1].word == "") {
+        return true;
+      }
+    }
+    return false;
+  }
 
   SentenceSegmentList copyWith({
     SentenceSegmentList? sentenceSegmentList,
