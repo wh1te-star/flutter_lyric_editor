@@ -10,7 +10,7 @@ import 'package:lyric_editor/painter/triangle_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 
 class SnippetTimeline extends ConsumerStatefulWidget {
   VocalistID vocalistID;
@@ -156,7 +156,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
 
     final Color vocalistColor = Color(timingService.vocalistColorMap[vocalistID]!.color);
 
-    for (MapEntry<SegmentRange, Annotation> entry in snippet.annotations.entries) {
+    for (MapEntry<SegmentRange, Annotation> entry in snippet.annotationMap.entries) {
       SegmentRange range = entry.key;
       Annotation annotation = entry.value;
       Size itemSize = Size(
@@ -226,7 +226,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     );
 
     List<Widget> indicatorWidgets = [];
-    for (MapEntry<SegmentRange, Annotation> entry in snippet.annotations.entries) {
+    for (MapEntry<SegmentRange, Annotation> entry in snippet.annotationMap.entries) {
       SegmentRange range = entry.key;
       Annotation annotation = entry.value;
       for (int index = 0; index < annotation.timingPoints.length; index++) {

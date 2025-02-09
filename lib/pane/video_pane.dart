@@ -13,7 +13,7 @@ import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 import 'package:tuple/tuple.dart';
 
@@ -196,7 +196,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
   }
 
   double getAnnotationSizePosition(LyricSnippet snippet, int segmentIndex) {
-    int startIndex = snippet.annotations.keys.toList()[segmentIndex].startIndex;
+    int startIndex = snippet.annotationMap.keys.toList()[segmentIndex].startIndex;
     double sumPosition = 0;
     int index = 0;
     for (index = 0; index < startIndex; index++) {
@@ -217,12 +217,12 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     }
 
     bool doesAnnotationExist = false;
-    if (snippet.annotations.isNotEmpty) {
+    if (snippet.annotationMap.isNotEmpty) {
       doesAnnotationExist = true;
     }
     List<Widget> segmentWidgets = [];
 
-    List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotations, snippet.sentenceSegments.length);
+    List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotationMap, snippet.sentenceSegments.length);
 
     for (int rangeIndex = 0; rangeIndex < rangeList.length; rangeIndex++) {
       Tuple2<SegmentRange, Annotation?> element = rangeList[rangeIndex];
@@ -412,7 +412,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
                 vocalistID: VocalistID(0),
                 startTimestamp: seekPosition,
                 sentenceSegments: [SentenceSegment(" ", 1)],
-                annotations: {},
+                annotationMap: {},
               ),
               fontSize,
               fontSize / 2,

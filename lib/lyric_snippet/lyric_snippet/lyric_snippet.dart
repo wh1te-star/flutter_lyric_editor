@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
+import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
 import 'package:lyric_editor/lyric_snippet/position_type_info.dart';
 import 'package:lyric_editor/lyric_snippet/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
@@ -12,12 +12,12 @@ import 'package:lyric_editor/utility/id_generator.dart';
 class LyricSnippet {
   VocalistID vocalistID;
   Timing timing;
-  Map<SegmentRange, Annotation> annotations;
+  AnnotationMap annotationMap;
 
   LyricSnippet({
     required this.vocalistID,
     required this.timing,
-    required this.annotations,
+    required this.annotationMap,
   });
 
   static LyricSnippet get emptySnippet {
@@ -27,19 +27,19 @@ class LyricSnippet {
         startTimestamp: 0,
         sentenceSegmentList: SentenceSegmentList([]),
       ),
-      annotations: {},
+      annotationMap: AnnotationMap.emptyMap,
     );
   }
 
   MapEntry<SegmentRange, Annotation> getAnnotationWords(int index) {
-    return annotations.entries.firstWhere(
+    return annotationMap.map.entries.firstWhere(
       (entry) => entry.key.startIndex <= index && index <= entry.key.endIndex,
       orElse: () => MapEntry(SegmentRange(-1, -1), Annotation.emptyAnnotation),
     );
   }
 
   int? getAnnotationIndexFromSeekPosition(int seekPosition) {
-    for (MapEntry<SegmentRange, Annotation> entry in annotations.entries) {
+    for (MapEntry<SegmentRange, Annotation> entry in annotationMap.map.entries) {
       SegmentRange range = entry.key;
       Annotation annotation = entry.value;
       int startTimestamp = timing.startTimestamp;
@@ -54,30 +54,38 @@ class LyricSnippet {
     return null;
   }
 
-  void addTimingPoint(int charPosition, int seekPosition) {
-    carryUpAnnotationSegments(charPosition);
-    timing.addTimingPoint(charPosition, seekPosition);
+  LyricSnippet addTimingPoint(int charPosition, int seekPosition) {
+    AnnotationMap annotationMap = carryUpAnnotationSegments(charPosition);
+    Timing timing = this.timing.addTimingPoint(charPosition, seekPosition);
+    return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
 
-  void deleteTimingPoint(int charPosition, Option option) {
-    carryDownAnnotationSegments(charPosition);
-    timing.deleteTimingPoint(charPosition, option);
+  LyricSnippet deleteTimingPoint(int charPosition, Option option) {
+    AnnotationMap annotationMap = carryDownAnnotationSegments(charPosition);
+    Timing timing = this.timing.deleteTimingPoint(charPosition, option);
+    return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
 
-  Map<SegmentRange, Annotation> copyAnnotationMap() {
-    return annotations.map((SegmentRange key, Annotation value) {
-      SegmentRange newKey = key.copyWith();
-      Annotation newValue = value.copyWith();
-      return MapEntry(newKey, newValue);
-    });
+  LyricSnippet addAnnotation(String annotationString, int startIndex, int endIndex) {
+    AnnotationMap annotationMap = this.annotationMap;
+    Timing timing = this.timing;
+    SegmentRange annotationKey = SegmentRange(startIndex, endIndex);
+    annotationMap.map[annotationKey] = Annotation(timing: timing);
+    return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
 
-  void carryUpAnnotationSegments(int charPosition) {
+  LyricSnippet deleteAnnotation(SegmentRange range) {
+    AnnotationMap annotationMap = this.annotationMap;
+    annotationMap.map.remove(range);
+    return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
+  }
+
+  AnnotationMap carryUpAnnotationSegments(int charPosition) {
     PositionTypeInfo info = timing.getPositionTypeInfo(charPosition);
     Map<SegmentRange, Annotation> updatedAnnotations = {};
     int index = info.index;
 
-    annotations.forEach((SegmentRange key, Annotation value) {
+    annotationMap.map.forEach((SegmentRange key, Annotation value) {
       SegmentRange newKey = key.copyWith();
 
       switch (info.type) {
@@ -103,15 +111,15 @@ class LyricSnippet {
       updatedAnnotations[newKey] = value;
     });
 
-    annotations = updatedAnnotations;
+    return AnnotationMap(updatedAnnotations);
   }
 
-  void carryDownAnnotationSegments(int charPosition) {
+  AnnotationMap carryDownAnnotationSegments(int charPosition) {
     PositionTypeInfo info = timing.getPositionTypeInfo(charPosition);
     Map<SegmentRange, Annotation> updatedAnnotations = {};
     int timingPointIndex = info.index;
 
-    annotations.forEach((SegmentRange key, Annotation value) {
+    annotationMap.map.forEach((SegmentRange key, Annotation value) {
       SegmentRange newKey = key.copyWith();
       int startIndex = key.startIndex;
       int endIndex = key.endIndex + 1;
@@ -131,36 +139,18 @@ class LyricSnippet {
       updatedAnnotations[newKey] = value;
     });
 
-    annotations = updatedAnnotations;
-  }
-
-  void addAnnotation(String annotationString, int startIndex, int endIndex) {
-    int duration = sentenceSegments.sublist(startIndex, endIndex + 1).fold(0, (sum, segment) => sum + segment.duration);
-    TimingPoint justBeforeTimingPoint = timingPoints[startIndex];
-    SegmentRange annotationKey = SegmentRange(startIndex, endIndex);
-    annotations[annotationKey] = Annotation(startTimestamp: startTimestamp + justBeforeTimingPoint.seekPosition, sentenceSegments: [
-      SentenceSegment(
-        annotationString,
-        duration,
-      ),
-    ]);
-  }
-
-  void deleteAnnotation(SegmentRange range) {
-    annotations.remove(range);
+    return AnnotationMap(updatedAnnotations);
   }
 
   LyricSnippet copyWith({
     VocalistID? vocalistID,
-    int? startTimestamp,
-    List<SentenceSegment>? sentenceSegments,
-    Map<SegmentRange, Annotation>? annotations,
+    Timing? timing,
+    AnnotationMap? annotationMap,
   }) {
     return LyricSnippet(
       vocalistID: vocalistID ?? this.vocalistID,
-      startTimestamp: startTimestamp ?? this.startTimestamp,
-      sentenceSegments: sentenceSegments ?? this.sentenceSegments,
-      annotations: annotations ?? this.annotations,
+      timing: timing ?? this.timing,
+      annotationMap: annotationMap ?? this.annotationMap,
     );
   }
 
@@ -175,9 +165,9 @@ class LyricSnippet {
     if (runtimeType != other.runtimeType) {
       return false;
     }
-    return vocalistID == other.vocalistID && sentence == other.sentence && startTimestamp == other.startTimestamp && listEquals(sentenceSegments, other.sentenceSegments);
+    return vocalistID == other.vocalistID && timing == other.timing && annotationMap == other.annotationMap;
   }
 
   @override
-  int get hashCode => Object.hash(vocalistID, startTimestamp, Object.hashAll(sentenceSegments));
+  int get hashCode => vocalistID.hashCode ^ timing.hashCode ^ annotationMap.hashCode;
 }

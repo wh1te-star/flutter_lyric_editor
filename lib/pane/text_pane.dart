@@ -12,7 +12,7 @@ import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/utility/sorted_list.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 import 'package:tuple/tuple.dart';
@@ -89,7 +89,7 @@ class TextPaneProvider with ChangeNotifier {
       return;
     }
 
-    Annotation? annotation = snippet.annotations[cursor.annotationSegmentRange];
+    Annotation? annotation = snippet.annotationMap[cursor.annotationSegmentRange];
     if (annotation == null) {
       cursor = getDefaultCursor(cursor.snippetID);
       return;
@@ -196,7 +196,7 @@ class TextPaneProvider with ChangeNotifier {
     LyricSnippet snippet = timingService.lyricSnippetList[cursor.snippetID]!;
 
     if (!cursor.isSegmentSelectionMode) {
-      TimingObject object = !cursor.isAnnotationSelection ? snippet : snippet.annotations[cursor.annotationSegmentRange]!;
+      TimingObject object = !cursor.isAnnotationSelection ? snippet : snippet.annotationMap[cursor.annotationSegmentRange]!;
       PositionTypeInfo snippetPositionInfo = object.getPositionTypeInfo(cursor.charPosition);
       int seekPositionInfo = object.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
       int charPositionIndex = snippetPositionInfo.index;
@@ -260,7 +260,7 @@ class TextPaneProvider with ChangeNotifier {
     LyricSnippet snippet = timingService.lyricSnippetList[cursor.snippetID]!;
 
     if (!cursor.isSegmentSelectionMode) {
-      TimingObject object = !cursor.isAnnotationSelection ? snippet : snippet.annotations[cursor.annotationSegmentRange]!;
+      TimingObject object = !cursor.isAnnotationSelection ? snippet : snippet.annotationMap[cursor.annotationSegmentRange]!;
       PositionTypeInfo snippetPositionInfo = object.getPositionTypeInfo(cursor.charPosition);
       int seekPositionInfo = object.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
       int charPositionIndex = snippetPositionInfo.index;
@@ -406,7 +406,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
       LyricSnippet snippet = entry.value;
       Color vocalistColor = Color(timingService.vocalistColorMap[snippet.vocalistID]!.color);
 
-      double rowHeight = snippet.annotations.isEmpty ? singleRowHeight : 2 * singleRowHeight;
+      double rowHeight = snippet.annotationMap.isEmpty ? singleRowHeight : 2 * singleRowHeight;
       elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -462,7 +462,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     );
     List<Widget> sentenceRowWidgets = [];
     List<Widget> annotationRowWidgets = [];
-    List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotations, snippet.sentenceSegments.length);
+    List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotationMap, snippet.sentenceSegments.length);
     int highlightSegmentIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
 
     TextPaneCursor cursor = textPaneProvider.cursor.copyWith();
@@ -491,7 +491,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
           textStyleIncursor,
         );
 
-        if (snippet.annotations.isNotEmpty) {
+        if (snippet.annotationMap.isNotEmpty) {
           annotationRowWidgets += sentenceLineWidgets(
             currentSegmentPartSentence,
             true,
@@ -537,7 +537,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
           ),
         ];
 
-        if (snippet.annotations.isNotEmpty) {
+        if (snippet.annotationMap.isNotEmpty) {
           int annotationHighlightSegmentIndex = textPaneProvider.cursor.annotationSegmentRange == segmentRange ? annotation.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition) : -1;
           List<Widget> annotationRow = sentenceLineWidgets(
             currentSegmentPartAnnotation,
@@ -551,7 +551,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
             annotationTextStyleIncursor,
           );
 
-          if (snippet.annotations.isNotEmpty) {
+          if (snippet.annotationMap.isNotEmpty) {
             annotationRowWidgets += [
               SizedBox(
                 width: rowWidth,

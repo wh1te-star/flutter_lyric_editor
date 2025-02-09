@@ -9,7 +9,7 @@ import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dar
 import 'package:lyric_editor/lyric_snippet/vocalist.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/utility/id_generator.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/utility/undo_history.dart';
 import 'package:xml/xml.dart' as xml;
 
@@ -147,7 +147,7 @@ class TimingService extends ChangeNotifier {
       vocalistID: vocalistColorMap.keys.first,
       startTimestamp: 0,
       sentenceSegments: [SentenceSegment(singlelineText, audioDuration)],
-      annotations: {},
+      annotationMap: {},
     );
     sortLyricSnippetList();
 
@@ -350,7 +350,7 @@ class TimingService extends ChangeNotifier {
         vocalistID: getVocalistIDWithName(vocalistName),
         startTimestamp: startTime,
         sentenceSegments: sentenceSegments,
-        annotations: {},
+        annotationMap: {},
       );
     }
 
@@ -442,7 +442,7 @@ class TimingService extends ChangeNotifier {
           defaultSnippetDuration,
         ),
       ],
-      annotations: {},
+      annotationMap: {},
     );
     sortLyricSnippetList();
 
@@ -472,7 +472,7 @@ class TimingService extends ChangeNotifier {
         vocalistID: vocalistID,
         startTimestamp: snippet.startTimestamp,
         sentenceSegments: [SentenceSegment(beforeString, snippetDuration)],
-        annotations: snippet.annotations,
+        annotationMap: snippet.annotationMap,
       );
     }
     if (afterString.isNotEmpty) {
@@ -481,7 +481,7 @@ class TimingService extends ChangeNotifier {
         vocalistID: vocalistID,
         startTimestamp: seekPosition + snippetMargin,
         sentenceSegments: [SentenceSegment(afterString, snippetDuration)],
-        annotations: snippet.annotations,
+        annotationMap: snippet.annotationMap,
       );
     }
     if (newSnippets.isNotEmpty) {
@@ -564,7 +564,7 @@ class TimingService extends ChangeNotifier {
     if (annotationRange == null) {
       snippet.addTimingPoint(charPosition, seekPosition);
     } else {
-      snippet.annotations[annotationRange]!.addTimingPoint(charPosition, seekPosition);
+      snippet.annotationMap[annotationRange]!.addTimingPoint(charPosition, seekPosition);
     }
 
     notifyListeners();
@@ -582,7 +582,7 @@ class TimingService extends ChangeNotifier {
     if (annotationRange == null) {
       snippet.deleteTimingPoint(charPosition, option);
     } else {
-      snippet.annotations[annotationRange]!.deleteTimingPoint(charPosition, option);
+      snippet.annotationMap[annotationRange]!.deleteTimingPoint(charPosition, option);
     }
 
     notifyListeners();
