@@ -17,6 +17,11 @@ class Vocalist {
   }
 
   @override
+  String toString() {
+    return name;
+  }
+
+  @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
