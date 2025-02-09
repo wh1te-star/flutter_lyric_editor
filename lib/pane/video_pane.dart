@@ -11,7 +11,7 @@ import 'package:lyric_editor/pane/text_pane.dart';
 import 'package:lyric_editor/pane/timeline_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
-import 'package:lyric_editor/utility/id_generator.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/id_generator.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
@@ -103,7 +103,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
   String defaultText = "Video Pane";
 
-  int getMaxRequiredLanes(Map<SnippetID, int> lyricSnippetList) {
+  int getMaxRequiredLanes(Map<LyricSnippetID, int> lyricSnippetList) {
     return lyricSnippetList.values.toList().reduce(max);
   }
 
@@ -117,7 +117,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     double justBeforePosition = 0;
     double justAfterPosition = double.maxFinite;
 
-    final Map<SnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
+    final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
     for (int index = 0; index < lyricSnippetList.length; index++) {
       double currentTime = getMiddlePoint(lyricSnippetList.values.toList()[index]);
       if (currentTime < seekPosition) {
@@ -371,8 +371,8 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     final int seekPosition = musicPlayerService.seekPosition;
     final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap;
 
-    Map<SnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
-    Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition(
+    Map<LyricSnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
+    Map<LyricSnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition(
       startBulge: startBulge,
       endBulge: endBulge,
     );
@@ -383,16 +383,16 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
     DisplayMode displayMode = videoPaneProvider.displayMode;
     //if (displayMode == DisplayMode.appearDissappear) {
-    final Map<SnippetID, int> tracks = timingService.getTrackNumber(timingService.lyricSnippetList, startBulge, endBulge);
+    final Map<LyricSnippetID, int> tracks = timingService.getTrackNumber(timingService.lyricSnippetList, startBulge, endBulge);
 
     List<Widget> content = List<Widget>.generate(maxLanes, (index) => Container());
 
     for (int i = 0; i < maxLanes; i++) {
-      SnippetID targetSnippetID = currentSnippets.keys.toList().firstWhere(
-            (SnippetID id) => tracks[id] == i,
-            orElse: () => SnippetID(0),
+      LyricSnippetID targetSnippetID = currentSnippets.keys.toList().firstWhere(
+            (LyricSnippetID id) => tracks[id] == i,
+            orElse: () => LyricSnippetID(0),
           );
-      if (targetSnippetID != SnippetID(0)) {
+      if (targetSnippetID != LyricSnippetID(0)) {
         LyricSnippet targetSnippet = timingService.getSnippetWithID(targetSnippetID);
         content[i] = Expanded(
           child: Center(

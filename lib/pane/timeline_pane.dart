@@ -13,7 +13,7 @@ import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:lyric_editor/dialog/text_field_dialog.dart';
-import 'package:lyric_editor/utility/id_generator.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/id_generator.dart';
 import 'package:lyric_editor/utility/svg_icon.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 
@@ -27,9 +27,9 @@ class TimelinePaneProvider with ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
   final TimingService timingService;
 
-  Map<VocalistID, Map<SnippetID, LyricSnippet>> snippetsForeachVocalist = {};
-  SnippetID cursorPosition = SnippetID(0);
-  List<SnippetID> selectingSnippets = [];
+  Map<VocalistID, Map<LyricSnippetID, LyricSnippet>> snippetsForeachVocalist = {};
+  LyricSnippetID cursorPosition = LyricSnippetID(0);
+  List<LyricSnippetID> selectingSnippets = [];
   List<VocalistID> selectingVocalist = [];
   double intervalLength = 10.0;
   double majorMarkLength = 15.0;
@@ -43,7 +43,7 @@ class TimelinePaneProvider with ChangeNotifier {
     required this.timingService,
   }) {
     musicPlayerProvider.addListener(() {
-      List<SnippetID> currentSelectingSnippet = timingService.getSnippetsAtSeekPosition().keys.toList();
+      List<LyricSnippetID> currentSelectingSnippet = timingService.getSnippetsAtSeekPosition().keys.toList();
 
       if (autoCurrentSelectMode) {
         selectingSnippets = currentSelectingSnippet;
@@ -51,21 +51,21 @@ class TimelinePaneProvider with ChangeNotifier {
       }
     });
     timingService.addListener(() {
-      final Map<SnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
+      final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
       snippetsForeachVocalist = groupBy(
         lyricSnippetList.entries,
-        (MapEntry<SnippetID, LyricSnippet> entry) {
+        (MapEntry<LyricSnippetID, LyricSnippet> entry) {
           return entry.value.vocalistID;
         },
       ).map(
-        (VocalistID vocalistID, List<MapEntry<SnippetID, LyricSnippet>> snippets) => MapEntry(
+        (VocalistID vocalistID, List<MapEntry<LyricSnippetID, LyricSnippet>> snippets) => MapEntry(
           vocalistID,
           {for (var entry in snippets) entry.key: entry.value},
         ),
       );
 
       cursorPosition = timingService.lyricSnippetList.keys.first;
-      List<SnippetID> currentSelectingSnippet = timingService.getSnippetsAtSeekPosition().keys.toList();
+      List<LyricSnippetID> currentSelectingSnippet = timingService.getSnippetsAtSeekPosition().keys.toList();
       selectingSnippets = currentSelectingSnippet;
       notifyListeners();
     });
@@ -202,8 +202,8 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     }
   }
 
-  LyricSnippet getSnippetWithID(SnippetID id) {
-    final Map<SnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
+  LyricSnippet getSnippetWithID(LyricSnippetID id) {
+    final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
     return lyricSnippetList[id]!;
   }
 
@@ -435,7 +435,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
       }
     }
 
-    final Map<VocalistID, Map<SnippetID, LyricSnippet>> snippetsForeachVocalist = timelinePaneProvider.snippetsForeachVocalist;
+    final Map<VocalistID, Map<LyricSnippetID, LyricSnippet>> snippetsForeachVocalist = timelinePaneProvider.snippetsForeachVocalist;
     final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
     if (isDragging || snippetsForeachVocalist[vocalistID] == null) {
       return 20;

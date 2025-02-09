@@ -8,7 +8,7 @@ import 'package:lyric_editor/lyric_snippet/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/vocalist.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
-import 'package:lyric_editor/utility/id_generator.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/id_generator.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/utility/undo_history.dart';
 import 'package:xml/xml.dart' as xml;
@@ -21,12 +21,12 @@ final timingMasterProvider = ChangeNotifierProvider((ref) {
 class TimingService extends ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
 
-  Map<SnippetID, LyricSnippet> lyricSnippetList = {};
-  Map<SnippetID, int> snippetTracks = {};
+  Map<LyricSnippetID, LyricSnippet> lyricSnippetList = {};
+  Map<LyricSnippetID, int> snippetTracks = {};
   Map<VocalistID, Vocalist> vocalistColorMap = {};
   List<int> sections = [];
 
-  final SnippetIdGenerator _snippetIdGenerator = SnippetIdGenerator();
+  final LyricSnippetIdGenerator _snippetIdGenerator = LyricSnippetIdGenerator();
   final VocalistIdGenerator _vocalistIdGenerator = VocalistIdGenerator();
 
   LyricUndoHistory undoHistory = LyricUndoHistory();
@@ -38,24 +38,24 @@ class TimingService extends ChangeNotifier {
     required this.musicPlayerProvider,
   });
 
-  Map<VocalistID, Map<SnippetID, LyricSnippet>> get snippetsForeachVocalist {
+  Map<VocalistID, Map<LyricSnippetID, LyricSnippet>> get snippetsForeachVocalist {
     return groupBy(
       lyricSnippetList.entries,
-      (MapEntry<SnippetID, LyricSnippet> entry) {
+      (MapEntry<LyricSnippetID, LyricSnippet> entry) {
         return entry.value.vocalistID;
       },
     ).map(
-      (VocalistID vocalistID, List<MapEntry<SnippetID, LyricSnippet>> snippets) => MapEntry(
+      (VocalistID vocalistID, List<MapEntry<LyricSnippetID, LyricSnippet>> snippets) => MapEntry(
         vocalistID,
         {for (var entry in snippets) entry.key: entry.value},
       ),
     );
   }
 
-  Map<SnippetID, int> getTrackNumber(Map<SnippetID, LyricSnippet> lyricSnippetList, int startBulge, int endBulge) {
+  Map<LyricSnippetID, int> getTrackNumber(Map<LyricSnippetID, LyricSnippet> lyricSnippetList, int startBulge, int endBulge) {
     if (lyricSnippetList.isEmpty) return {};
 
-    Map<SnippetID, int> snippetTracks = {};
+    Map<LyricSnippetID, int> snippetTracks = {};
 
     int maxOverlap = 0;
     int currentOverlap = 1;
@@ -63,7 +63,7 @@ class TimingService extends ChangeNotifier {
     snippetTracks[lyricSnippetList.keys.first] = 0;
 
     for (int i = 1; i < lyricSnippetList.length; i++) {
-      SnippetID currentSnippetID = lyricSnippetList.keys.toList()[i];
+      LyricSnippetID currentSnippetID = lyricSnippetList.keys.toList()[i];
       LyricSnippet currentSnippet = lyricSnippetList.values.toList()[i];
       int start = currentSnippet.startTimestamp - startBulge;
       int end = currentSnippet.endTimestamp + endBulge;
@@ -99,7 +99,7 @@ class TimingService extends ChangeNotifier {
     );
   }
 
-  Map<SnippetID, LyricSnippet> getSnippetsAtSeekPosition({int? seekPosition, VocalistID? vocalistID, int startBulge = 0, int endBulge = 0}) {
+  Map<LyricSnippetID, LyricSnippet> getSnippetsAtSeekPosition({int? seekPosition, VocalistID? vocalistID, int startBulge = 0, int endBulge = 0}) {
     int seekPosition0 = seekPosition ?? musicPlayerProvider.seekPosition;
 
     return Map.fromEntries(
@@ -168,7 +168,7 @@ class TimingService extends ChangeNotifier {
     await file.writeAsString(rawLyricText);
   }
 
-  List<LyricSnippet> translateIDsToSnippets(List<SnippetID> ids) {
+  List<LyricSnippet> translateIDsToSnippets(List<LyricSnippetID> ids) {
     return ids.map((id) => getSnippetWithID(id)).toList();
   }
 
@@ -207,11 +207,11 @@ class TimingService extends ChangeNotifier {
     return entry.value;
   }
 
-  LyricSnippet getSnippetWithID(SnippetID id) {
+  LyricSnippet getSnippetWithID(LyricSnippetID id) {
     return lyricSnippetList[id]!;
   }
 
-  void removeSnippetWithID(SnippetID id) {
+  void removeSnippetWithID(LyricSnippetID id) {
     lyricSnippetList.remove(id);
   }
 
@@ -309,7 +309,7 @@ class TimingService extends ChangeNotifier {
     return (minutes * 60 + seconds) * 1000 + milliseconds;
   }
 
-  Map<SnippetID, LyricSnippet> parseLyric(String rawLyricText) {
+  Map<LyricSnippetID, LyricSnippet> parseLyric(String rawLyricText) {
     final document = xml.XmlDocument.parse(rawLyricText);
 
     final vocalistCombination = document.findAllElements('VocalistsList');
@@ -333,7 +333,7 @@ class TimingService extends ChangeNotifier {
     }
 
     final lineTimestamps = document.findAllElements('LineTimestamp');
-    Map<SnippetID, LyricSnippet> snippets = {};
+    Map<LyricSnippetID, LyricSnippet> snippets = {};
     for (var lineTimestamp in lineTimestamps) {
       final startTime = parseTimestamp(lineTimestamp.getAttribute('startTime')!);
       final vocalistName = lineTimestamp.getAttribute('vocalistName')!;
@@ -357,7 +357,7 @@ class TimingService extends ChangeNotifier {
     return snippets;
   }
 
-  String serializeLyric(Map<SnippetID, LyricSnippet> lyricSnippetList) {
+  String serializeLyric(Map<LyricSnippetID, LyricSnippet> lyricSnippetList) {
     final builder = xml.XmlBuilder();
     builder.processing('xml', 'version="1.0" encoding="UTF-8"');
     builder.element('Lyrics', nest: () {
@@ -449,7 +449,7 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void deleteSnippet(SnippetID snippetID) {
+  void deleteSnippet(LyricSnippetID snippetID) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
 
     lyricSnippetList.remove(snippetID);
@@ -457,7 +457,7 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void divideSnippet(SnippetID snippetID, int charPosition, int seekPosition) {
+  void divideSnippet(LyricSnippetID snippetID, int charPosition, int seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
 
     LyricSnippet snippet = getSnippetWithID(snippetID);
@@ -465,7 +465,7 @@ class TimingService extends ChangeNotifier {
     String beforeString = snippet.sentence.substring(0, charPosition);
     String afterString = snippet.sentence.substring(charPosition);
     VocalistID vocalistID = snippet.vocalistID;
-    Map<SnippetID, LyricSnippet> newSnippets = {};
+    Map<LyricSnippetID, LyricSnippet> newSnippets = {};
     if (beforeString.isNotEmpty) {
       int snippetDuration = seekPosition - snippet.startTimestamp;
       newSnippets[_snippetIdGenerator.idGen()] = LyricSnippet(
@@ -493,7 +493,7 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void concatenateSnippets(List<SnippetID> snippetIDs) {
+  void concatenateSnippets(List<LyricSnippetID> snippetIDs) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
 
     snippetsForeachVocalist.values.toList().forEach((vocalistSnippetsMap) {
@@ -511,7 +511,7 @@ class TimingService extends ChangeNotifier {
         leftSnippet.sentenceSegments.last.duration += extendDuration;
         leftSnippet.sentenceSegments.addAll(rightSnippet.sentenceSegments);
 
-        SnippetID rightSnippetID = snippetIDs[index];
+        LyricSnippetID rightSnippetID = snippetIDs[index];
         removeSnippetWithID(rightSnippetID);
       }
     });
@@ -520,7 +520,7 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void manipulateSnippet(SnippetID snippetID, SnippetEdge snippetEdge, bool holdLength) {
+  void manipulateSnippet(LyricSnippetID snippetID, SnippetEdge snippetEdge, bool holdLength) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
 
     int seekPosition = musicPlayerProvider.seekPosition;
@@ -552,7 +552,7 @@ class TimingService extends ChangeNotifier {
   }
 
   void addTimingPoint({
-    required SnippetID snippetID,
+    required LyricSnippetID snippetID,
     SegmentRange? annotationRange,
     required int charPosition,
     required int seekPosition,
@@ -571,7 +571,7 @@ class TimingService extends ChangeNotifier {
   }
 
   void deleteTimingPoint({
-    required SnippetID snippetID,
+    required LyricSnippetID snippetID,
     SegmentRange? annotationRange,
     required int charPosition,
     Option option = Option.former,
@@ -588,7 +588,7 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addAnnotation(SnippetID snippetID, String annotationString, int startIndex, int endIndex) {
+  void addAnnotation(LyricSnippetID snippetID, String annotationString, int startIndex, int endIndex) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
 
     LyricSnippet snippet = getSnippetWithID(snippetID);
@@ -597,7 +597,7 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void deleteAnnotation(SnippetID snippetID, SegmentRange range) {
+  void deleteAnnotation(LyricSnippetID snippetID, SegmentRange range) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
 
     LyricSnippet snippet = getSnippetWithID(snippetID);
@@ -606,7 +606,7 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void editSentence(SnippetID snippetID, String newSentence) {
+  void editSentence(LyricSnippetID snippetID, String newSentence) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetList);
 
     LyricSnippet snippet = getSnippetWithID(snippetID);

@@ -11,7 +11,7 @@ import 'package:lyric_editor/lyric_snippet/timing_object.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
-import 'package:lyric_editor/utility/id_generator.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/id_generator.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/utility/sorted_list.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
@@ -55,7 +55,7 @@ class TextPaneProvider with ChangeNotifier {
   }
 
   void updateCursorIfNeedBySeekPosition() {
-    Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
+    Map<LyricSnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
     if (currentSnippets.isEmpty) {
       return;
     }
@@ -74,14 +74,14 @@ class TextPaneProvider with ChangeNotifier {
   }
 
   void updateCursorIfNeedByItemDeletion() {
-    Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
+    Map<LyricSnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
     if (currentSnippets.isEmpty) {
       return;
     }
 
     LyricSnippet? snippet = timingService.lyricSnippetList[cursor.snippetID];
     if (snippet == null) {
-      cursor = getDefaultCursor(SnippetID(1));
+      cursor = getDefaultCursor(LyricSnippetID(1));
       return;
     }
 
@@ -96,7 +96,7 @@ class TextPaneProvider with ChangeNotifier {
     }
   }
 
-  TextPaneCursor getDefaultCursor(SnippetID id) {
+  TextPaneCursor getDefaultCursor(LyricSnippetID id) {
     TextPaneCursor defaultCursor = TextPaneCursor.emptyValue;
     defaultCursor.isAnnotationSelection = false;
 
@@ -109,7 +109,7 @@ class TextPaneProvider with ChangeNotifier {
     return defaultCursor;
   }
 
-  TextPaneCursor getDefaultCursorOfAnnotation(SnippetID id) {
+  TextPaneCursor getDefaultCursorOfAnnotation(LyricSnippetID id) {
     TextPaneCursor defaultCursor = TextPaneCursor.emptyValue;
 
     defaultCursor.isAnnotationSelection = true;
@@ -130,8 +130,8 @@ class TextPaneProvider with ChangeNotifier {
     return defaultCursor;
   }
 
-  LyricSnippet getSnippetWithID(SnippetID id) {
-    final Map<SnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
+  LyricSnippet getSnippetWithID(LyricSnippetID id) {
+    final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
     return lyricSnippetList[id]!;
   }
 
@@ -141,7 +141,7 @@ class TextPaneProvider with ChangeNotifier {
 
   void moveUpCursor() {
     if (!cursor.isSegmentSelectionMode) {
-      Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
+      Map<LyricSnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
       LyricSnippet cursorSnippet = timingService.lyricSnippetList[cursor.snippetID]!;
 
       int? annotationIndex = cursorSnippet.getAnnotationIndexFromSeekPosition(musicPlayerProvider.seekPosition);
@@ -149,7 +149,7 @@ class TextPaneProvider with ChangeNotifier {
       if (cursor.isAnnotationSelection || annotationIndex == null) {
         int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.snippetID);
         if (index > 0) {
-          SnippetID nextSnippetID = currentSnippets.keys.toList()[index - 1];
+          LyricSnippetID nextSnippetID = currentSnippets.keys.toList()[index - 1];
           cursor = getDefaultCursor(nextSnippetID);
         }
       } else {
@@ -167,11 +167,11 @@ class TextPaneProvider with ChangeNotifier {
       if (cursor.isAnnotationSelection) {
         cursor = getDefaultCursor(cursor.snippetID);
       } else {
-        Map<SnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
+        Map<LyricSnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition();
 
         int index = currentSnippets.keys.toList().indexWhere((id) => id == cursor.snippetID);
         if (index != -1 && index + 1 < currentSnippets.length) {
-          SnippetID nextSnippetID = currentSnippets.keys.toList()[index + 1];
+          LyricSnippetID nextSnippetID = currentSnippets.keys.toList()[index + 1];
           LyricSnippet nextSnippet = currentSnippets.values.toList()[index + 1];
 
           int? annotationIndex = nextSnippet.getAnnotationIndexFromSeekPosition(musicPlayerProvider.seekPosition);
@@ -325,7 +325,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
   double lineHeight = 20;
 
-  List<SnippetID> selectingSnippets = [];
+  List<LyricSnippetID> selectingSnippets = [];
 
   SortedMap<int, String> sentenceSegmentMap = SortedMap<int, String>();
   SortedMap<int, String> sectionPointMap = SortedMap<int, String>();
@@ -355,8 +355,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
     });
   }
 
-  LyricSnippet getSnippetWithID(SnippetID id) {
-    final Map<SnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
+  LyricSnippet getSnippetWithID(LyricSnippetID id) {
+    final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
     return lyricSnippetList[id]!;
   }
 
@@ -392,7 +392,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
     double singleRowHeight = getSizeFromTextStyle("dummy text", style).height;
 
-    for (MapEntry<SnippetID, LyricSnippet> entry in currentSnippets.entries) {
+    for (MapEntry<LyricSnippetID, LyricSnippet> entry in currentSnippets.entries) {
       LyricSnippet snippet = entry.value;
       String timingPointString = TextPaneProvider.timingPointChar * (snippet.timingPoints.length - 2);
       double sentenceWidth = getSizeFromTextStyle(snippet.sentence + timingPointString, style).width + 10.0;
@@ -401,8 +401,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
       }
     }
     double sideBandWidth = 30.0;
-    for (MapEntry<SnippetID, LyricSnippet> entry in currentSnippets.entries) {
-      SnippetID id = entry.key;
+    for (MapEntry<LyricSnippetID, LyricSnippet> entry in currentSnippets.entries) {
+      LyricSnippetID id = entry.key;
       LyricSnippet snippet = entry.value;
       Color vocalistColor = Color(timingService.vocalistColorMap[snippet.vocalistID]!.color);
 
@@ -437,7 +437,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     );
   }
 
-  Widget snippetEditLine(SnippetID id, LyricSnippet snippet) {
+  Widget snippetEditLine(LyricSnippetID id, LyricSnippet snippet) {
     MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     TimingService timingService = ref.read(timingMasterProvider);
     TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
@@ -781,7 +781,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
 }
 
 class TextPaneCursor {
-  SnippetID snippetID;
+  LyricSnippetID snippetID;
   int charPosition;
   Option option;
 
@@ -822,7 +822,7 @@ class TextPaneCursor {
   );
 
   TextPaneCursor copyWith({
-    SnippetID? snippetID,
+    LyricSnippetID? snippetID,
     int? charPosition,
     Option? option,
     bool? isSegmentSelectionMode,
@@ -856,7 +856,7 @@ class TextPaneCursor {
 
   static TextPaneCursor get emptyValue {
     return TextPaneCursor(
-      SnippetID(0),
+      LyricSnippetID(0),
       0,
       Option.former,
       false,

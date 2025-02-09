@@ -13,11 +13,11 @@ import 'package:lyric_editor/lyric_snippet/vocalist.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/diff_function/char_diff.dart';
 import 'package:lyric_editor/diff_function/diff_segment.dart';
-import 'package:lyric_editor/utility/id_generator.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/id_generator.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 
-Future<void> displaySnippetDetailDialog(BuildContext context, SnippetID snippetID, LyricSnippet snippet) async {
+Future<void> displaySnippetDetailDialog(BuildContext context, LyricSnippetID snippetID, LyricSnippet snippet) async {
   return await showDialog<void>(
     context: context,
     builder: (BuildContext context) {
@@ -27,7 +27,7 @@ Future<void> displaySnippetDetailDialog(BuildContext context, SnippetID snippetI
 }
 
 class _SnippetDetailDialog extends ConsumerStatefulWidget {
-  final SnippetID snippetID;
+  final LyricSnippetID snippetID;
   final LyricSnippet snippet;
 
   const _SnippetDetailDialog({required this.snippetID, required this.snippet});
@@ -38,7 +38,7 @@ class _SnippetDetailDialog extends ConsumerStatefulWidget {
 
 class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   late TimingService timingService;
-  late final SnippetID snippetID;
+  late final LyricSnippetID snippetID;
   late final LyricSnippet snippet;
 
   late final FocusNode startTimestampFocusNode;

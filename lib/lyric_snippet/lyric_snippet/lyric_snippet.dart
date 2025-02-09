@@ -7,7 +7,7 @@ import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_lis
 import 'package:lyric_editor/lyric_snippet/timing_object.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
 import 'package:lyric_editor/service/timing_service.dart';
-import 'package:lyric_editor/utility/id_generator.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/id_generator.dart';
 
 class LyricSnippet {
   VocalistID vocalistID;

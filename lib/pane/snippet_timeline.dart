@@ -9,7 +9,7 @@ import 'package:lyric_editor/painter/rectangle_painter.dart';
 import 'package:lyric_editor/painter/triangle_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane.dart';
 import 'package:lyric_editor/service/timing_service.dart';
-import 'package:lyric_editor/utility/id_generator.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/id_generator.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 
 class SnippetTimeline extends ConsumerStatefulWidget {
@@ -37,7 +37,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
   double timingPointIndicatorWidth = 5.0;
 
   VocalistID vocalistID;
-  Map<SnippetID, int> snippetTracks = {};
+  Map<LyricSnippetID, int> snippetTracks = {};
 
   _SnippetTimelineState(
     this.vocalistID,
@@ -65,10 +65,10 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     List<Widget> annotationItemWidgets = [];
     List<Widget> annotationTimingPointIndicatorWidgets = [];
 
-    Map<SnippetID, LyricSnippet> snippets = timingService.snippetsForeachVocalist[vocalistID]!;
+    Map<LyricSnippetID, LyricSnippet> snippets = timingService.snippetsForeachVocalist[vocalistID]!;
     snippetTracks = getTrack(snippets);
-    for (MapEntry<SnippetID, LyricSnippet> entry in snippets.entries) {
-      SnippetID snippetID = entry.key;
+    for (MapEntry<LyricSnippetID, LyricSnippet> entry in snippets.entries) {
+      LyricSnippetID snippetID = entry.key;
       LyricSnippet snippet = entry.value;
 
       snippetItemWidgets.add(getSnippetItemWidget(snippetID, snippet));
@@ -81,12 +81,12 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     );
   }
 
-  Map<SnippetID, int> getTrack(Map<SnippetID, LyricSnippet> snippets) {
-    Map<SnippetID, int> tracks = {};
+  Map<LyricSnippetID, int> getTrack(Map<LyricSnippetID, LyricSnippet> snippets) {
+    Map<LyricSnippetID, int> tracks = {};
     int currentTrack = 0;
     int previousEndtime = 0;
-    for (MapEntry<SnippetID, LyricSnippet> entry in snippets.entries) {
-      SnippetID id = entry.key;
+    for (MapEntry<LyricSnippetID, LyricSnippet> entry in snippets.entries) {
+      LyricSnippetID id = entry.key;
       LyricSnippet snippet = entry.value;
 
       if (snippet.sentence == "") {
@@ -108,7 +108,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     return tracks;
   }
 
-  Widget getSnippetItemWidget(SnippetID snippetID, LyricSnippet snippet) {
+  Widget getSnippetItemWidget(LyricSnippetID snippetID, LyricSnippet snippet) {
     final TimingService timingService = ref.read(timingMasterProvider);
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
 
@@ -123,7 +123,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
       top: trackHeight * snippetTracks[snippetID]! + topMargin + timingPointIndicatorHeight + annotationItemHeight + annotationSnippetMargin,
       child: GestureDetector(
         onTap: () {
-          List<SnippetID> selectingSnippets = timelinePaneProvider.selectingSnippets;
+          List<LyricSnippetID> selectingSnippets = timelinePaneProvider.selectingSnippets;
           if (selectingSnippets.contains(snippetID)) {
             timelinePaneProvider.selectingSnippets.remove(snippetID);
           } else {
@@ -148,7 +148,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     return snippetItem;
   }
 
-  List<Widget> getAnnotationItemWidget(SnippetID snippetID, LyricSnippet snippet) {
+  List<Widget> getAnnotationItemWidget(LyricSnippetID snippetID, LyricSnippet snippet) {
     List<Widget> annotaitonItems = [];
 
     final TimingService timingService = ref.read(timingMasterProvider);
@@ -168,7 +168,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
         top: trackHeight * snippetTracks[snippetID]! + topMargin + timingPointIndicatorHeight,
         child: GestureDetector(
           onTap: () {
-            List<SnippetID> selectingSnippets = timelinePaneProvider.selectingSnippets;
+            List<LyricSnippetID> selectingSnippets = timelinePaneProvider.selectingSnippets;
             if (selectingSnippets.contains(snippetID)) {
               timelinePaneProvider.selectingSnippets.remove(snippetID);
             } else {
@@ -192,7 +192,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     return annotaitonItems;
   }
 
-  List<Widget> getTimingPointIndicatorWidgets(SnippetID snippetID, LyricSnippet snippet) {
+  List<Widget> getTimingPointIndicatorWidgets(LyricSnippetID snippetID, LyricSnippet snippet) {
     Size itemSize = Size(
       timingPointIndicatorWidth,
       timingPointIndicatorHeight,
@@ -219,7 +219,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     return indicatorWidgets;
   }
 
-  List<Widget> getAnnotationTimingPointIndicatorWidgets(SnippetID snippetID, LyricSnippet snippet) {
+  List<Widget> getAnnotationTimingPointIndicatorWidgets(LyricSnippetID snippetID, LyricSnippet snippet) {
     Size itemSize = Size(
       timingPointIndicatorWidth,
       timingPointIndicatorHeight,

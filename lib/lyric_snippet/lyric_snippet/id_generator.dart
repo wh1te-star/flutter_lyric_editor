@@ -1,10 +1,10 @@
-class SnippetID {
+class LyricSnippetID {
   int id;
-  SnippetID(this.id);
+  LyricSnippetID(this.id);
 
   @override
   bool operator ==(Object other) {
-    if (other is SnippetID) {
+    if (other is LyricSnippetID) {
       return id == other.id;
     } else {
       return false;
@@ -18,12 +18,12 @@ class SnippetID {
   String toString() => 'SnippetID($id)';
 }
 
-class SnippetIdGenerator {
+class LyricSnippetIdGenerator {
   int id = 0;
 
-  SnippetID idGen() {
+  LyricSnippetID idGen() {
     id += 1;
-    return SnippetID(id);
+    return LyricSnippetID(id);
   }
 }
 
