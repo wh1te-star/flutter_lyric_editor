@@ -20,14 +20,7 @@ class LyricSnippetMap {
   LyricSnippetMap copyWith({
     Map<LyricSnippetID, LyricSnippet>? lyricSnippetMap,
   }) {
-    final Map<LyricSnippetID, LyricSnippet> originalMap = lyricSnippetMap ?? map;
-    final Map<LyricSnippetID, LyricSnippet> copiedMap = {};
-
-    originalMap.forEach((key, value) {
-      copiedMap[key] = value.copyWith();
-    });
-
-    return LyricSnippetMap(copiedMap);
+    return LyricSnippetMap({...(lyricSnippetMap ?? map)}.map((key, value) => MapEntry(key, value.copyWith())));
   }
 
   @override
