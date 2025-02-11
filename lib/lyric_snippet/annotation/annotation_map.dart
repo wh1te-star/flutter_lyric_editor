@@ -7,7 +7,11 @@ class AnnotationMap {
 
   AnnotationMap(this.annotationMap);
 
-  static AnnotationMap get emptyMap => AnnotationMap({});
+  static AnnotationMap get empty => AnnotationMap({});
+
+  bool isEmpty() {
+    return map.isEmpty;
+  }
 
   Map<SegmentRange, Annotation> get map => annotationMap;
 

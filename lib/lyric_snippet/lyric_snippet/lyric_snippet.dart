@@ -1,13 +1,12 @@
 import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
+import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/position_type_info.dart';
 import 'package:lyric_editor/lyric_snippet/segment_range.dart';
-import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
-import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/lyric_snippet/timing_object.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
 import 'package:lyric_editor/service/timing_service.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/id_generator.dart';
+import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id_generator.dart';
 
 class LyricSnippet {
   VocalistID vocalistID;
@@ -20,21 +19,22 @@ class LyricSnippet {
     required this.annotationMap,
   });
 
-  static LyricSnippet get emptySnippet {
+  static LyricSnippet get empty {
     return LyricSnippet(
       vocalistID: VocalistID(0),
-      timing: Timing(
-        startTimestamp: 0,
-        sentenceSegmentList: SentenceSegmentList([]),
-      ),
-      annotationMap: AnnotationMap.emptyMap,
+      timing: Timing.empty,
+      annotationMap: AnnotationMap.empty,
     );
+  }
+
+  bool isEmpty() {
+    return vocalistID.id == 0 && timing.startTimestamp == 0 && timing.isEmpty();
   }
 
   MapEntry<SegmentRange, Annotation> getAnnotationWords(int index) {
     return annotationMap.map.entries.firstWhere(
       (entry) => entry.key.startIndex <= index && index <= entry.key.endIndex,
-      orElse: () => MapEntry(SegmentRange(-1, -1), Annotation.emptyAnnotation),
+      orElse: () => MapEntry(SegmentRange(-1, -1), Annotation.empty),
     );
   }
 
@@ -43,8 +43,8 @@ class LyricSnippet {
       SegmentRange range = entry.key;
       Annotation annotation = entry.value;
       int startTimestamp = timing.startTimestamp;
-      List<TimingPoint> timingPoints = timing.timingPointList.items;
-      List<TimingPoint> annotationTimingPoints = annotation.timing.timingPointList.items;
+      List<TimingPoint> timingPoints = timing.timingPointList.list;
+      List<TimingPoint> annotationTimingPoints = annotation.timing.timingPointList.list;
       int startSeekPosition = startTimestamp + timingPoints[range.startIndex].seekPosition + annotationTimingPoints.first.seekPosition;
       int endSeekPosition = startTimestamp + timingPoints[range.startIndex].seekPosition + annotationTimingPoints.last.seekPosition;
       if (startSeekPosition <= seekPosition && seekPosition < endSeekPosition) {

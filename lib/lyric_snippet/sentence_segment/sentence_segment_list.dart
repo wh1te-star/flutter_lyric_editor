@@ -8,7 +8,15 @@ class SentenceSegmentList {
     assert(!has2ConseqentEmpty());
   }
 
-  List<SentenceSegment> get items => _list;
+  static SentenceSegmentList get empty {
+    return SentenceSegmentList([]);
+  }
+
+  bool isEmpty() {
+    return list.isEmpty;
+  }
+
+  List<SentenceSegment> get list => _list;
 
   String get sentence {
     return _list.map((SentenceSegment segment) {

@@ -1,5 +1,6 @@
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/lyric_snippet/timing_object.dart';
+import 'package:lyric_editor/service/timing_service.dart';
 
 class Annotation {
   Timing timing;
@@ -8,13 +9,14 @@ class Annotation {
     required this.timing,
   });
 
-  static Annotation get emptyAnnotation {
+  static Annotation get empty {
     return Annotation(
-      timing: Timing(
-        startTimestamp: 0,
-        sentenceSegmentList: SentenceSegmentList([]),
-      ),
+      timing: Timing.empty,
     );
+  }
+
+  bool isEmpty() {
+    return timing.isEmpty();
   }
 
   Annotation copyWith({

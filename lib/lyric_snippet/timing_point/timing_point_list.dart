@@ -13,7 +13,7 @@ class TimingPointList {
     assert(isSeekPositionDuplicationAllowed());
   }
 
-  List<TimingPoint> get items => _list;
+  List<TimingPoint> get list => _list;
 
   bool isCharPositionOrdered() {
     return _list.map((TimingPoint timingPoint) {
@@ -39,6 +39,14 @@ class TimingPointList {
       _list,
       (TimingPoint timingPoint) => timingPoint.seekPosition,
     ).values.every((List<TimingPoint> group) => group.length <= seekPositionDuplicationAllowed);
+  }
+
+  static TimingPointList get empty {
+    return TimingPointList([]);
+  }
+
+  bool isEmpty() {
+    return list.isEmpty;
   }
 
   TimingPointList copyWith({

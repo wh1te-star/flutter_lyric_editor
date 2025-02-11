@@ -23,14 +23,25 @@ class Timing {
   String get sentence => sentenceSegmentList.sentence;
 
   int get endTimestamp {
-    return startTimestamp + timingPointList.items.last.seekPosition;
+    return startTimestamp + timingPointList.list.last.seekPosition;
+  }
+
+  static Timing get empty {
+    return Timing(
+        startTimestamp: 0,
+        sentenceSegmentList: SentenceSegmentList.empty,
+    );
+  }
+
+  bool isEmpty() {
+    return startTimestamp == 0 && sentenceSegmentList.isEmpty();
   }
 
   TimingPointList constructTimingPointList(SentenceSegmentList sentenceSegmentList) {
     List<TimingPoint> timingPoints = [];
     int charPosition = 0;
     int seekPosition = 0;
-    for (var segment in sentenceSegmentList.items) {
+    for (var segment in sentenceSegmentList.list) {
       timingPoints.add(TimingPoint(charPosition, seekPosition));
       charPosition += segment.word.length;
       seekPosition += segment.duration;
@@ -42,7 +53,7 @@ class Timing {
 
   SentenceSegmentList syncSentenceSegments(TimingPointList timingPointList) {
     List<SentenceSegment> sentenceSegments = [];
-    List<TimingPoint> timingPoints = timingPointList.items;
+    List<TimingPoint> timingPoints = timingPointList.list;
     for (int index = 0; index < timingPoints.length - 1; index++) {
       String word = sentence.substring(timingPoints[index].charPosition, timingPoints[index + 1].charPosition);
       int duration = timingPoints[index + 1].seekPosition - timingPoints[index].seekPosition;
@@ -56,10 +67,10 @@ class Timing {
     List<int> charPositionTranslation = getCharPositionTranslation(sentence, newSentence);
 
     SentenceSegmentList sentenceSegmentList = this.sentenceSegmentList;
-    List<SentenceSegment> sentenceSegments = sentenceSegmentList.items;
-    List<TimingPoint> timingPoints = timingPointList.items;
+    List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
+    List<TimingPoint> timingPoints = timingPointList.list;
     Timing timing = Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
-    for (TimingPoint timingPoint in timingPointList.items) {
+    for (TimingPoint timingPoint in timingPointList.list) {
       int currentCharPosition = timingPoint.charPosition;
       if (charPositionTranslation[currentCharPosition] == -1) {
         try {
@@ -78,7 +89,7 @@ class Timing {
     for (int index = 0; index < sentenceSegments.length; index++) {
       int leftCharPosition = charPositionTranslation[timingPoints[index].charPosition];
       int rightCharPosition = charPositionTranslation[timingPoints[index + 1].charPosition];
-      timing.sentenceSegmentList.items[index].word = newSentence.substring(leftCharPosition, rightCharPosition);
+      timing.sentenceSegmentList.list[index].word = newSentence.substring(leftCharPosition, rightCharPosition);
     }
     timing = timing.integrate2OrMoreTimingPoints();
 
@@ -124,7 +135,7 @@ class Timing {
     List<SentenceSegment> result = [];
     int accumulatedSum = 0;
 
-    for (SentenceSegment sentenceSegment in sentenceSegmentList.items) {
+    for (SentenceSegment sentenceSegment in sentenceSegmentList.list) {
       if (sentenceSegment.word == "") {
         accumulatedSum += sentenceSegment.duration;
       } else {
@@ -144,15 +155,15 @@ class Timing {
   }
 
   String getSegmentWord(int index) {
-    return sentenceSegmentList.items[index].word;
+    return sentenceSegmentList.list[index].word;
   }
 
   int getSegmentIndexFromSeekPosition(int seekPosition) {
     if (seekPosition < startTimestamp || endTimestamp < seekPosition) {
       return -1;
     }
-    List<SentenceSegment> sentenceSegments = sentenceSegmentList.items;
-    List<TimingPoint> timingPoints = timingPointList.items;
+    List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
+    List<TimingPoint> timingPoints = timingPointList.list;
     for (int index = 0; index < sentenceSegments.length; index++) {
       if (seekPosition <= startTimestamp + timingPoints[index + 1].seekPosition) {
         return index;
@@ -166,8 +177,8 @@ class Timing {
       return PositionTypeInfo(PositionType.sentenceSegment, -1, false);
     }
 
-    List<SentenceSegment> sentenceSegments = sentenceSegmentList.items;
-    List<TimingPoint> timingPoints = timingPointList.items;
+    List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
+    List<TimingPoint> timingPoints = timingPointList.list;
     for (int index = 0; index < sentenceSegments.length; index++) {
       int leftSegmentPosition = timingPoints[index].charPosition;
       int rightSegmentPosition = timingPoints[index + 1].charPosition;
@@ -199,9 +210,9 @@ class Timing {
     SentenceSegmentList sentenceSegmentList = this.sentenceSegmentList;
     if (snippetEdge == SnippetEdge.start) {
       startTimestamp -= extendDuration;
-      sentenceSegmentList.items.first.duration += extendDuration;
+      sentenceSegmentList.list.first.duration += extendDuration;
     } else {
-      sentenceSegmentList.items.last.duration += extendDuration;
+      sentenceSegmentList.list.last.duration += extendDuration;
     }
 
     return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
@@ -212,7 +223,7 @@ class Timing {
 
     int startTimestamp = this.startTimestamp;
     SentenceSegmentList sentenceSegmentList = this.sentenceSegmentList;
-    List<SentenceSegment> sentenceSegments = sentenceSegmentList.items;
+    List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
     if (snippetEdge == SnippetEdge.start) {
       int index = 0;
       int rest = shortenDuration;
@@ -245,7 +256,7 @@ class Timing {
       throw TimingPointException("The seek position is out of the valid range.");
     }
 
-    List<TimingPoint> timingPoints = timingPointList.items;
+    List<TimingPoint> timingPoints = timingPointList.list;
     seekPosition -= startTimestamp;
     for (int index = 0; index < timingPoints.length - 1; index++) {
       if (charPosition == timingPoints[index].charPosition) {
@@ -276,7 +287,7 @@ class Timing {
   }
 
   Timing deleteTimingPoint(int charPosition, Option option) {
-    List<TimingPoint> timingPoints = timingPointList.items;
+    List<TimingPoint> timingPoints = timingPointList.list;
     int index = timingPoints.indexWhere((timingPoint) => timingPoint.charPosition == charPosition);
     if (index == -1) {
       throw TimingPointException("There is not the specified timing point.");

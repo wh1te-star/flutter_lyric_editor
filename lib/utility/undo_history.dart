@@ -1,5 +1,6 @@
-import 'package:lyric_editor/lyric_snippet/vocalist.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/id_generator.dart';
+import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
+import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 
 enum LyricUndoType {

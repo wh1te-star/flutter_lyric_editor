@@ -9,7 +9,7 @@ class TimingPoint {
     }
   }
 
-  static TimingPoint get emptyTimingPoint {
+  static TimingPoint get empty {
     return TimingPoint(-1, -1);
   }
 

@@ -1,19 +1,14 @@
 import 'dart:math';
-
-import 'package:collection/collection.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lyric_editor/diff_function/backtract_table.dart';
-import 'package:lyric_editor/diff_function/longest_common_subsequence.dart';
+import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
-import 'package:lyric_editor/lyric_snippet/vocalist.dart';
+import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/diff_function/char_diff.dart';
 import 'package:lyric_editor/diff_function/diff_segment.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/id_generator.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 
@@ -79,9 +74,9 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
     startTimestampController = TextEditingController();
     endTimestampController = TextEditingController();
     sentenceController = TextEditingController();
-    startTimestampController.text = snippet.startTimestamp.toString();
-    endTimestampController.text = snippet.endTimestamp.toString();
-    sentenceController.text = snippet.sentence;
+    startTimestampController.text = snippet.timing.startTimestamp.toString();
+    endTimestampController.text = snippet.timing.endTimestamp.toString();
+    sentenceController.text = snippet.timing.sentence;
     sentenceController.addListener(() {
       setState(() {});
     });
@@ -120,11 +115,11 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
     for (MapEntry<VocalistID, Vocalist> entry in headerVocalists.entries) {
       VocalistID vocalistID = entry.key;
       Vocalist vocalist = entry.value;
-      segmentWiseVocalistCheckValues[vocalistID] = List.filled(snippet.sentenceSegments.length, true);
+      segmentWiseVocalistCheckValues[vocalistID] = List.filled(snippet.timing.sentenceSegmentList.list.length, true);
     }
 
-    for (int i = 0; i < snippet.sentenceSegments.length; i++) {
-      SentenceSegment segment = snippet.sentenceSegments[i];
+    for (int i = 0; i < snippet.timing.sentenceSegmentList.list.length; i++) {
+      SentenceSegment segment = snippet.timing.sentenceSegmentList.list[i];
       segmentTexts.add(segment.word);
 
       List<Widget> segmentWiseVocalistCheckboxes = [];
@@ -170,7 +165,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
       );
     }
 
-    currentSentence = snippet.sentence;
+    currentSentence = snippet.timing.sentence;
   }
 
   @override
