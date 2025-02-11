@@ -3,15 +3,16 @@ import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/position_type_info.dart';
 import 'package:lyric_editor/lyric_snippet/segment_range.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/timing_object.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id_generator.dart';
 
 class LyricSnippet {
-  VocalistID vocalistID;
-  Timing timing;
-  AnnotationMap annotationMap;
+  final VocalistID vocalistID;
+  final Timing timing;
+  final AnnotationMap annotationMap;
 
   LyricSnippet({
     required this.vocalistID,
@@ -30,6 +31,12 @@ class LyricSnippet {
   bool isEmpty() {
     return vocalistID.id == 0 && timing.startTimestamp == 0 && timing.isEmpty();
   }
+
+  String get sentence => timing.sentence;
+  int get startTimestamp => timing.startTimestamp;
+  int get endTimestamp => timing.endTimestamp;
+  List<SentenceSegment> get sentenceSegments => timing.sentenceSegmentList.list;
+  List<TimingPoint> get timingPoints => timing.timingPointList.list;
 
   MapEntry<SegmentRange, Annotation> getAnnotationWords(int index) {
     return annotationMap.map.entries.firstWhere(

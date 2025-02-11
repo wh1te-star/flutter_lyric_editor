@@ -74,9 +74,9 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
     startTimestampController = TextEditingController();
     endTimestampController = TextEditingController();
     sentenceController = TextEditingController();
-    startTimestampController.text = snippet.timing.startTimestamp.toString();
-    endTimestampController.text = snippet.timing.endTimestamp.toString();
-    sentenceController.text = snippet.timing.sentence;
+    startTimestampController.text = snippet.startTimestamp.toString();
+    endTimestampController.text = snippet.endTimestamp.toString();
+    sentenceController.text = snippet.sentence;
     sentenceController.addListener(() {
       setState(() {});
     });
@@ -115,11 +115,11 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
     for (MapEntry<VocalistID, Vocalist> entry in headerVocalists.entries) {
       VocalistID vocalistID = entry.key;
       Vocalist vocalist = entry.value;
-      segmentWiseVocalistCheckValues[vocalistID] = List.filled(snippet.timing.sentenceSegmentList.list.length, true);
+      segmentWiseVocalistCheckValues[vocalistID] = List.filled(snippet.sentenceSegments.length, true);
     }
 
-    for (int i = 0; i < snippet.timing.sentenceSegmentList.list.length; i++) {
-      SentenceSegment segment = snippet.timing.sentenceSegmentList.list[i];
+    for (int i = 0; i < snippet.sentenceSegments.length; i++) {
+      SentenceSegment segment = snippet.sentenceSegments[i];
       segmentTexts.add(segment.word);
 
       List<Widget> segmentWiseVocalistCheckboxes = [];
@@ -165,7 +165,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
       );
     }
 
-    currentSentence = snippet.timing.sentence;
+    currentSentence = snippet.sentence;
   }
 
   @override

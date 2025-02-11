@@ -1,9 +1,8 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
+import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/position_type_info.dart';
 import 'package:lyric_editor/lyric_snippet/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
@@ -11,8 +10,6 @@ import 'package:lyric_editor/lyric_snippet/timing_object.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
-import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id_generator.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/utility/sorted_list.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 import 'package:tuple/tuple.dart';
@@ -65,8 +62,8 @@ class TextPaneProvider with ChangeNotifier {
     }
 
     LyricSnippet snippet = currentSnippets.values.first;
-    int currentSnippetPosition = snippet.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
-    PositionTypeInfo nextSnippetPosition = snippet.getPositionTypeInfo(cursor.charPosition);
+    int currentSnippetPosition = snippet.timing.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
+    PositionTypeInfo nextSnippetPosition = snippet.timing.getPositionTypeInfo(cursor.charPosition);
     if (currentSnippetPosition != nextSnippetPosition.index) {
       cursor = getDefaultCursor(cursor.snippetID);
       cursorBlinker.restartCursorTimer();
@@ -89,7 +86,7 @@ class TextPaneProvider with ChangeNotifier {
       return;
     }
 
-    Annotation? annotation = snippet.annotationMap[cursor.annotationSegmentRange];
+    Annotation? annotation = snippet.annotationMap.map[cursor.annotationSegmentRange];
     if (annotation == null) {
       cursor = getDefaultCursor(cursor.snippetID);
       return;
@@ -101,7 +98,7 @@ class TextPaneProvider with ChangeNotifier {
     defaultCursor.isAnnotationSelection = false;
 
     LyricSnippet snippet = getSnippetWithID(id);
-    int currentSnippetPosition = snippet.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
+    int currentSnippetPosition = snippet.timing.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
     defaultCursor.snippetID = id;
     defaultCursor.charPosition = snippet.timingPoints[currentSnippetPosition].charPosition + 1;
     defaultCursor.option = Option.former;
@@ -120,7 +117,7 @@ class TextPaneProvider with ChangeNotifier {
     SegmentRange range = cursorAnnotationEntry.key;
     Annotation annotation = cursorAnnotationEntry.value;
 
-    int index = annotation.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
+    int index = annotation.timing.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
 
     defaultCursor.snippetID = id;
     defaultCursor.annotationSegmentRange = range;
@@ -196,7 +193,7 @@ class TextPaneProvider with ChangeNotifier {
     LyricSnippet snippet = timingService.lyricSnippetList[cursor.snippetID]!;
 
     if (!cursor.isSegmentSelectionMode) {
-      TimingObject object = !cursor.isAnnotationSelection ? snippet : snippet.annotationMap[cursor.annotationSegmentRange]!;
+      Timing object = !cursor.isAnnotationSelection ? snippet.timing : snippet.annotationMap.map[cursor.annotationSegmentRange]!.timing;
       PositionTypeInfo snippetPositionInfo = object.getPositionTypeInfo(cursor.charPosition);
       int seekPositionInfo = object.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
       int charPositionIndex = snippetPositionInfo.index;
@@ -260,9 +257,9 @@ class TextPaneProvider with ChangeNotifier {
     LyricSnippet snippet = timingService.lyricSnippetList[cursor.snippetID]!;
 
     if (!cursor.isSegmentSelectionMode) {
-      TimingObject object = !cursor.isAnnotationSelection ? snippet : snippet.annotationMap[cursor.annotationSegmentRange]!;
-      PositionTypeInfo snippetPositionInfo = object.getPositionTypeInfo(cursor.charPosition);
-      int seekPositionInfo = object.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
+      Timing timing = !cursor.isAnnotationSelection ? snippet.timing : snippet.annotationMap.map[cursor.annotationSegmentRange]!.timing;
+      PositionTypeInfo snippetPositionInfo = timing.getPositionTypeInfo(cursor.charPosition);
+      int seekPositionInfo = timing.getSegmentIndexFromSeekPosition(musicPlayerProvider.seekPosition);
       int charPositionIndex = snippetPositionInfo.index;
       if (cursor.option == Option.latter && snippetPositionInfo.duplicate) {
         charPositionIndex++;
@@ -271,13 +268,13 @@ class TextPaneProvider with ChangeNotifier {
       if (snippetPositionInfo.duplicate && cursor.option == Option.former) {
         cursor.option = Option.latter;
       } else if (snippetPositionInfo.type == PositionType.sentenceSegment || charPositionIndex == seekPositionInfo) {
-        if (cursor.charPosition + 1 < object.sentence.length) {
+        if (cursor.charPosition + 1 < timing.sentence.length) {
           cursor.charPosition++;
           cursor.option = Option.former;
         }
       } else {
-        if (object.timingPoints[charPositionIndex + 1].charPosition < object.sentence.length) {
-          cursor.charPosition = object.timingPoints[charPositionIndex + 1].charPosition;
+        if (timing.timingPoints[charPositionIndex + 1].charPosition < timing.sentence.length) {
+          cursor.charPosition = timing.timingPoints[charPositionIndex + 1].charPosition;
           cursor.option = Option.former;
         }
       }
@@ -406,7 +403,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
       LyricSnippet snippet = entry.value;
       Color vocalistColor = Color(timingService.vocalistColorMap[snippet.vocalistID]!.color);
 
-      double rowHeight = snippet.annotationMap.isEmpty ? singleRowHeight : 2 * singleRowHeight;
+      double rowHeight = snippet.annotationMap.isEmpty() ? singleRowHeight : 2 * singleRowHeight;
       elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -441,7 +438,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
     MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     TimingService timingService = ref.read(timingMasterProvider);
     TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
-    PositionTypeInfo cursorPositionInfo = snippet.getPositionTypeInfo(textPaneProvider.cursor.charPosition);
+    PositionTypeInfo cursorPositionInfo = snippet.timing.getPositionTypeInfo(textPaneProvider.cursor.charPosition);
 
     TextStyle textStyle = const TextStyle(
       color: Colors.black,
@@ -462,8 +459,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
     );
     List<Widget> sentenceRowWidgets = [];
     List<Widget> annotationRowWidgets = [];
-    List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotationMap, snippet.sentenceSegments.length);
-    int highlightSegmentIndex = snippet.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
+    List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotationMap.map, snippet.sentenceSegments.length);
+    int highlightSegmentIndex = snippet.timing.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
 
     TextPaneCursor cursor = textPaneProvider.cursor.copyWith();
 
@@ -491,7 +488,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
           textStyleIncursor,
         );
 
-        if (snippet.annotationMap.isNotEmpty) {
+        if (!snippet.annotationMap.isEmpty()) {
           annotationRowWidgets += sentenceLineWidgets(
             currentSegmentPartSentence,
             true,
@@ -537,8 +534,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
           ),
         ];
 
-        if (snippet.annotationMap.isNotEmpty) {
-          int annotationHighlightSegmentIndex = textPaneProvider.cursor.annotationSegmentRange == segmentRange ? annotation.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition) : -1;
+        if (!snippet.annotationMap.isEmpty()) {
+          int annotationHighlightSegmentIndex = textPaneProvider.cursor.annotationSegmentRange == segmentRange ? annotation.timing.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition) : -1;
           List<Widget> annotationRow = sentenceLineWidgets(
             currentSegmentPartAnnotation,
             true,
@@ -551,7 +548,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
             annotationTextStyleIncursor,
           );
 
-          if (snippet.annotationMap.isNotEmpty) {
+          if (!snippet.annotationMap.isEmpty()) {
             annotationRowWidgets += [
               SizedBox(
                 width: rowWidth,

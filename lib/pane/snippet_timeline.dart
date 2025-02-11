@@ -157,7 +157,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
 
     final Color vocalistColor = Color(timingService.vocalistColorMap[vocalistID]!.color);
 
-    for (MapEntry<SegmentRange, Annotation> entry in snippet.annotationMap.entries) {
+    for (MapEntry<SegmentRange, Annotation> entry in snippet.annotationMap.map.entries) {
       SegmentRange range = entry.key;
       Annotation annotation = entry.value;
       Size itemSize = Size(
@@ -227,7 +227,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     );
 
     List<Widget> indicatorWidgets = [];
-    for (MapEntry<SegmentRange, Annotation> entry in snippet.annotationMap.entries) {
+    for (MapEntry<SegmentRange, Annotation> entry in snippet.annotationMap.map.entries) {
       SegmentRange range = entry.key;
       Annotation annotation = entry.value;
       for (int index = 0; index < annotation.timingPoints.length; index++) {

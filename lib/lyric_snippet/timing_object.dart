@@ -21,15 +21,16 @@ class Timing {
   }
 
   String get sentence => sentenceSegmentList.sentence;
-
   int get endTimestamp {
     return startTimestamp + timingPointList.list.last.seekPosition;
   }
+  List<SentenceSegment> get sentenceSegments => sentenceSegmentList.list;
+  List<TimingPoint> get timingPoints => timingPointList.list;
 
   static Timing get empty {
     return Timing(
-        startTimestamp: 0,
-        sentenceSegmentList: SentenceSegmentList.empty,
+      startTimestamp: 0,
+      sentenceSegmentList: SentenceSegmentList.empty,
     );
   }
 
