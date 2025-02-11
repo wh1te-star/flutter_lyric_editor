@@ -7,7 +7,6 @@ import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dar
 import 'package:lyric_editor/lyric_snippet/timing_object.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
 import 'package:lyric_editor/service/timing_service.dart';
-import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id_generator.dart';
 
 class LyricSnippet {
   final VocalistID vocalistID;
@@ -26,7 +25,7 @@ class LyricSnippet {
         annotationMap: AnnotationMap.empty,
       );
 
-  bool get isEmpty => vocalistID.id == 0 && timing.startTimestamp == 0 && timing.isEmpty();
+  bool get isEmpty => vocalistID.id == 0 && timing.startTimestamp == 0 && timing.isEmpty;
 
   String get sentence => timing.sentence;
   int get startTimestamp => timing.startTimestamp;

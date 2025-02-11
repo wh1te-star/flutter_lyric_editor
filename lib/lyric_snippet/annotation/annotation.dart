@@ -1,8 +1,6 @@
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
-import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/lyric_snippet/timing_object.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
-import 'package:lyric_editor/service/timing_service.dart';
 
 class Annotation {
   Timing timing;
@@ -18,7 +16,7 @@ class Annotation {
   }
 
   bool isEmpty() {
-    return timing.isEmpty();
+    return timing.isEmpty;
   }
 
   String get sentence => timing.sentence;

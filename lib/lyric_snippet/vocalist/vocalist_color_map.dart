@@ -1,4 +1,3 @@
-import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id_generator.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id_generator.dart';
 import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
