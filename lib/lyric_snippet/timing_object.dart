@@ -33,7 +33,7 @@ class Timing {
         sentenceSegmentList: SentenceSegmentList.empty,
       );
 
-  bool isEmpty() => this == empty;
+  bool get isEmpty => this == empty;
 
   TimingPointList constructTimingPointList(SentenceSegmentList sentenceSegmentList) {
     List<TimingPoint> timingPoints = [];
