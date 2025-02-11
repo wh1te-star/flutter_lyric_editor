@@ -3,19 +3,15 @@ class TimingPoint {
   final int seekPosition;
 
   TimingPoint(this.charPosition, this.seekPosition) {
-    if (!isEmpty()) {
+    if (!isEmpty) {
       assert(charPosition >= 0);
       assert(seekPosition >= 0);
     }
   }
 
-  static TimingPoint get empty {
-    return TimingPoint(-1, -1);
-  }
+  static TimingPoint get empty => TimingPoint(-1, -1);
 
-  bool isEmpty() {
-    return charPosition == -1 && seekPosition == -1;
-  }
+  bool get isEmpty => charPosition == -1 && seekPosition == -1;
 
   TimingPoint copyWith({int? charPosition, int? seekPosition}) {
     return TimingPoint(

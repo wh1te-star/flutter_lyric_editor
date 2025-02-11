@@ -24,19 +24,16 @@ class Timing {
   int get endTimestamp {
     return startTimestamp + timingPointList.list.last.seekPosition;
   }
+
   List<SentenceSegment> get sentenceSegments => sentenceSegmentList.list;
   List<TimingPoint> get timingPoints => timingPointList.list;
 
-  static Timing get empty {
-    return Timing(
-      startTimestamp: 0,
-      sentenceSegmentList: SentenceSegmentList.empty,
-    );
-  }
+  static Timing get empty => Timing(
+        startTimestamp: 0,
+        sentenceSegmentList: SentenceSegmentList.empty,
+      );
 
-  bool isEmpty() {
-    return startTimestamp == 0 && sentenceSegmentList.isEmpty();
-  }
+  bool isEmpty() => this == empty;
 
   TimingPointList constructTimingPointList(SentenceSegmentList sentenceSegmentList) {
     List<TimingPoint> timingPoints = [];

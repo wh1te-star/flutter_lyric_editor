@@ -41,13 +41,9 @@ class TimingPointList {
     ).values.every((List<TimingPoint> group) => group.length <= seekPositionDuplicationAllowed);
   }
 
-  static TimingPointList get empty {
-    return TimingPointList([]);
-  }
+  static TimingPointList get empty => TimingPointList([]);
 
-  bool isEmpty() {
-    return list.isEmpty;
-  }
+  bool get isEmpty => list.isEmpty;
 
   TimingPointList copyWith({
     TimingPointList? timingPointList,

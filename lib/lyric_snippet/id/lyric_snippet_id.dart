@@ -2,13 +2,9 @@ class LyricSnippetID {
   int id;
   LyricSnippetID(this.id);
 
-  static LyricSnippetID get empty {
-    return LyricSnippetID(0);
-  }
+  static LyricSnippetID get empty => LyricSnippetID(0);
 
-  bool isEmpty() {
-    return id == 0;
-  }
+  bool get isEmpty => id == 0;
 
   LyricSnippetID copyWith({int? id}) {
     return LyricSnippetID(id ?? this.id);

@@ -20,17 +20,13 @@ class LyricSnippet {
     required this.annotationMap,
   });
 
-  static LyricSnippet get empty {
-    return LyricSnippet(
-      vocalistID: VocalistID(0),
-      timing: Timing.empty,
-      annotationMap: AnnotationMap.empty,
-    );
-  }
+  static LyricSnippet get empty => LyricSnippet(
+        vocalistID: VocalistID(0),
+        timing: Timing.empty,
+        annotationMap: AnnotationMap.empty,
+      );
 
-  bool isEmpty() {
-    return vocalistID.id == 0 && timing.startTimestamp == 0 && timing.isEmpty();
-  }
+  bool get isEmpty => vocalistID.id == 0 && timing.startTimestamp == 0 && timing.isEmpty();
 
   String get sentence => timing.sentence;
   int get startTimestamp => timing.startTimestamp;

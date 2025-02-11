@@ -6,16 +6,12 @@ class Vocalist {
     required this.color,
   });
 
-  static Vocalist get empty {
-    return Vocalist(
-      name: "",
-      color: 0,
-    );
-  }
+  static Vocalist get empty => Vocalist(
+        name: "",
+        color: 0,
+      );
 
-  bool isEmpty() {
-    return name == "" && color == 0;
-  }
+  bool get isEmpty => name == "" && color == 0;
 
   Vocalist copyWith({
     String? name,

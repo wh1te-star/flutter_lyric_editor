@@ -8,13 +8,9 @@ class SentenceSegmentList {
     assert(!has2ConseqentEmpty());
   }
 
-  static SentenceSegmentList get empty {
-    return SentenceSegmentList([]);
-  }
+  static SentenceSegmentList get empty => SentenceSegmentList([]);
 
-  bool isEmpty() {
-    return list.isEmpty;
-  }
+  bool get isEmpty => list.isEmpty;
 
   List<SentenceSegment> get list => _list;
 

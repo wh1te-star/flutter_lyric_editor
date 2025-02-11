@@ -6,13 +6,9 @@ class SentenceSegment {
     assert(duration >= 0);
   }
 
-  static SentenceSegment get empty {
-    return SentenceSegment("", 0);
-  }
+  static SentenceSegment get empty => SentenceSegment("", 0);
 
-  bool isEmpty() {
-    return word == "" && duration == 0;
-  }
+  bool get isEmpty => word == "" && duration == 0;
 
   SentenceSegment copyWith({String? word, int? duration}) {
     return SentenceSegment(

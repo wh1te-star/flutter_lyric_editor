@@ -11,13 +11,9 @@ class VocalistColorMap {
 
   Map<VocalistID, Vocalist> get map => _vocalistColorMap;
 
-  static VocalistColorMap get empty {
-    return VocalistColorMap({});
-  }
+  static VocalistColorMap get empty => VocalistColorMap({});
 
-  bool isEmpty() {
-    return map.isEmpty;
-  }
+  bool get isEmpty => map.isEmpty;
 
   VocalistColorMap addVocalist(String name, int color) {
     final Map<VocalistID, Vocalist> newMap = Map<VocalistID, Vocalist>.from(map);
@@ -40,7 +36,7 @@ class VocalistColorMap {
         )
         .key;
 
-    if (!vocalistID.isEmpty()) {
+    if (!vocalistID.isEmpty) {
       copiedMap.remove(vocalistID);
     }
     return VocalistColorMap(copiedMap);

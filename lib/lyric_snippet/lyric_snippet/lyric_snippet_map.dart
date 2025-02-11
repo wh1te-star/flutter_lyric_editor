@@ -22,13 +22,9 @@ class LyricSnippetMap {
     }).isSorted((int left, int right) => left.compareTo(right));
   }
 
-  static LyricSnippetMap get empty {
-    return LyricSnippetMap({});
-  }
+  static LyricSnippetMap get empty => LyricSnippetMap({});
 
-  bool isEmpty() {
-    return map.isEmpty;
-  }
+  bool get isEmpty => map.isEmpty;
 
   LyricSnippetMap addVocalist(VocalistID vocalistID, Timing timing) {
     final Map<LyricSnippetID, LyricSnippet> newMap = Map<LyricSnippetID, LyricSnippet>.from(map);
