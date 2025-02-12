@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id_generator.dart';
 import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
@@ -24,16 +25,54 @@ class VocalistColorMap {
     map[key] = value;
   }
 
-  VocalistColorMap addVocalist(String name, int color) {
+  Vocalist getVocalistByID(VocalistID id) {
+    return map.entries
+        .where((MapEntry<VocalistID, Vocalist> entry) {
+          VocalistID vocalistID = entry.key;
+          return vocalistID == id;
+        })
+        .first
+        .value;
+  }
+
+  Vocalist getVocalistByName(String name) {
+    return map.entries
+        .where((MapEntry<VocalistID, Vocalist> entry) {
+          String vocalistName = entry.value.name;
+          return vocalistName == name;
+        })
+        .first
+        .value;
+  }
+
+  VocalistID getVocalistIDByName(String name) {
+    return map.entries
+        .where((MapEntry<VocalistID, Vocalist> entry) {
+          String vocalistName = entry.value.name;
+          return vocalistName == name;
+        })
+        .first
+        .key;
+  }
+
+  VocalistColorMap addVocalist(Vocalist vocalist) {
     final Map<VocalistID, Vocalist> newMap = Map<VocalistID, Vocalist>.from(map);
-    newMap[idGenerator.idGen()] = Vocalist(name: name, color: color);
+    newMap[idGenerator.idGen()] = vocalist;
     return VocalistColorMap(newMap);
   }
 
-  VocalistColorMap removeVocalistByID(VocalistID id) {
-    final Map<VocalistID, Vocalist> copiedMap = Map<VocalistID, Vocalist>.from(map);
-    copiedMap.remove(id);
-    return VocalistColorMap(copiedMap);
+  VocalistColorMap addVocalists(List<String> vocalistNames, int color) {
+    final Map<VocalistID, Vocalist> newMap = Map<VocalistID, Vocalist>.from(map);
+
+    int combinationID = 0;
+    for (String vocalistName in vocalistNames) {
+      combinationID += getVocalistIDByName(vocalistName).id;
+    }
+
+    String joinedName = vocalistNames.join(', ');
+    newMap[VocalistID(combinationID)] = Vocalist(name: joinedName, color: color + 0xFF000000);
+
+    return VocalistColorMap(newMap);
   }
 
   VocalistColorMap removeVocalistByName(String name) {
@@ -48,6 +87,12 @@ class VocalistColorMap {
     if (!vocalistID.isEmpty) {
       copiedMap.remove(vocalistID);
     }
+    return VocalistColorMap(copiedMap);
+  }
+
+  VocalistColorMap removeVocalistByID(VocalistID id) {
+    final Map<VocalistID, Vocalist> copiedMap = Map<VocalistID, Vocalist>.from(map);
+    copiedMap.remove(id);
     return VocalistColorMap(copiedMap);
   }
 

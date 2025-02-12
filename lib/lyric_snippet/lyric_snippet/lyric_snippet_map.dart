@@ -52,9 +52,9 @@ class LyricSnippetMap {
     ));
   }
 
-  LyricSnippetMap addVocalist(VocalistID vocalistID, Timing timing) {
+  LyricSnippetMap addLyricSnippet(LyricSnippet lyricSnippet) {
     final Map<LyricSnippetID, LyricSnippet> newMap = Map<LyricSnippetID, LyricSnippet>.from(map);
-    newMap[idGenerator.idGen()] = LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: AnnotationMap({}));
+    newMap[idGenerator.idGen()] = lyricSnippet;
     return sortLyricSnippetList(LyricSnippetMap(newMap));
   }
 
@@ -70,7 +70,7 @@ class LyricSnippetMap {
     int startBulge = 0,
     int endBulge = 0,
   }) {
-    final Iterable<MapEntry<LyricSnippetID,LyricSnippet>> filteredEntries = map.entries.where((MapEntry<LyricSnippetID, LyricSnippet> entry) {
+    final Iterable<MapEntry<LyricSnippetID, LyricSnippet>> filteredEntries = map.entries.where((MapEntry<LyricSnippetID, LyricSnippet> entry) {
       bool isWithinTimestamp = entry.value.startTimestamp - startBulge <= seekPosition && seekPosition <= entry.value.endTimestamp + endBulge;
       bool isMatchingVocalist = vocalistID == null || entry.value.vocalistID == vocalistID;
       return isWithinTimestamp && isMatchingVocalist;

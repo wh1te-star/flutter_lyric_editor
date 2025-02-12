@@ -14,7 +14,6 @@ import 'package:lyric_editor/lyric_snippet/vocalist/vocalist_color_map.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/utility/undo_history.dart';
-import 'package:xml/xml.dart' as xml;
 
 final timingMasterProvider = ChangeNotifierProvider((ref) {
   final musicPlayerService = ref.read(musicPlayerMasterProvider);
@@ -281,121 +280,6 @@ class TimingService extends ChangeNotifier {
     } catch (e) {
       debugPrint("Error loading lyrics: $e");
     }
-  }
-
-  int parseTimestamp(String timestamp) {
-    final parts = timestamp.split(':');
-    final minutes = int.parse(parts[0]);
-    final secondsParts = parts[1].split('.');
-    final seconds = int.parse(secondsParts[0]);
-    final milliseconds = int.parse(secondsParts[1]);
-    return (minutes * 60 + seconds) * 1000 + milliseconds;
-  }
-
-  Map<LyricSnippetID, LyricSnippet> parseLyric(String rawLyricText) {
-    final document = xml.XmlDocument.parse(rawLyricText);
-
-    final vocalistCombination = document.findAllElements('VocalistsList');
-    for (var vocalistName in vocalistCombination) {
-      final colorElements = vocalistName.findElements('VocalistInfo');
-      for (var colorElement in colorElements) {
-        final name = colorElement.getAttribute('name')!;
-        final color = int.parse(colorElement.getAttribute('color')!, radix: 16);
-
-        final vocalistNames = colorElement.findAllElements('Vocalist').map((e) => e.innerText).toList();
-        if (vocalistNames.length == 1) {
-          vocalistColorMap[_vocalistIdGenerator.idGen()] = Vocalist(name: name, color: color + 0xFF000000);
-        } else {
-          int combinationID = 0;
-          for (String vocalistName in vocalistNames) {
-            combinationID += getVocalistIDWithName(vocalistName).id;
-          }
-          vocalistColorMap[VocalistID(combinationID)] = Vocalist(name: name, color: color + 0xFF000000);
-        }
-      }
-    }
-
-    final lineTimestamps = document.findAllElements('LineTimestamp');
-    Map<LyricSnippetID, LyricSnippet> snippets = {};
-    for (var lineTimestamp in lineTimestamps) {
-      final startTime = parseTimestamp(lineTimestamp.getAttribute('startTime')!);
-      final vocalistName = lineTimestamp.getAttribute('vocalistName')!;
-
-      final wordTimestamps = lineTimestamp.findElements('WordTimestamp');
-      List<SentenceSegment> sentenceSegments = [];
-
-      for (var wordTimestamp in wordTimestamps) {
-        final time = parseTimestamp(wordTimestamp.getAttribute('time')!);
-        final word = wordTimestamp.innerText;
-        sentenceSegments.add(SentenceSegment(word, time));
-      }
-      snippets[_snippetIdGenerator.idGen()] = LyricSnippet(
-        vocalistID: getVocalistIDWithName(vocalistName),
-        startTimestamp: startTime,
-        sentenceSegments: sentenceSegments,
-        annotationMap: {},
-      );
-    }
-
-    return snippets;
-  }
-
-  String serializeLyric(Map<LyricSnippetID, LyricSnippet> lyricSnippetList) {
-    final builder = xml.XmlBuilder();
-    builder.processing('xml', 'version="1.0" encoding="UTF-8"');
-    builder.element('Lyrics', nest: () {
-      for (var snippet in lyricSnippetList.values) {
-        builder.element('LineTimestamp', attributes: {
-          'vocalistName': vocalistColorMap[snippet.vocalistID]!.name,
-          'startTime': _formatTimestamp(snippet.startTimestamp),
-        }, nest: () {
-          for (var sentenceSegment in snippet.sentenceSegments) {
-            builder.element(
-              'WordTimestamp',
-              attributes: {
-                'time': _formatTimestamp(sentenceSegment.duration),
-              },
-              nest: sentenceSegment.word,
-            );
-          }
-        });
-      }
-    });
-
-    final document = builder.buildDocument();
-    return document.toXmlString(pretty: true, indent: '  ');
-  }
-
-  Future<void> writeTranslatedXmlToFile() async {
-    final builder = xml.XmlBuilder();
-    builder.processing('xml', 'version="1.0" encoding="UTF-8"');
-    builder.element('Lyrics', nest: () {
-      for (var snippet in lyricSnippetMap.values) {
-        builder.element('LineTimestamp', attributes: {
-          'vocalistName': vocalistColorMap[snippet.vocalistID]!.name,
-          'startTime': _formatTimestamp(snippet.startTimestamp),
-        }, nest: () {
-          for (int i = 0; i < snippet.sentenceSegments.length; i++) {
-            final currentSegment = snippet.sentenceSegments[i];
-            final duration = currentSegment.duration;
-
-            builder.element(
-              'WordTimestamp',
-              attributes: {
-                'time': _formatDuration(Duration(milliseconds: duration)),
-              },
-              nest: snippet.sentenceSegments[i].word,
-            );
-          }
-        });
-      }
-    });
-
-    /*
-    final document = builder.buildDocument();
-    final xmlString = document.toXmlString(pretty: true);
-    debugPrint(xmlString);
-    */
   }
 
   String _formatTimestamp(int timestamp) {
