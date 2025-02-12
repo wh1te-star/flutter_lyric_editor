@@ -10,6 +10,12 @@ class AnnotationMap {
   static AnnotationMap get empty => AnnotationMap({});
   bool get isEmpty => map.isEmpty;
 
+  Iterable<MapEntry<SegmentRange, Annotation>> get entries => map.entries;
+  Iterable<SegmentRange> get keys => map.keys;
+  Iterable<Annotation> get values => map.values;
+  int get length => map.length;
+  void clear() => map.clear();
+  bool containsKey(SegmentRange key) => map.containsKey(key);
   Annotation? operator [](SegmentRange key) => map[key];
   void operator []=(SegmentRange key, Annotation value) {
     map[key] = value;

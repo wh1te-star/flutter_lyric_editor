@@ -12,7 +12,6 @@ import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dar
 import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
 import 'package:lyric_editor/lyric_snippet/vocalist/vocalist_color_map.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
-import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id_generator.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/utility/undo_history.dart';
 import 'package:xml/xml.dart' as xml;
@@ -39,7 +38,7 @@ class TimingService extends ChangeNotifier {
     required this.musicPlayerProvider,
   });
 
-  Map<VocalistID, Map<LyricSnippetID, LyricSnippet>> get snippetsForeachVocalist {
+  Map<VocalistID, LyricSnippetMap> get snippetsForeachVocalist {
     return groupBy(
       lyricSnippetMap.map.entries,
       (MapEntry<LyricSnippetID, LyricSnippet> entry) {
@@ -48,7 +47,9 @@ class TimingService extends ChangeNotifier {
     ).map(
       (VocalistID vocalistID, List<MapEntry<LyricSnippetID, LyricSnippet>> snippets) => MapEntry(
         vocalistID,
-        {for (var entry in snippets) entry.key: entry.value},
+        LyricSnippetMap(
+          {for (var entry in snippets) entry.key: entry.value},
+        ),
       ),
     );
   }
@@ -84,36 +85,20 @@ class TimingService extends ChangeNotifier {
     return snippetTracks;
   }
 
-  void sortLyricSnippetList() {
-    lyricSnippetMap = Map.fromEntries(
-      lyricSnippetMap.entries.toList()
-        ..sort(
-          (a, b) {
-            int compareStartTime = a.value.startTimestamp.compareTo(b.value.startTimestamp);
-            if (compareStartTime != 0) {
-              return compareStartTime;
-            } else {
-              return a.value.vocalistID.id.compareTo(b.value.vocalistID.id);
-            }
-          },
-        ),
-    );
-  }
-
-  Map<LyricSnippetID, LyricSnippet> getSnippetsAtSeekPosition({int? seekPosition, VocalistID? vocalistID, int startBulge = 0, int endBulge = 0}) {
+  LyricSnippetMap getSnippetsAtSeekPosition({int? seekPosition, VocalistID? vocalistID, int startBulge = 0, int endBulge = 0}) {
     int seekPosition0 = seekPosition ?? musicPlayerProvider.seekPosition;
 
-    return Map.fromEntries(
-      lyricSnippetMap.entries.where((entry) {
+    return LyricSnippetMap(Map.fromEntries(
+      lyricSnippetMap.map.entries.where((entry) {
         bool isWithinTimestamp = entry.value.startTimestamp - startBulge <= seekPosition0 && seekPosition0 <= entry.value.endTimestamp + endBulge;
         bool isMatchingVocalist = vocalistID == null || entry.value.vocalistID == vocalistID;
         return isWithinTimestamp && isMatchingVocalist;
       }),
-    );
+    ));
   }
 
   int getLanes({VocalistID? vocalistID}) {
-    List<LyricSnippet> snippets = vocalistID != null ? snippetsForeachVocalist[vocalistID]?.values.toList() ?? [] : lyricSnippetMap.values.toList();
+    List<LyricSnippet> snippets = vocalistID != null ? snippetsForeachVocalist[vocalistID]?.map.values.toList() ?? [] : lyricSnippetMap.map.values.toList();
     if (snippets.isEmpty) return 1;
     int maxOverlap = 1;
     int currentOverlap = 1;

@@ -25,21 +25,43 @@ class LyricSnippetMap {
   static LyricSnippetMap get empty => LyricSnippetMap({});
   bool get isEmpty => map.isEmpty;
 
+  Iterable<MapEntry<LyricSnippetID, LyricSnippet>> get entries => map.entries;
+  Iterable<LyricSnippetID> get keys => map.keys;
+  Iterable<LyricSnippet> get values => map.values;
+  int get length => map.length;
+  void clear() => map.clear();
+  bool containsKey(LyricSnippetID key) => map.containsKey(key);
   LyricSnippet? operator [](LyricSnippetID key) => map[key];
   void operator []=(LyricSnippetID key, LyricSnippet value) {
     map[key] = value;
   }
 
+  LyricSnippetMap sortLyricSnippetList(LyricSnippetMap lyricSnippetMap) {
+    return LyricSnippetMap(Map.fromEntries(
+      lyricSnippetMap.map.entries.toList()
+        ..sort(
+          (a, b) {
+            int compareStartTime = a.value.startTimestamp.compareTo(b.value.startTimestamp);
+            if (compareStartTime != 0) {
+              return compareStartTime;
+            } else {
+              return a.value.vocalistID.id.compareTo(b.value.vocalistID.id);
+            }
+          },
+        ),
+    ));
+  }
+
   LyricSnippetMap addVocalist(VocalistID vocalistID, Timing timing) {
     final Map<LyricSnippetID, LyricSnippet> newMap = Map<LyricSnippetID, LyricSnippet>.from(map);
     newMap[idGenerator.idGen()] = LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: AnnotationMap({}));
-    return LyricSnippetMap(newMap);
+    return sortLyricSnippetList(LyricSnippetMap(newMap));
   }
 
   LyricSnippetMap removeVocalistByID(LyricSnippetID id) {
     final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
     copiedMap.remove(id);
-    return LyricSnippetMap(copiedMap);
+    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
   }
 
   LyricSnippetMap copyWith({

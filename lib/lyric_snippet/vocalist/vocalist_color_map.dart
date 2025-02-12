@@ -13,6 +13,12 @@ class VocalistColorMap {
   static VocalistColorMap get empty => VocalistColorMap({});
   bool get isEmpty => map.isEmpty;
 
+  Iterable<MapEntry<VocalistID, Vocalist>> get entries => map.entries;
+  Iterable<VocalistID> get keys => map.keys;
+  Iterable<Vocalist> get values => map.values;
+  int get length => map.length;
+  void clear() => map.clear();
+  bool containsKey(VocalistID key) => map.containsKey(key);
   Vocalist? operator [](VocalistID key) => map[key];
   void operator []=(VocalistID key, Vocalist value) {
     map[key] = value;
