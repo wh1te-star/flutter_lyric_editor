@@ -23,8 +23,12 @@ class LyricSnippetMap {
   }
 
   static LyricSnippetMap get empty => LyricSnippetMap({});
-
   bool get isEmpty => map.isEmpty;
+
+  LyricSnippet? operator [](LyricSnippetID key) => map[key];
+  void operator []=(LyricSnippetID key, LyricSnippet value) {
+    map[key] = value;
+  }
 
   LyricSnippetMap addVocalist(VocalistID vocalistID, Timing timing) {
     final Map<LyricSnippetID, LyricSnippet> newMap = Map<LyricSnippetID, LyricSnippet>.from(map);

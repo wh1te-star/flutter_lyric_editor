@@ -9,8 +9,12 @@ class SentenceSegmentList {
   }
 
   static SentenceSegmentList get empty => SentenceSegmentList([]);
-
   bool get isEmpty => list.isEmpty;
+
+  SentenceSegment operator [](int index) => list[index];
+  void operator []=(int index, SentenceSegment value) {
+    list[index] = value;
+  }
 
   List<SentenceSegment> get list => _list;
 

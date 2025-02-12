@@ -8,9 +8,11 @@ class AnnotationMap {
   AnnotationMap(this.annotationMap);
 
   static AnnotationMap get empty => AnnotationMap({});
+  bool get isEmpty => map.isEmpty;
 
-  bool isEmpty() {
-    return map.isEmpty;
+  Annotation? operator [](SegmentRange key) => map[key];
+  void operator []=(SegmentRange key, Annotation value) {
+    map[key] = value;
   }
 
   Map<SegmentRange, Annotation> get map => annotationMap;

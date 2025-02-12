@@ -42,8 +42,12 @@ class TimingPointList {
   }
 
   static TimingPointList get empty => TimingPointList([]);
-
   bool get isEmpty => list.isEmpty;
+
+  TimingPoint operator [](int index) => list[index];
+  void operator []=(int index, TimingPoint value) {
+    list[index] = value;
+  }
 
   TimingPointList copyWith({
     TimingPointList? timingPointList,

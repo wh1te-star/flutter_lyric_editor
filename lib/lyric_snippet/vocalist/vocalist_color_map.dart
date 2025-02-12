@@ -11,8 +11,12 @@ class VocalistColorMap {
   Map<VocalistID, Vocalist> get map => _vocalistColorMap;
 
   static VocalistColorMap get empty => VocalistColorMap({});
-
   bool get isEmpty => map.isEmpty;
+
+  Vocalist? operator [](VocalistID key) => map[key];
+  void operator []=(VocalistID key, Vocalist value) {
+    map[key] = value;
+  }
 
   VocalistColorMap addVocalist(String name, int color) {
     final Map<VocalistID, Vocalist> newMap = Map<VocalistID, Vocalist>.from(map);

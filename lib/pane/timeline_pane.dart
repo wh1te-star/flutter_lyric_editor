@@ -3,6 +3,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
+import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
 import 'package:lyric_editor/painter/current_position_indicator_painter.dart';
 import 'package:lyric_editor/painter/rectangle_painter.dart';
@@ -13,7 +15,6 @@ import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:lyric_editor/dialog/text_field_dialog.dart';
-import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id_generator.dart';
 import 'package:lyric_editor/utility/svg_icon.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 
@@ -51,7 +52,7 @@ class TimelinePaneProvider with ChangeNotifier {
       }
     });
     timingService.addListener(() {
-      final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
+      final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetMap;
       snippetsForeachVocalist = groupBy(
         lyricSnippetList.entries,
         (MapEntry<LyricSnippetID, LyricSnippet> entry) {
@@ -64,7 +65,7 @@ class TimelinePaneProvider with ChangeNotifier {
         ),
       );
 
-      cursorPosition = timingService.lyricSnippetList.keys.first;
+      cursorPosition = timingService.lyricSnippetMap.keys.first;
       List<LyricSnippetID> currentSelectingSnippet = timingService.getSnippetsAtSeekPosition().keys.toList();
       selectingSnippets = currentSelectingSnippet;
       notifyListeners();
@@ -203,7 +204,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   LyricSnippet getSnippetWithID(LyricSnippetID id) {
-    final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
+    final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetMap;
     return lyricSnippetList[id]!;
   }
 

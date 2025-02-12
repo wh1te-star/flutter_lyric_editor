@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
+import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
@@ -11,7 +13,6 @@ import 'package:lyric_editor/pane/text_pane.dart';
 import 'package:lyric_editor/pane/timeline_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
-import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id_generator.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
@@ -80,7 +81,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     });
 
     timingService.addListener(() {
-      maxLanes = getMaxRequiredLanes(timingService.getTrackNumber(timingService.lyricSnippetList, startBulge, endBulge)) + 1;
+      maxLanes = getMaxRequiredLanes(timingService.getTrackNumber(timingService.lyricSnippetMap, startBulge, endBulge)) + 1;
       setState(() {});
     });
 
@@ -117,7 +118,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     double justBeforePosition = 0;
     double justAfterPosition = double.maxFinite;
 
-    final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetList;
+    final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetMap;
     for (int index = 0; index < lyricSnippetList.length; index++) {
       double currentTime = getMiddlePoint(lyricSnippetList.values.toList()[index]);
       if (currentTime < seekPosition) {
@@ -142,7 +143,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
   double getSeekPositionFromScrollOffset(double scrollOffset) {
     final TimingService timingService = ref.read(timingMasterProvider);
-    final List<LyricSnippet> lyricSnippetList = timingService.lyricSnippetList.values.toList();
+    final List<LyricSnippet> lyricSnippetList = timingService.lyricSnippetMap.values.toList();
 
     if (scrollOffset < 30) {
       return lyricSnippetList[0].startTimestamp.toDouble();
@@ -196,7 +197,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
   }
 
   double getAnnotationSizePosition(LyricSnippet snippet, int segmentIndex) {
-    int startIndex = snippet.annotationMap.keys.toList()[segmentIndex].startIndex;
+    int startIndex = snippet.annotationMap.map.keys.toList()[segmentIndex].startIndex;
     double sumPosition = 0;
     int index = 0;
     for (index = 0; index < startIndex; index++) {
@@ -217,12 +218,12 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     }
 
     bool doesAnnotationExist = false;
-    if (snippet.annotationMap.isNotEmpty) {
+    if (!snippet.annotationMap.isEmpty) {
       doesAnnotationExist = true;
     }
     List<Widget> segmentWidgets = [];
 
-    List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotationMap, snippet.sentenceSegments.length);
+    List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotationMap.map, snippet.sentenceSegments.length);
 
     for (int rangeIndex = 0; rangeIndex < rangeList.length; rangeIndex++) {
       Tuple2<SegmentRange, Annotation?> element = rangeList[rangeIndex];
@@ -371,7 +372,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     final int seekPosition = musicPlayerService.seekPosition;
     final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap;
 
-    Map<LyricSnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetList;
+    Map<LyricSnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetMap;
     Map<LyricSnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition(
       startBulge: startBulge,
       endBulge: endBulge,
@@ -383,7 +384,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
     DisplayMode displayMode = videoPaneProvider.displayMode;
     //if (displayMode == DisplayMode.appearDissappear) {
-    final Map<LyricSnippetID, int> tracks = timingService.getTrackNumber(timingService.lyricSnippetList, startBulge, endBulge);
+    final Map<LyricSnippetID, int> tracks = timingService.getTrackNumber(timingService.lyricSnippetMap, startBulge, endBulge);
 
     List<Widget> content = List<Widget>.generate(maxLanes, (index) => Container());
 
@@ -408,12 +409,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
         content[i] = Expanded(
           child: Center(
             child: snippetItem(
-              LyricSnippet(
-                vocalistID: VocalistID(0),
-                startTimestamp: seekPosition,
-                sentenceSegments: [SentenceSegment(" ", 1)],
-                annotationMap: {},
-              ),
+              LyricSnippet.empty,
               fontSize,
               fontSize / 2,
               fontFamily,
