@@ -64,6 +64,21 @@ class LyricSnippetMap {
     return sortLyricSnippetList(LyricSnippetMap(copiedMap));
   }
 
+  LyricSnippetMap getSnippetsAtSeekPosition({
+    required int seekPosition,
+    VocalistID? vocalistID,
+    int startBulge = 0,
+    int endBulge = 0,
+  }) {
+    final Iterable<MapEntry<LyricSnippetID,LyricSnippet>> filteredEntries = map.entries.where((MapEntry<LyricSnippetID, LyricSnippet> entry) {
+      bool isWithinTimestamp = entry.value.startTimestamp - startBulge <= seekPosition && seekPosition <= entry.value.endTimestamp + endBulge;
+      bool isMatchingVocalist = vocalistID == null || entry.value.vocalistID == vocalistID;
+      return isWithinTimestamp && isMatchingVocalist;
+    });
+
+    return LyricSnippetMap(Map.fromEntries(filteredEntries));
+  }
+
   LyricSnippetMap copyWith({
     Map<LyricSnippetID, LyricSnippet>? lyricSnippetMap,
   }) {

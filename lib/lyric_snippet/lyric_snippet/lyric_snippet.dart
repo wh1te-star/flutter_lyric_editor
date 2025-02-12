@@ -24,7 +24,6 @@ class LyricSnippet {
         timing: Timing.empty,
         annotationMap: AnnotationMap.empty,
       );
-
   bool get isEmpty => vocalistID.id == 0 && timing.startTimestamp == 0 && timing.isEmpty;
 
   String get sentence => timing.sentence;

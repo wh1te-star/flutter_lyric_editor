@@ -40,7 +40,7 @@ class TimingService extends ChangeNotifier {
 
   Map<VocalistID, LyricSnippetMap> get snippetsForeachVocalist {
     return groupBy(
-      lyricSnippetMap.map.entries,
+      lyricSnippetMap.entries,
       (MapEntry<LyricSnippetID, LyricSnippet> entry) {
         return entry.value.vocalistID;
       },
@@ -86,19 +86,16 @@ class TimingService extends ChangeNotifier {
   }
 
   LyricSnippetMap getSnippetsAtSeekPosition({int? seekPosition, VocalistID? vocalistID, int startBulge = 0, int endBulge = 0}) {
-    int seekPosition0 = seekPosition ?? musicPlayerProvider.seekPosition;
-
-    return LyricSnippetMap(Map.fromEntries(
-      lyricSnippetMap.map.entries.where((entry) {
-        bool isWithinTimestamp = entry.value.startTimestamp - startBulge <= seekPosition0 && seekPosition0 <= entry.value.endTimestamp + endBulge;
-        bool isMatchingVocalist = vocalistID == null || entry.value.vocalistID == vocalistID;
-        return isWithinTimestamp && isMatchingVocalist;
-      }),
-    ));
+    return lyricSnippetMap.getSnippetsAtSeekPosition(
+      seekPosition: seekPosition ?? musicPlayerProvider.seekPosition,
+      vocalistID: vocalistID,
+      startBulge: startBulge,
+      endBulge: endBulge,
+    );
   }
 
   int getLanes({VocalistID? vocalistID}) {
-    List<LyricSnippet> snippets = vocalistID != null ? snippetsForeachVocalist[vocalistID]?.map.values.toList() ?? [] : lyricSnippetMap.map.values.toList();
+    List<LyricSnippet> snippets = vocalistID != null ? snippetsForeachVocalist[vocalistID]?.map.values.toList() ?? [] : lyricSnippetMap.values.toList();
     if (snippets.isEmpty) return 1;
     int maxOverlap = 1;
     int currentOverlap = 1;
