@@ -1,5 +1,4 @@
 import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
-import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
@@ -16,7 +15,7 @@ class XlrcParser {
   static const String rootElement = "LyricFile";
 
   static const String vocalistColorMapElement = "VocalistsList";
-  static const String vocalistColorMapVocalistElement = "VocalistInfo";
+  static const String vocalistColorMapEntryElement = "VocalistInfo";
   static const String vocalistNameAttribute = "name";
   static const String vocalistColorAttribute = "color";
   static const String vocalistCombinationElement = "Vocalist";
@@ -66,7 +65,7 @@ class XlrcParser {
 
     final vocalistCombination = document.findAllElements(vocalistColorMapElement);
     for (XmlElement vocalistName in vocalistCombination) {
-      final Iterable<XmlElement> colorElements = vocalistName.findElements(vocalistColorMapVocalistElement);
+      final Iterable<XmlElement> colorElements = vocalistName.findElements(vocalistColorMapEntryElement);
       for (XmlElement colorElement in colorElements) {
         final String name = colorElement.getAttribute(vocalistNameAttribute)!;
         final int color = int.parse(colorElement.getAttribute(vocalistColorAttribute)!, radix: 16);

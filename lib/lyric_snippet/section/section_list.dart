@@ -33,6 +33,37 @@ class SectionList {
     list[index] = value;
   }
 
+  SectionList addSection(int seekPosition) {
+    List<Section> newList = List.from(list);
+    if (!newList.contains(Section(seekPosition))) {
+      newList.add(Section(seekPosition));
+    }
+    return SectionList(newList);
+  }
+
+  SectionList deleteSection(int seekPosition) {
+    List<Section> newList = List.from(list);
+
+    int targetIndex = 0;
+    int minDistance = 3600000;
+    for (int index = 0; index < newList.length; index++) {
+      int distance = newList[index].seekPosition - seekPosition;
+      if (distance < 0) {
+        distance = -distance;
+      }
+      if (distance < minDistance) {
+        minDistance = distance;
+        targetIndex = index;
+      }
+    }
+
+    if (minDistance < 5000) {
+      newList.removeAt(targetIndex);
+    }
+
+    return SectionList(newList);
+  }
+
   SectionList copyWith({
     SectionList? sectionList,
   }) {

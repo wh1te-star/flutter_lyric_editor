@@ -96,6 +96,26 @@ class VocalistColorMap {
     return VocalistColorMap(copiedMap);
   }
 
+  bool isBitTrue(VocalistID targetID, VocalistID singleID) {
+    return (targetID.id & singleID.id) != 0;
+  }
+
+  String generateVocalistCombinationNameFromID(VocalistID vocalistID) {
+    int signalBitID = 1;
+    String vocalistName = "";
+    while (signalBitID < vocalistColorMap.keys.toList().last.id) {
+      if (isBitTrue(vocalistID, VocalistID(signalBitID))) {
+        vocalistName += vocalistNameSeparator;
+        vocalistName += vocalistColorMap[VocalistID(signalBitID)]!.name;
+      }
+      signalBitID *= 2;
+    }
+
+    vocalistName = vocalistName.substring(vocalistNameSeparator.length);
+    return vocalistName;
+  }
+
+
   VocalistColorMap copyWith({
     Map<VocalistID, Vocalist>? vocalistColorMap,
   }) {

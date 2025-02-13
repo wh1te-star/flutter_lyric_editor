@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
+import 'package:lyric_editor/lyric_snippet/section/section_list.dart';
 import 'package:lyric_editor/lyric_snippet/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
@@ -26,7 +27,7 @@ class TimingService extends ChangeNotifier {
   LyricSnippetMap lyricSnippetMap = LyricSnippetMap({});
   Map<LyricSnippetID, int> snippetTracks = {};
   VocalistColorMap vocalistColorMap = VocalistColorMap({});
-  List<int> sections = [];
+  SectionList sections = SectionList([]);
 
   LyricUndoHistory undoHistory = LyricUndoHistory();
 
@@ -117,121 +118,8 @@ class TimingService extends ChangeNotifier {
     return maxOverlap;
   }
 
-  void initLyric(String rawText) {
-    int audioDuration = musicPlayerProvider.audioDuration;
-
-    vocalistColorMap.clear();
-    vocalistColorMap[_vocalistIdGenerator.idGen()] = Vocalist(name: defaultVocalistName, color: 0xff777777);
-
-    String singlelineText = rawText.replaceAll("\n", "").replaceAll("\r", "");
-    lyricSnippetMap.clear();
-    lyricSnippetMap[_snippetIdGenerator.idGen()] = LyricSnippet(
-      vocalistID: vocalistColorMap.keys.first,
-      startTimestamp: 0,
-      sentenceSegments: [SentenceSegment(singlelineText, audioDuration)],
-      annotationMap: {},
-    );
-    sortLyricSnippetList();
-
-    notifyListeners();
-  }
-
-  void loadLyric(String rawLyricText) {
-    lyricSnippetMap = parseLyric(rawLyricText);
-    sortLyricSnippetList();
-
-    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    notifyListeners();
-  }
-
-  void exportLyric(String path) async {
-    final String rawLyricText = serializeLyric(lyricSnippetMap);
-    final File file = File(path);
-    await file.writeAsString(rawLyricText);
-  }
-
   List<LyricSnippet> translateIDsToSnippets(List<LyricSnippetID> ids) {
     return ids.map((id) => getSnippetWithID(id)).toList();
-  }
-
-  bool isBitTrue(VocalistID targetID, VocalistID singleID) {
-    return (targetID.id & singleID.id) != 0;
-  }
-
-  String generateVocalistCombinationNameFromID(VocalistID vocalistID) {
-    int signalBitID = 1;
-    String vocalistName = "";
-    while (signalBitID < vocalistColorMap.keys.toList().last.id) {
-      if (isBitTrue(vocalistID, VocalistID(signalBitID))) {
-        vocalistName += vocalistNameSeparator;
-        vocalistName += vocalistColorMap[VocalistID(signalBitID)]!.name;
-      }
-      signalBitID *= 2;
-    }
-
-    vocalistName = vocalistName.substring(vocalistNameSeparator.length);
-    return vocalistName;
-  }
-
-  VocalistID getVocalistIDWithName(String vocalistName) {
-    final entry = vocalistColorMap.entries.firstWhere(
-      (entry) => entry.value.name == vocalistName,
-      orElse: () => throw Exception('Vocalist not found'),
-    );
-    return entry.key;
-  }
-
-  Vocalist getVocalistWithName(String vocalistName) {
-    final entry = vocalistColorMap.entries.firstWhere(
-      (entry) => entry.value.name == vocalistName,
-      orElse: () => throw Exception('Vocalist not found'),
-    );
-    return entry.value;
-  }
-
-  LyricSnippet getSnippetWithID(LyricSnippetID id) {
-    return lyricSnippetMap[id]!;
-  }
-
-  void removeSnippetWithID(LyricSnippetID id) {
-    lyricSnippetMap.remove(id);
-  }
-
-  List<LyricSnippet> getSnippetsWithVocalistName(String vocalistName) {
-    return lyricSnippetMap.values.where((snippet) => vocalistColorMap[snippet.vocalistID]!.name == vocalistName).toList();
-  }
-
-  void addSection(int seekPosition) {
-    undoHistory.pushUndoHistory(LyricUndoType.section, sections);
-
-    if (!sections.contains(seekPosition)) {
-      sections.add(seekPosition);
-    }
-
-    notifyListeners();
-  }
-
-  void deleteSection(int seekPosition) {
-    undoHistory.pushUndoHistory(LyricUndoType.section, sections);
-
-    int targetIndex = 0;
-    int minDistance = 3600000;
-    for (int index = 0; index < sections.length; index++) {
-      int distance = sections[index] - seekPosition;
-      if (distance < 0) {
-        distance = -distance;
-      }
-      if (distance < minDistance) {
-        minDistance = distance;
-        targetIndex = index;
-      }
-    }
-
-    if (minDistance < 5000) {
-      sections.removeAt(targetIndex);
-    }
-
-    notifyListeners();
   }
 
   void addVocalist(String vocalistName) {
@@ -245,7 +133,7 @@ class TimingService extends ChangeNotifier {
   void deleteVocalist(String vocalistName) {
     undoHistory.pushUndoHistory(LyricUndoType.vocalistsColor, vocalistColorMap);
 
-    VocalistID id = getVocalistIDWithName(vocalistName);
+    VocalistID id = getVocalistIDByName(vocalistName);
     vocalistColorMap.remove(id);
     lyricSnippetMap.removeWhere((id, snippet) => vocalistColorMap[snippet.vocalistID]!.name == vocalistName);
 
@@ -255,7 +143,7 @@ class TimingService extends ChangeNotifier {
   void changeVocalistName(String oldName, String newName) {
     undoHistory.pushUndoHistory(LyricUndoType.vocalistsColor, vocalistColorMap);
 
-    VocalistID vocalistID = getVocalistIDWithName(oldName);
+    VocalistID vocalistID = getVocalistIDByName(oldName);
     vocalistColorMap[vocalistID]!.name = newName;
 
     for (MapEntry<VocalistID, Vocalist> entry in vocalistColorMap.entries) {
@@ -280,20 +168,6 @@ class TimingService extends ChangeNotifier {
     } catch (e) {
       debugPrint("Error loading lyrics: $e");
     }
-  }
-
-  String _formatTimestamp(int timestamp) {
-    final minutes = (timestamp ~/ 60000).toString().padLeft(2, '0');
-    final seconds = ((timestamp % 60000) ~/ 1000).toString().padLeft(2, '0');
-    final milliseconds = (timestamp % 1000).toString().padLeft(3, '0');
-    return '$minutes:$seconds.$milliseconds';
-  }
-
-  String _formatDuration(Duration duration) {
-    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
-    final milliseconds = duration.inMilliseconds.remainder(1000).toString().padLeft(3, '0');
-    return '$minutes:$seconds.$milliseconds';
   }
 
   void addSnippet(String sentence, int startSeekPosition, VocalistID vocalistID) {
@@ -327,35 +201,7 @@ class TimingService extends ChangeNotifier {
   void divideSnippet(LyricSnippetID snippetID, int charPosition, int seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
 
-    LyricSnippet snippet = getSnippetWithID(snippetID);
-    int snippetMargin = 100;
-    String beforeString = snippet.sentence.substring(0, charPosition);
-    String afterString = snippet.sentence.substring(charPosition);
-    VocalistID vocalistID = snippet.vocalistID;
-    Map<LyricSnippetID, LyricSnippet> newSnippets = {};
-    if (beforeString.isNotEmpty) {
-      int snippetDuration = seekPosition - snippet.startTimestamp;
-      newSnippets[_snippetIdGenerator.idGen()] = LyricSnippet(
-        vocalistID: vocalistID,
-        startTimestamp: snippet.startTimestamp,
-        sentenceSegments: [SentenceSegment(beforeString, snippetDuration)],
-        annotationMap: snippet.annotationMap,
-      );
-    }
-    if (afterString.isNotEmpty) {
-      int snippetDuration = snippet.endTimestamp - snippet.startTimestamp - seekPosition - snippetMargin;
-      newSnippets[_snippetIdGenerator.idGen()] = LyricSnippet(
-        vocalistID: vocalistID,
-        startTimestamp: seekPosition + snippetMargin,
-        sentenceSegments: [SentenceSegment(afterString, snippetDuration)],
-        annotationMap: snippet.annotationMap,
-      );
-    }
-    if (newSnippets.isNotEmpty) {
-      lyricSnippetMap.removeWhere((id, snippet) => id == snippetID);
-      lyricSnippetMap.addAll(newSnippets);
-    }
-    sortLyricSnippetList();
+    lyricSnippetMap = lyricSnippetMap.divideSnippet(snippetID, charPosition, seekPosition);
 
     notifyListeners();
   }
@@ -363,26 +209,7 @@ class TimingService extends ChangeNotifier {
   void concatenateSnippets(List<LyricSnippetID> snippetIDs) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
 
-    snippetsForeachVocalist.values.toList().forEach((vocalistSnippetsMap) {
-      List<LyricSnippet> vocalistSnippets = vocalistSnippetsMap.values.toList();
-      vocalistSnippets.sort((a, b) => a.startTimestamp.compareTo(b.startTimestamp));
-      for (int index = 1; index < vocalistSnippets.length; index++) {
-        LyricSnippet leftSnippet = vocalistSnippets[0];
-        LyricSnippet rightSnippet = vocalistSnippets[index];
-        late final int extendDuration;
-        if (leftSnippet.endTimestamp <= rightSnippet.startTimestamp) {
-          extendDuration = rightSnippet.startTimestamp - leftSnippet.endTimestamp;
-        } else {
-          extendDuration = 0;
-        }
-        leftSnippet.sentenceSegments.last.duration += extendDuration;
-        leftSnippet.sentenceSegments.addAll(rightSnippet.sentenceSegments);
-
-        LyricSnippetID rightSnippetID = snippetIDs[index];
-        removeSnippetWithID(rightSnippetID);
-      }
-    });
-    sortLyricSnippetList();
+    lyricSnippetMap = lyricSnippetMap.concatenateSnippets(snippetIDs);
 
     notifyListeners();
   }
@@ -390,30 +217,7 @@ class TimingService extends ChangeNotifier {
   void manipulateSnippet(LyricSnippetID snippetID, SnippetEdge snippetEdge, bool holdLength) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
 
-    int seekPosition = musicPlayerProvider.seekPosition;
-    LyricSnippet snippet = getSnippetWithID(snippetID);
-    if (holdLength) {
-      if (snippetEdge == SnippetEdge.start) {
-        snippet.moveSnippet(snippet.startTimestamp - seekPosition);
-      } else {
-        snippet.moveSnippet(seekPosition - snippet.endTimestamp);
-      }
-    } else {
-      if (snippetEdge == SnippetEdge.start) {
-        if (seekPosition < snippet.startTimestamp) {
-          snippet.extendSnippet(SnippetEdge.start, snippet.startTimestamp - seekPosition);
-        } else if (snippet.startTimestamp < seekPosition) {
-          snippet.shortenSnippet(SnippetEdge.start, seekPosition - snippet.startTimestamp);
-        }
-      } else {
-        if (seekPosition < snippet.endTimestamp) {
-          snippet.shortenSnippet(SnippetEdge.end, snippet.endTimestamp - seekPosition);
-        } else if (snippet.endTimestamp < seekPosition) {
-          snippet.extendSnippet(SnippetEdge.end, seekPosition - snippet.endTimestamp);
-        }
-      }
-    }
-    sortLyricSnippetList();
+    lyricSnippetMap = lyricSnippetMap.manipulateSnippet(snippetID, snippetEdge, holdLength);
 
     notifyListeners();
   }
