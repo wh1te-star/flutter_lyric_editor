@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -11,6 +12,7 @@ import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
 import 'package:lyric_editor/lyric_snippet/vocalist/vocalist_color_map.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/service/xlrc_parser.dart';
 import 'package:lyric_editor/utility/undo_history.dart';
 import 'package:tuple/tuple.dart';
 
@@ -233,6 +235,30 @@ class TimingService extends ChangeNotifier {
   /* * * * * * * * * * * * * * * * * *
    Change Notifier's Original functions
   * * * * * * * * * * * * * * * * * */
+
+  void loadLyric(String rawText) {
+    XlrcParser parser = XlrcParser();
+    Tuple3<LyricSnippetMap, VocalistColorMap, SectionList> data = parser.deserialize(rawText);
+    lyricSnippetMap = data.item1;
+    vocalistColorMap = data.item2;
+    sectionList = data.item3;
+
+    notifyListeners();
+  }
+
+  void exportLyric(String exportPath) {
+    XlrcParser parser = XlrcParser();
+    Tuple3<LyricSnippetMap, VocalistColorMap, SectionList> data = Tuple3<LyricSnippetMap, VocalistColorMap, SectionList>(
+      lyricSnippetMap,
+      vocalistColorMap,
+      sectionList,
+    );
+    String rawText = parser.serialize(data);
+
+    File file = File(exportPath);
+    file.writeAsStringSync(rawText);
+  }
+
   void undo() {
     LyricUndoAction? action = undoHistory.popUndoHistory();
     if (action != null) {
