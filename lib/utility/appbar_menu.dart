@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
@@ -44,10 +43,6 @@ AppBar buildAppBarWithMenu(
                 openAudio(context, musicPlayerService);
                 break;
 
-              case StringResource.fileMenuCreateNewLyric:
-                createNewLyric(context, timingService);
-                break;
-
               case StringResource.fileMenuOpenLyric:
                 openLyric(context, timingService);
                 break;
@@ -63,7 +58,6 @@ AppBar buildAppBarWithMenu(
           },
           items: <String>[
             StringResource.fileMenuOpenAudio,
-            StringResource.fileMenuCreateNewLyric,
             StringResource.fileMenuOpenLyric,
             StringResource.fileMenuExportLyric,
           ].map((String value) {
@@ -91,25 +85,6 @@ void openAudio(BuildContext context, MusicPlayerService musicPlayerSerivce) asyn
       content: Text('Selected file: ${file.name}'),
     ));
     musicPlayerSerivce.initAudio(file.path);
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('No file selected')),
-    );
-  }
-}
-
-void createNewLyric(BuildContext context, TimingService timingService) async {
-  final XFile? file = await openFile(acceptedTypeGroups: [
-    const XTypeGroup(
-      label: 'text',
-      extensions: ['txt'],
-      mimeTypes: ['text/plain'],
-    )
-  ]);
-
-  if (file != null) {
-    String rawText = await file.readAsString();
-    timingService.initLyric(rawText);
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('No file selected')),
