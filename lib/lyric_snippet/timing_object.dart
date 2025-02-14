@@ -194,14 +194,41 @@ class Timing {
     return PositionTypeInfo(PositionType.timingPoint, sentenceSegments.length, false);
   }
 
-  Timing moveSnippet(int shiftDuration) {
+  Timing manipulateTiming(int seekPosition, SnippetEdge snippetEdge, bool holdLength) {
+    if (holdLength) {
+      if (snippetEdge == SnippetEdge.start) {
+        return shiftTimingBy(startTimestamp - seekPosition);
+      } else {
+        return shiftTimingBy(seekPosition - endTimestamp);
+      }
+    }
+
+    if (snippetEdge == SnippetEdge.start) {
+      if (seekPosition < startTimestamp) {
+        return extendTimingBy(SnippetEdge.start, startTimestamp - seekPosition);
+      }
+      if (startTimestamp < seekPosition) {
+        return shortenTimingBy(SnippetEdge.start, seekPosition - startTimestamp);
+      }
+    } else {
+      if (seekPosition < endTimestamp) {
+        return shortenTimingBy(SnippetEdge.end, endTimestamp - seekPosition);
+      }
+      if (endTimestamp < seekPosition) {
+        return extendTimingBy(SnippetEdge.end, seekPosition - endTimestamp);
+      }
+    }
+    return this;
+  }
+
+  Timing shiftTimingBy(int shiftDuration) {
     return Timing(
       startTimestamp: startTimestamp + shiftDuration,
       sentenceSegmentList: sentenceSegmentList,
     );
   }
 
-  Timing extendSnippet(SnippetEdge snippetEdge, int extendDuration) {
+  Timing extendTimingBy(SnippetEdge snippetEdge, int extendDuration) {
     assert(extendDuration >= 0, "Should be shorten function.");
 
     int startTimestamp = this.startTimestamp;
@@ -216,7 +243,7 @@ class Timing {
     return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
   }
 
-  Timing shortenSnippet(SnippetEdge snippetEdge, int shortenDuration) {
+  Timing shortenTimingBy(SnippetEdge snippetEdge, int shortenDuration) {
     assert(shortenDuration >= 0, "Should be extend function.");
 
     int startTimestamp = this.startTimestamp;

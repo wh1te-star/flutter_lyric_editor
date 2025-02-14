@@ -4,6 +4,7 @@ import 'package:lyric_editor/lyric_snippet/id/vocalist_id_generator.dart';
 import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
 
 class VocalistColorMap {
+  String vocalistNameSeparator = ", ";
   final Map<VocalistID, Vocalist> _vocalistColorMap;
   final VocalistIdGenerator idGenerator = VocalistIdGenerator();
 
@@ -117,10 +118,10 @@ class VocalistColorMap {
   String generateVocalistCombinationNameFromID(VocalistID vocalistID) {
     int signalBitID = 1;
     String vocalistName = "";
-    while (signalBitID < vocalistColorMap.keys.toList().last.id) {
+    while (signalBitID < map.keys.toList().last.id) {
       if (isBitTrue(vocalistID, VocalistID(signalBitID))) {
         vocalistName += vocalistNameSeparator;
-        vocalistName += vocalistColorMap[VocalistID(signalBitID)]!.name;
+        vocalistName += map[VocalistID(signalBitID)]!.name;
       }
       signalBitID *= 2;
     }

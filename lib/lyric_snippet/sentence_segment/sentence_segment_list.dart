@@ -46,6 +46,16 @@ class SentenceSegmentList {
     return _list.join("\n");
   }
 
+  SentenceSegmentList operator +(SentenceSegmentList other) {
+    List<SentenceSegment> combinedList = [..._list, ...other._list];
+    return SentenceSegmentList(combinedList);
+  }
+
+  SentenceSegmentList addSegment(SentenceSegment segment) {
+    List<SentenceSegment> combinedList = [..._list, segment];
+    return SentenceSegmentList(combinedList);
+  }
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;

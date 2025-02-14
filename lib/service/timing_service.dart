@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
@@ -14,6 +12,7 @@ import 'package:lyric_editor/lyric_snippet/vocalist/vocalist_color_map.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/utility/undo_history.dart';
+import 'package:tuple/tuple.dart';
 
 final timingMasterProvider = ChangeNotifierProvider((ref) {
   final musicPlayerService = ref.read(musicPlayerMasterProvider);
@@ -29,9 +28,6 @@ class TimingService extends ChangeNotifier {
   SectionList sectionList = SectionList([]);
 
   LyricUndoHistory undoHistory = LyricUndoHistory();
-
-  String defaultVocalistName = "Vocalist Name";
-  String vocalistNameSeparator = ", ";
 
   TimingService({
     required this.musicPlayerProvider,
@@ -63,7 +59,7 @@ class TimingService extends ChangeNotifier {
 
   void deleteVocalistByID(VocalistID vocalistID) {
     undoHistory.pushUndoHistory(LyricUndoType.vocalistsColor, vocalistColorMap);
-    vocalistColorMap = vocalistColorMap.removeVocalistByID(id);
+    vocalistColorMap = vocalistColorMap.removeVocalistByID(vocalistID);
     notifyListeners();
   }
 
@@ -159,19 +155,6 @@ class TimingService extends ChangeNotifier {
     return maxOverlap;
   }
 
-  Future<void> loadExampleLyrics() async {
-    try {
-      String rawLyricText = await rootBundle.loadString('assets/ウェルカムティーフレンド.xlrc');
-
-      lyricSnippetMap = parseLyric(rawLyricText);
-      sortLyricSnippetList();
-      notifyListeners();
-      //writeTranslatedXmlToFile();
-    } catch (e) {
-      debugPrint("Error loading lyrics: $e");
-    }
-  }
-
   /* * * * * * * * * * * * * * * * * *
    LyricSnippetMap functions
   * * * * * * * * * * * * * * * * * */
@@ -184,24 +167,6 @@ class TimingService extends ChangeNotifier {
   void removeLyricSnippet(LyricSnippetID snippetID) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
     lyricSnippetMap.removeLyricSnippetByID(snippetID);
-    notifyListeners();
-  }
-
-  void divideSnippet(LyricSnippetID snippetID, int charPosition, int seekPosition) {
-    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap = lyricSnippetMap.divideSnippet(snippetID, charPosition, seekPosition);
-    notifyListeners();
-  }
-
-  void concatenateSnippets(List<LyricSnippetID> snippetIDs) {
-    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap = lyricSnippetMap.concatenateSnippets(snippetIDs);
-    notifyListeners();
-  }
-
-  void manipulateSnippet(LyricSnippetID snippetID, SnippetEdge snippetEdge, bool holdLength) {
-    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap = lyricSnippetMap.manipulateSnippet(snippetID, snippetEdge, holdLength);
     notifyListeners();
   }
 
@@ -237,13 +202,31 @@ class TimingService extends ChangeNotifier {
 
   void addAnnotationTimingPoint(LyricSnippetID snippetID, SegmentRange segmentRange, int charPosition, int seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap = lyricSnippetMap.addAnnotationTimingPoint(snippetID, charPosition, seekPosition);
+    lyricSnippetMap = lyricSnippetMap.addAnnotationTimingPoint(snippetID, segmentRange, charPosition, seekPosition);
     notifyListeners();
   }
 
   void removeAnnotationTimingPoint(LyricSnippetID snippetID, SegmentRange segmentRange, int charPosition, Option option) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap = lyricSnippetMap.removeAnnotationTimingPoint(snippetID, charPosition, option);
+    lyricSnippetMap = lyricSnippetMap.removeAnnotationTimingPoint(snippetID, segmentRange, charPosition, option);
+    notifyListeners();
+  }
+
+  void manipulateSnippet(LyricSnippetID snippetID, SnippetEdge snippetEdge, bool holdLength) {
+    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
+    lyricSnippetMap = lyricSnippetMap.manipulateSnippet(snippetID, musicPlayerProvider.seekPosition, snippetEdge, holdLength);
+    notifyListeners();
+  }
+
+  void divideSnippet(LyricSnippetID snippetID, int charPosition, int seekPosition) {
+    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
+    lyricSnippetMap = lyricSnippetMap.divideSnippet(snippetID, charPosition, seekPosition);
+    notifyListeners();
+  }
+
+  void concatenateSnippets(Tuple2<LyricSnippetID, LyricSnippetID> snippetIDs) {
+    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
+    lyricSnippetMap = lyricSnippetMap.concatenateSnippets(snippetIDs);
     notifyListeners();
   }
 

@@ -5,7 +5,11 @@ import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id_generator.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/segment_range.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/lyric_snippet/timing_object.dart';
+import 'package:lyric_editor/service/timing_service.dart';
+import 'package:tuple/tuple.dart';
 
 class LyricSnippetMap {
   final Map<LyricSnippetID, LyricSnippet> _lyricSnippetMap;
@@ -41,12 +45,16 @@ class LyricSnippetMap {
     return LyricSnippetMap(Map.fromEntries(
       lyricSnippetMap.map.entries.toList()
         ..sort(
-          (a, b) {
-            int compareStartTime = a.value.startTimestamp.compareTo(b.value.startTimestamp);
+          (MapEntry<LyricSnippetID, LyricSnippet> left, MapEntry<LyricSnippetID, LyricSnippet> right) {
+            int leftStartTimestamp = left.value.startTimestamp;
+            int rightStartTimestamp = right.value.startTimestamp;
+            int compareStartTime = leftStartTimestamp.compareTo(rightStartTimestamp);
             if (compareStartTime != 0) {
               return compareStartTime;
             } else {
-              return a.value.vocalistID.id.compareTo(b.value.vocalistID.id);
+              int leftVocalistID = left.value.vocalistID.id;
+              int rightVocalistID = right.value.vocalistID.id;
+              return leftVocalistID.compareTo(rightVocalistID);
             }
           },
         ),
@@ -54,9 +62,9 @@ class LyricSnippetMap {
   }
 
   LyricSnippetMap addLyricSnippet(LyricSnippet lyricSnippet) {
-    final Map<LyricSnippetID, LyricSnippet> newMap = Map<LyricSnippetID, LyricSnippet>.from(map);
-    newMap[idGenerator.idGen()] = lyricSnippet;
-    return sortLyricSnippetList(LyricSnippetMap(newMap));
+    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
+    copiedMap[idGenerator.idGen()] = lyricSnippet;
+    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
   }
 
   LyricSnippetMap removeLyricSnippetByID(LyricSnippetID id) {
@@ -71,7 +79,7 @@ class LyricSnippetMap {
     lyricSnippet = lyricSnippet.editSentence(newSentence);
     return sortLyricSnippetList(LyricSnippetMap(copiedMap));
   }
-  
+
   LyricSnippetMap addAnnotation(LyricSnippetID id, SegmentRange segmentRange, String annotationString) {
     final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
     LyricSnippet lyricSnippet = copiedMap[id]!;
@@ -84,6 +92,101 @@ class LyricSnippetMap {
     LyricSnippet lyricSnippet = copiedMap[id]!;
     lyricSnippet = lyricSnippet.removeAnnotation(segmentRange);
     return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+  }
+
+  LyricSnippetMap addTimingPoint(LyricSnippetID id, int charPosition, int seekPosition) {
+    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
+    LyricSnippet lyricSnippet = copiedMap[id]!;
+    lyricSnippet = lyricSnippet.addTimingPoint(charPosition, seekPosition);
+    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+  }
+
+  LyricSnippetMap removeTimingPoint(LyricSnippetID id, int charPosition, Option option) {
+    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
+    LyricSnippet lyricSnippet = copiedMap[id]!;
+    lyricSnippet = lyricSnippet.removeTimingPoint(charPosition, option);
+    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+  }
+
+  LyricSnippetMap addAnnotationTimingPoint(LyricSnippetID id, SegmentRange segmentRange, int charPosition, int seekPosition) {
+    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
+    LyricSnippet lyricSnippet = copiedMap[id]!;
+    lyricSnippet = lyricSnippet.addAnnotationTimingPoint(segmentRange, charPosition, seekPosition);
+    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+  }
+
+  LyricSnippetMap removeAnnotationTimingPoint(LyricSnippetID id, SegmentRange segmentRange, int charPosition, Option option) {
+    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
+    LyricSnippet lyricSnippet = copiedMap[id]!;
+    lyricSnippet = lyricSnippet.removeAnnotationTimingPoint(segmentRange, charPosition, option);
+    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+  }
+
+  LyricSnippetMap manipulateSnippet(LyricSnippetID id, int seekPosition, SnippetEdge snippetEdge, bool holdLength) {
+    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
+    LyricSnippet lyricSnippet = copiedMap[id]!;
+    lyricSnippet = lyricSnippet.manipulateSnippet(seekPosition, snippetEdge, holdLength);
+    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+  }
+
+  LyricSnippetMap divideSnippet(LyricSnippetID id, int charPosition, int seekPosition) {
+    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
+    LyricSnippet lyricSnippet = copiedMap[id]!;
+    Tuple2<LyricSnippet, LyricSnippet> dividedLyricSnippets = lyricSnippet.dividSnippet(charPosition, seekPosition);
+    copiedMap.remove(id);
+    for (var snippet in [dividedLyricSnippets.item1, dividedLyricSnippets.item2]) {
+      if (!snippet.isEmpty) {
+        copiedMap[idGenerator.idGen()] = snippet;
+      }
+    }
+    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+  }
+
+  LyricSnippetMap concatenateSnippets(Tuple2<LyricSnippetID, LyricSnippetID> snippetIDs) {
+    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
+
+    LyricSnippetID formerSnippetID = snippetIDs.item1;
+    LyricSnippetID latterSnippetID = snippetIDs.item2;
+    LyricSnippet formerSnippet = map[formerSnippetID]!;
+    LyricSnippet latterSnippet = map[latterSnippetID]!;
+
+    if (formerSnippet.vocalistID != latterSnippet.vocalistID) {
+      throw Exception("The vocalist must be the same.");
+    }
+
+    if (latterSnippet.startTimestamp < formerSnippet.startTimestamp) {
+      _swap(formerSnippet, latterSnippet);
+    }
+
+    SentenceSegmentList concatenatedSentenceSegmentList = formerSnippet.timing.sentenceSegmentList.copyWith();
+    int bondPointDuration = latterSnippet.startTimestamp - formerSnippet.endTimestamp;
+    int indexCarryUp = formerSnippet.timing.sentenceSegmentList.list.length;
+    if (bondPointDuration > 0) {
+      concatenatedSentenceSegmentList = concatenatedSentenceSegmentList.addSegment(SentenceSegment("", bondPointDuration));
+      indexCarryUp++;
+    }
+    concatenatedSentenceSegmentList += latterSnippet.timing.sentenceSegmentList;
+
+    AnnotationMap concatenatedAnnotationMap = formerSnippet.annotationMap.concatenate(indexCarryUp, latterSnippet.annotationMap);
+
+    copiedMap.remove(formerSnippetID);
+    copiedMap.remove(latterSnippetID);
+    copiedMap[idGenerator.idGen()] = LyricSnippet(
+      vocalistID: formerSnippet.vocalistID,
+      timing: Timing(
+        startTimestamp: formerSnippet.startTimestamp,
+        sentenceSegmentList: concatenatedSentenceSegmentList,
+      ),
+      annotationMap: concatenatedAnnotationMap,
+    );
+
+    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+  }
+
+  void _swap(LyricSnippet snippet1, LyricSnippet snippet2) {
+    final LyricSnippet temp = snippet1;
+    snippet1 = snippet2;
+    snippet2 = temp;
   }
 
   LyricSnippetMap getSnippetsAtSeekPosition({
@@ -99,88 +202,6 @@ class LyricSnippetMap {
     });
 
     return LyricSnippetMap(Map.fromEntries(filteredEntries));
-  }
-
-  void divideSnippet(LyricSnippetID snippetID, int charPosition, int seekPosition) {
-    LyricSnippet snippet = getSnippetWithID(snippetID);
-    int snippetMargin = 100;
-    String beforeString = snippet.sentence.substring(0, charPosition);
-    String afterString = snippet.sentence.substring(charPosition);
-    VocalistID vocalistID = snippet.vocalistID;
-    Map<LyricSnippetID, LyricSnippet> newSnippets = {};
-    if (beforeString.isNotEmpty) {
-      int snippetDuration = seekPosition - snippet.startTimestamp;
-      newSnippets[_snippetIdGenerator.idGen()] = LyricSnippet(
-        vocalistID: vocalistID,
-        startTimestamp: snippet.startTimestamp,
-        sentenceSegments: [SentenceSegment(beforeString, snippetDuration)],
-        annotationMap: snippet.annotationMap,
-      );
-    }
-    if (afterString.isNotEmpty) {
-      int snippetDuration = snippet.endTimestamp - snippet.startTimestamp - seekPosition - snippetMargin;
-      newSnippets[_snippetIdGenerator.idGen()] = LyricSnippet(
-        vocalistID: vocalistID,
-        startTimestamp: seekPosition + snippetMargin,
-        sentenceSegments: [SentenceSegment(afterString, snippetDuration)],
-        annotationMap: snippet.annotationMap,
-      );
-    }
-    if (newSnippets.isNotEmpty) {
-      lyricSnippetMap.removeWhere((id, snippet) => id == snippetID);
-      lyricSnippetMap.addAll(newSnippets);
-    }
-    sortLyricSnippetList();
-  }
-
-  void concatenateSnippets(List<LyricSnippetID> snippetIDs) {
-    snippetsForeachVocalist.values.toList().forEach((vocalistSnippetsMap) {
-      List<LyricSnippet> vocalistSnippets = vocalistSnippetsMap.values.toList();
-      vocalistSnippets.sort((a, b) => a.startTimestamp.compareTo(b.startTimestamp));
-      for (int index = 1; index < vocalistSnippets.length; index++) {
-        LyricSnippet leftSnippet = vocalistSnippets[0];
-        LyricSnippet rightSnippet = vocalistSnippets[index];
-        late final int extendDuration;
-        if (leftSnippet.endTimestamp <= rightSnippet.startTimestamp) {
-          extendDuration = rightSnippet.startTimestamp - leftSnippet.endTimestamp;
-        } else {
-          extendDuration = 0;
-        }
-        leftSnippet.sentenceSegments.last.duration += extendDuration;
-        leftSnippet.sentenceSegments.addAll(rightSnippet.sentenceSegments);
-
-        LyricSnippetID rightSnippetID = snippetIDs[index];
-        removeSnippetWithID(rightSnippetID);
-      }
-    });
-    sortLyricSnippetList();
-  }
-
-  void manipulateSnippet(LyricSnippetID snippetID, SnippetEdge snippetEdge, bool holdLength) {
-    int seekPosition = musicPlayerProvider.seekPosition;
-    LyricSnippet snippet = getSnippetWithID(snippetID);
-    if (holdLength) {
-      if (snippetEdge == SnippetEdge.start) {
-        snippet.moveSnippet(snippet.startTimestamp - seekPosition);
-      } else {
-        snippet.moveSnippet(seekPosition - snippet.endTimestamp);
-      }
-    } else {
-      if (snippetEdge == SnippetEdge.start) {
-        if (seekPosition < snippet.startTimestamp) {
-          snippet.extendSnippet(SnippetEdge.start, snippet.startTimestamp - seekPosition);
-        } else if (snippet.startTimestamp < seekPosition) {
-          snippet.shortenSnippet(SnippetEdge.start, seekPosition - snippet.startTimestamp);
-        }
-      } else {
-        if (seekPosition < snippet.endTimestamp) {
-          snippet.shortenSnippet(SnippetEdge.end, snippet.endTimestamp - seekPosition);
-        } else if (snippet.endTimestamp < seekPosition) {
-          snippet.extendSnippet(SnippetEdge.end, seekPosition - snippet.endTimestamp);
-        }
-      }
-    }
-    sortLyricSnippetList();
   }
 
   LyricSnippetMap copyWith({

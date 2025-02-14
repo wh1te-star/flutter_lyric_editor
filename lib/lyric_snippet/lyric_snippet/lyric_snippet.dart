@@ -1,5 +1,6 @@
 import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
+import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/position_type_info.dart';
 import 'package:lyric_editor/lyric_snippet/segment_range.dart';
@@ -7,6 +8,7 @@ import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dar
 import 'package:lyric_editor/lyric_snippet/timing_object.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
 import 'package:lyric_editor/service/timing_service.dart';
+import 'package:tuple/tuple.dart';
 
 class LyricSnippet {
   final VocalistID vocalistID;
@@ -67,9 +69,19 @@ class LyricSnippet {
     return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
 
-  LyricSnippet deleteTimingPoint(int charPosition, Option option) {
+  LyricSnippet removeTimingPoint(int charPosition, Option option) {
     AnnotationMap annotationMap = carryDownAnnotationSegments(charPosition);
     Timing timing = this.timing.deleteTimingPoint(charPosition, option);
+    return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
+  }
+
+  LyricSnippet addAnnotationTimingPoint(SegmentRange segmentRange, int charPosition, int seekPosition) {
+    Timing timing = annotationMap[segmentRange]!.timing.addTimingPoint(charPosition, seekPosition);
+    return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
+  }
+
+  LyricSnippet removeAnnotationTimingPoint(SegmentRange segmentRange, int charPosition, Option option) {
+    Timing timing = annotationMap[segmentRange]!.timing.deleteTimingPoint(charPosition, option);
     return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
 
@@ -84,6 +96,41 @@ class LyricSnippet {
     AnnotationMap annotationMap = this.annotationMap;
     annotationMap.map.remove(range);
     return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
+  }
+
+  LyricSnippet manipulateSnippet(int seekPosition, SnippetEdge snippetEdge, bool holdLength) {
+    Timing newTiming = timing.copyWith();
+    newTiming = newTiming.manipulateTiming(seekPosition, snippetEdge, holdLength);
+    return LyricSnippet(vocalistID: vocalistID, timing: newTiming, annotationMap: annotationMap);
+  }
+
+  Tuple2<LyricSnippet, LyricSnippet> dividSnippet(int charPosition, int seekPosition) {
+    String formerString = sentence.substring(0, charPosition);
+    String latterString = sentence.substring(charPosition);
+    LyricSnippet snippet1 = LyricSnippet.empty;
+    LyricSnippet snippet2 = LyricSnippet.empty;
+
+    if (formerString.isNotEmpty) {
+      Timing newTiming = timing.copyWith();
+      newTiming = newTiming.addTimingPoint(charPosition, seekPosition);
+      snippet1 = LyricSnippet(
+        vocalistID: vocalistID,
+        timing: newTiming,
+        annotationMap: annotationMap,
+      );
+    }
+
+    if (latterString.isNotEmpty) {
+      Timing newTiming = timing.copyWith();
+      newTiming = newTiming.addTimingPoint(charPosition, seekPosition);
+      snippet2 = LyricSnippet(
+        vocalistID: vocalistID,
+        timing: newTiming,
+        annotationMap: annotationMap,
+      );
+    }
+
+    return Tuple2(snippet1, snippet2);
   }
 
   AnnotationMap carryUpAnnotationSegments(int charPosition) {

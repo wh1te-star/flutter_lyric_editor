@@ -23,6 +23,17 @@ class AnnotationMap {
 
   Map<SegmentRange, Annotation> get map => annotationMap;
 
+  AnnotationMap concatenate(int carryUp, AnnotationMap other) {
+    Map<SegmentRange, Annotation> newMap = Map<SegmentRange, Annotation>.from(annotationMap);
+    for (MapEntry<SegmentRange, Annotation> entry in other.annotationMap.entries) {
+      SegmentRange segmentRange = entry.key;
+      Annotation annotation = entry.value;
+      SegmentRange newSegmentRange = SegmentRange(segmentRange.startIndex + carryUp, segmentRange.endIndex + carryUp);
+      newMap[newSegmentRange] = annotation;
+    }
+    return AnnotationMap(newMap);
+  }
+
   AnnotationMap copyWith({
     Map<SegmentRange, Annotation>? annotationMap,
   }) {
