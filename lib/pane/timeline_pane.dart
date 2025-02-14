@@ -411,7 +411,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                   scrollDirection: Axis.horizontal,
                   child: CustomPaint(
                     size: Size(audioDuration * intervalLength / intervalDuration, 800),
-                    painter: CurrentPositionIndicatorPainter(intervalLength, intervalDuration, seekPosition, timingService.sections),
+                    painter: CurrentPositionIndicatorPainter(intervalLength, intervalDuration, seekPosition, timingService.sectionList),
                   ),
                 ),
               ),

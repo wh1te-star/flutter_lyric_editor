@@ -41,7 +41,7 @@ class SectionList {
     return SectionList(newList);
   }
 
-  SectionList deleteSection(int seekPosition) {
+  SectionList removeSection(int seekPosition) {
     List<Section> newList = List.from(list);
 
     int targetIndex = 0;

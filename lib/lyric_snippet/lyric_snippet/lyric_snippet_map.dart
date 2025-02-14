@@ -4,6 +4,7 @@ import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id_generator.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/timing_object.dart';
 
 class LyricSnippetMap {
@@ -61,6 +62,27 @@ class LyricSnippetMap {
   LyricSnippetMap removeLyricSnippetByID(LyricSnippetID id) {
     final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
     copiedMap.remove(id);
+    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+  }
+
+  LyricSnippetMap editSentence(LyricSnippetID id, String newSentence) {
+    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
+    LyricSnippet lyricSnippet = copiedMap[id]!;
+    lyricSnippet = lyricSnippet.editSentence(newSentence);
+    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+  }
+  
+  LyricSnippetMap addAnnotation(LyricSnippetID id, SegmentRange segmentRange, String annotationString) {
+    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
+    LyricSnippet lyricSnippet = copiedMap[id]!;
+    lyricSnippet = lyricSnippet.addAnnotation(segmentRange, annotationString);
+    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+  }
+
+  LyricSnippetMap removeAnnotation(LyricSnippetID id, SegmentRange segmentRange) {
+    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
+    LyricSnippet lyricSnippet = copiedMap[id]!;
+    lyricSnippet = lyricSnippet.removeAnnotation(segmentRange);
     return sortLyricSnippetList(LyricSnippetMap(copiedMap));
   }
 

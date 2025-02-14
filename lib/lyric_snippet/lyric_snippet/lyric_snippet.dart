@@ -55,6 +55,12 @@ class LyricSnippet {
     return null;
   }
 
+  LyricSnippet editSentence(String newSentence) {
+    Timing copiedTiming = timing.copyWith();
+    copiedTiming = copiedTiming.editSentence(newSentence);
+    return LyricSnippet(vocalistID: vocalistID, timing: copiedTiming, annotationMap: annotationMap);
+  }
+
   LyricSnippet addTimingPoint(int charPosition, int seekPosition) {
     AnnotationMap annotationMap = carryUpAnnotationSegments(charPosition);
     Timing timing = this.timing.addTimingPoint(charPosition, seekPosition);
@@ -67,15 +73,14 @@ class LyricSnippet {
     return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
 
-  LyricSnippet addAnnotation(String annotationString, int startIndex, int endIndex) {
+  LyricSnippet addAnnotation(SegmentRange segmentRange, String annotationString) {
     AnnotationMap annotationMap = this.annotationMap;
     Timing timing = this.timing;
-    SegmentRange annotationKey = SegmentRange(startIndex, endIndex);
-    annotationMap.map[annotationKey] = Annotation(timing: timing);
+    annotationMap.map[segmentRange] = Annotation(timing: timing);
     return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
 
-  LyricSnippet deleteAnnotation(SegmentRange range) {
+  LyricSnippet removeAnnotation(SegmentRange range) {
     AnnotationMap annotationMap = this.annotationMap;
     annotationMap.map.remove(range);
     return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);

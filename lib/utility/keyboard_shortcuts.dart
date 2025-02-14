@@ -125,13 +125,13 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         AddSnippetIntent: CallbackAction<AddSnippetIntent>(
           onInvoke: (AddSnippetIntent intent) => () {
             if (timelinePaneProvider.selectingVocalist.isNotEmpty) {
-              timingService.addSnippet("default sentence", musicPlayerProvider.seekPosition, timelinePaneProvider.selectingVocalist[0]);
+              timingService.addLyricSnippet("default sentence", musicPlayerProvider.seekPosition, timelinePaneProvider.selectingVocalist[0]);
             }
           }(),
         ),
         DeleteSnippetIntent: CallbackAction<DeleteSnippetIntent>(
           onInvoke: (DeleteSnippetIntent intent) => () {
-            timingService.deleteSnippet(timelinePaneProvider.selectingSnippets[0]);
+            timingService.removeLyricSnippet(timelinePaneProvider.selectingSnippets[0]);
           }(),
         ),
         EnterSegmentSelectionIntent: CallbackAction<EnterSegmentSelectionIntent>(
@@ -174,7 +174,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
           onInvoke: (DeleteAnnotationIntent intent) => () {
             TextPaneCursor cursor = textPaneProvider.cursor;
             if (cursor.isAnnotationSelection) {
-              timingService.deleteAnnotation(cursor.snippetID, cursor.annotationSegmentRange);
+              timingService.removeAnnotation(cursor.snippetID, cursor.annotationSegmentRange);
             }
           }(),
         ),

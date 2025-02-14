@@ -96,6 +96,20 @@ class VocalistColorMap {
     return VocalistColorMap(copiedMap);
   }
 
+  VocalistColorMap changeVocalistName(String oldName, String newName) {
+    final Map<VocalistID, Vocalist> copiedMap = Map<VocalistID, Vocalist>.from(map);
+
+    VocalistID vocalistID = getVocalistIDByName(oldName);
+    for (MapEntry<VocalistID, Vocalist> entry in copiedMap.entries) {
+      VocalistID id = entry.key;
+      Vocalist vocalist = entry.value;
+      if (isBitTrue(id, vocalistID)) {
+        vocalist.name = generateVocalistCombinationNameFromID(id);
+      }
+    }
+    return VocalistColorMap(copiedMap);
+  }
+
   bool isBitTrue(VocalistID targetID, VocalistID singleID) {
     return (targetID.id & singleID.id) != 0;
   }
@@ -114,7 +128,6 @@ class VocalistColorMap {
     vocalistName = vocalistName.substring(vocalistNameSeparator.length);
     return vocalistName;
   }
-
 
   VocalistColorMap copyWith({
     Map<VocalistID, Vocalist>? vocalistColorMap,
