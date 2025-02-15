@@ -6,7 +6,7 @@ import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
-import 'package:lyric_editor/lyric_snippet/timing_object.dart';
+import 'package:lyric_editor/lyric_snippet/timing.dart';
 import 'package:lyric_editor/pane/text_pane/text_pane.dart';
 import 'package:lyric_editor/pane/timeline_pane/timeline_pane.dart';
 import 'package:lyric_editor/pane/video_pane/video_pane.dart';

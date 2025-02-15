@@ -1,5 +1,5 @@
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
-import 'package:lyric_editor/lyric_snippet/timing_object.dart';
+import 'package:lyric_editor/lyric_snippet/timing.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
 
 class Annotation {

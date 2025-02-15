@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
-import 'package:lyric_editor/lyric_snippet/section/section.dart';
+import 'package:lyric_editor/section/section.dart';
 
 class CurrentPositionIndicatorPainter extends CustomPainter {
   final double intervalLength;

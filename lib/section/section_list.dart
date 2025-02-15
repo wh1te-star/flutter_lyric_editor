@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:lyric_editor/lyric_snippet/section/section.dart';
+import 'package:lyric_editor/section/section.dart';
 
 class SectionList {
   final int seekPositionDuplicationAllowed = 1;
