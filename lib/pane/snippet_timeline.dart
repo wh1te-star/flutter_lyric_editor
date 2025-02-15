@@ -66,7 +66,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     List<Widget> annotationItemWidgets = [];
     List<Widget> annotationTimingPointIndicatorWidgets = [];
 
-    Map<LyricSnippetID, LyricSnippet> snippets = timingService.snippetsForeachVocalist[vocalistID]!;
+    Map<LyricSnippetID, LyricSnippet> snippets = timingService.getLyricSnippetByVocalistID(vocalistID).map;
     snippetTracks = getTrack(snippets);
     for (MapEntry<LyricSnippetID, LyricSnippet> entry in snippets.entries) {
       LyricSnippetID snippetID = entry.key;

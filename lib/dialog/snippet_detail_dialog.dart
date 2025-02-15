@@ -43,7 +43,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   late final TextEditingController endTimestampController;
   late final TextEditingController sentenceController;
 
-  late final TextStyle textStyle = TextStyle();
+  late final TextStyle textStyle = const TextStyle();
 
   List<bool> vocalistCheckValues = [];
   List<String> vocalistNameList = [];
@@ -284,7 +284,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
       Table(
         border: TableBorder.all(),
         columnWidths: {
-          0: IntrinsicColumnWidth(),
+          0: const IntrinsicColumnWidth(),
           for (int i = 1; i <= vocalistTabRows.length; i++) i: FixedColumnWidth(checkboxCellWidth),
         },
         defaultVerticalAlignment: TableCellVerticalAlignment.middle,

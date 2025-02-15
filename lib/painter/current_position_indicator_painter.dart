@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
+import 'package:lyric_editor/lyric_snippet/section/section.dart';
 
 class CurrentPositionIndicatorPainter extends CustomPainter {
   final double intervalLength;
   final int intervalDuration;
   final int seekPosition;
-  final List<int> sections;
+  final List<Section> sections;
 
   CurrentPositionIndicatorPainter(this.intervalLength, this.intervalDuration, this.seekPosition, this.sections);
 
@@ -15,7 +16,7 @@ class CurrentPositionIndicatorPainter extends CustomPainter {
       ..color = Colors.grey
       ..strokeWidth = 1.0;
     for (var section in sections) {
-      double x = section * intervalLength / intervalDuration;
+      double x = section.seekPosition * intervalLength / intervalDuration;
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), sectionPaint);
     }
 

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,13 +58,13 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void deleteVocalistByID(VocalistID vocalistID) {
+  void removeVocalistByID(VocalistID vocalistID) {
     undoHistory.pushUndoHistory(LyricUndoType.vocalistsColor, vocalistColorMap);
     vocalistColorMap = vocalistColorMap.removeVocalistByID(vocalistID);
     notifyListeners();
   }
 
-  void deleteVocalistByName(String vocalistName) {
+  void removeVocalistByName(String vocalistName) {
     undoHistory.pushUndoHistory(LyricUndoType.vocalistsColor, vocalistColorMap);
     vocalistColorMap = vocalistColorMap.removeVocalistByName(vocalistName);
     notifyListeners();
@@ -77,89 +76,27 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Map<VocalistID, LyricSnippetMap> get snippetsForeachVocalist {
-    return groupBy(
-      lyricSnippetMap.entries,
-      (MapEntry<LyricSnippetID, LyricSnippet> entry) {
-        return entry.value.vocalistID;
-      },
-    ).map(
-      (VocalistID vocalistID, List<MapEntry<LyricSnippetID, LyricSnippet>> snippets) => MapEntry(
-        vocalistID,
-        LyricSnippetMap(
-          {for (var entry in snippets) entry.key: entry.value},
-        ),
-      ),
-    );
+  /* * * * * * * * * * * * * * * * * *
+   LyricSnippetMap functions
+  * * * * * * * * * * * * * * * * * */
+  LyricSnippet getLyricSnippetByID(LyricSnippetID id) {
+    return lyricSnippetMap.getLyricSnippetByID(id);
   }
 
-  Map<LyricSnippetID, int> getTrackNumber(Map<LyricSnippetID, LyricSnippet> lyricSnippetList, int startBulge, int endBulge) {
-    if (lyricSnippetList.isEmpty) return {};
-
-    Map<LyricSnippetID, int> snippetTracks = {};
-
-    int maxOverlap = 0;
-    int currentOverlap = 1;
-    int currentEndTime = lyricSnippetList.values.first.endTimestamp + endBulge;
-    snippetTracks[lyricSnippetList.keys.first] = 0;
-
-    for (int i = 1; i < lyricSnippetList.length; i++) {
-      LyricSnippetID currentSnippetID = lyricSnippetList.keys.toList()[i];
-      LyricSnippet currentSnippet = lyricSnippetList.values.toList()[i];
-      int start = currentSnippet.startTimestamp - startBulge;
-      int end = currentSnippet.endTimestamp + endBulge;
-      if (start <= currentEndTime) {
-        currentOverlap++;
-      } else {
-        currentOverlap = 1;
-        currentEndTime = end;
-      }
-      if (currentOverlap > maxOverlap) {
-        maxOverlap = currentOverlap;
-      }
-
-      snippetTracks[currentSnippetID] = currentOverlap - 1;
-    }
-
-    return snippetTracks;
+  LyricSnippetMap getLyricSnippetByVocalistID(VocalistID vocalistID) {
+    return lyricSnippetMap.getLyricSnippetByVocalistID(vocalistID);
   }
 
   LyricSnippetMap getSnippetsAtSeekPosition({int? seekPosition, VocalistID? vocalistID, int startBulge = 0, int endBulge = 0}) {
+    seekPosition ??= musicPlayerProvider.seekPosition;
     return lyricSnippetMap.getSnippetsAtSeekPosition(
-      seekPosition: seekPosition ?? musicPlayerProvider.seekPosition,
+      seekPosition: seekPosition,
       vocalistID: vocalistID,
       startBulge: startBulge,
       endBulge: endBulge,
     );
   }
 
-  int getLanes({VocalistID? vocalistID}) {
-    List<LyricSnippet> snippets = vocalistID != null ? snippetsForeachVocalist[vocalistID]?.map.values.toList() ?? [] : lyricSnippetMap.values.toList();
-    if (snippets.isEmpty) return 1;
-    int maxOverlap = 1;
-    int currentOverlap = 1;
-    int currentEndTime = snippets.first.endTimestamp;
-
-    for (int i = 1; i < snippets.length; ++i) {
-      int start = snippets[i].startTimestamp;
-      int end = snippets[i].endTimestamp;
-      if (start <= currentEndTime) {
-        currentOverlap++;
-      } else {
-        currentOverlap = 1;
-        currentEndTime = end;
-      }
-      if (currentOverlap > maxOverlap) {
-        maxOverlap = currentOverlap;
-      }
-    }
-
-    return maxOverlap;
-  }
-
-  /* * * * * * * * * * * * * * * * * *
-   LyricSnippetMap functions
-  * * * * * * * * * * * * * * * * * */
   void addLyricSnippet(LyricSnippet lyricSnippet) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
     lyricSnippetMap.addLyricSnippet(lyricSnippet);
@@ -226,17 +163,74 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void concatenateSnippets(Tuple2<LyricSnippetID, LyricSnippetID> snippetIDs) {
+  void concatenateSnippets(LyricSnippetID firstLyricSnippetID, LyricSnippetID secondLyricSnippetID) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap = lyricSnippetMap.concatenateSnippets(snippetIDs);
+    lyricSnippetMap = lyricSnippetMap.concatenateSnippets(firstLyricSnippetID, secondLyricSnippetID);
     notifyListeners();
   }
 
   /* * * * * * * * * * * * * * * * * *
    Change Notifier's Original functions
   * * * * * * * * * * * * * * * * * */
+  Map<LyricSnippetID, int> getTrackNumber(Map<LyricSnippetID, LyricSnippet> lyricSnippetList, int startBulge, int endBulge) {
+    if (lyricSnippetList.isEmpty) return {};
 
-  void loadLyric(String rawText) {
+    Map<LyricSnippetID, int> snippetTracks = {};
+
+    int maxOverlap = 0;
+    int currentOverlap = 1;
+    int currentEndTime = lyricSnippetList.values.first.endTimestamp + endBulge;
+    snippetTracks[lyricSnippetList.keys.first] = 0;
+
+    for (int i = 1; i < lyricSnippetList.length; i++) {
+      LyricSnippetID currentSnippetID = lyricSnippetList.keys.toList()[i];
+      LyricSnippet currentSnippet = lyricSnippetList.values.toList()[i];
+      int start = currentSnippet.startTimestamp - startBulge;
+      int end = currentSnippet.endTimestamp + endBulge;
+      if (start <= currentEndTime) {
+        currentOverlap++;
+      } else {
+        currentOverlap = 1;
+        currentEndTime = end;
+      }
+      if (currentOverlap > maxOverlap) {
+        maxOverlap = currentOverlap;
+      }
+
+      snippetTracks[currentSnippetID] = currentOverlap - 1;
+    }
+
+    return snippetTracks;
+  }
+
+  int getLanes({VocalistID? vocalistID}) {
+    List<LyricSnippet> snippets = vocalistID != null ? getLyricSnippetByVocalistID(vocalistID).map.values.toList() : lyricSnippetMap.values.toList();
+    if (snippets.isEmpty) return 1;
+    int maxOverlap = 1;
+    int currentOverlap = 1;
+    int currentEndTime = snippets.first.endTimestamp;
+
+    for (int i = 1; i < snippets.length; ++i) {
+      int start = snippets[i].startTimestamp;
+      int end = snippets[i].endTimestamp;
+      if (start <= currentEndTime) {
+        currentOverlap++;
+      } else {
+        currentOverlap = 1;
+        currentEndTime = end;
+      }
+      if (currentOverlap > maxOverlap) {
+        maxOverlap = currentOverlap;
+      }
+    }
+
+    return maxOverlap;
+  }
+
+  void importLyric(String importPath) async {
+    File file = File(importPath);
+    String rawText = await file.readAsString();
+
     XlrcParser parser = XlrcParser();
     Tuple3<LyricSnippetMap, VocalistColorMap, SectionList> data = parser.deserialize(rawText);
     lyricSnippetMap = data.item1;

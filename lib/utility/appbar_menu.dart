@@ -103,7 +103,7 @@ void openLyric(BuildContext context, TimingService timingService) async {
 
   if (file != null) {
     String rawLyricText = await file.readAsString();
-    timingService.loadLyric(rawLyricText);
+    timingService.importLyric(rawLyricText);
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('No file selected')),

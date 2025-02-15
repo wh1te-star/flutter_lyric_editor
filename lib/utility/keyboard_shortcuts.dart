@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_snippet/segment_range.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
+import 'package:lyric_editor/lyric_snippet/timing_object.dart';
 import 'package:lyric_editor/pane/text_pane.dart';
 import 'package:lyric_editor/pane/timeline_pane.dart';
 import 'package:lyric_editor/pane/video_pane.dart';
@@ -124,7 +129,18 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         AddSnippetIntent: CallbackAction<AddSnippetIntent>(
           onInvoke: (AddSnippetIntent intent) => () {
             if (timelinePaneProvider.selectingVocalist.isNotEmpty) {
-              timingService.addLyricSnippet("default sentence", musicPlayerProvider.seekPosition, timelinePaneProvider.selectingVocalist[0]);
+              Timing timing = Timing(
+                startTimestamp: musicPlayerProvider.seekPosition,
+                sentenceSegmentList: SentenceSegmentList([
+                  SentenceSegment("default sentence", 3000),
+                ]),
+              );
+              LyricSnippet lyricSnippet = LyricSnippet(
+                vocalistID: timelinePaneProvider.selectingVocalist[0],
+                timing: timing,
+                annotationMap: AnnotationMap.empty,
+              );
+              timingService.addLyricSnippet(lyricSnippet);
             }
           }(),
         ),
@@ -158,11 +174,13 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
           onInvoke: (AddAnnotationIntent intent) => () async {
             TextPaneCursor cursor = textPaneProvider.cursor;
             LyricSnippetID targetID = cursor.snippetID;
-            LyricSnippet targetSnippet = timingService.getSnippetWithID(targetID);
+            LyricSnippet targetSnippet = timingService.getLyricSnippetByID(targetID);
 
             String annotationString = (await displayTextFieldDialog(context, [""]))[0];
             if (annotationString != "") {
-              timingService.addAnnotation(targetID, annotationString, cursor.annotationSegmentRange.startIndex, textPaneProvider.cursor.annotationSegmentRange.endIndex);
+              int startIndex = cursor.annotationSegmentRange.startIndex;
+              int endIndex = textPaneProvider.cursor.annotationSegmentRange.endIndex;
+              timingService.addAnnotation(targetID, SegmentRange(startIndex, endIndex), annotationString);
             }
 
             textPaneProvider.cursor.isSegmentSelectionMode = false;
@@ -255,7 +273,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         DeleteSectionIntent: CallbackAction<DeleteSectionIntent>(
           onInvoke: (DeleteSectionIntent intent) => () {
             int seekPosition = musicPlayerProvider.seekPosition;
-            timingService.deleteSection(seekPosition);
+            timingService.removeSection(seekPosition);
           }(),
         ),
         TimingPointAddIntent: CallbackAction<TimingPointAddIntent>(
@@ -264,16 +282,16 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             TextPaneCursor cursor = textPaneProvider.cursor;
             if (!cursor.isAnnotationSelection) {
               timingService.addTimingPoint(
-                snippetID: cursor.snippetID,
-                charPosition: textPaneProvider.cursor.charPosition,
-                seekPosition: seekPosition,
+                cursor.snippetID,
+                textPaneProvider.cursor.charPosition,
+                seekPosition,
               );
             } else {
-              timingService.addTimingPoint(
-                snippetID: cursor.snippetID,
-                annotationRange: cursor.annotationSegmentRange,
-                charPosition: textPaneProvider.cursor.charPosition,
-                seekPosition: seekPosition,
+              timingService.addAnnotationTimingPoint(
+                cursor.snippetID,
+                cursor.annotationSegmentRange,
+                textPaneProvider.cursor.charPosition,
+                seekPosition,
               );
             }
           }(),
@@ -283,17 +301,17 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             for (var id in timelinePaneProvider.selectingSnippets) {
               TextPaneCursor cursor = textPaneProvider.cursor;
               if (!cursor.isAnnotationSelection) {
-                timingService.deleteTimingPoint(
-                  snippetID: id,
-                  charPosition: cursor.charPosition,
-                  option: cursor.option,
+                timingService.removeTimingPoint(
+                  id,
+                  cursor.charPosition,
+                  cursor.option,
                 );
               } else {
-                timingService.deleteTimingPoint(
-                  snippetID: id,
-                  annotationRange: cursor.annotationSegmentRange,
-                  charPosition: cursor.charPosition,
-                  option: cursor.option,
+                timingService.removeAnnotationTimingPoint(
+                  id,
+                  cursor.annotationSegmentRange,
+                  cursor.charPosition,
+                  cursor.option,
                 );
               }
             }
@@ -306,7 +324,10 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         SnippetConcatenateIntent: CallbackAction<SnippetConcatenateIntent>(
           onInvoke: (SnippetConcatenateIntent intent) => () {
-            timingService.concatenateSnippets(timelinePaneProvider.selectingSnippets);
+            final List<LyricSnippetID> selectingSnippets =timelinePaneProvider.selectingSnippets;
+            if (selectingSnippets.length >= 2){
+            timingService.concatenateSnippets(selectingSnippets[0], selectingSnippets[1]);
+            }
           }(),
         ),
         DisplayModeSwitchIntent: CallbackAction<DisplayModeSwitchIntent>(

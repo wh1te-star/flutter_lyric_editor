@@ -52,7 +52,7 @@ class TimelinePaneProvider with ChangeNotifier {
       }
     });
     timingService.addListener(() {
-      final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetMap;
+      final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetMap.map;
       snippetsForeachVocalist = groupBy(
         lyricSnippetList.entries,
         (MapEntry<LyricSnippetID, LyricSnippet> entry) {
@@ -186,7 +186,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   void updateScrollControllers() {
-    final Map<VocalistID, Vocalist> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
+    final Map<VocalistID, Vocalist> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap.map;
     snippetTimelineScrollController.removeWhere((vocalistName, scrollController) {
       if (!vocalistColorMap.containsKey(vocalistName)) {
         scrollController.dispose();
@@ -204,7 +204,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   LyricSnippet getSnippetWithID(LyricSnippetID id) {
-    final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetMap;
+    final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetMap.map;
     return lyricSnippetList[id]!;
   }
 
@@ -280,7 +280,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
 
     final int audioDuration = musicPlayerService.audioDuration;
     final int seekPosition = musicPlayerService.seekPosition;
-    final Map<VocalistID, Vocalist> vocalistColorMap = timingService.vocalistColorMap;
+    final Map<VocalistID, Vocalist> vocalistColorMap = timingService.vocalistColorMap.map;
     final double intervalLength = timelinePaneProvider.intervalLength;
     final int intervalDuration = timelinePaneProvider.intervalDuration;
 
@@ -411,7 +411,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                   scrollDirection: Axis.horizontal,
                   child: CustomPaint(
                     size: Size(audioDuration * intervalLength / intervalDuration, 800),
-                    painter: CurrentPositionIndicatorPainter(intervalLength, intervalDuration, seekPosition, timingService.sectionList),
+                    painter: CurrentPositionIndicatorPainter(intervalLength, intervalDuration, seekPosition, timingService.sectionList.list),
                   ),
                 ),
               ),
@@ -426,7 +426,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final TimingService timingService = ref.read(timingMasterProvider);
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
 
-    final Map<VocalistID, Vocalist> vocalistColorMap = timingService.vocalistColorMap;
+    final Map<VocalistID, Vocalist> vocalistColorMap = timingService.vocalistColorMap.map;
 
     if (index >= vocalistColorMap.length) {
       if (isDragging) {
@@ -452,7 +452,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
 
     final int audioDuration = musicPlayerService.audioDuration;
-    final Map<VocalistID, Vocalist> vocalistColorMap = timingService.vocalistColorMap;
+    final Map<VocalistID, Vocalist> vocalistColorMap = timingService.vocalistColorMap.map;
     final double intervalLength = timelinePaneProvider.intervalLength;
     final int intervalDuration = timelinePaneProvider.intervalDuration;
 
@@ -542,7 +542,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   void onReorder(int oldIndex, int newIndex) {
-    final Map<VocalistID, Vocalist> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
+    final Map<VocalistID, Vocalist> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap.map;
     if (newIndex > vocalistColorMap.length) {
       newIndex = vocalistColorMap.length;
     }
@@ -659,7 +659,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
   }
 
   Widget cellVocalistPanel(int index) {
-    final Map<VocalistID, Vocalist> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap;
+    final Map<VocalistID, Vocalist> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap.map;
     final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
     final String vocalistName = vocalistColorMap.values.toList()[index].name;
     if (edittingVocalistIndex == index) {
@@ -674,7 +674,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
           edittingVocalistIndex = -1;
           final TimingService timingService = ref.read(timingMasterProvider);
           if (value == "") {
-            timingService.deleteVocalist(oldVocalistValue);
+            timingService.removeVocalistByName(oldVocalistValue);
           } else if (oldVocalistValue != value) {
             cursorBlinker.restartCursorTimer();
             timingService.changeVocalistName(oldVocalistValue, value);
@@ -705,7 +705,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                 String newName = newVocalistNames[i];
                 final TimingService timingService = ref.read(timingMasterProvider);
                 if (newName == "") {
-                  timingService.deleteVocalist(oldName);
+                  timingService.removeVocalistByName(oldName);
                 } else if (oldName != newName) {
                   timingService.changeVocalistName(oldName, newName);
                 }
@@ -729,7 +729,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
 
   Widget cellSnippetTimeline(int index) {
     final TimingService timingService = ref.read(timingMasterProvider);
-    final Map<VocalistID, Vocalist> vocalistColorMap = timingService.vocalistColorMap;
+    final Map<VocalistID, Vocalist> vocalistColorMap = timingService.vocalistColorMap.map;
     final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
 
     return SnippetTimeline(
@@ -759,7 +759,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
         onTap: () async {
           String newVocalistName = (await displayTextFieldDialog(context, [""]))[0];
           final TimingService timingService = ref.read(timingMasterProvider);
-          timingService.addVocalist(newVocalistName);
+          timingService.addVocalist(Vocalist(name: newVocalistName, color: 0xFF222222));
         },
         child: CustomPaint(
           size: const Size(double.infinity, double.infinity),

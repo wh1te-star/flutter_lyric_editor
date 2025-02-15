@@ -41,6 +41,15 @@ class LyricSnippetMap {
     map[key] = value;
   }
 
+  LyricSnippet getLyricSnippetByID(LyricSnippetID id) {
+    return map[id]!;
+  }
+
+  LyricSnippetMap getLyricSnippetByVocalistID(VocalistID vocalistID) {
+    final Iterable<MapEntry<LyricSnippetID, LyricSnippet>> filteredEntries = map.entries.where((MapEntry<LyricSnippetID, LyricSnippet> entry) => entry.value.vocalistID == vocalistID);
+    return LyricSnippetMap(Map.fromEntries(filteredEntries));
+  }
+
   LyricSnippetMap sortLyricSnippetList(LyricSnippetMap lyricSnippetMap) {
     return LyricSnippetMap(Map.fromEntries(
       lyricSnippetMap.map.entries.toList()
@@ -51,11 +60,12 @@ class LyricSnippetMap {
             int compareStartTime = leftStartTimestamp.compareTo(rightStartTimestamp);
             if (compareStartTime != 0) {
               return compareStartTime;
-            } else {
-              int leftVocalistID = left.value.vocalistID.id;
-              int rightVocalistID = right.value.vocalistID.id;
-              return leftVocalistID.compareTo(rightVocalistID);
             }
+
+            int leftVocalistID = left.value.vocalistID.id;
+            int rightVocalistID = right.value.vocalistID.id;
+            int compareVocalistID = leftVocalistID.compareTo(rightVocalistID);
+            return compareVocalistID;
           },
         ),
     ));
@@ -142,11 +152,11 @@ class LyricSnippetMap {
     return sortLyricSnippetList(LyricSnippetMap(copiedMap));
   }
 
-  LyricSnippetMap concatenateSnippets(Tuple2<LyricSnippetID, LyricSnippetID> snippetIDs) {
+  LyricSnippetMap concatenateSnippets(LyricSnippetID firstLyricSnippetID, LyricSnippetID secondLyricSnippetID) {
     final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
 
-    LyricSnippetID formerSnippetID = snippetIDs.item1;
-    LyricSnippetID latterSnippetID = snippetIDs.item2;
+    LyricSnippetID formerSnippetID = firstLyricSnippetID;
+    LyricSnippetID latterSnippetID = secondLyricSnippetID;
     LyricSnippet formerSnippet = map[formerSnippetID]!;
     LyricSnippet latterSnippet = map[latterSnippetID]!;
 

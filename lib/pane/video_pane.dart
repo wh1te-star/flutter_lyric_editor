@@ -81,7 +81,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     });
 
     timingService.addListener(() {
-      maxLanes = getMaxRequiredLanes(timingService.getTrackNumber(timingService.lyricSnippetMap, startBulge, endBulge)) + 1;
+      maxLanes = getMaxRequiredLanes(timingService.getTrackNumber(timingService.lyricSnippetMap.map, startBulge, endBulge)) + 1;
       setState(() {});
     });
 
@@ -118,7 +118,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     double justBeforePosition = 0;
     double justAfterPosition = double.maxFinite;
 
-    final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetMap;
+    final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetMap.map;
     for (int index = 0; index < lyricSnippetList.length; index++) {
       double currentTime = getMiddlePoint(lyricSnippetList.values.toList()[index]);
       if (currentTime < seekPosition) {
@@ -212,7 +212,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     int seekPosition = musicPlayerService.seekPosition;
 
     Color fontColor = const Color(0x00000000);
-    final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap;
+    final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap.map;
     if (vocalistColorList.containsKey(snippet.vocalistID)) {
       fontColor = Color(vocalistColorList[snippet.vocalistID]!.color);
     }
@@ -370,13 +370,13 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     final TimingService timingService = ref.read(timingMasterProvider);
     final int seekPosition = musicPlayerService.seekPosition;
-    final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap;
+    final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap.map;
 
-    Map<LyricSnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetMap;
+    Map<LyricSnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetMap.map;
     Map<LyricSnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition(
       startBulge: startBulge,
       endBulge: endBulge,
-    );
+    ).map;
 
     double fontSize = 40.0;
     String fontFamily = "Times New Roman";
@@ -384,7 +384,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
     DisplayMode displayMode = videoPaneProvider.displayMode;
     //if (displayMode == DisplayMode.appearDissappear) {
-    final Map<LyricSnippetID, int> tracks = timingService.getTrackNumber(timingService.lyricSnippetMap, startBulge, endBulge);
+    final Map<LyricSnippetID, int> tracks = timingService.getTrackNumber(timingService.lyricSnippetMap.map, startBulge, endBulge);
 
     List<Widget> content = List<Widget>.generate(maxLanes, (index) => Container());
 
@@ -394,7 +394,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
             orElse: () => LyricSnippetID(0),
           );
       if (targetSnippetID != LyricSnippetID(0)) {
-        LyricSnippet targetSnippet = timingService.getSnippetWithID(targetSnippetID);
+        LyricSnippet targetSnippet = timingService.getLyricSnippetByID(targetSnippetID);
         content[i] = Expanded(
           child: Center(
             child: snippetItem(
