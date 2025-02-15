@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class PartialTextPainter extends CustomPainter {
+class ColoredTextPainter extends CustomPainter {
   final String text;
   final double progress;
   final String fontFamily;
@@ -17,7 +17,7 @@ class PartialTextPainter extends CustomPainter {
   List<TextSpan>? textSpansAfter;
   List<TextPainter>? textPaintersAfter;
 
-  PartialTextPainter({
+  ColoredTextPainter({
     required this.text,
     required this.progress,
     required this.fontFamily,

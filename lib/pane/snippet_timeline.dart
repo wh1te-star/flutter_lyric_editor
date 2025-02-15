@@ -8,9 +8,9 @@ import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
-import 'package:lyric_editor/painter/rectangle_painter.dart';
-import 'package:lyric_editor/painter/triangle_painter.dart';
-import 'package:lyric_editor/pane/timeline_pane.dart';
+import 'package:lyric_editor/pane/timeline_pane/rectangle_painter.dart';
+import 'package:lyric_editor/pane/timeline_pane/triangle_painter.dart';
+import 'package:lyric_editor/pane/timeline_pane/timeline_pane.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 
 class SnippetTimeline extends ConsumerStatefulWidget {

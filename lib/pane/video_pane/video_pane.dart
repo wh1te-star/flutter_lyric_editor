@@ -8,9 +8,9 @@ import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
-import 'package:lyric_editor/painter/partial_text_painter.dart';
+import 'package:lyric_editor/pane/video_pane/colored_text_painter.dart';
 import 'package:lyric_editor/pane/text_pane.dart';
-import 'package:lyric_editor/pane/timeline_pane.dart';
+import 'package:lyric_editor/pane/timeline_pane/timeline_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
@@ -168,11 +168,9 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     return seekPosition;
   }
 
-  PartialTextPainter getBeforeSnippetPainter(LyricSnippet snippet, fontFamily, Color fontColor) {
-    return PartialTextPainter(
+  ColoredTextPainter getBeforeSnippetPainter(LyricSnippet snippet, fontFamily, Color fontColor) {
+    return ColoredTextPainter(
       text: snippet.sentence,
-      //start: 0,
-      //end: 0,
       progress: 0.0,
       fontFamily: fontFamily,
       fontSize: 40,
@@ -182,11 +180,9 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     );
   }
 
-  PartialTextPainter getAfterSnippetPainter(LyricSnippet snippet, fontFamily, Color fontColor) {
-    return PartialTextPainter(
+  ColoredTextPainter getAfterSnippetPainter(LyricSnippet snippet, fontFamily, Color fontColor) {
+    return ColoredTextPainter(
       text: snippet.sentence,
-      //start: 0,
-      //end: snippet.sentence.length,
       progress: 1.0,
       fontFamily: fontFamily,
       fontSize: 40,
@@ -256,7 +252,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
                 ),
                 CustomPaint(
                   size: sentenceSize,
-                  painter: PartialTextPainter(
+                  painter: ColoredTextPainter(
                     text: segment.word,
                     progress: progress,
                     fontFamily: fontFamily,
@@ -293,7 +289,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
           partSentenceWidgets.add(
             CustomPaint(
               size: getSizeFromFontInfo(segment.word, sentenceFontSize, fontFamily),
-              painter: PartialTextPainter(
+              painter: ColoredTextPainter(
                 text: segment.word,
                 progress: progress,
                 fontFamily: fontFamily,
@@ -323,7 +319,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
           partAnnotationWidgets.add(
             CustomPaint(
               size: getSizeFromFontInfo(segment.word, annotationFontSize, fontFamily),
-              painter: PartialTextPainter(
+              painter: ColoredTextPainter(
                 text: segment.word,
                 progress: progress,
                 fontFamily: fontFamily,
@@ -373,10 +369,12 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap.map;
 
     Map<LyricSnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetMap.map;
-    Map<LyricSnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition(
-      startBulge: startBulge,
-      endBulge: endBulge,
-    ).map;
+    Map<LyricSnippetID, LyricSnippet> currentSnippets = timingService
+        .getSnippetsAtSeekPosition(
+          startBulge: startBulge,
+          endBulge: endBulge,
+        )
+        .map;
 
     double fontSize = 40.0;
     String fontFamily = "Times New Roman";

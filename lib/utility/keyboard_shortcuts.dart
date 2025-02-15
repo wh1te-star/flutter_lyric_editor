@@ -8,8 +8,8 @@ import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dar
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/lyric_snippet/timing_object.dart';
 import 'package:lyric_editor/pane/text_pane.dart';
-import 'package:lyric_editor/pane/timeline_pane.dart';
-import 'package:lyric_editor/pane/video_pane.dart';
+import 'package:lyric_editor/pane/timeline_pane/timeline_pane.dart';
+import 'package:lyric_editor/pane/video_pane/video_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/dialog/text_field_dialog.dart';

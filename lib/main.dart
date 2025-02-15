@@ -5,9 +5,9 @@ import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'utility/appbar_menu.dart';
 import 'service/music_player_service.dart';
-import 'pane/video_pane.dart';
+import 'pane/video_pane/video_pane.dart';
 import 'pane/text_pane.dart';
-import 'pane/timeline_pane.dart';
+import 'pane/timeline_pane/timeline_pane.dart';
 import 'pane/adjustable_pane_border.dart';
 import 'package:permission_handler/permission_handler.dart';
 
