@@ -1,4 +1,4 @@
-class InsertionPosition {
+class InsertionPosition implements Comparable<InsertionPosition> {
   int position;
 
   InsertionPosition(this.position) {
@@ -34,4 +34,14 @@ class InsertionPosition {
 
   @override
   int get hashCode => position.hashCode;
+
+  @override
+  int compareTo(InsertionPosition other) {
+    return position.compareTo(other.position);
+  }
+
+  bool operator >(InsertionPosition other) => position > other.position;
+  bool operator <(InsertionPosition other) => position < other.position;
+  bool operator >=(InsertionPosition other) => position >= other.position;
+  bool operator <=(InsertionPosition other) => position <= other.position;
 }

@@ -1,5 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
+import 'package:lyric_editor/position/character_position.dart';
+import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/seek_position.dart';
 
 class TimingPointList {
   static const charPositionDuplicationAllowed = 2;
@@ -18,13 +21,13 @@ class TimingPointList {
   bool isCharPositionOrdered() {
     return _list.map((TimingPoint timingPoint) {
       return timingPoint.charPosition;
-    }).isSorted((int left, int right) => left.compareTo(right));
+    }).isSorted((InsertionPosition left, InsertionPosition right) => left.compareTo(right));
   }
 
   bool isSeekPositionOrdered() {
     return _list.map((TimingPoint timingPoint) {
       return timingPoint.seekPosition;
-    }).isSorted((int left, int right) => left.compareTo(right));
+    }).isSorted((SeekPosition left, SeekPosition right) => left.compareTo(right));
   }
 
   bool isCharPositionDuplicationAllowed() {

@@ -1,4 +1,4 @@
-class SeekPosition {
+class SeekPosition implements Comparable<SeekPosition> {
   int position;
 
   SeekPosition(this.position) {
@@ -34,4 +34,14 @@ class SeekPosition {
 
   @override
   int get hashCode => position.hashCode;
+
+  @override
+  int compareTo(SeekPosition other) {
+    return position.compareTo(other.position);
+  }
+
+  bool operator >(SeekPosition other) => position > other.position;
+  bool operator <(SeekPosition other) => position < other.position;
+  bool operator >=(SeekPosition other) => position >= other.position;
+  bool operator <=(SeekPosition other) => position <= other.position;
 }

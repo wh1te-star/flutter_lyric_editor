@@ -1,4 +1,4 @@
-class CharacterPosition {
+class CharacterPosition implements Comparable<CharacterPosition> {
   int position;
 
   CharacterPosition(this.position) {
@@ -34,4 +34,14 @@ class CharacterPosition {
 
   @override
   int get hashCode => position.hashCode;
+
+  @override
+  int compareTo(CharacterPosition other) {
+    return position.compareTo(other.position);
+  }
+
+  bool operator >(CharacterPosition other) => position > other.position;
+  bool operator <(CharacterPosition other) => position < other.position;
+  bool operator >=(CharacterPosition other) => position >= other.position;
+  bool operator <=(CharacterPosition other) => position <= other.position;
 }

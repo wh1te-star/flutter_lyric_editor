@@ -1,18 +1,17 @@
+import 'package:lyric_editor/position/character_position.dart';
+import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/seek_position.dart';
+
 class TimingPoint {
-  final int charPosition;
-  final int seekPosition;
+  final InsertionPosition charPosition;
+  final SeekPosition seekPosition;
 
-  TimingPoint(this.charPosition, this.seekPosition) {
-    if (!isEmpty) {
-      assert(charPosition >= 0);
-      assert(seekPosition >= 0);
-    }
-  }
+  TimingPoint(this.charPosition, this.seekPosition);
 
-  static TimingPoint get empty => TimingPoint(-1, -1);
-  bool get isEmpty => charPosition == -1 && seekPosition == -1;
+  static TimingPoint get empty => TimingPoint(InsertionPosition.empty, SeekPosition.empty);
+  bool get isEmpty => this == empty;
 
-  TimingPoint copyWith({int? charPosition, int? seekPosition}) {
+  TimingPoint copyWith({InsertionPosition? charPosition, SeekPosition? seekPosition}) {
     return TimingPoint(
       charPosition ?? this.charPosition,
       seekPosition ?? this.seekPosition,

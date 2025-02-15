@@ -1,16 +1,13 @@
 class SentenceSegment {
   String word;
-  int duration;
+  Duration duration;
 
-  SentenceSegment(this.word, this.duration) {
-    assert(duration >= 0);
-  }
+  SentenceSegment(this.word, this.duration);
 
-  static SentenceSegment get empty => SentenceSegment("", 0);
+  static SentenceSegment get empty => SentenceSegment("", Duration.zero);
+  bool get isEmpty => this == empty;
 
-  bool get isEmpty => word == "" && duration == 0;
-
-  SentenceSegment copyWith({String? word, int? duration}) {
+  SentenceSegment copyWith({String? word, Duration? duration}) {
     return SentenceSegment(
       word ?? this.word,
       duration ?? this.duration,
