@@ -1,24 +1,24 @@
-class CharacterPosition {
+class SeekPosition {
   int position;
 
-  CharacterPosition(this.position) {
+  SeekPosition(this.position) {
     if (!isEmpty) {
       assert(position >= 0);
     }
   }
 
-  static CharacterPosition get empty => CharacterPosition(-1);
+  static SeekPosition get empty => SeekPosition(-1);
   bool get isEmpty => this == empty;
 
-  CharacterPosition copyWith({int? position}) {
-    return CharacterPosition(
+  SeekPosition copyWith({int? position}) {
+    return SeekPosition(
       position ?? this.position,
     );
   }
 
   @override
   String toString() {
-    return "CharPosition: $position.";
+    return "SeekPosition: $position.";
   }
 
   @override
@@ -26,7 +26,7 @@ class CharacterPosition {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! CharacterPosition) {
+    if (other is! SeekPosition) {
       return false;
     }
     return position == other.position;

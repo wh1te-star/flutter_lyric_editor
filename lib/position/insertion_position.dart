@@ -2,8 +2,13 @@ class InsertionPosition {
   int position;
 
   InsertionPosition(this.position) {
-    assert(position >= 0);
+    if (!isEmpty) {
+      assert(position >= 0);
+    }
   }
+
+  static InsertionPosition get empty => InsertionPosition(-1);
+  bool get isEmpty => this == empty;
 
   InsertionPosition copyWith({int? position}) {
     return InsertionPosition(
