@@ -26,7 +26,7 @@ class SentenceSegmentList {
 
   bool has2ConseqentEmpty() {
     for (int index = 0; index < _list.length - 1; index++) {
-      if (_list[index].word == "" || _list[index + 1].word == "") {
+      if (_list[index].word == "" && _list[index + 1].word == "") {
         return true;
       }
     }

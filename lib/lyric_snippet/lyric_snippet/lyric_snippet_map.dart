@@ -13,7 +13,7 @@ import 'package:tuple/tuple.dart';
 
 class LyricSnippetMap {
   final Map<LyricSnippetID, LyricSnippet> _lyricSnippetMap;
-  final LyricSnippetIdGenerator idGenerator = LyricSnippetIdGenerator();
+  static final LyricSnippetIdGenerator idGenerator = LyricSnippetIdGenerator();
 
   LyricSnippetMap(this._lyricSnippetMap) {
     assert(isLyricSnippetsOrdered());

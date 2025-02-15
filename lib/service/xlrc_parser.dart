@@ -74,7 +74,7 @@ class XlrcParser {
         if (vocalistNames.length == 1) {
           vocalistColorMap = vocalistColorMap.addVocalist(Vocalist(name: name, color: color + 0xFF000000));
         } else {
-          vocalistColorMap = vocalistColorMap.addVocalists(vocalistNames, color + 0xFF000000);
+          vocalistColorMap = vocalistColorMap.addVocalistCombination(vocalistNames, color + 0xFF000000);
         }
       }
     }

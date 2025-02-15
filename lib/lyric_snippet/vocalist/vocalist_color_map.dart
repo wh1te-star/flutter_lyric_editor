@@ -6,7 +6,7 @@ import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
 class VocalistColorMap {
   String vocalistNameSeparator = ", ";
   final Map<VocalistID, Vocalist> _vocalistColorMap;
-  final VocalistIdGenerator idGenerator = VocalistIdGenerator();
+  static final VocalistIdGenerator idGenerator = VocalistIdGenerator();
 
   VocalistColorMap(this._vocalistColorMap);
 
@@ -62,7 +62,7 @@ class VocalistColorMap {
     return VocalistColorMap(newMap);
   }
 
-  VocalistColorMap addVocalists(List<String> vocalistNames, int color) {
+  VocalistColorMap addVocalistCombination(List<String> vocalistNames, int color) {
     final Map<VocalistID, Vocalist> newMap = Map<VocalistID, Vocalist>.from(map);
 
     int combinationID = 0;
