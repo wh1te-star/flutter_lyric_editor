@@ -6,7 +6,7 @@ import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
-import 'package:lyric_editor/lyric_snippet/segment_range.dart';
+import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
 import 'package:lyric_editor/pane/timeline_pane/rectangle_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/triangle_painter.dart';
@@ -96,11 +96,11 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
       }
 
       final endtime = snippet.endTimestamp;
-      if (snippet.startTimestamp < previousEndtime) {
+      if (snippet.startTimestamp.position < previousEndtime) {
         currentTrack++;
       } else {
         currentTrack = 0;
-        previousEndtime = endtime;
+        previousEndtime = endtime.position;
       }
 
       tracks[id] = currentTrack;
@@ -116,11 +116,11 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     final Color vocalistColor = Color(timingService.vocalistColorMap[vocalistID]!.color);
 
     Size itemSize = Size(
-      duration2Length(snippet.endTimestamp - snippet.startTimestamp),
+      duration2Length(snippet.endTimestamp.position - snippet.startTimestamp.position),
       snippetItemHeight,
     );
     Widget snippetItem = Positioned(
-      left: duration2Length(snippet.startTimestamp),
+      left: duration2Length(snippet.startTimestamp.position),
       top: trackHeight * snippetTracks[snippetID]! + topMargin + timingPointIndicatorHeight + annotationItemHeight + annotationSnippetMargin,
       child: GestureDetector(
         onTap: () {
@@ -161,11 +161,11 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
       SegmentRange range = entry.key;
       Annotation annotation = entry.value;
       Size itemSize = Size(
-        duration2Length(annotation.endTimestamp - annotation.startTimestamp),
+        duration2Length(annotation.endTimestamp.position - annotation.startTimestamp.position),
         annotationItemHeight,
       );
       Widget annotationItem = Positioned(
-        left: duration2Length(annotation.startTimestamp),
+        left: duration2Length(annotation.startTimestamp.position),
         top: trackHeight * snippetTracks[snippetID]! + topMargin + timingPointIndicatorHeight,
         child: GestureDetector(
           onTap: () {
@@ -203,7 +203,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     for (int index = 0; index < snippet.timingPoints.length; index++) {
       TimingPoint timingPoint = snippet.timingPoints[index];
       Widget indicator = Positioned(
-        left: duration2Length(snippet.startTimestamp + timingPoint.seekPosition),
+        left: duration2Length(snippet.startTimestamp.position + timingPoint.seekPosition.position),
         top: trackHeight * snippetTracks[snippetID]! + topMargin + timingPointIndicatorHeight + annotationItemHeight + annotationSnippetMargin + snippetItemHeight,
         child: CustomPaint(
           size: itemSize,
@@ -233,7 +233,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
       for (int index = 0; index < annotation.timingPoints.length; index++) {
         TimingPoint timingPoint = annotation.timingPoints[index];
         Widget indicator = Positioned(
-          left: duration2Length(annotation.startTimestamp + timingPoint.seekPosition),
+          left: duration2Length(annotation.startTimestamp.position + timingPoint.seekPosition.position),
           top: trackHeight * snippetTracks[snippetID]! + topMargin,
           child: CustomPaint(
             size: itemSize,

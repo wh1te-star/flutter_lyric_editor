@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
-import 'package:lyric_editor/position/character_position.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 
@@ -50,6 +51,23 @@ class TimingPointList {
   TimingPoint operator [](int index) => list[index];
   void operator []=(int index, TimingPoint value) {
     list[index] = value;
+  }
+
+  SentenceSegmentList toSentenceSegmentList(String sentence) {
+    List<SentenceSegment> sentenceSegments = [];
+    List<TimingPoint> timingPoints = list;
+    for (int index = 0; index < timingPoints.length - 1; index++) {
+      String word = sentence.substring(
+        timingPoints[index].charPosition.position,
+        timingPoints[index + 1].charPosition.position,
+      );
+      Duration duration = Duration(
+        milliseconds: timingPoints[index + 1].seekPosition.position - timingPoints[index].seekPosition.position,
+      );
+      sentenceSegments.add(SentenceSegment(word, duration));
+    }
+
+    return SentenceSegmentList(sentenceSegments);
   }
 
   TimingPointList copyWith({

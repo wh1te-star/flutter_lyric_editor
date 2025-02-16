@@ -1,13 +1,15 @@
-class Section {
-  int seekPosition;
+import 'package:lyric_editor/position/seek_position.dart';
+
+class Section implements Comparable<Section> {
+  SeekPosition seekPosition;
 
   Section(this.seekPosition);
 
-  static Section get empty => Section(-1);
+  static Section get empty => Section(SeekPosition(-1));
   bool get isEmpty => this == empty;
 
   Section copyWith({
-    int? seekPosition,
+    SeekPosition? seekPosition,
   }) {
     return Section(seekPosition ?? this.seekPosition);
   }
@@ -16,6 +18,16 @@ class Section {
   String toString() {
     return "Section($seekPosition)";
   }
+
+  @override
+  int compareTo(Section other) {
+    return seekPosition.compareTo(other.seekPosition);
+  }
+
+  bool operator >(Section other) => compareTo(other) > 0;
+  bool operator <(Section other) => compareTo(other) < 0;
+  bool operator >=(Section other) => compareTo(other) >= 0;
+  bool operator <=(Section other) => compareTo(other) <= 0;
 
   @override
   bool operator ==(Object other) {

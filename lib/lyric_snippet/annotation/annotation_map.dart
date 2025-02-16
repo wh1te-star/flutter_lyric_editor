@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
-import 'package:lyric_editor/lyric_snippet/segment_range.dart';
+import 'package:lyric_editor/position/segment_range.dart';
 
 class AnnotationMap {
   Map<SegmentRange, Annotation> annotationMap;

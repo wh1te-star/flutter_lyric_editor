@@ -35,6 +35,9 @@ class SeekPosition implements Comparable<SeekPosition> {
   @override
   int get hashCode => position.hashCode;
 
+  SeekPosition operator +(Duration shift) => SeekPosition(position + shift.inMicroseconds);
+  SeekPosition operator -(Duration shift) => SeekPosition(position - shift.inMicroseconds);
+
   @override
   int compareTo(SeekPosition other) {
     return position.compareTo(other.position);

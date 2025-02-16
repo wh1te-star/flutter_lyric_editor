@@ -10,6 +10,7 @@ import 'package:lyric_editor/pane/timeline_pane/current_position_indicator_paint
 import 'package:lyric_editor/pane/timeline_pane/rectangle_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/scale_mark.dart';
 import 'package:lyric_editor/pane/snippet_timeline.dart';
+import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
@@ -278,8 +279,8 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final TimingService timingService = ref.read(timingMasterProvider);
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
 
-    final int audioDuration = musicPlayerService.audioDuration;
-    final int seekPosition = musicPlayerService.seekPosition;
+    final Duration audioDuration = musicPlayerService.audioDuration;
+    final SeekPosition seekPosition = musicPlayerService.seekPosition;
     final Map<VocalistID, Vocalist> vocalistColorMap = timingService.vocalistColorMap.map;
     final double intervalLength = timelinePaneProvider.intervalLength;
     final int intervalDuration = timelinePaneProvider.intervalDuration;
@@ -371,7 +372,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                         controller: scaleMarkScrollController,
                         scrollDirection: Axis.horizontal,
                         child: SizedBox(
-                          width: audioDuration * intervalLength / intervalDuration,
+                          width: audioDuration.inMilliseconds * intervalLength / intervalDuration,
                           height: 30,
                           child: cellScaleMark(),
                         ),
@@ -410,8 +411,8 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                   controller: seekPositionScrollController,
                   scrollDirection: Axis.horizontal,
                   child: CustomPaint(
-                    size: Size(audioDuration * intervalLength / intervalDuration, 800),
-                    painter: CurrentPositionIndicatorPainter(intervalLength, intervalDuration, seekPosition, timingService.sectionList.list),
+                    size: Size(audioDuration.inMilliseconds * intervalLength / intervalDuration, 800),
+                    painter: CurrentPositionIndicatorPainter(intervalLength, intervalDuration, seekPosition.position, timingService.sectionList.list),
                   ),
                 ),
               ),
@@ -451,7 +452,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final TimingService timingService = ref.read(timingMasterProvider);
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
 
-    final int audioDuration = musicPlayerService.audioDuration;
+    final Duration audioDuration = musicPlayerService.audioDuration;
     final Map<VocalistID, Vocalist> vocalistColorMap = timingService.vocalistColorMap.map;
     final double intervalLength = timelinePaneProvider.intervalLength;
     final int intervalDuration = timelinePaneProvider.intervalDuration;
@@ -506,7 +507,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
               controller: snippetTimelineScrollController[vocalistID],
               scrollDirection: Axis.horizontal,
               child: SizedBox(
-                width: audioDuration * intervalLength / intervalDuration,
+                width: audioDuration.inMilliseconds * intervalLength / intervalDuration,
                 child: cellSnippetTimeline(index),
               ),
             ),
@@ -590,11 +591,11 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
 
     int maxOverlap = 1;
     int currentOverlap = 1;
-    int currentEndTime = lyricSnippetList[0].endTimestamp;
+    int currentEndTime = lyricSnippetList[0].endTimestamp.position;
 
     for (int i = 1; i < lyricSnippetList.length; ++i) {
-      int start = lyricSnippetList[i].startTimestamp;
-      int end = lyricSnippetList[i].endTimestamp;
+      int start = lyricSnippetList[i].startTimestamp.position;
+      int end = lyricSnippetList[i].endTimestamp.position;
       if (start <= currentEndTime) {
         currentOverlap++;
       } else {

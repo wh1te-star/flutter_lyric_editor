@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lyric_editor/position/seek_position.dart';
 
 final musicPlayerMasterProvider = ChangeNotifierProvider((ref) => MusicPlayerService());
 
 class MusicPlayerService extends ChangeNotifier {
   AudioPlayer player = AudioPlayer();
-  int _seekPosition = 0;
+  SeekPosition _seekPosition = SeekPosition(0);
   bool _isPlaying = false;
-  int _audioDuration = 0;
+  Duration _audioDuration = Duration.zero;
   late DeviceFileSource audioFile;
 
   MusicPlayerService() {
-    player.onPositionChanged.listen((event) {
-      _seekPosition = event.inMilliseconds;
+    player.onPositionChanged.listen((Duration event) {
+      _seekPosition = SeekPosition(event.inMilliseconds);
       notifyListeners();
     });
-    player.onPlayerStateChanged.listen((event) {
+    player.onPlayerStateChanged.listen((PlayerState event) {
       if (player.state == PlayerState.playing) {
         _isPlaying = true;
       } else {
@@ -24,17 +25,17 @@ class MusicPlayerService extends ChangeNotifier {
       }
       notifyListeners();
     });
-    player.onDurationChanged.listen((duration) {
-      _audioDuration = duration.inMilliseconds;
+    player.onDurationChanged.listen((Duration duration) {
+      _audioDuration = Duration(milliseconds: duration.inMilliseconds);
       notifyListeners();
     });
   }
 
-  int get seekPosition => _seekPosition;
+  SeekPosition get seekPosition => _seekPosition;
 
   bool get isPlaying => _isPlaying;
 
-  int get audioDuration => _audioDuration;
+  Duration get audioDuration => _audioDuration;
 
   void playPause() {
     if (player.state == PlayerState.playing) {
@@ -53,7 +54,7 @@ class MusicPlayerService extends ChangeNotifier {
     int roundedSeekPosition = roundToNear(seekPosition, 100);
     Duration position = Duration(milliseconds: roundedSeekPosition);
     player.seek(position);
-    _seekPosition = roundedSeekPosition;
+    _seekPosition = SeekPosition(roundedSeekPosition);
     notifyListeners();
   }
 
@@ -65,7 +66,7 @@ class MusicPlayerService extends ChangeNotifier {
         newPosition = Duration.zero;
       }
       player.seek(newPosition);
-      _seekPosition = newPosition.inMilliseconds;
+      _seekPosition = SeekPosition(newPosition.inMilliseconds);
       notifyListeners();
     }
   }
@@ -79,7 +80,7 @@ class MusicPlayerService extends ChangeNotifier {
         newPosition = musicDuration;
       }
       player.seek(newPosition);
-      _seekPosition = newPosition.inMilliseconds;
+      _seekPosition = SeekPosition(newPosition.inMilliseconds);
       notifyListeners();
     }
   }

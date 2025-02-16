@@ -5,8 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
+import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/section/section_list.dart';
-import 'package:lyric_editor/lyric_snippet/segment_range.dart';
+import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
 import 'package:lyric_editor/lyric_snippet/vocalist/vocalist_color_map.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
@@ -37,13 +39,13 @@ class TimingService extends ChangeNotifier {
   /* * * * * * * * * * * * * * * * * *
    SectionList functions
   * * * * * * * * * * * * * * * * * */
-  void addSection(int seekPosition) {
+  void addSection(SeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.section, sectionList);
     sectionList.addSection(seekPosition);
     notifyListeners();
   }
 
-  void removeSection(int seekPosition) {
+  void removeSection(SeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.section, sectionList);
     sectionList.removeSection(seekPosition);
     notifyListeners();
@@ -87,7 +89,12 @@ class TimingService extends ChangeNotifier {
     return lyricSnippetMap.getLyricSnippetByVocalistID(vocalistID);
   }
 
-  LyricSnippetMap getSnippetsAtSeekPosition({int? seekPosition, VocalistID? vocalistID, int startBulge = 0, int endBulge = 0}) {
+  LyricSnippetMap getSnippetsAtSeekPosition({
+    SeekPosition? seekPosition,
+    VocalistID? vocalistID,
+    Duration startBulge = Duration.zero,
+    Duration endBulge = Duration.zero,
+  }) {
     seekPosition ??= musicPlayerProvider.seekPosition;
     return lyricSnippetMap.getSnippetsAtSeekPosition(
       seekPosition: seekPosition,
@@ -127,25 +134,25 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addTimingPoint(LyricSnippetID snippetID, int charPosition, int seekPosition) {
+  void addTimingPoint(LyricSnippetID snippetID, InsertionPosition charPosition, SeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
     lyricSnippetMap = lyricSnippetMap.addTimingPoint(snippetID, charPosition, seekPosition);
     notifyListeners();
   }
 
-  void removeTimingPoint(LyricSnippetID snippetID, int charPosition, Option option) {
+  void removeTimingPoint(LyricSnippetID snippetID, InsertionPosition charPosition, Option option) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
     lyricSnippetMap = lyricSnippetMap.removeTimingPoint(snippetID, charPosition, option);
     notifyListeners();
   }
 
-  void addAnnotationTimingPoint(LyricSnippetID snippetID, SegmentRange segmentRange, int charPosition, int seekPosition) {
+  void addAnnotationTimingPoint(LyricSnippetID snippetID, SegmentRange segmentRange, InsertionPosition charPosition, SeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
     lyricSnippetMap = lyricSnippetMap.addAnnotationTimingPoint(snippetID, segmentRange, charPosition, seekPosition);
     notifyListeners();
   }
 
-  void removeAnnotationTimingPoint(LyricSnippetID snippetID, SegmentRange segmentRange, int charPosition, Option option) {
+  void removeAnnotationTimingPoint(LyricSnippetID snippetID, SegmentRange segmentRange, InsertionPosition charPosition, Option option) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
     lyricSnippetMap = lyricSnippetMap.removeAnnotationTimingPoint(snippetID, segmentRange, charPosition, option);
     notifyListeners();
@@ -157,7 +164,7 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void divideSnippet(LyricSnippetID snippetID, int charPosition, int seekPosition) {
+  void divideSnippet(LyricSnippetID snippetID, InsertionPosition charPosition, SeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
     lyricSnippetMap = lyricSnippetMap.divideSnippet(snippetID, charPosition, seekPosition);
     notifyListeners();
@@ -172,21 +179,21 @@ class TimingService extends ChangeNotifier {
   /* * * * * * * * * * * * * * * * * *
    Change Notifier's Original functions
   * * * * * * * * * * * * * * * * * */
-  Map<LyricSnippetID, int> getTrackNumber(Map<LyricSnippetID, LyricSnippet> lyricSnippetList, int startBulge, int endBulge) {
+  Map<LyricSnippetID, int> getTrackNumber(Map<LyricSnippetID, LyricSnippet> lyricSnippetList, Duration startBulge, Duration endBulge) {
     if (lyricSnippetList.isEmpty) return {};
 
     Map<LyricSnippetID, int> snippetTracks = {};
 
     int maxOverlap = 0;
     int currentOverlap = 1;
-    int currentEndTime = lyricSnippetList.values.first.endTimestamp + endBulge;
+    int currentEndTime = lyricSnippetList.values.first.endTimestamp.position + endBulge.inMilliseconds;
     snippetTracks[lyricSnippetList.keys.first] = 0;
 
     for (int i = 1; i < lyricSnippetList.length; i++) {
       LyricSnippetID currentSnippetID = lyricSnippetList.keys.toList()[i];
       LyricSnippet currentSnippet = lyricSnippetList.values.toList()[i];
-      int start = currentSnippet.startTimestamp - startBulge;
-      int end = currentSnippet.endTimestamp + endBulge;
+      int start = currentSnippet.startTimestamp.position - startBulge.inMilliseconds;
+      int end = currentSnippet.endTimestamp.position + endBulge.inMilliseconds;
       if (start <= currentEndTime) {
         currentOverlap++;
       } else {
@@ -208,11 +215,11 @@ class TimingService extends ChangeNotifier {
     if (snippets.isEmpty) return 1;
     int maxOverlap = 1;
     int currentOverlap = 1;
-    int currentEndTime = snippets.first.endTimestamp;
+    int currentEndTime = snippets.first.endTimestamp.position;
 
     for (int i = 1; i < snippets.length; ++i) {
-      int start = snippets[i].startTimestamp;
-      int end = snippets[i].endTimestamp;
+      int start = snippets[i].startTimestamp.position;
+      int end = snippets[i].endTimestamp.position;
       if (start <= currentEndTime) {
         currentOverlap++;
       } else {

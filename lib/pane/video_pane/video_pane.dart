@@ -1,11 +1,13 @@
 import 'dart:ui';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
-import 'package:lyric_editor/lyric_snippet/segment_range.dart';
+import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
 import 'package:lyric_editor/pane/video_pane/colored_text_painter.dart';
@@ -49,8 +51,8 @@ class VideoPane extends ConsumerStatefulWidget {
 class _VideoPaneState extends ConsumerState<VideoPane> {
   final FocusNode focusNode;
   _VideoPaneState(this.focusNode);
-  int startBulge = 1000;
-  int endBulge = 1000;
+  Duration startBulge = const Duration(milliseconds: 1000);
+  Duration endBulge = const Duration(milliseconds: 1000);
 
   ScrollController scrollController = ScrollController();
 
@@ -74,8 +76,8 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
       bool isPlaying = musicPlayerService.isPlaying;
       if (videoPaneProvider.displayMode == DisplayMode.verticalScroll && isPlaying) {
-        int seekPosition = musicPlayerService.seekPosition;
-        scrollController.jumpTo(getScrollOffsetFromSeekPosition(seekPosition));
+        SeekPosition seekPosition = musicPlayerService.seekPosition;
+        scrollController.jumpTo(getScrollOffsetFromSeekPosition(seekPosition.position));
       }
       setState(() {});
     });
@@ -109,7 +111,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
   }
 
   double getMiddlePoint(LyricSnippet snippet) {
-    return (snippet.startTimestamp + snippet.endTimestamp) / 2;
+    return (snippet.startTimestamp.position + snippet.endTimestamp.position) / 2;
   }
 
   double getScrollOffsetFromSeekPosition(int seekPosition) {
@@ -146,7 +148,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     final List<LyricSnippet> lyricSnippetList = timingService.lyricSnippetMap.values.toList();
 
     if (scrollOffset < 30) {
-      return lyricSnippetList[0].startTimestamp.toDouble();
+      return lyricSnippetList[0].startTimestamp.position.toDouble();
     }
     int snippetIndex = (scrollOffset - 30) ~/ 60;
     debugPrint("scroll offset: $scrollOffset, snippetIndex: $snippetIndex");
@@ -205,7 +207,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
   Widget snippetItem(LyricSnippet snippet, double sentenceFontSize, double annotationFontSize, String fontFamily) {
     final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
-    int seekPosition = musicPlayerService.seekPosition;
+    SeekPosition seekPosition = musicPlayerService.seekPosition;
 
     Color fontColor = const Color(0x00000000);
     final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap.map;
@@ -232,13 +234,13 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
           Size sentenceSize = getSizeFromFontInfo(segment.word, sentenceFontSize, fontFamily);
           Size annotationSize = Size(sentenceSize.width, getSizeFromFontInfo("", annotationFontSize, fontFamily).height);
 
-          int segmentStartPosition = snippet.startTimestamp + snippet.timingPoints[index].seekPosition;
-          int segmentEndPosition = snippet.startTimestamp + snippet.timingPoints[index + 1].seekPosition;
+          SeekPosition segmentStartPosition = SeekPosition(snippet.startTimestamp.position + snippet.timingPoints[index].seekPosition.position);
+          SeekPosition segmentEndPosition = SeekPosition(snippet.startTimestamp.position + snippet.timingPoints[index + 1].seekPosition.position);
           double progress = 0.0;
           if (seekPosition < segmentStartPosition) {
             progress = 0.0;
           } else if (seekPosition < segmentEndPosition) {
-            progress = (seekPosition - segmentStartPosition) / segment.duration;
+            progress = (seekPosition.position - segmentStartPosition.position) / segment.duration.inMilliseconds;
           } else {
             progress = 1.0;
           }
@@ -275,13 +277,13 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
         List<Widget> partSentenceWidgets = [];
         for (int index = segmentRange.startIndex; index <= segmentRange.endIndex; index++) {
           SentenceSegment segment = snippet.sentenceSegments[index];
-          int segmentStartPosition = snippet.startTimestamp + snippet.timingPoints[index].seekPosition;
-          int segmentEndPosition = snippet.startTimestamp + snippet.timingPoints[index + 1].seekPosition;
+          SeekPosition segmentStartPosition = SeekPosition(snippet.startTimestamp.position + snippet.timingPoints[index].seekPosition.position);
+          SeekPosition segmentEndPosition = SeekPosition(snippet.startTimestamp.position + snippet.timingPoints[index + 1].seekPosition.position);
           double progress = 0.0;
           if (seekPosition < segmentStartPosition) {
             progress = 0.0;
           } else if (seekPosition < segmentEndPosition) {
-            progress = (seekPosition - segmentStartPosition) / segment.duration;
+            progress = (seekPosition.position - segmentStartPosition.position) / segment.duration.inMilliseconds;
           } else {
             progress = 1.0;
           }
@@ -305,13 +307,13 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
         List<Widget> partAnnotationWidgets = [];
         for (int index = 0; index < annotation.sentenceSegments.length; index++) {
           SentenceSegment segment = annotation.sentenceSegments[index];
-          int segmentStartPosition = annotation.startTimestamp + annotation.timingPoints[index].seekPosition;
-          int segmentEndPosition = annotation.startTimestamp + annotation.timingPoints[index + 1].seekPosition;
+          SeekPosition segmentStartPosition = SeekPosition(annotation.startTimestamp.position + annotation.timingPoints[index].seekPosition.position);
+          SeekPosition segmentEndPosition = SeekPosition(annotation.startTimestamp.position + annotation.timingPoints[index + 1].seekPosition.position);
           double progress = 0.0;
           if (seekPosition < segmentStartPosition) {
             progress = 0.0;
           } else if (seekPosition < segmentEndPosition) {
-            progress = (seekPosition - segmentStartPosition) / segment.duration;
+            progress = (seekPosition.position - segmentStartPosition.position) / segment.duration.inMilliseconds;
           } else {
             progress = 1.0;
           }
@@ -365,7 +367,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
   Widget build(BuildContext context) {
     final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     final TimingService timingService = ref.read(timingMasterProvider);
-    final int seekPosition = musicPlayerService.seekPosition;
+    final SeekPosition seekPosition = musicPlayerService.seekPosition;
     final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap.map;
 
     Map<LyricSnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetMap.map;

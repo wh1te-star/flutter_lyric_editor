@@ -1,5 +1,9 @@
 import 'package:collection/collection.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
+import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
+import 'package:lyric_editor/lyric_snippet/timing_point/timing_point_list.dart';
+import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/seek_position.dart';
 
 class SentenceSegmentList {
   final List<SentenceSegment> _list;
@@ -8,6 +12,8 @@ class SentenceSegmentList {
     assert(!has2ConseqentEmpty());
   }
 
+  List<SentenceSegment> get list => _list;
+
   static SentenceSegmentList get empty => SentenceSegmentList([]);
   bool get isEmpty => list.isEmpty;
 
@@ -15,8 +21,6 @@ class SentenceSegmentList {
   void operator []=(int index, SentenceSegment value) {
     list[index] = value;
   }
-
-  List<SentenceSegment> get list => _list;
 
   String get sentence {
     return _list.map((SentenceSegment segment) {
@@ -31,6 +35,21 @@ class SentenceSegmentList {
       }
     }
     return false;
+  }
+
+  TimingPointList toTimingPointList() {
+    List<TimingPoint> timingPoints = [];
+    InsertionPosition insertionPosition = InsertionPosition(0);
+    SeekPosition seekPosition = SeekPosition(0);
+    for (SentenceSegment sentenceSegment in list) {
+      timingPoints.add(TimingPoint(insertionPosition, seekPosition));
+
+      insertionPosition += sentenceSegment.word.length;
+      seekPosition += sentenceSegment.duration;
+    }
+    timingPoints.add(TimingPoint(insertionPosition, seekPosition));
+
+    return TimingPointList(timingPoints);
   }
 
   SentenceSegmentList copyWith({

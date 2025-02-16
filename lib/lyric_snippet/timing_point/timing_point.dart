@@ -1,4 +1,3 @@
-import 'package:lyric_editor/position/character_position.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 

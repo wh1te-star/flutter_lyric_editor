@@ -2,6 +2,7 @@ import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
+import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/section/section_list.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
@@ -37,13 +38,13 @@ class XlrcParser {
       for (LyricSnippet snippet in lyricSnippetMap.values) {
         builder.element(lyricSnippetElement, attributes: {
           lyricSnippetVocalistNameAttribute: vocalistColorMap[snippet.vocalistID]!.name,
-          lyricSnippetStartTimestampAttribute: formatTimestamp(snippet.startTimestamp),
+          lyricSnippetStartTimestampAttribute: formatTimestamp(snippet.startTimestamp.position),
         }, nest: () {
           for (var sentenceSegment in snippet.sentenceSegments) {
             builder.element(
               sentenceSegmentElement,
               attributes: {
-                sentenceSegmentDurationAttribute: formatTimestamp(sentenceSegment.duration),
+                sentenceSegmentDurationAttribute: formatTimestamp(sentenceSegment.duration.inMilliseconds),
               },
               nest: sentenceSegment.word,
             );
@@ -87,11 +88,14 @@ class XlrcParser {
       final SentenceSegmentList sentenceSegmentList = SentenceSegmentList(wordTimestamps.map((XmlElement wordTimestamp) {
         final int duration = parseTimestamp(wordTimestamp.getAttribute(sentenceSegmentDurationAttribute)!);
         final word = wordTimestamp.innerText;
-        return SentenceSegment(word, duration);
+        return SentenceSegment(
+          word,
+          Duration(milliseconds: duration),
+        );
       }).toList());
 
       final VocalistID vocalistID = vocalistColorMap.getVocalistIDByName(vocalistName);
-      final Timing timing = Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
+      final Timing timing = Timing(startTimestamp: SeekPosition(startTimestamp), sentenceSegmentList: sentenceSegmentList);
 
       lyricSnippetMap = lyricSnippetMap.addLyricSnippet(LyricSnippet(
         vocalistID: vocalistID,

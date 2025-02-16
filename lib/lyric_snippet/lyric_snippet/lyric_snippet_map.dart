@@ -4,7 +4,9 @@ import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id_generator.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
-import 'package:lyric_editor/lyric_snippet/segment_range.dart';
+import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/lyric_snippet/timing.dart';
@@ -24,7 +26,7 @@ class LyricSnippetMap {
   bool isLyricSnippetsOrdered() {
     return map.values.map((LyricSnippet lyricSnippet) {
       return lyricSnippet.timing.startTimestamp;
-    }).isSorted((int left, int right) => left.compareTo(right));
+    }).isSorted((SeekPosition left, SeekPosition right) => left.compareTo(right));
   }
 
   static LyricSnippetMap get empty => LyricSnippetMap({});
@@ -55,8 +57,8 @@ class LyricSnippetMap {
       lyricSnippetMap.map.entries.toList()
         ..sort(
           (MapEntry<LyricSnippetID, LyricSnippet> left, MapEntry<LyricSnippetID, LyricSnippet> right) {
-            int leftStartTimestamp = left.value.startTimestamp;
-            int rightStartTimestamp = right.value.startTimestamp;
+            SeekPosition leftStartTimestamp = left.value.startTimestamp;
+            SeekPosition rightStartTimestamp = right.value.startTimestamp;
             int compareStartTime = leftStartTimestamp.compareTo(rightStartTimestamp);
             if (compareStartTime != 0) {
               return compareStartTime;
@@ -104,42 +106,42 @@ class LyricSnippetMap {
     return sortLyricSnippetList(LyricSnippetMap(copiedMap));
   }
 
-  LyricSnippetMap addTimingPoint(LyricSnippetID id, int charPosition, int seekPosition) {
+  LyricSnippetMap addTimingPoint(LyricSnippetID id, InsertionPosition charPosition, SeekPosition seekPosition) {
     final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
     LyricSnippet lyricSnippet = copiedMap[id]!;
     lyricSnippet = lyricSnippet.addTimingPoint(charPosition, seekPosition);
     return sortLyricSnippetList(LyricSnippetMap(copiedMap));
   }
 
-  LyricSnippetMap removeTimingPoint(LyricSnippetID id, int charPosition, Option option) {
+  LyricSnippetMap removeTimingPoint(LyricSnippetID id, InsertionPosition charPosition, Option option) {
     final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
     LyricSnippet lyricSnippet = copiedMap[id]!;
     lyricSnippet = lyricSnippet.removeTimingPoint(charPosition, option);
     return sortLyricSnippetList(LyricSnippetMap(copiedMap));
   }
 
-  LyricSnippetMap addAnnotationTimingPoint(LyricSnippetID id, SegmentRange segmentRange, int charPosition, int seekPosition) {
+  LyricSnippetMap addAnnotationTimingPoint(LyricSnippetID id, SegmentRange segmentRange, InsertionPosition charPosition, SeekPosition seekPosition) {
     final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
     LyricSnippet lyricSnippet = copiedMap[id]!;
     lyricSnippet = lyricSnippet.addAnnotationTimingPoint(segmentRange, charPosition, seekPosition);
     return sortLyricSnippetList(LyricSnippetMap(copiedMap));
   }
 
-  LyricSnippetMap removeAnnotationTimingPoint(LyricSnippetID id, SegmentRange segmentRange, int charPosition, Option option) {
+  LyricSnippetMap removeAnnotationTimingPoint(LyricSnippetID id, SegmentRange segmentRange, InsertionPosition charPosition, Option option) {
     final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
     LyricSnippet lyricSnippet = copiedMap[id]!;
     lyricSnippet = lyricSnippet.removeAnnotationTimingPoint(segmentRange, charPosition, option);
     return sortLyricSnippetList(LyricSnippetMap(copiedMap));
   }
 
-  LyricSnippetMap manipulateSnippet(LyricSnippetID id, int seekPosition, SnippetEdge snippetEdge, bool holdLength) {
+  LyricSnippetMap manipulateSnippet(LyricSnippetID id, SeekPosition seekPosition, SnippetEdge snippetEdge, bool holdLength) {
     final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
     LyricSnippet lyricSnippet = copiedMap[id]!;
     lyricSnippet = lyricSnippet.manipulateSnippet(seekPosition, snippetEdge, holdLength);
     return sortLyricSnippetList(LyricSnippetMap(copiedMap));
   }
 
-  LyricSnippetMap divideSnippet(LyricSnippetID id, int charPosition, int seekPosition) {
+  LyricSnippetMap divideSnippet(LyricSnippetID id, InsertionPosition charPosition, SeekPosition seekPosition) {
     final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
     LyricSnippet lyricSnippet = copiedMap[id]!;
     Tuple2<LyricSnippet, LyricSnippet> dividedLyricSnippets = lyricSnippet.dividSnippet(charPosition, seekPosition);
@@ -169,9 +171,9 @@ class LyricSnippetMap {
     }
 
     SentenceSegmentList concatenatedSentenceSegmentList = formerSnippet.timing.sentenceSegmentList.copyWith();
-    int bondPointDuration = latterSnippet.startTimestamp - formerSnippet.endTimestamp;
+    Duration bondPointDuration =Duration(milliseconds: latterSnippet.startTimestamp.position - formerSnippet.endTimestamp.position);
     int indexCarryUp = formerSnippet.timing.sentenceSegmentList.list.length;
-    if (bondPointDuration > 0) {
+    if (bondPointDuration > Duration.zero) {
       concatenatedSentenceSegmentList = concatenatedSentenceSegmentList.addSegment(SentenceSegment("", bondPointDuration));
       indexCarryUp++;
     }
@@ -200,10 +202,10 @@ class LyricSnippetMap {
   }
 
   LyricSnippetMap getSnippetsAtSeekPosition({
-    required int seekPosition,
+    required SeekPosition seekPosition,
     VocalistID? vocalistID,
-    int startBulge = 0,
-    int endBulge = 0,
+    Duration startBulge = Duration.zero,
+    Duration endBulge = Duration.zero,
   }) {
     final Iterable<MapEntry<LyricSnippetID, LyricSnippet>> filteredEntries = map.entries.where((MapEntry<LyricSnippetID, LyricSnippet> entry) {
       bool isWithinTimestamp = entry.value.startTimestamp - startBulge <= seekPosition && seekPosition <= entry.value.endTimestamp + endBulge;

@@ -35,6 +35,9 @@ class InsertionPosition implements Comparable<InsertionPosition> {
   @override
   int get hashCode => position.hashCode;
 
+  InsertionPosition operator +(int shift) => InsertionPosition(position + shift);
+  InsertionPosition operator -(int shift) => InsertionPosition(position - shift);
+
   @override
   int compareTo(InsertionPosition other) {
     return position.compareTo(other.position);

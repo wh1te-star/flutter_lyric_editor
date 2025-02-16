@@ -2,8 +2,10 @@ import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
-import 'package:lyric_editor/lyric_snippet/position_type_info.dart';
-import 'package:lyric_editor/lyric_snippet/segment_range.dart';
+import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/position_type_info.dart';
+import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/timing.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
@@ -26,11 +28,11 @@ class LyricSnippet {
         timing: Timing.empty,
         annotationMap: AnnotationMap.empty,
       );
-  bool get isEmpty => vocalistID.id == 0 && timing.startTimestamp == 0 && timing.isEmpty;
+  bool get isEmpty => vocalistID.id == 0 && timing.startTimestamp.isEmpty && timing.isEmpty;
 
   String get sentence => timing.sentence;
-  int get startTimestamp => timing.startTimestamp;
-  int get endTimestamp => timing.endTimestamp;
+  SeekPosition get startTimestamp => timing.startTimestamp;
+  SeekPosition get endTimestamp => timing.endTimestamp;
   List<SentenceSegment> get sentenceSegments => timing.sentenceSegmentList.list;
   List<TimingPoint> get timingPoints => timing.timingPointList.list;
 
@@ -41,15 +43,15 @@ class LyricSnippet {
     );
   }
 
-  int? getAnnotationIndexFromSeekPosition(int seekPosition) {
+  int? getAnnotationIndexFromSeekPosition(SeekPosition seekPosition) {
     for (MapEntry<SegmentRange, Annotation> entry in annotationMap.map.entries) {
       SegmentRange range = entry.key;
       Annotation annotation = entry.value;
-      int startTimestamp = timing.startTimestamp;
+      SeekPosition startTimestamp = timing.startTimestamp;
       List<TimingPoint> timingPoints = timing.timingPointList.list;
       List<TimingPoint> annotationTimingPoints = annotation.timing.timingPointList.list;
-      int startSeekPosition = startTimestamp + timingPoints[range.startIndex].seekPosition + annotationTimingPoints.first.seekPosition;
-      int endSeekPosition = startTimestamp + timingPoints[range.startIndex].seekPosition + annotationTimingPoints.last.seekPosition;
+      SeekPosition startSeekPosition = SeekPosition(startTimestamp.position + timingPoints[range.startIndex].seekPosition.position + annotationTimingPoints.first.seekPosition.position);
+      SeekPosition endSeekPosition = SeekPosition(startTimestamp.position + timingPoints[range.startIndex].seekPosition.position + annotationTimingPoints.last.seekPosition.position);
       if (startSeekPosition <= seekPosition && seekPosition < endSeekPosition) {
         return range.startIndex;
       }
@@ -63,24 +65,24 @@ class LyricSnippet {
     return LyricSnippet(vocalistID: vocalistID, timing: copiedTiming, annotationMap: annotationMap);
   }
 
-  LyricSnippet addTimingPoint(int charPosition, int seekPosition) {
+  LyricSnippet addTimingPoint(InsertionPosition charPosition, SeekPosition seekPosition) {
     AnnotationMap annotationMap = carryUpAnnotationSegments(charPosition);
     Timing timing = this.timing.addTimingPoint(charPosition, seekPosition);
     return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
 
-  LyricSnippet removeTimingPoint(int charPosition, Option option) {
+  LyricSnippet removeTimingPoint(InsertionPosition charPosition, Option option) {
     AnnotationMap annotationMap = carryDownAnnotationSegments(charPosition);
     Timing timing = this.timing.deleteTimingPoint(charPosition, option);
     return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
 
-  LyricSnippet addAnnotationTimingPoint(SegmentRange segmentRange, int charPosition, int seekPosition) {
+  LyricSnippet addAnnotationTimingPoint(SegmentRange segmentRange, InsertionPosition charPosition, SeekPosition seekPosition) {
     Timing timing = annotationMap[segmentRange]!.timing.addTimingPoint(charPosition, seekPosition);
     return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
 
-  LyricSnippet removeAnnotationTimingPoint(SegmentRange segmentRange, int charPosition, Option option) {
+  LyricSnippet removeAnnotationTimingPoint(SegmentRange segmentRange, InsertionPosition charPosition, Option option) {
     Timing timing = annotationMap[segmentRange]!.timing.deleteTimingPoint(charPosition, option);
     return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
@@ -98,15 +100,15 @@ class LyricSnippet {
     return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
 
-  LyricSnippet manipulateSnippet(int seekPosition, SnippetEdge snippetEdge, bool holdLength) {
+  LyricSnippet manipulateSnippet(SeekPosition seekPosition, SnippetEdge snippetEdge, bool holdLength) {
     Timing newTiming = timing.copyWith();
     newTiming = newTiming.manipulateTiming(seekPosition, snippetEdge, holdLength);
     return LyricSnippet(vocalistID: vocalistID, timing: newTiming, annotationMap: annotationMap);
   }
 
-  Tuple2<LyricSnippet, LyricSnippet> dividSnippet(int charPosition, int seekPosition) {
-    String formerString = sentence.substring(0, charPosition);
-    String latterString = sentence.substring(charPosition);
+  Tuple2<LyricSnippet, LyricSnippet> dividSnippet(InsertionPosition charPosition, SeekPosition seekPosition) {
+    String formerString = sentence.substring(0, charPosition.position);
+    String latterString = sentence.substring(charPosition.position);
     LyricSnippet snippet1 = LyricSnippet.empty;
     LyricSnippet snippet2 = LyricSnippet.empty;
 
@@ -133,8 +135,8 @@ class LyricSnippet {
     return Tuple2(snippet1, snippet2);
   }
 
-  AnnotationMap carryUpAnnotationSegments(int charPosition) {
-    PositionTypeInfo info = timing.getPositionTypeInfo(charPosition);
+  AnnotationMap carryUpAnnotationSegments(InsertionPosition charPosition) {
+    PositionTypeInfo info = timing.getPositionTypeInfo(charPosition.position);
     Map<SegmentRange, Annotation> updatedAnnotations = {};
     int index = info.index;
 
@@ -167,8 +169,8 @@ class LyricSnippet {
     return AnnotationMap(updatedAnnotations);
   }
 
-  AnnotationMap carryDownAnnotationSegments(int charPosition) {
-    PositionTypeInfo info = timing.getPositionTypeInfo(charPosition);
+  AnnotationMap carryDownAnnotationSegments(InsertionPosition charPosition) {
+    PositionTypeInfo info = timing.getPositionTypeInfo(charPosition.position);
     Map<SegmentRange, Annotation> updatedAnnotations = {};
     int timingPointIndex = info.index;
 

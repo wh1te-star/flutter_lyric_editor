@@ -1,15 +1,18 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:lyric_editor/lyric_snippet/position_type_info.dart';
+import 'package:lyric_editor/position/character_position.dart';
+import 'package:lyric_editor/position/position_type_info.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point_list.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point_exception.dart';
+import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 
 class Timing {
-  final int startTimestamp;
+  final SeekPosition startTimestamp;
   final SentenceSegmentList sentenceSegmentList;
   late TimingPointList timingPointList;
 
@@ -21,44 +24,26 @@ class Timing {
   }
 
   String get sentence => sentenceSegmentList.sentence;
-  int get endTimestamp {
-    return startTimestamp + timingPointList.list.last.seekPosition;
+  SeekPosition get endTimestamp {
+    return SeekPosition(startTimestamp.position + timingPointList.list.last.seekPosition.position);
   }
 
   List<SentenceSegment> get sentenceSegments => sentenceSegmentList.list;
   List<TimingPoint> get timingPoints => timingPointList.list;
 
   static Timing get empty => Timing(
-        startTimestamp: 0,
+        startTimestamp: SeekPosition.empty,
         sentenceSegmentList: SentenceSegmentList.empty,
       );
 
   bool get isEmpty => this == empty;
 
   TimingPointList constructTimingPointList(SentenceSegmentList sentenceSegmentList) {
-    List<TimingPoint> timingPoints = [];
-    int charPosition = 0;
-    int seekPosition = 0;
-    for (var segment in sentenceSegmentList.list) {
-      timingPoints.add(TimingPoint(charPosition, seekPosition));
-      charPosition += segment.word.length;
-      seekPosition += segment.duration;
-    }
-    timingPoints.add(TimingPoint(charPosition, seekPosition));
-
-    return TimingPointList(timingPoints);
+    return sentenceSegmentList.toTimingPointList();
   }
 
   SentenceSegmentList syncSentenceSegments(TimingPointList timingPointList) {
-    List<SentenceSegment> sentenceSegments = [];
-    List<TimingPoint> timingPoints = timingPointList.list;
-    for (int index = 0; index < timingPoints.length - 1; index++) {
-      String word = sentence.substring(timingPoints[index].charPosition, timingPoints[index + 1].charPosition);
-      int duration = timingPoints[index + 1].seekPosition - timingPoints[index].seekPosition;
-      sentenceSegments.add(SentenceSegment(word, duration));
-    }
-
-    return SentenceSegmentList(sentenceSegments);
+    return timingPointList.toSentenceSegmentList(sentence);
   }
 
   Timing editSentence(String newSentence) {
@@ -69,8 +54,8 @@ class Timing {
     List<TimingPoint> timingPoints = timingPointList.list;
     Timing timing = Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
     for (TimingPoint timingPoint in timingPointList.list) {
-      int currentCharPosition = timingPoint.charPosition;
-      if (charPositionTranslation[currentCharPosition] == -1) {
+      InsertionPosition currentCharPosition = timingPoint.charPosition;
+      if (charPositionTranslation[currentCharPosition.position] == -1) {
         try {
           timing = timing.deleteTimingPoint(currentCharPosition, Option.former);
         } on TimingPointException catch (_, e) {
@@ -85,8 +70,8 @@ class Timing {
     }
 
     for (int index = 0; index < sentenceSegments.length; index++) {
-      int leftCharPosition = charPositionTranslation[timingPoints[index].charPosition];
-      int rightCharPosition = charPositionTranslation[timingPoints[index + 1].charPosition];
+      int leftCharPosition = charPositionTranslation[timingPoints[index].charPosition.position];
+      int rightCharPosition = charPositionTranslation[timingPoints[index + 1].charPosition.position];
       timing.sentenceSegmentList.list[index].word = newSentence.substring(leftCharPosition, rightCharPosition);
     }
     timing = timing.integrate2OrMoreTimingPoints();
@@ -135,10 +120,13 @@ class Timing {
 
     for (SentenceSegment sentenceSegment in sentenceSegmentList.list) {
       if (sentenceSegment.word == "") {
-        accumulatedSum += sentenceSegment.duration;
+        accumulatedSum += sentenceSegment.duration.inMilliseconds;
       } else {
         if (accumulatedSum != 0) {
-          result.add(SentenceSegment("", accumulatedSum));
+          result.add(SentenceSegment(
+            "",
+            Duration(milliseconds: accumulatedSum),
+          ));
           accumulatedSum = 0;
         }
         result.add(sentenceSegment);
@@ -146,7 +134,10 @@ class Timing {
     }
 
     if (accumulatedSum != 0) {
-      result.add(SentenceSegment("", accumulatedSum));
+      result.add(SentenceSegment(
+        "",
+        Duration(milliseconds: accumulatedSum),
+      ));
     }
 
     return Timing(startTimestamp: startTimestamp, sentenceSegmentList: SentenceSegmentList(result));
@@ -156,14 +147,14 @@ class Timing {
     return sentenceSegmentList.list[index].word;
   }
 
-  int getSegmentIndexFromSeekPosition(int seekPosition) {
+  int getSegmentIndexFromSeekPosition(SeekPosition seekPosition) {
     if (seekPosition < startTimestamp || endTimestamp < seekPosition) {
       return -1;
     }
     List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
     List<TimingPoint> timingPoints = timingPointList.list;
     for (int index = 0; index < sentenceSegments.length; index++) {
-      if (seekPosition <= startTimestamp + timingPoints[index + 1].seekPosition) {
+      if (seekPosition.position <= startTimestamp.position + timingPoints[index + 1].seekPosition.position) {
         return index;
       }
     }
@@ -178,8 +169,8 @@ class Timing {
     List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
     List<TimingPoint> timingPoints = timingPointList.list;
     for (int index = 0; index < sentenceSegments.length; index++) {
-      int leftSegmentPosition = timingPoints[index].charPosition;
-      int rightSegmentPosition = timingPoints[index + 1].charPosition;
+      int leftSegmentPosition = timingPoints[index].charPosition.position;
+      int rightSegmentPosition = timingPoints[index + 1].charPosition.position;
       if (leftSegmentPosition < charPosition && charPosition < rightSegmentPosition) {
         return PositionTypeInfo(PositionType.sentenceSegment, index, false);
       }
@@ -194,44 +185,50 @@ class Timing {
     return PositionTypeInfo(PositionType.timingPoint, sentenceSegments.length, false);
   }
 
-  Timing manipulateTiming(int seekPosition, SnippetEdge snippetEdge, bool holdLength) {
+  Timing manipulateTiming(SeekPosition seekPosition, SnippetEdge snippetEdge, bool holdLength) {
     if (holdLength) {
       if (snippetEdge == SnippetEdge.start) {
-        return shiftTimingBy(startTimestamp - seekPosition);
+        Duration shiftDuration = Duration(milliseconds: startTimestamp.position - seekPosition.position);
+        return shiftTimingBy(shiftDuration);
       } else {
-        return shiftTimingBy(seekPosition - endTimestamp);
+        Duration shiftDuration = Duration(milliseconds: seekPosition.position - endTimestamp.position);
+        return shiftTimingBy(shiftDuration);
       }
     }
 
     if (snippetEdge == SnippetEdge.start) {
       if (seekPosition < startTimestamp) {
-        return extendTimingBy(SnippetEdge.start, startTimestamp - seekPosition);
+        Duration extendDuration = Duration(milliseconds: startTimestamp.position - seekPosition.position);
+        return extendTimingBy(SnippetEdge.start, extendDuration);
       }
       if (startTimestamp < seekPosition) {
-        return shortenTimingBy(SnippetEdge.start, seekPosition - startTimestamp);
+        Duration shortenDuration = Duration(milliseconds: seekPosition.position - startTimestamp.position);
+        return shortenTimingBy(SnippetEdge.start, shortenDuration);
       }
     } else {
       if (seekPosition < endTimestamp) {
-        return shortenTimingBy(SnippetEdge.end, endTimestamp - seekPosition);
+        Duration shortenDuration = Duration(milliseconds: endTimestamp.position - seekPosition.position);
+        return shortenTimingBy(SnippetEdge.start, shortenDuration);
       }
       if (endTimestamp < seekPosition) {
-        return extendTimingBy(SnippetEdge.end, seekPosition - endTimestamp);
+        Duration extendDuration = Duration(milliseconds: seekPosition.position - endTimestamp.position);
+        return extendTimingBy(SnippetEdge.start, extendDuration);
       }
     }
     return this;
   }
 
-  Timing shiftTimingBy(int shiftDuration) {
+  Timing shiftTimingBy(Duration shiftDuration) {
     return Timing(
       startTimestamp: startTimestamp + shiftDuration,
       sentenceSegmentList: sentenceSegmentList,
     );
   }
 
-  Timing extendTimingBy(SnippetEdge snippetEdge, int extendDuration) {
-    assert(extendDuration >= 0, "Should be shorten function.");
+  Timing extendTimingBy(SnippetEdge snippetEdge, Duration extendDuration) {
+    assert(extendDuration >= Duration.zero, "Should be shorten function.");
 
-    int startTimestamp = this.startTimestamp;
+    SeekPosition startTimestamp = this.startTimestamp;
     SentenceSegmentList sentenceSegmentList = this.sentenceSegmentList;
     if (snippetEdge == SnippetEdge.start) {
       startTimestamp -= extendDuration;
@@ -243,16 +240,16 @@ class Timing {
     return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
   }
 
-  Timing shortenTimingBy(SnippetEdge snippetEdge, int shortenDuration) {
-    assert(shortenDuration >= 0, "Should be extend function.");
+  Timing shortenTimingBy(SnippetEdge snippetEdge, Duration shortenDuration) {
+    assert(shortenDuration >= Duration.zero, "Should be extend function.");
 
-    int startTimestamp = this.startTimestamp;
+    SeekPosition startTimestamp = this.startTimestamp;
     SentenceSegmentList sentenceSegmentList = this.sentenceSegmentList;
     List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
     if (snippetEdge == SnippetEdge.start) {
       int index = 0;
-      int rest = shortenDuration;
-      while (index < sentenceSegments.length && rest - sentenceSegments[index].duration > 0) {
+      Duration rest = shortenDuration;
+      while (index < sentenceSegments.length && rest - sentenceSegments[index].duration > Duration.zero) {
         rest -= sentenceSegments[index].duration;
         index++;
       }
@@ -261,8 +258,8 @@ class Timing {
       sentenceSegments.first.duration -= rest;
     } else {
       int index = sentenceSegments.length - 1;
-      int rest = shortenDuration;
-      while (index >= 0 && rest - sentenceSegments[index].duration > 0) {
+      Duration rest = shortenDuration;
+      while (index >= 0 && rest - sentenceSegments[index].duration > Duration.zero) {
         rest -= sentenceSegments[index].duration;
         index--;
       }
@@ -273,8 +270,8 @@ class Timing {
     return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
   }
 
-  Timing addTimingPoint(int charPosition, int seekPosition) {
-    if (charPosition <= 0 || sentence.length <= charPosition) {
+  Timing addTimingPoint(InsertionPosition charPosition, SeekPosition seekPosition) {
+    if (charPosition.position <= 0 || sentence.length <= charPosition.position) {
       throw TimingPointException("The char position is out of the valid range.");
     }
     if (seekPosition <= startTimestamp || endTimestamp <= seekPosition) {
@@ -282,9 +279,9 @@ class Timing {
     }
 
     List<TimingPoint> timingPoints = timingPointList.list;
-    seekPosition -= startTimestamp;
+    seekPosition = SeekPosition(seekPosition.position - startTimestamp.position);
     for (int index = 0; index < timingPoints.length - 1; index++) {
-      if (charPosition == timingPoints[index].charPosition) {
+      if (charPosition.position == timingPoints[index].charPosition.position) {
         if (timingPoints[index].charPosition == timingPoints[index + 1].charPosition) {
           throw TimingPointException("A timing point cannot be inserted three times or more at the same char position.");
         }
@@ -293,16 +290,25 @@ class Timing {
         }
 
         if (seekPosition < timingPoints[index].seekPosition) {
-          timingPoints.insert(index, TimingPoint(charPosition, seekPosition));
+          timingPoints.insert(
+            index,
+            TimingPoint(InsertionPosition(charPosition.position), seekPosition),
+          );
           break;
         } else {
-          timingPoints.insert(index + 1, TimingPoint(charPosition, seekPosition));
+          timingPoints.insert(
+            index + 1,
+            TimingPoint(InsertionPosition(charPosition.position), seekPosition),
+          );
           break;
         }
       }
 
-      if (timingPoints[index].charPosition < charPosition && charPosition < timingPoints[index + 1].charPosition) {
-        timingPoints.insert(index + 1, TimingPoint(charPosition, seekPosition));
+      if (timingPoints[index].charPosition.position < charPosition.position && charPosition.position < timingPoints[index + 1].charPosition.position) {
+        timingPoints.insert(
+          index + 1,
+          TimingPoint(InsertionPosition(charPosition.position), seekPosition),
+        );
         break;
       }
     }
@@ -311,7 +317,7 @@ class Timing {
     return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
   }
 
-  Timing deleteTimingPoint(int charPosition, Option option) {
+  Timing deleteTimingPoint(InsertionPosition charPosition, Option option) {
     List<TimingPoint> timingPoints = timingPointList.list;
     int index = timingPoints.indexWhere((timingPoint) => timingPoint.charPosition == charPosition);
     if (index == -1) {
@@ -328,7 +334,7 @@ class Timing {
   }
 
   Timing copyWith({
-    int? startTimestamp,
+    SeekPosition? startTimestamp,
     SentenceSegmentList? sentenceSegmentList,
   }) {
     return Timing(

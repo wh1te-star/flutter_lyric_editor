@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/section/section.dart';
 
 class SectionList {
@@ -15,7 +16,7 @@ class SectionList {
   bool isSeekPositionOrdered() {
     return list.map((Section section) {
       return section.seekPosition;
-    }).isSorted((int left, int right) => left.compareTo(right));
+    }).isSorted((SeekPosition left, SeekPosition right) => left.compareTo(right));
   }
 
   bool isSeekPositionDuplicationAllowed() {
@@ -33,7 +34,7 @@ class SectionList {
     list[index] = value;
   }
 
-  SectionList addSection(int seekPosition) {
+  SectionList addSection(SeekPosition seekPosition) {
     List<Section> newList = List.from(list);
     if (!newList.contains(Section(seekPosition))) {
       newList.add(Section(seekPosition));
@@ -41,13 +42,13 @@ class SectionList {
     return SectionList(newList);
   }
 
-  SectionList removeSection(int seekPosition) {
+  SectionList removeSection(SeekPosition seekPosition) {
     List<Section> newList = List.from(list);
 
     int targetIndex = 0;
     int minDistance = 3600000;
     for (int index = 0; index < newList.length; index++) {
-      int distance = newList[index].seekPosition - seekPosition;
+      int distance = newList[index].seekPosition.position - seekPosition.position;
       if (distance < 0) {
         distance = -distance;
       }
