@@ -338,8 +338,8 @@ class Timing {
     SentenceSegmentList? sentenceSegmentList,
   }) {
     return Timing(
-      startTimestamp: startTimestamp ?? this.startTimestamp,
-      sentenceSegmentList: sentenceSegmentList?.copyWith() ?? this.sentenceSegmentList,
+      startTimestamp: startTimestamp ?? this.startTimestamp.copyWith(),
+      sentenceSegmentList: sentenceSegmentList ?? this.sentenceSegmentList.copyWith(),
     );
   }
 

@@ -460,6 +460,10 @@ class _TextPaneState extends ConsumerState<TextPane> {
       SegmentRange segmentRange = element.item1;
       Annotation? annotation = element.item2;
 
+      if (segmentRange.isEmpty) {
+        continue;
+      }
+
       List<SentenceSegment> currentSegmentPartSentence = snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1);
       String sentenceString = currentSegmentPartSentence.map((SentenceSegment segment) => segment.word).join('');
       String sentenceTimingPointString = "\xa0${TextPaneProvider.timingPointChar}\xa0" * (segmentRange.endIndex - segmentRange.startIndex);
