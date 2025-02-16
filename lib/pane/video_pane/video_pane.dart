@@ -223,6 +223,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
     List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotationMap.map, snippet.sentenceSegments.length);
 
+    /*
     for (int rangeIndex = 0; rangeIndex < rangeList.length; rangeIndex++) {
       Tuple2<SegmentRange, Annotation?> element = rangeList[rangeIndex];
       SegmentRange segmentRange = element.item1;
@@ -358,6 +359,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
         );
       }
     }
+  */
     return Wrap(
       children: segmentWidgets,
     );

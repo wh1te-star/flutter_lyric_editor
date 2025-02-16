@@ -7,8 +7,10 @@ class InsertionPosition implements Comparable<InsertionPosition> {
     }
   }
 
-  static InsertionPosition get empty => InsertionPosition(-1);
-  bool get isEmpty => this == empty;
+  static final InsertionPosition _empty = InsertionPosition._internal(-1);
+  static InsertionPosition get empty => _empty;
+  bool get isEmpty => identical(this, _empty);
+  InsertionPosition._internal(this.position);
 
   InsertionPosition copyWith({int? position}) {
     return InsertionPosition(

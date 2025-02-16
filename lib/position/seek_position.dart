@@ -1,5 +1,5 @@
 class SeekPosition implements Comparable<SeekPosition> {
-  int position;
+  final int position;
 
   SeekPosition(this.position) {
     if (!isEmpty) {
@@ -7,8 +7,10 @@ class SeekPosition implements Comparable<SeekPosition> {
     }
   }
 
-  static SeekPosition get empty => SeekPosition(-1);
-  bool get isEmpty => this == empty;
+  static final SeekPosition _empty = SeekPosition._internal(-1);
+  static SeekPosition get empty => _empty;
+  bool get isEmpty => identical(this, _empty);
+  SeekPosition._internal(this.position);
 
   SeekPosition copyWith({int? position}) {
     return SeekPosition(

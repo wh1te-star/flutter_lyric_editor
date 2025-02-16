@@ -208,7 +208,7 @@ class LyricSnippetMap {
     Duration endBulge = Duration.zero,
   }) {
     final Iterable<MapEntry<LyricSnippetID, LyricSnippet>> filteredEntries = map.entries.where((MapEntry<LyricSnippetID, LyricSnippet> entry) {
-      bool isWithinTimestamp = entry.value.startTimestamp - startBulge <= seekPosition && seekPosition <= entry.value.endTimestamp + endBulge;
+      bool isWithinTimestamp = entry.value.startTimestamp.position - startBulge.inMilliseconds <= seekPosition.position && seekPosition.position <= entry.value.endTimestamp.position + endBulge.inMilliseconds;
       bool isMatchingVocalist = vocalistID == null || entry.value.vocalistID == vocalistID;
       return isWithinTimestamp && isMatchingVocalist;
     });

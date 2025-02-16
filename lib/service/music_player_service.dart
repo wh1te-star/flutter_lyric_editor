@@ -7,7 +7,7 @@ final musicPlayerMasterProvider = ChangeNotifierProvider((ref) => MusicPlayerSer
 
 class MusicPlayerService extends ChangeNotifier {
   AudioPlayer player = AudioPlayer();
-  SeekPosition _seekPosition = SeekPosition(0);
+  SeekPosition _seekPosition = SeekPosition(10);
   bool _isPlaying = false;
   Duration _audioDuration = Duration.zero;
   late DeviceFileSource audioFile;

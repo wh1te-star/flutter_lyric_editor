@@ -60,7 +60,7 @@ class TextPaneCursor {
       isSegmentSelectionMode ?? this.isSegmentSelectionMode,
       isRangeSelection ?? this.isRangeSelection,
       isAnnotationSelection ?? this.isAnnotationSelection,
-      annotationSegmentRange ?? this.annotationSegmentRange.copyWith(),
+      annotationSegmentRange ?? this.annotationSegmentRange,
     );
   }
 
@@ -85,7 +85,7 @@ class TextPaneCursor {
       false,
       false,
       false,
-      SegmentRange(-1, -1),
+      SegmentRange.empty,
     );
   }
 }

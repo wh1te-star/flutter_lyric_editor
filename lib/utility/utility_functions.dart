@@ -9,7 +9,7 @@ List<Tuple2<SegmentRange, Annotation?>> getRangeListForAnnotations(Map<SegmentRa
   if (annotations.isEmpty) {
     return [
       Tuple2(
-        SegmentRange(0, numberOfSegments - 1),
+        SegmentRange.empty,
         null,
       ),
     ];
