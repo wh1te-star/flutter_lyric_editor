@@ -148,8 +148,11 @@ class Timing {
   }
 
   int getSegmentIndexFromSeekPosition(SeekPosition seekPosition) {
-    if (seekPosition < startTimestamp || endTimestamp < seekPosition) {
-      return -1;
+    if (seekPosition < startTimestamp) {
+      return 0;
+    }
+    if (endTimestamp < seekPosition) {
+      return sentenceSegmentList.list.length - 1;
     }
     List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
     List<TimingPoint> timingPoints = timingPointList.list;
@@ -165,8 +168,11 @@ class Timing {
     int segmentIndex = getSegmentIndexFromSeekPosition(seekPosition);
     SeekPosition segmentStartSeekPosition = SeekPosition(startTimestamp.position + timingPointList[segmentIndex].seekPosition.position);
     SeekPosition segmentEndSeekPosition = SeekPosition(startTimestamp.position + timingPointList[segmentIndex + 1].seekPosition.position);
-    if (seekPosition < segmentStartSeekPosition || segmentEndSeekPosition < seekPosition) {
-      return -1;
+    if (seekPosition < segmentStartSeekPosition) {
+      return 0.0;
+    }
+    if (segmentEndSeekPosition < seekPosition) {
+      return 1.0;
     }
     Duration partialProgress = Duration(milliseconds: seekPosition.position - segmentStartSeekPosition.position);
     Duration segmentDuration = sentenceSegmentList[segmentIndex].duration;

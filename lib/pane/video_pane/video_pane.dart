@@ -228,25 +228,25 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     DisplayMode displayMode = videoPaneProvider.displayMode;
     //if (displayMode == DisplayMode.appearDissappear) {
     final Map<LyricSnippetID, int> tracks = timingService.getTrackNumber(timingService.lyricSnippetMap.map, startBulge, endBulge);
-
     List<Widget> content = List<Widget>.generate(maxLanes, (index) => Container());
 
     for (int i = 0; i < maxLanes; i++) {
-      LyricSnippetID targetSnippetID = currentSnippets.keys.toList().firstWhere(
+      final LyricSnippetID targetSnippetID = currentSnippets.keys.toList().firstWhere(
             (LyricSnippetID id) => tracks[id] == i,
             orElse: () => LyricSnippetID(0),
           );
       if (targetSnippetID != LyricSnippetID(0)) {
         LyricSnippet targetSnippet = timingService.getLyricSnippetByID(targetSnippetID);
+      final Color color =Color(timingService.vocalistColorMap[targetSnippet.vocalistID]!.color);
         content[i] = Expanded(
           child: Center(
-            child: ColoredCaption(targetSnippet, seekPosition),
+            child: ColoredCaption(targetSnippet, seekPosition, color),
           ),
         );
       } else {
         content[i] = Expanded(
           child: Center(
-            child: ColoredCaption(LyricSnippet.empty, seekPosition),
+            child: Container(color: Colors.transparent),
           ),
         );
       }

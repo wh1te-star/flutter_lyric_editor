@@ -10,8 +10,9 @@ class ColoredCaption extends StatelessWidget {
   static const double fontSize = 40.0;
   final LyricSnippet lyricSnippet;
   final SeekPosition seekPosition;
+  final Color color;
 
-  ColoredCaption(this.lyricSnippet, this.seekPosition);
+  ColoredCaption(this.lyricSnippet, this.seekPosition, this.color);
 
   @override
   Widget build(BuildContext context) {
@@ -23,14 +24,14 @@ class ColoredCaption extends StatelessWidget {
         double progress = 0.0;
         if (index == segmentIndex) {
           progress = lyricSnippet.getSegmentProgress(seekPosition);
-        }else if (index < segmentIndex) {
+        } else if (index < segmentIndex) {
           progress = 1.0;
         }
         return CustomPaint(
           painter: ColoredTextPainter(
             text: sentenceSegment.word,
             progress: progress,
-            fontBaseColor: Colors.greenAccent,
+            fontBaseColor: color,
             fontFamily: fontFamily,
             fontSize: fontSize,
             firstOutlineWidth: 2,
