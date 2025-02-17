@@ -1,11 +1,7 @@
 class SeekPosition implements Comparable<SeekPosition> {
   final int position;
 
-  SeekPosition(this.position) {
-    if (!isEmpty) {
-      assert(position >= 0);
-    }
-  }
+  SeekPosition(this.position);
 
   static final SeekPosition _empty = SeekPosition._internal(-1);
   static SeekPosition get empty => _empty;

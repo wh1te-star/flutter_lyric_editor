@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
+import 'package:lyric_editor/pane/video_pane/colored_caption.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
@@ -205,166 +206,6 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     return sumPosition - getSizeFromTextStyle(snippet.sentence, const TextStyle(fontSize: 40)).width / 2;
   }
 
-  Widget snippetItem(LyricSnippet snippet, double sentenceFontSize, double annotationFontSize, String fontFamily) {
-    final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
-    SeekPosition seekPosition = musicPlayerService.seekPosition;
-
-    Color fontColor = const Color(0x00000000);
-    final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap.map;
-    if (vocalistColorList.containsKey(snippet.vocalistID)) {
-      fontColor = Color(vocalistColorList[snippet.vocalistID]!.color);
-    }
-
-    bool doesAnnotationExist = false;
-    if (!snippet.annotationMap.isEmpty) {
-      doesAnnotationExist = true;
-    }
-    List<Widget> segmentWidgets = [];
-
-    List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotationMap.map, snippet.sentenceSegments.length);
-
-    /*
-    for (int rangeIndex = 0; rangeIndex < rangeList.length; rangeIndex++) {
-      Tuple2<SegmentRange, Annotation?> element = rangeList[rangeIndex];
-      SegmentRange segmentRange = element.item1;
-      Annotation? annotation = element.item2;
-
-      if (annotation == null) {
-        for (int index = segmentRange.startIndex; index <= segmentRange.endIndex; index++) {
-          SentenceSegment segment = snippet.sentenceSegments[index];
-          Size sentenceSize = getSizeFromFontInfo(segment.word, sentenceFontSize, fontFamily);
-          Size annotationSize = Size(sentenceSize.width, getSizeFromFontInfo("", annotationFontSize, fontFamily).height);
-
-          SeekPosition segmentStartPosition = SeekPosition(snippet.startTimestamp.position + snippet.timingPoints[index].seekPosition.position);
-          SeekPosition segmentEndPosition = SeekPosition(snippet.startTimestamp.position + snippet.timingPoints[index + 1].seekPosition.position);
-          double progress = 0.0;
-          if (seekPosition < segmentStartPosition) {
-            progress = 0.0;
-          } else if (seekPosition < segmentEndPosition) {
-            progress = (seekPosition.position - segmentStartPosition.position) / segment.duration.inMilliseconds;
-          } else {
-            progress = 1.0;
-          }
-
-          segmentWidgets.add(
-            Column(
-              children: [
-                SizedBox(
-                  width: annotationSize.width,
-                  height: annotationSize.height,
-                ),
-                CustomPaint(
-                  size: sentenceSize,
-                  painter: ColoredTextPainter(
-                    text: segment.word,
-                    progress: progress,
-                    fontFamily: fontFamily,
-                    fontSize: sentenceFontSize,
-                    fontBaseColor: fontColor,
-                    firstOutlineWidth: 2,
-                    secondOutlineWidth: 4,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-      } else {
-        String partSentence = snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1).map((segment) => segment.word).join('');
-        Size sentenceSize = getSizeFromFontInfo(partSentence, sentenceFontSize, fontFamily);
-        Size annotationSize = getSizeFromFontInfo(annotation.sentence, annotationFontSize, fontFamily);
-        double width = max(sentenceSize.width, annotationSize.width);
-
-        List<Widget> partSentenceWidgets = [];
-        for (int index = segmentRange.startIndex; index <= segmentRange.endIndex; index++) {
-          SentenceSegment segment = snippet.sentenceSegments[index];
-          SeekPosition segmentStartPosition = SeekPosition(snippet.startTimestamp.position + snippet.timingPoints[index].seekPosition.position);
-          SeekPosition segmentEndPosition = SeekPosition(snippet.startTimestamp.position + snippet.timingPoints[index + 1].seekPosition.position);
-          double progress = 0.0;
-          if (seekPosition < segmentStartPosition) {
-            progress = 0.0;
-          } else if (seekPosition < segmentEndPosition) {
-            progress = (seekPosition.position - segmentStartPosition.position) / segment.duration.inMilliseconds;
-          } else {
-            progress = 1.0;
-          }
-
-          partSentenceWidgets.add(
-            CustomPaint(
-              size: getSizeFromFontInfo(segment.word, sentenceFontSize, fontFamily),
-              painter: ColoredTextPainter(
-                text: segment.word,
-                progress: progress,
-                fontFamily: fontFamily,
-                fontSize: sentenceFontSize,
-                fontBaseColor: fontColor,
-                firstOutlineWidth: 2,
-                secondOutlineWidth: 4,
-              ),
-            ),
-          );
-        }
-
-        List<Widget> partAnnotationWidgets = [];
-        for (int index = 0; index < annotation.sentenceSegments.length; index++) {
-          SentenceSegment segment = annotation.sentenceSegments[index];
-          SeekPosition segmentStartPosition = SeekPosition(annotation.startTimestamp.position + annotation.timingPoints[index].seekPosition.position);
-          SeekPosition segmentEndPosition = SeekPosition(annotation.startTimestamp.position + annotation.timingPoints[index + 1].seekPosition.position);
-          double progress = 0.0;
-          if (seekPosition < segmentStartPosition) {
-            progress = 0.0;
-          } else if (seekPosition < segmentEndPosition) {
-            progress = (seekPosition.position - segmentStartPosition.position) / segment.duration.inMilliseconds;
-          } else {
-            progress = 1.0;
-          }
-
-          partAnnotationWidgets.add(
-            CustomPaint(
-              size: getSizeFromFontInfo(segment.word, annotationFontSize, fontFamily),
-              painter: ColoredTextPainter(
-                text: segment.word,
-                progress: progress,
-                fontFamily: fontFamily,
-                fontSize: annotationFontSize,
-                fontBaseColor: fontColor,
-                firstOutlineWidth: 2,
-                secondOutlineWidth: 4,
-              ),
-            ),
-          );
-        }
-
-        segmentWidgets.add(
-          Column(
-            children: [
-              SizedBox(
-                width: width,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: partAnnotationWidgets,
-                ),
-              ),
-              SizedBox(
-                width: width,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: partSentenceWidgets,
-                ),
-              ),
-            ],
-          ),
-        );
-      }
-    }
-  */
-    return Wrap(
-      children: segmentWidgets,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
@@ -399,23 +240,13 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
         LyricSnippet targetSnippet = timingService.getLyricSnippetByID(targetSnippetID);
         content[i] = Expanded(
           child: Center(
-            child: snippetItem(
-              targetSnippet,
-              fontSize,
-              fontSize / 2,
-              fontFamily,
-            ),
+            child: ColoredCaption(targetSnippet, seekPosition),
           ),
         );
       } else {
         content[i] = Expanded(
           child: Center(
-            child: snippetItem(
-              LyricSnippet.empty,
-              fontSize,
-              fontSize / 2,
-              fontFamily,
-            ),
+            child: ColoredCaption(LyricSnippet.empty, seekPosition),
           ),
         );
       }

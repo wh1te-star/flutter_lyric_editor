@@ -161,6 +161,18 @@ class Timing {
     return sentenceSegments.length;
   }
 
+  double getSegmentProgress(SeekPosition seekPosition) {
+    int segmentIndex = getSegmentIndexFromSeekPosition(seekPosition);
+    SeekPosition segmentStartSeekPosition = SeekPosition(startTimestamp.position + timingPointList[segmentIndex].seekPosition.position);
+    SeekPosition segmentEndSeekPosition = SeekPosition(startTimestamp.position + timingPointList[segmentIndex + 1].seekPosition.position);
+    if (seekPosition < segmentStartSeekPosition || segmentEndSeekPosition < seekPosition) {
+      return -1;
+    }
+    Duration partialProgress = Duration(milliseconds: seekPosition.position - segmentStartSeekPosition.position);
+    Duration segmentDuration = sentenceSegmentList[segmentIndex].duration;
+    return partialProgress.inMilliseconds / segmentDuration.inMilliseconds;
+  }
+
   PositionTypeInfo getPositionTypeInfo(int charPosition) {
     if (charPosition < 0 || sentence.length < charPosition) {
       return PositionTypeInfo(PositionType.sentenceSegment, -1, false);

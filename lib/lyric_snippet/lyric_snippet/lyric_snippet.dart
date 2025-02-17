@@ -35,6 +35,8 @@ class LyricSnippet {
   SeekPosition get endTimestamp => timing.endTimestamp;
   List<SentenceSegment> get sentenceSegments => timing.sentenceSegmentList.list;
   List<TimingPoint> get timingPoints => timing.timingPointList.list;
+  int getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timing.getSegmentIndexFromSeekPosition(seekPosition);
+  double getSegmentProgress(SeekPosition seekPosition) => timing.getSegmentProgress(seekPosition);
 
   MapEntry<SegmentRange, Annotation> getAnnotationWords(int index) {
     return annotationMap.map.entries.firstWhere(
