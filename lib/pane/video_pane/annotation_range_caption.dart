@@ -19,6 +19,9 @@ class AnnotationRangeCaption extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Widget> annotationRangeWidgets = complementAnnotationRange(lyricSnippet.annotationMap.keys.toList()).map((SegmentRange segmentRange) {
       String rangeWords = lyricSnippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1).map((sentenceSegment) => sentenceSegment.word).join('');
+      if (lyricSnippet.annotationMap.map.containsKey(segmentRange)) {
+        rangeWords = lyricSnippet.annotationMap.map[segmentRange]!.sentence;
+      }
       return CustomPaint(
         painter: ColoredTextPainter(
           text: rangeWords,
