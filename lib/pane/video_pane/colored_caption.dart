@@ -12,7 +12,7 @@ class ColoredCaption extends StatelessWidget {
   final SeekPosition seekPosition;
   final Color color;
 
-  ColoredCaption(this.lyricSnippet, this.seekPosition, this.color);
+  const ColoredCaption(this.lyricSnippet, this.seekPosition, this.color, {super.key});
 
   @override
   Widget build(BuildContext context) {
