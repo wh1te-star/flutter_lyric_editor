@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
+import 'package:lyric_editor/pane/video_pane/annotation_range_caption.dart';
 import 'package:lyric_editor/pane/video_pane/colored_caption.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_range.dart';
@@ -240,7 +241,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       final Color color =Color(timingService.vocalistColorMap[targetSnippet.vocalistID]!.color);
         content[i] = Expanded(
           child: Center(
-            child: ColoredCaption(targetSnippet, seekPosition, color),
+            child: AnnotationRangeCaption(targetSnippet, seekPosition, color),
           ),
         );
       } else {
