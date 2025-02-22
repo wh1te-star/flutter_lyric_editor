@@ -7,10 +7,10 @@ class CharacterPosition implements Comparable<CharacterPosition> {
     }
   }
 
-  static final CharacterPosition _empty = CharacterPosition._internal(-1);
+  static final CharacterPosition _empty = CharacterPosition._privateConstructor(-1);
   static CharacterPosition get empty => _empty;
   bool get isEmpty => identical(this, _empty);
-  CharacterPosition._internal(this.position);
+  CharacterPosition._privateConstructor(this.position);
 
   CharacterPosition copyWith({int? position}) {
     return CharacterPosition(

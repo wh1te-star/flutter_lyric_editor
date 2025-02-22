@@ -1,4 +1,3 @@
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor.dart';
@@ -18,11 +17,16 @@ class SentenceSelectionCursor extends TextPaneCursor {
   );
 
   @override
-  Widget lyricSnippetWithCursor(LyricSnippet lyricSnippet) {
-    // TODO: implement buildWidget
-  }
+    SentenceSelectionCursor moveUp(){
+      
+    }
 
-  static SentenceSelectionCursor get empty => SentenceSelectionCursor(LyricSnippetID.empty,CursorBlinker.empty,InsertionPosition.empty,Option.empty, );
+  static SentenceSelectionCursor get empty => SentenceSelectionCursor(
+        LyricSnippetID.empty,
+        CursorBlinker.empty,
+        InsertionPosition.empty,
+        Option.former,
+      );
   bool get isEmpty => this == empty;
 
   SentenceSegment copyWith({String? word, Duration? duration}) {

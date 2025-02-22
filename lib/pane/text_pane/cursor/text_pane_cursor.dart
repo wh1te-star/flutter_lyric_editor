@@ -9,8 +9,12 @@ import 'package:lyric_editor/utility/cursor_blinker.dart';
 abstract class TextPaneCursor {
   LyricSnippetID lyricSnippetID;
   CursorBlinker cursorBlinker;
-  Widget lyricSnippetWithCursor(LyricSnippet lyricSnippet);
   TextPaneCursor(this.lyricSnippetID, this.cursorBlinker);
+  
+  TextPaneCursor moveLeft();
+  TextPaneCursor moveRight();
+  TextPaneCursor moveUp();
+  TextPaneCursor moveDown();
 }
 
 {

@@ -8,9 +8,9 @@ class SegmentRange {
     }
   }
 
-  static final SegmentRange _empty = SegmentRange._internal(-1, -1);
+  SegmentRange._privateConstructor(this.startIndex, this.endIndex);
+  static final SegmentRange _empty = SegmentRange._privateConstructor(-1, -1);
   static SegmentRange get empty => _empty;
-  SegmentRange._internal(this.startIndex, this.endIndex);
   bool get isEmpty => identical(this, _empty);
 
   SegmentRange copyWith({int? startIndex, int? endIndex}) {

@@ -3,53 +3,58 @@ import 'dart:ui';
 
 class CursorBlinker {
   int blinkIntervalInMillisec;
-  bool isCursorVisible = true;
-  late Timer cursorTimer;
-  late VoidCallback onTick;
+  VoidCallback onTick;
 
-  static CursorBlinker get empty => CursorBlinker();
-  bool get isEmpty => this == empty;
+  bool _visible = true;
+  late Timer _timer;
+
+  CursorBlinker._privateConstructor(this.blinkIntervalInMillisec, this.onTick);
+  static final CursorBlinker _empty = CursorBlinker._privateConstructor(-1, () {});
+  static CursorBlinker get empty => _empty;
+  bool get isEmpty => identical(this, _empty);
+
+  bool get visible => _visible;
 
   CursorBlinker({this.blinkIntervalInMillisec = 1000, required this.onTick}) {
-    cursorTimer = Timer.periodic(Duration(milliseconds: blinkIntervalInMillisec), (timer) {
-      isCursorVisible = !isCursorVisible;
+    _timer = Timer.periodic(Duration(milliseconds: blinkIntervalInMillisec), (timer) {
+      _visible = !_visible;
       onTick();
     });
   }
 
   void pauseCursorTimer() {
-    cursorTimer.cancel();
+    _timer.cancel();
   }
 
   void restartCursorTimer() {
-    cursorTimer.cancel();
-    isCursorVisible = true;
-    cursorTimer = Timer.periodic(Duration(milliseconds: blinkIntervalInMillisec), (timer) {
-      isCursorVisible = !isCursorVisible;
+    _timer.cancel();
+    _visible = true;
+    _timer = Timer.periodic(Duration(milliseconds: blinkIntervalInMillisec), (timer) {
+      _visible = !_visible;
       onTick();
     });
   }
 
-  SentenceSegment copyWith({String? word, Duration? duration}) {
-    return SentenceSegment(
-      word ?? this.word,
-      duration ?? this.duration,
+  CursorBlinker copyWith({int? blinkIntervalInMillisec, VoidCallback? onTick}) {
+    return CursorBlinker(
+      blinkIntervalInMillisec: blinkIntervalInMillisec ?? this.blinkIntervalInMillisec,
+      onTick: onTick ?? this.onTick,
     );
   }
 
   @override
   String toString() {
-    return 'SentenceSegment(wordLength: $word, wordDuration: $duration)';
+    return "CursorBlinker interval: $blinkIntervalInMillisec, visible: $visible";
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final SentenceSegment otherSentenceSegments = other as SentenceSegment;
-    return word == otherSentenceSegments.word && duration == otherSentenceSegments.duration;
+    final CursorBlinker otherSentenceSegments = other as CursorBlinker;
+    return blinkIntervalInMillisec == otherSentenceSegments.blinkIntervalInMillisec && onTick == otherSentenceSegments.onTick;
   }
 
   @override
-  int get hashCode => word.hashCode ^ duration.hashCode;
+  int get hashCode => blinkIntervalInMillisec.hashCode ^ onTick.hashCode;
 }
