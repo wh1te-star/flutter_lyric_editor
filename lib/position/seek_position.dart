@@ -3,10 +3,10 @@ class SeekPosition implements Comparable<SeekPosition> {
 
   SeekPosition(this.position);
 
-  static final SeekPosition _empty = SeekPosition._internal(-1);
+  SeekPosition._privateConstructor(this.position);
+  static final SeekPosition _empty = SeekPosition._privateConstructor(-1);
   static SeekPosition get empty => _empty;
   bool get isEmpty => identical(this, _empty);
-  SeekPosition._internal(this.position);
 
   SeekPosition copyWith({int? position}) {
     return SeekPosition(

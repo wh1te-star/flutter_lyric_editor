@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
-import 'package:lyric_editor/pane/text_pane/text_pane_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/text_pane_provider.dart';
 import 'package:lyric_editor/position/position_type_info.dart';
 import 'package:lyric_editor/position/segment_range.dart';
@@ -13,7 +13,6 @@ import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/sorted_list.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 import 'package:tuple/tuple.dart';
-
 
 class TextPane extends ConsumerStatefulWidget {
   final FocusNode focusNode;
@@ -121,8 +120,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
             ),
             Container(
               //width: maxWidth,
-              color: id == textPaneProvider.cursor.snippetID ? Colors.yellowAccent : null,
-              child: snippetEditLine(id, snippet),
+              color: id == textPaneProvider.cursor.lyricSnippetID ? Colors.yellowAccent : null,
+              child: LyricSnippetEdit(id, snippet),
             ),
             Container(
               width: sideBandWidth,
@@ -136,188 +135,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
     return Column(
       children: elements,
-    );
-  }
-
-  Widget snippetEditLine(LyricSnippetID id, LyricSnippet snippet) {
-    MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
-    TimingService timingService = ref.read(timingMasterProvider);
-    TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
-    PositionTypeInfo cursorPositionInfo = snippet.timing.getPositionTypeInfo(textPaneProvider.cursor.charPosition.position);
-
-    TextStyle textStyle = const TextStyle(
-      color: Colors.black,
-    );
-    TextStyle textStyleIncursor = TextStyle(
-      color: textPaneProvider.cursorBlinker.isCursorVisible ? Colors.white : Colors.black,
-      background: textPaneProvider.cursorBlinker.isCursorVisible ? (Paint()..color = Colors.black) : null,
-    );
-    TextStyle annotationTextStyle = const TextStyle(
-      color: Colors.black,
-    );
-    TextStyle annotationDummyTextStyle = const TextStyle(
-      color: Colors.transparent,
-    );
-    TextStyle annotationTextStyleIncursor = TextStyle(
-      color: Colors.white,
-      background: Paint()..color = Colors.black,
-    );
-    List<Widget> sentenceRowWidgets = [];
-    List<Widget> annotationRowWidgets = [];
-    List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotationMap.map, snippet.sentenceSegments.length);
-    int highlightSegmentIndex = snippet.timing.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
-
-    TextPaneCursor cursor = textPaneProvider.cursor.copyWith();
-
-    for (int index = 0; index < rangeList.length; index++) {
-      Tuple2<SegmentRange, Annotation?> element = rangeList[index];
-      SegmentRange segmentRange = element.item1;
-      Annotation? annotation = element.item2;
-
-      if (segmentRange.isEmpty) {
-        continue;
-      }
-
-      List<SentenceSegment> currentSegmentPartSentence = snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1);
-      String sentenceString = currentSegmentPartSentence.map((SentenceSegment segment) => segment.word).join('');
-      String sentenceTimingPointString = "\xa0${TextPaneProvider.timingPointChar}\xa0" * (segmentRange.endIndex - segmentRange.startIndex);
-      double sentenceRowWidth = getSizeFromTextStyle(sentenceString, textStyle).width + getSizeFromTextStyle(sentenceTimingPointString, textStyle).width + 10;
-      int segmentCharLength = 0;
-
-      if (annotation == null) {
-        sentenceRowWidgets += sentenceLineWidgets(
-          currentSegmentPartSentence,
-          false,
-          !cursor.isAnnotationSelection ? cursor : TextPaneCursor.emptyValue,
-          highlightSegmentIndex,
-          textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
-          textStyle,
-          textStyleIncursor,
-          textStyle,
-          textStyleIncursor,
-        );
-
-        if (!snippet.annotationMap.isEmpty) {
-          annotationRowWidgets += sentenceLineWidgets(
-            currentSegmentPartSentence,
-            true,
-            cursor.isAnnotationSelection ? cursor : TextPaneCursor.emptyValue,
-            -1,
-            textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
-            annotationDummyTextStyle,
-            annotationDummyTextStyle,
-            annotationDummyTextStyle,
-            annotationDummyTextStyle,
-          );
-        }
-
-        segmentCharLength = currentSegmentPartSentence.map((segment) => segment.word.length).reduce((a, b) => a + b);
-      } else {
-        List<SentenceSegment> currentSegmentPartAnnotation = annotation.sentenceSegments;
-        String annotationString = currentSegmentPartAnnotation.map((SentenceSegment segment) => segment.word).join('');
-        String annotationTimingPointString = "\xa0${TextPaneProvider.timingPointChar}\xa0" * (annotation.sentenceSegments.length - 1);
-        double annotationRowWidth = getSizeFromTextStyle(annotationString, annotationTextStyle).width + getSizeFromTextStyle(annotationTimingPointString, annotationTextStyle).width + 10;
-
-        double rowWidth = sentenceRowWidth > annotationRowWidth ? sentenceRowWidth : annotationRowWidth;
-
-        List<Widget> sentenceRow = sentenceLineWidgets(
-          currentSegmentPartSentence,
-          false,
-          !cursor.isAnnotationSelection ? cursor : TextPaneCursor.emptyValue,
-          highlightSegmentIndex,
-          textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
-          textStyle,
-          textStyleIncursor,
-          textStyle,
-          textStyleIncursor,
-        );
-
-        sentenceRowWidgets += [
-          SizedBox(
-            width: rowWidth,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: sentenceRow,
-            ),
-          ),
-        ];
-
-        if (!snippet.annotationMap.isEmpty) {
-          int annotationHighlightSegmentIndex = textPaneProvider.cursor.annotationSegmentRange == segmentRange ? annotation.timing.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition) : -1;
-          List<Widget> annotationRow = sentenceLineWidgets(
-            currentSegmentPartAnnotation,
-            true,
-            cursor.isAnnotationSelection ? cursor : TextPaneCursor.emptyValue,
-            annotationHighlightSegmentIndex,
-            textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
-            annotationTextStyle,
-            annotationTextStyleIncursor,
-            annotationTextStyle,
-            annotationTextStyleIncursor,
-          );
-
-          if (!snippet.annotationMap.isEmpty) {
-            annotationRowWidgets += [
-              SizedBox(
-                width: rowWidth,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: annotationRow,
-                ),
-              ),
-            ];
-          }
-        }
-
-        if (!cursor.isAnnotationSelection) {
-          segmentCharLength = currentSegmentPartSentence.map((segment) => segment.word.length).reduce((a, b) => a + b);
-        } else {
-          segmentCharLength = currentSegmentPartAnnotation.map((segment) => segment.word.length).reduce((a, b) => a + b);
-        }
-      }
-
-      if (index < rangeList.length - 1) {
-        sentenceRowWidgets.add(
-          Text(
-            "\xa0${TextPaneProvider.annotationEdgeChar}\xa0",
-            style: cursor.isSegmentSelectionMode == false && cursor.isAnnotationSelection == false && sentenceString.length == cursor.charPosition ? textStyleIncursor : textStyle,
-          ),
-        );
-        annotationRowWidgets.add(
-          Text(
-            "\xa0${TextPaneProvider.annotationEdgeChar}\xa0",
-            style: textStyle,
-          ),
-        );
-      }
-
-      highlightSegmentIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
-      if (!cursor.isAnnotationSelection) {
-        cursorPositionInfo.index -= segmentCharLength;
-        cursor.charPosition -= segmentCharLength;
-        cursor.annotationSegmentRange.startIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
-        cursor.annotationSegmentRange.endIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
-      } else {
-        cursor.annotationSegmentRange.startIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
-        cursor.annotationSegmentRange.endIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
-      }
-    }
-
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: annotationRowWidgets,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: sentenceRowWidgets,
-        ),
-      ],
     );
   }
 

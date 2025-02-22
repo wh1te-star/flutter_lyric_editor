@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/pane/text_pane/text_pane_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
@@ -134,7 +134,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
               Timing timing = Timing(
                 startTimestamp: musicPlayerProvider.seekPosition,
                 sentenceSegmentList: SentenceSegmentList([
-                  SentenceSegment("default sentence",Duration(milliseconds: 3000)),
+                  SentenceSegment("default sentence", Duration(milliseconds: 3000)),
                 ]),
               );
               LyricSnippet lyricSnippet = LyricSnippet(
@@ -175,7 +175,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         AddAnnotationIntent: CallbackAction<AddAnnotationIntent>(
           onInvoke: (AddAnnotationIntent intent) => () async {
             TextPaneCursor cursor = textPaneProvider.cursor;
-            LyricSnippetID targetID = cursor.snippetID;
+            LyricSnippetID targetID = cursor.lyricSnippetID;
             LyricSnippet targetSnippet = timingService.getLyricSnippetByID(targetID);
 
             String annotationString = (await displayTextFieldDialog(context, [""]))[0];
@@ -193,7 +193,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
           onInvoke: (DeleteAnnotationIntent intent) => () {
             TextPaneCursor cursor = textPaneProvider.cursor;
             if (cursor.isAnnotationSelection) {
-              timingService.removeAnnotation(cursor.snippetID, cursor.annotationSegmentRange);
+              timingService.removeAnnotation(cursor.lyricSnippetID, cursor.annotationSegmentRange);
             }
           }(),
         ),
@@ -284,13 +284,13 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             TextPaneCursor cursor = textPaneProvider.cursor;
             if (!cursor.isAnnotationSelection) {
               timingService.addTimingPoint(
-                cursor.snippetID,
+                cursor.lyricSnippetID,
                 textPaneProvider.cursor.charPosition,
                 seekPosition,
               );
             } else {
               timingService.addAnnotationTimingPoint(
-                cursor.snippetID,
+                cursor.lyricSnippetID,
                 cursor.annotationSegmentRange,
                 textPaneProvider.cursor.charPosition,
                 seekPosition,
@@ -326,9 +326,9 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         SnippetConcatenateIntent: CallbackAction<SnippetConcatenateIntent>(
           onInvoke: (SnippetConcatenateIntent intent) => () {
-            final List<LyricSnippetID> selectingSnippets =timelinePaneProvider.selectingSnippets;
-            if (selectingSnippets.length >= 2){
-            timingService.concatenateSnippets(selectingSnippets[0], selectingSnippets[1]);
+            final List<LyricSnippetID> selectingSnippets = timelinePaneProvider.selectingSnippets;
+            if (selectingSnippets.length >= 2) {
+              timingService.concatenateSnippets(selectingSnippets[0], selectingSnippets[1]);
             }
           }(),
         ),
