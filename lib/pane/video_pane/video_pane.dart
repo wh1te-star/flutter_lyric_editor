@@ -1,45 +1,22 @@
 import 'dart:ui';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
-import 'package:lyric_editor/pane/video_pane/annotation_range_caption.dart';
+import 'package:lyric_editor/pane/text_pane/text_pane_provider.dart';
 import 'package:lyric_editor/pane/video_pane/colored_caption.dart';
+import 'package:lyric_editor/pane/video_pane/video_pane_provider.dart';
 import 'package:lyric_editor/position/seek_position.dart';
-import 'package:lyric_editor/position/segment_range.dart';
-import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
 import 'package:lyric_editor/pane/video_pane/colored_text_painter.dart';
-import 'package:lyric_editor/pane/text_pane/text_pane.dart';
 import 'package:lyric_editor/pane/timeline_pane/timeline_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
-import 'package:tuple/tuple.dart';
 
-final videoPaneMasterProvider = ChangeNotifierProvider((ref) {
-  return VideoPaneProvider();
-});
-
-class VideoPaneProvider with ChangeNotifier {
-  DisplayMode displayMode = DisplayMode.appearDissappear;
-
-  VideoPaneProvider();
-
-  void switchDisplayMode() {
-    if (displayMode == DisplayMode.appearDissappear) {
-      displayMode = DisplayMode.verticalScroll;
-    } else {
-      displayMode = DisplayMode.appearDissappear;
-    }
-    notifyListeners();
-  }
-}
 
 class VideoPane extends ConsumerStatefulWidget {
   final FocusNode focusNode;
@@ -241,7 +218,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       final Color color =Color(timingService.vocalistColorMap[targetSnippet.vocalistID]!.color);
         content[i] = Expanded(
           child: Center(
-            child: AnnotationRangeCaption(targetSnippet, seekPosition, color),
+            child: ColoredCaption(targetSnippet, seekPosition, color),
           ),
         );
       } else {
