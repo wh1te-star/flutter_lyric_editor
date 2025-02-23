@@ -1,5 +1,5 @@
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/service/timing_service.dart';
@@ -10,27 +10,44 @@ class SentenceSelectionCursor extends TextPaneCursor {
   Option option;
 
   SentenceSelectionCursor(
+    super.lyricSnippetMap,
     super.lyricSnippetID,
     super.cursorBlinker,
     this.charPosition,
     this.option,
   );
 
+  SentenceSelectionCursor._privateConstructor(
+    super.lyricSnippetMap,
+    super.lyricSnippetID,
+    super.cursorBlinker,
+    this.charPosition,
+    this.option,
+  );
+  static final SentenceSelectionCursor _empty = SentenceSelectionCursor._privateConstructor(
+    LyricSnippetMap.empty,
+    LyricSnippetID.empty,
+    CursorBlinker.empty,
+    InsertionPosition.empty,
+    Option.former,
+  );
+  static SentenceSelectionCursor get empty => _empty;
+  bool get isEmpty => identical(this, _empty);
+  bool get isNotEmpty => !identical(this, _empty);
+
   @override
-    SentenceSelectionCursor moveUp(){
-      
-    }
+  SentenceSelectionCursor moveUp() {}
 
-  static SentenceSelectionCursor get empty => SentenceSelectionCursor(
-        LyricSnippetID.empty,
-        CursorBlinker.empty,
-        InsertionPosition.empty,
-        Option.former,
-      );
-  bool get isEmpty => this == empty;
-
-  SentenceSegment copyWith({String? word, Duration? duration}) {
-    return SentenceSegment(
+  SentenceSelectionCursor copyWith({
+    String? word,
+    Duration? duration,
+    LyricSnippetMap.empty,
+    LyricSnippetID.empty,
+    CursorBlinker.empty,
+    InsertionPosition.empty,
+    Option.former,
+  }) {
+    return SentenceSelectionCursor(
       word ?? this.word,
       duration ?? this.duration,
     );
@@ -45,7 +62,7 @@ class SentenceSelectionCursor extends TextPaneCursor {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final SentenceSegment otherSentenceSegments = other as SentenceSegment;
+    final SentenceSelectionCursor otherSentenceSegments = other as SentenceSelectionCursor;
     return word == otherSentenceSegments.word && duration == otherSentenceSegments.duration;
   }
 

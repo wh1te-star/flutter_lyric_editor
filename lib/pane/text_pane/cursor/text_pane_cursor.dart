@@ -1,15 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
-import 'package:lyric_editor/position/insertion_position.dart';
-import 'package:lyric_editor/position/segment_range.dart';
-import 'package:lyric_editor/service/timing_service.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 abstract class TextPaneCursor {
+  LyricSnippetMap lyricSnippetMap;
   LyricSnippetID lyricSnippetID;
   CursorBlinker cursorBlinker;
-  TextPaneCursor(this.lyricSnippetID, this.cursorBlinker);
+  TextPaneCursor(this.lyricSnippetMap, this.lyricSnippetID, this.cursorBlinker);
   
   TextPaneCursor moveLeft();
   TextPaneCursor moveRight();
