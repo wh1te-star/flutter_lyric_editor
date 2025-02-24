@@ -1,5 +1,4 @@
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/service/timing_service.dart';
@@ -10,7 +9,6 @@ class SentenceSelectionCursor extends TextPaneCursor {
   Option option;
 
   SentenceSelectionCursor(
-    super.lyricSnippetMap,
     super.lyricSnippetID,
     super.cursorBlinker,
     this.charPosition,
@@ -18,14 +16,12 @@ class SentenceSelectionCursor extends TextPaneCursor {
   );
 
   SentenceSelectionCursor._privateConstructor(
-    super.lyricSnippetMap,
     super.lyricSnippetID,
     super.cursorBlinker,
     this.charPosition,
     this.option,
   );
   static final SentenceSelectionCursor _empty = SentenceSelectionCursor._privateConstructor(
-    LyricSnippetMap.empty,
     LyricSnippetID.empty,
     CursorBlinker.empty,
     InsertionPosition.empty,
@@ -35,27 +31,23 @@ class SentenceSelectionCursor extends TextPaneCursor {
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
-  @override
-  SentenceSelectionCursor moveUp() {}
-
   SentenceSelectionCursor copyWith({
-    String? word,
-    Duration? duration,
-    LyricSnippetMap.empty,
-    LyricSnippetID.empty,
-    CursorBlinker.empty,
-    InsertionPosition.empty,
-    Option.former,
+    LyricSnippetID? lyricSnippetID,
+    CursorBlinker? cursorBlinker,
+    InsertionPosition? charPosition,
+    Option? option,
   }) {
     return SentenceSelectionCursor(
-      word ?? this.word,
-      duration ?? this.duration,
+      lyricSnippetID ?? this.lyricSnippetID,
+      cursorBlinker ?? this.cursorBlinker,
+      charPosition ?? this.charPosition,
+      option ?? this.option,
     );
   }
 
   @override
   String toString() {
-    return 'SentenceSegment(wordLength: $word, wordDuration: $duration)';
+    return 'SentenceSelectionCursor(ID: ${lyricSnippetID.id}, position: ${charPosition.position}, option: $option)';
   }
 
   @override
@@ -63,9 +55,13 @@ class SentenceSelectionCursor extends TextPaneCursor {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
     final SentenceSelectionCursor otherSentenceSegments = other as SentenceSelectionCursor;
-    return word == otherSentenceSegments.word && duration == otherSentenceSegments.duration;
+    if (lyricSnippetID != otherSentenceSegments.lyricSnippetID) return false;
+    if (cursorBlinker != otherSentenceSegments.cursorBlinker) return false;
+    if (charPosition != otherSentenceSegments.charPosition) return false;
+    if (option != otherSentenceSegments.option) return false;
+    return true;
   }
 
   @override
-  int get hashCode => word.hashCode ^ duration.hashCode;
+  int get hashCode => lyricSnippetID.hashCode ^ cursorBlinker.hashCode ^ charPosition.hashCode ^ option.hashCode;
 }

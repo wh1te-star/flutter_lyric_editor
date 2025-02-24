@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/edit_column.dart';
 import 'package:lyric_editor/pane/text_pane/text_pane_provider.dart';
 import 'package:lyric_editor/position/position_type_info.dart';
 import 'package:lyric_editor/position/segment_range.dart';
@@ -67,6 +69,8 @@ class _TextPaneState extends ConsumerState<TextPane> {
 
   @override
   Widget build(BuildContext context) {
+    final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
+    final TimingService timingService = ref.read(timingMasterProvider);
     return Focus(
       focusNode: focusNode,
       child: GestureDetector(
@@ -77,12 +81,13 @@ class _TextPaneState extends ConsumerState<TextPane> {
         },
         child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
-          child: snippetEditColumn(),
+          child: EditColumn(timingService.getSnippetsAtSeekPosition(), musicPlayerService.seekPosition, SentenceSelectionCursor.empty),
         ),
       ),
     );
   }
 
+  /*
   Widget snippetEditColumn() {
     final TimingService timingService = ref.read(timingMasterProvider);
     final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
@@ -301,4 +306,5 @@ class _TextPaneState extends ConsumerState<TextPane> {
     }
     return charPositions;
   }
+  */
 }

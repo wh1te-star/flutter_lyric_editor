@@ -1,35 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor.dart';
-import 'package:lyric_editor/pane/text_pane/text_pane_provider.dart';
-import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/pane/text_pane/edit_widget/lyric_snippet_edit.dart';
 import 'package:lyric_editor/position/segment_range.dart';
+import 'package:lyric_editor/utility/utility_functions.dart';
 import 'package:tuple/tuple.dart';
 
-class LyricSnippetEdit extends StatelessWidget {
-  static const String fontFamily = "Times New Roman";
-  static const double fontSize = 40.0;
-  final LyricSnippet lyricSnippet;
-  final SeekPosition seekPosition;
-  final TextPaneCursor textPaneCursor;
-
-  const LyricSnippetEdit(this.lyricSnippet, this.seekPosition, this.textPaneCursor, {super.key});
+class SentenceSelectionEdit extends LyricSnippetEdit<SentenceSelectionCursor> {
+  const SentenceSelectionEdit(super.lyricSnippet, super.seekPosition, super.textPaneCursor, {super.key});
 
   @override
   Widget build(BuildContext context) {
-    int segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
-    return snippetEditLine(lyricSnippet, seekPosition, textPaneCursor);
-  }
-
-  Widget snippetEditLine(LyricSnippet snippet, SeekPosition seekPosition, TextPaneCursor textPaneCursor) {
+    return Text(lyricSnippet.sentence);
+    /*
     TextStyle textStyle = const TextStyle(
       color: Colors.black,
     );
     TextStyle textStyleIncursor = TextStyle(
-      color: textPaneProvider.cursorBlinker.isCursorVisible ? Colors.white : Colors.black,
-      background: textPaneProvider.cursorBlinker.isCursorVisible ? (Paint()..color = Colors.black) : null,
+      color: textPaneCursor.cursorBlinker.visible ? Colors.white : Colors.black,
+      background: textPaneCursor.cursorBlinker.visible ? (Paint()..color = Colors.black) : null,
     );
     TextStyle annotationTextStyle = const TextStyle(
       color: Colors.black,
@@ -43,10 +34,10 @@ class LyricSnippetEdit extends StatelessWidget {
     );
     List<Widget> sentenceRowWidgets = [];
     List<Widget> annotationRowWidgets = [];
-    List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(snippet.annotationMap.map, snippet.sentenceSegments.length);
-    int highlightSegmentIndex = snippet.timing.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition);
+    List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(lyricSnippet.annotationMap.map, lyricSnippet.sentenceSegments.length);
+    int highlightSegmentIndex = lyricSnippet.timing.getSegmentIndexFromSeekPosition(seekPosition);
 
-    TextPaneCursor cursor = textPaneProvider.cursor.copyWith();
+    TextPaneCursor cursor = textPaneCursor.copyWith();
 
     for (int index = 0; index < rangeList.length; index++) {
       Tuple2<SegmentRange, Annotation?> element = rangeList[index];
@@ -57,9 +48,9 @@ class LyricSnippetEdit extends StatelessWidget {
         continue;
       }
 
-      List<SentenceSegment> currentSegmentPartSentence = snippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1);
+      List<SentenceSegment> currentSegmentPartSentence = lyricSnippet.sentenceSegments.sublist(segmentRange.startIndex, segmentRange.endIndex + 1);
       String sentenceString = currentSegmentPartSentence.map((SentenceSegment segment) => segment.word).join('');
-      String sentenceTimingPointString = "\xa0${TextPaneProvider.timingPointChar}\xa0" * (segmentRange.endIndex - segmentRange.startIndex);
+      String sentenceTimingPointString = "\xa0${LyricSnippetEdit.timingPointChar}\xa0" * (segmentRange.endIndex - segmentRange.startIndex);
       double sentenceRowWidth = getSizeFromTextStyle(sentenceString, textStyle).width + getSizeFromTextStyle(sentenceTimingPointString, textStyle).width + 10;
       int segmentCharLength = 0;
 
@@ -198,5 +189,6 @@ class LyricSnippetEdit extends StatelessWidget {
         ),
       ],
     );
+    */
   }
 }

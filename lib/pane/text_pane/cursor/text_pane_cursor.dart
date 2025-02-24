@@ -1,19 +1,13 @@
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
-abstract class TextPaneCursor {
-  LyricSnippetMap lyricSnippetMap;
+class TextPaneCursor {
   LyricSnippetID lyricSnippetID;
   CursorBlinker cursorBlinker;
-  TextPaneCursor(this.lyricSnippetMap, this.lyricSnippetID, this.cursorBlinker);
-  
-  TextPaneCursor moveLeft();
-  TextPaneCursor moveRight();
-  TextPaneCursor moveUp();
-  TextPaneCursor moveDown();
+  TextPaneCursor(this.lyricSnippetID, this.cursorBlinker);
 }
 
+/*
 {
   void enterSegmentSelectionMode() {
     isSegmentSelectionMode = true;
@@ -80,3 +74,4 @@ abstract class TextPaneCursor {
     );
   }
 }
+*/

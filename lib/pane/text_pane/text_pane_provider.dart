@@ -20,22 +20,18 @@ final textPaneMasterProvider = ChangeNotifierProvider((ref) {
 class TextPaneProvider with ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
   final TimingService timingService;
-  TextPaneCursor cursor = TextPaneCursor.emptyValue;
   late CursorBlinker cursorBlinker;
-
-  static const String timingPointChar = '🕛';
-  static const String annotationEdgeChar = '🔷';
 
   TextPaneProvider({
     required this.musicPlayerProvider,
     required this.timingService,
   }) {
     musicPlayerProvider.addListener(() {
-      updateCursorIfNeedBySeekPosition();
+      //updateCursorIfNeedBySeekPosition();
     });
 
     timingService.addListener(() {
-      updateCursorIfNeedByItemDeletion();
+      //updateCursorIfNeedByItemDeletion();
     });
 
     cursorBlinker = CursorBlinker(
@@ -46,6 +42,7 @@ class TextPaneProvider with ChangeNotifier {
     );
   }
 
+  /*
   void updateCursorIfNeedBySeekPosition() {
     Map<LyricSnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition().map;
     if (currentSnippets.isEmpty) {
@@ -293,4 +290,5 @@ class TextPaneProvider with ChangeNotifier {
     cursorBlinker.restartCursorTimer();
     notifyListeners();
   }
+  */
 }
