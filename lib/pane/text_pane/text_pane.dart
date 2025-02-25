@@ -71,6 +71,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
   Widget build(BuildContext context) {
     final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     final TimingService timingService = ref.read(timingMasterProvider);
+    final TextPaneProvider textPaneProvider = ref.read(textPaneMasterProvider);
     return Focus(
       focusNode: focusNode,
       child: GestureDetector(
@@ -81,7 +82,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
         },
         child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
-          child: EditColumn(timingService.getSnippetsAtSeekPosition(), musicPlayerService.seekPosition, SentenceSelectionCursor.empty),
+          child: EditColumn(timingService.getSnippetsAtSeekPosition(), musicPlayerService.seekPosition, textPaneProvider.textPaneCursor),
         ),
       ),
     );

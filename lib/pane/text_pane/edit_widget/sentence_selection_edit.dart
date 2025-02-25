@@ -13,8 +13,6 @@ class SentenceSelectionEdit extends LyricSnippetEdit<SentenceSelectionCursor> {
 
   @override
   Widget build(BuildContext context) {
-    return Text(lyricSnippet.sentence);
-    /*
     TextStyle textStyle = const TextStyle(
       color: Colors.black,
     );
@@ -32,13 +30,17 @@ class SentenceSelectionEdit extends LyricSnippetEdit<SentenceSelectionCursor> {
       color: Colors.white,
       background: Paint()..color = Colors.black,
     );
+
     List<Widget> sentenceRowWidgets = [];
     List<Widget> annotationRowWidgets = [];
     List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(lyricSnippet.annotationMap.map, lyricSnippet.sentenceSegments.length);
     int highlightSegmentIndex = lyricSnippet.timing.getSegmentIndexFromSeekPosition(seekPosition);
 
     TextPaneCursor cursor = textPaneCursor.copyWith();
+    for (int index = 0; index < rangeList.length; index++) {}
 
+    return Text(lyricSnippet.sentence);
+    /*
     for (int index = 0; index < rangeList.length; index++) {
       Tuple2<SegmentRange, Annotation?> element = rangeList[index];
       SegmentRange segmentRange = element.item1;

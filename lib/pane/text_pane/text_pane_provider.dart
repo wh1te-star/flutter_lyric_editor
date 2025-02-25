@@ -20,6 +20,7 @@ final textPaneMasterProvider = ChangeNotifierProvider((ref) {
 class TextPaneProvider with ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
   final TimingService timingService;
+  late TextPaneCursor textPaneCursor;
   late CursorBlinker cursorBlinker;
 
   TextPaneProvider({
@@ -40,6 +41,7 @@ class TextPaneProvider with ChangeNotifier {
         notifyListeners();
       },
     );
+    textPaneCursor = TextPaneCursor(LyricSnippetID.empty, cursorBlinker);
   }
 
   /*

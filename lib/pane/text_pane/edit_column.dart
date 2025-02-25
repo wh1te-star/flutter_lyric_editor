@@ -6,7 +6,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/sentence_selection_edit.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 
-class EditColumn extends StatelessWidget{
+class EditColumn extends StatelessWidget {
   final LyricSnippetMap lyricSnippetMap;
   final SeekPosition seekPosition;
   final TextPaneCursor textPaneCursor;
@@ -17,11 +17,11 @@ class EditColumn extends StatelessWidget{
   Widget build(BuildContext context) {
     List<Widget> elements = [];
     for (LyricSnippet lyricSnippet in lyricSnippetMap.values) {
+      Widget widget = Container();
       if (textPaneCursor is SentenceSelectionCursor) {
-        elements.add(SentenceSelectionEdit(lyricSnippet, seekPosition, textPaneCursor as SentenceSelectionCursor));
-      } else {
-        elements.add(Container());
+        widget = SentenceSelectionEdit(lyricSnippet, seekPosition, textPaneCursor as SentenceSelectionCursor);
       }
+      elements.add(widget);
     }
 
     return Column(children: elements);
