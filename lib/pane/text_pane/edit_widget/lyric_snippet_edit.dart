@@ -4,7 +4,6 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 
 abstract class LyricSnippetEdit<CursorType extends TextPaneCursor> extends StatelessWidget {
-  static const String timingPointChar = '🕛';
   static const String annotationEdgeChar = '🔷';
   static const String fontFamily = "Times New Roman";
   static const double fontSize = 40.0;

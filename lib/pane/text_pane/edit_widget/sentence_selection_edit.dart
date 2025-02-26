@@ -9,7 +9,7 @@ import 'package:lyric_editor/utility/utility_functions.dart';
 import 'package:tuple/tuple.dart';
 
 class SentenceSelectionEdit extends LyricSnippetEdit<SentenceSelectionCursor> {
-  const SentenceSelectionEdit(super.lyricSnippet, super.seekPosition, super.textPaneCursor, {super.key});
+  const SentenceSelectionEdit(super.lyricSnippet, super.seekPosition, super.extPaneCursor, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -36,11 +36,6 @@ class SentenceSelectionEdit extends LyricSnippetEdit<SentenceSelectionCursor> {
     List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(lyricSnippet.annotationMap.map, lyricSnippet.sentenceSegments.length);
     int highlightSegmentIndex = lyricSnippet.timing.getSegmentIndexFromSeekPosition(seekPosition);
 
-    TextPaneCursor cursor = textPaneCursor.copyWith();
-    for (int index = 0; index < rangeList.length; index++) {}
-
-    return Text(lyricSnippet.sentence);
-    /*
     for (int index = 0; index < rangeList.length; index++) {
       Tuple2<SegmentRange, Annotation?> element = rangeList[index];
       SegmentRange segmentRange = element.item1;
@@ -60,7 +55,7 @@ class SentenceSelectionEdit extends LyricSnippetEdit<SentenceSelectionCursor> {
         sentenceRowWidgets += sentenceLineWidgets(
           currentSegmentPartSentence,
           false,
-          !cursor.isAnnotationSelection ? cursor : TextPaneCursor.emptyValue,
+          !textPaneCursor.isAnnotationSelection ? textPaneCursor : TextPaneCursor.emptyValue,
           highlightSegmentIndex,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
           textStyle,
@@ -73,7 +68,7 @@ class SentenceSelectionEdit extends LyricSnippetEdit<SentenceSelectionCursor> {
           annotationRowWidgets += sentenceLineWidgets(
             currentSegmentPartSentence,
             true,
-            cursor.isAnnotationSelection ? cursor : TextPaneCursor.emptyValue,
+            textPaneCursor.isAnnotationSelection ? textPaneCursor : TextPaneCursor.emptyValue,
             -1,
             textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
             annotationDummyTextStyle,
@@ -95,7 +90,7 @@ class SentenceSelectionEdit extends LyricSnippetEdit<SentenceSelectionCursor> {
         List<Widget> sentenceRow = sentenceLineWidgets(
           currentSegmentPartSentence,
           false,
-          !cursor.isAnnotationSelection ? cursor : TextPaneCursor.emptyValue,
+          !textPaneCursor.isAnnotationSelection ? textPaneCursor : TextPaneCursor.emptyValue,
           highlightSegmentIndex,
           textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
           textStyle,
@@ -115,12 +110,12 @@ class SentenceSelectionEdit extends LyricSnippetEdit<SentenceSelectionCursor> {
           ),
         ];
 
-        if (!snippet.annotationMap.isEmpty) {
-          int annotationHighlightSegmentIndex = textPaneProvider.cursor.annotationSegmentRange == segmentRange ? annotation.timing.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition) : -1;
+        if (!lyricSnippet.annotationMap.isEmpty) {
+          int annotationHighlightSegmentIndex = textPaneCursor.annotationSegmentRange == segmentRange ? annotation.timing.getSegmentIndexFromSeekPosition(musicPlayerService.seekPosition) : -1;
           List<Widget> annotationRow = sentenceLineWidgets(
             currentSegmentPartAnnotation,
             true,
-            cursor.isAnnotationSelection ? cursor : TextPaneCursor.emptyValue,
+            textPaneCursor.isAnnotationSelection ? textPaneCursor : TextPaneCursor.emptyValue,
             annotationHighlightSegmentIndex,
             textPaneProvider.cursorBlinker.isCursorVisible ? Colors.black : Colors.transparent,
             annotationTextStyle,
@@ -143,7 +138,7 @@ class SentenceSelectionEdit extends LyricSnippetEdit<SentenceSelectionCursor> {
           }
         }
 
-        if (!cursor.isAnnotationSelection) {
+        if (!textPaneCursor.isAnnotationSelection) {
           segmentCharLength = currentSegmentPartSentence.map((segment) => segment.word.length).reduce((a, b) => a + b);
         } else {
           segmentCharLength = currentSegmentPartAnnotation.map((segment) => segment.word.length).reduce((a, b) => a + b);
@@ -154,7 +149,7 @@ class SentenceSelectionEdit extends LyricSnippetEdit<SentenceSelectionCursor> {
         sentenceRowWidgets.add(
           Text(
             "\xa0${TextPaneProvider.annotationEdgeChar}\xa0",
-            style: cursor.isSegmentSelectionMode == false && cursor.isAnnotationSelection == false && sentenceString.length == cursor.charPosition ? textStyleIncursor : textStyle,
+            style: textPaneCursor.isSegmentSelectionMode == false && textPaneCursor.isAnnotationSelection == false && sentenceString.length == textPaneCursor.charPosition ? textStyleIncursor : textStyle,
           ),
         );
         annotationRowWidgets.add(
@@ -166,14 +161,14 @@ class SentenceSelectionEdit extends LyricSnippetEdit<SentenceSelectionCursor> {
       }
 
       highlightSegmentIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
-      if (!cursor.isAnnotationSelection) {
+      if (!textPaneCursor.isAnnotationSelection) {
         cursorPositionInfo.index -= segmentCharLength;
-        cursor.charPosition -= segmentCharLength;
-        cursor.annotationSegmentRange.startIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
-        cursor.annotationSegmentRange.endIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
+        textPaneCursor.charPosition -= segmentCharLength;
+        textPaneCursor.annotationSegmentRange.startIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
+        textPaneCursor.annotationSegmentRange.endIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
       } else {
-        cursor.annotationSegmentRange.startIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
-        cursor.annotationSegmentRange.endIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
+        textPaneCursor.annotationSegmentRange.startIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
+        textPaneCursor.annotationSegmentRange.endIndex -= segmentRange.endIndex - segmentRange.startIndex + 1;
       }
     }
 
@@ -191,6 +186,5 @@ class SentenceSelectionEdit extends LyricSnippetEdit<SentenceSelectionCursor> {
         ),
       ],
     );
-    */
   }
 }
