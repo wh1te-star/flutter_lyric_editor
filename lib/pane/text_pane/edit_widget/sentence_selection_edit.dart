@@ -36,6 +36,8 @@ class SentenceSelectionEdit extends LyricSnippetEdit<SentenceSelectionCursor> {
     List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(lyricSnippet.annotationMap.map, lyricSnippet.sentenceSegments.length);
     int highlightSegmentIndex = lyricSnippet.timing.getSegmentIndexFromSeekPosition(seekPosition);
 
+    /*
+
     for (int index = 0; index < rangeList.length; index++) {
       Tuple2<SegmentRange, Annotation?> element = rangeList[index];
       SegmentRange segmentRange = element.item1;
@@ -186,5 +188,6 @@ class SentenceSelectionEdit extends LyricSnippetEdit<SentenceSelectionCursor> {
         ),
       ],
     );
+    */
   }
 }

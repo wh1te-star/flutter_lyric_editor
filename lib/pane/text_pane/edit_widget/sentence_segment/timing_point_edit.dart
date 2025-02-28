@@ -6,18 +6,15 @@ import 'package:lyric_editor/utility/cursor_blinker.dart';
 class TimingPointEdit extends StatelessWidget {
   static const String timingPointChar = '🕛';
 
-  final TimingPoint timingPoint;
-  final TextPaneCursor? textPaneCursor;
   final CursorBlinker? cursorBlinker;
 
   const TimingPointEdit({
-    required this.timingPoint,
-    this.textPaneCursor,
     this.cursorBlinker,
   });
 
   @override
   Widget build(BuildContext context) {
+    String withSpace = "\xa0$timingPointChar\xa0";
     TextStyle textStyle = const TextStyle(
       color: Colors.black,
     );
@@ -27,7 +24,7 @@ class TimingPointEdit extends StatelessWidget {
     );
 
     return Text(
-      timingPointChar,
+      withSpace,
       style: cursorBlinker!.visible ? textStyleIncursor : textStyle,
     );
   }
