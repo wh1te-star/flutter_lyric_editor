@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/sentence_segment/sentence_segment_edit.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/sentence_segment/timing_point_edit.dart';
@@ -19,29 +20,23 @@ class SentenceSegmentListEdit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> sentenceEdits = [];
-    List<Widget> annotationEdits = [];
+    List<Widget> editWidgets = [];
     List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
     for (int index = 0; index < sentenceSegments.length; index++) {
       SentenceSegment sentenceSegment = sentenceSegments[index];
-      sentenceEdits.add(
+      editWidgets.add(
         SentenceSegmentEdit(
           sentenceSegment: sentenceSegment,
-          textPaneCursor: TextPaneCursor.empty,
+          textPaneCursor: SentenceSelectionCursor.empty,
           cursorBlinker: CursorBlinker.empty,
         ),
       );
 
       if (index < sentenceSegments.length - 1) {
-        sentenceEdits.add(TimingPointEdit());
+        editWidgets.add(TimingPointEdit());
       }
     }
 
-    return Column(
-      children: [
-        Row(children: annotationEdits),
-        Row(children: sentenceEdits),
-      ],
-    );
+    return Row(children: editWidgets);
   }
 }

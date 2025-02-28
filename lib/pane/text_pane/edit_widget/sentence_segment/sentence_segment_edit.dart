@@ -28,8 +28,6 @@ class SentenceSegmentEdit extends StatelessWidget {
       );
     }
 
-    assert(textPaneCursor is SentenceSelectionCursor || textPaneCursor is SegmentSelectionCursor);
-
     if (textPaneCursor is SegmentSelectionCursor) {
       TextStyle textStyleIncursor = TextStyle(
         color: Colors.white,
@@ -52,6 +50,7 @@ class SentenceSegmentEdit extends StatelessWidget {
       );
 
       return Stack(children: [
+          /*
         Positioned(
             left: cursorOffset,
             child: Positioned(
@@ -62,6 +61,7 @@ class SentenceSegmentEdit extends StatelessWidget {
                 color: wordCursorColor,
               ),
             )),
+            */
         Text(
           sentenceSegment.word,
           style: textStyle,

@@ -4,54 +4,6 @@ import 'package:lyric_editor/position/segment_range.dart';
 import 'package:tuple/tuple.dart';
 
 
-/* Range Utility */
-List<Tuple2<SegmentRange, Annotation?>> getRangeListForAnnotations(Map<SegmentRange, Annotation> annotations, int numberOfSegments) {
-  if (annotations.isEmpty) {
-    return [
-      Tuple2(
-        SegmentRange.empty,
-        null,
-      ),
-    ];
-  }
-
-  List<Tuple2<SegmentRange, Annotation?>> rangeList = [];
-  int previousEnd = -1;
-
-  for (MapEntry<SegmentRange, Annotation> entry in annotations.entries) {
-    SegmentRange segmentRange = entry.key;
-    Annotation annotation = entry.value;
-
-    if (previousEnd + 1 <= segmentRange.startIndex - 1) {
-      rangeList.add(
-        Tuple2(
-          SegmentRange(previousEnd + 1, segmentRange.startIndex - 1),
-          null,
-        ),
-      );
-    }
-    rangeList.add(
-      Tuple2(
-        segmentRange,
-        annotation,
-      ),
-    );
-
-    previousEnd = segmentRange.endIndex;
-  }
-
-  if (previousEnd + 1 <= numberOfSegments - 1) {
-    rangeList.add(
-      Tuple2(
-        SegmentRange(previousEnd + 1, numberOfSegments - 1),
-        null,
-      ),
-    );
-  }
-
-  return rangeList;
-}
-
 /* text size utilities */
 Size getSizeFromTextStyle(String text, TextStyle style) {
   final TextPainter textPainter = TextPainter(

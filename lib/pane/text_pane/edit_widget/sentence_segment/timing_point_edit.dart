@@ -18,14 +18,17 @@ class TimingPointEdit extends StatelessWidget {
     TextStyle textStyle = const TextStyle(
       color: Colors.black,
     );
-    TextStyle textStyleIncursor = TextStyle(
-      color: Colors.white,
-      background: (Paint()..color = Colors.black),
-    );
+
+    if (cursorBlinker?.visible ?? false) {
+      textStyle = TextStyle(
+        color: Colors.white,
+        background: (Paint()..color = Colors.black),
+      );
+    }
 
     return Text(
       withSpace,
-      style: cursorBlinker!.visible ? textStyleIncursor : textStyle,
+      style: textStyle,
     );
   }
 }

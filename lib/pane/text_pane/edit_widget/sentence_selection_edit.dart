@@ -4,6 +4,8 @@ import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dar
 import 'package:lyric_editor/pane/text_pane/cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/lyric_snippet_edit.dart';
+import 'package:lyric_editor/pane/text_pane/edit_widget/sentence_segment/sentence_segment_list_edit.dart';
+import 'package:lyric_editor/pane/text_pane/edit_widget/sentence_segment/timing_point_edit.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 import 'package:tuple/tuple.dart';
@@ -13,31 +15,31 @@ class SentenceSelectionEdit extends LyricSnippetEdit<SentenceSelectionCursor> {
 
   @override
   Widget build(BuildContext context) {
-    TextStyle textStyle = const TextStyle(
-      color: Colors.black,
-    );
-    TextStyle textStyleIncursor = TextStyle(
-      color: textPaneCursor.cursorBlinker.visible ? Colors.white : Colors.black,
-      background: textPaneCursor.cursorBlinker.visible ? (Paint()..color = Colors.black) : null,
-    );
-    TextStyle annotationTextStyle = const TextStyle(
-      color: Colors.black,
-    );
-    TextStyle annotationDummyTextStyle = const TextStyle(
-      color: Colors.transparent,
-    );
-    TextStyle annotationTextStyleIncursor = TextStyle(
-      color: Colors.white,
-      background: Paint()..color = Colors.black,
-    );
-
     List<Widget> sentenceRowWidgets = [];
     List<Widget> annotationRowWidgets = [];
-    List<Tuple2<SegmentRange, Annotation?>> rangeList = getRangeListForAnnotations(lyricSnippet.annotationMap.map, lyricSnippet.sentenceSegments.length);
+    List<Tuple2<SegmentRange, Annotation?>> rangeList = lyricSnippet.getRangeListForAnnotations(lyricSnippet.annotationMap.map, lyricSnippet.sentenceSegments.length);
     int highlightSegmentIndex = lyricSnippet.timing.getSegmentIndexFromSeekPosition(seekPosition);
 
-    /*
+    for (int index = 0; index < rangeList.length; index++) {
+      SegmentRange segmentRange = rangeList[index].item1;
+      Annotation? annotation = rangeList[index].item2;
+      sentenceRowWidgets.add(SentenceSegmentListEdit(
+        sentenceSegmentList: lyricSnippet.getSentenceSegmentList(segmentRange),
+      ));
+      if (index < rangeList.length - 1) {
+        sentenceRowWidgets.add(TimingPointEdit());
+        annotationRowWidgets.add(TimingPointEdit());
+      }
+    }
 
+    return Column(
+      children: [
+        Row(children: annotationRowWidgets),
+        Row(children: sentenceRowWidgets),
+      ],
+    );
+
+    /*
     for (int index = 0; index < rangeList.length; index++) {
       Tuple2<SegmentRange, Annotation?> element = rangeList[index];
       SegmentRange segmentRange = element.item1;

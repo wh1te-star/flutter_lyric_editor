@@ -2,6 +2,7 @@ import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/position_type_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
@@ -197,6 +198,62 @@ class LyricSnippet {
     });
 
     return AnnotationMap(updatedAnnotations);
+  }
+
+  SentenceSegmentList getSentenceSegmentList(SegmentRange segmentRange) {
+    return SentenceSegmentList(
+      sentenceSegments.sublist(
+        segmentRange.startIndex,
+        segmentRange.endIndex,
+      ),
+    );
+  }
+
+  List<Tuple2<SegmentRange, Annotation?>> getRangeListForAnnotations(Map<SegmentRange, Annotation> annotations, int numberOfSegments) {
+    if (annotations.isEmpty) {
+      return [
+        Tuple2(
+          SegmentRange(0, sentenceSegments.length-1),
+          null,
+        ),
+      ];
+    }
+
+    List<Tuple2<SegmentRange, Annotation?>> rangeList = [];
+    int previousEnd = -1;
+
+    for (MapEntry<SegmentRange, Annotation> entry in annotations.entries) {
+      SegmentRange segmentRange = entry.key;
+      Annotation annotation = entry.value;
+
+      if (previousEnd + 1 <= segmentRange.startIndex - 1) {
+        rangeList.add(
+          Tuple2(
+            SegmentRange(previousEnd + 1, segmentRange.startIndex - 1),
+            null,
+          ),
+        );
+      }
+      rangeList.add(
+        Tuple2(
+          segmentRange,
+          annotation,
+        ),
+      );
+
+      previousEnd = segmentRange.endIndex;
+    }
+
+    if (previousEnd + 1 <= numberOfSegments - 1) {
+      rangeList.add(
+        Tuple2(
+          SegmentRange(previousEnd + 1, numberOfSegments - 1),
+          null,
+        ),
+      );
+    }
+
+    return rangeList;
   }
 
   LyricSnippet copyWith({

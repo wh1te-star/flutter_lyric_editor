@@ -18,9 +18,7 @@ class EditColumn extends StatelessWidget {
     List<Widget> elements = [];
     for (LyricSnippet lyricSnippet in lyricSnippetMap.values) {
       Widget widget = Container();
-      if (textPaneCursor is SentenceSelectionCursor) {
-        widget = SentenceSelectionEdit(lyricSnippet, seekPosition, textPaneCursor as SentenceSelectionCursor);
-      }
+      widget = SentenceSelectionEdit(lyricSnippet, seekPosition, textPaneCursor as SentenceSelectionCursor);
       elements.add(widget);
     }
 

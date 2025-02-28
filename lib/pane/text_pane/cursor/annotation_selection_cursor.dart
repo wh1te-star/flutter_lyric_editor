@@ -1,17 +1,19 @@
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
-
 class AnnotationSelectionCursor extends TextPaneCursor {
+  SegmentRange segmentRange;
   InsertionPosition charPosition;
   Option option;
 
   AnnotationSelectionCursor(
     super.lyricSnippetID,
     super.cursorBlinker,
+    this.segmentRange,
     this.charPosition,
     this.option,
   );
@@ -19,12 +21,14 @@ class AnnotationSelectionCursor extends TextPaneCursor {
   AnnotationSelectionCursor._privateConstructor(
     super.lyricSnippetID,
     super.cursorBlinker,
+    this.segmentRange,
     this.charPosition,
     this.option,
   );
   static final AnnotationSelectionCursor _empty = AnnotationSelectionCursor._privateConstructor(
     LyricSnippetID.empty,
     CursorBlinker.empty,
+    SegmentRange.empty,
     InsertionPosition.empty,
     Option.former,
   );
@@ -35,12 +39,14 @@ class AnnotationSelectionCursor extends TextPaneCursor {
   AnnotationSelectionCursor copyWith({
     LyricSnippetID? lyricSnippetID,
     CursorBlinker? cursorBlinker,
+    SegmentRange? segmentRange,
     InsertionPosition? charPosition,
     Option? option,
   }) {
     return AnnotationSelectionCursor(
       lyricSnippetID ?? this.lyricSnippetID,
       cursorBlinker ?? this.cursorBlinker,
+      segmentRange ?? this.segmentRange,
       charPosition ?? this.charPosition,
       option ?? this.option,
     );
@@ -58,11 +64,12 @@ class AnnotationSelectionCursor extends TextPaneCursor {
     final AnnotationSelectionCursor otherSentenceSegments = other as AnnotationSelectionCursor;
     if (lyricSnippetID != otherSentenceSegments.lyricSnippetID) return false;
     if (cursorBlinker != otherSentenceSegments.cursorBlinker) return false;
+    if (segmentRange != otherSentenceSegments.segmentRange) return false;
     if (charPosition != otherSentenceSegments.charPosition) return false;
     if (option != otherSentenceSegments.option) return false;
     return true;
   }
 
   @override
-  int get hashCode => lyricSnippetID.hashCode ^ cursorBlinker.hashCode ^ charPosition.hashCode ^ option.hashCode;
+  int get hashCode => lyricSnippetID.hashCode ^ cursorBlinker.hashCode ^ segmentRange.hashCode ^ charPosition.hashCode ^ option.hashCode;
 }
