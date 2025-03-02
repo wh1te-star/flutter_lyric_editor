@@ -153,7 +153,6 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             timingService.removeLyricSnippet(timelinePaneProvider.selectingSnippets[0]);
           }(),
         ),
-        /*
         EnterSegmentSelectionIntent: CallbackAction<EnterSegmentSelectionIntent>(
           onInvoke: (EnterSegmentSelectionIntent intent) => () {
             TextPaneCursor cursor = textPaneProvider.cursor;
@@ -200,7 +199,6 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             }
           }(),
         ),
-        */
         SnippetStartMoveIntent: CallbackAction<SnippetStartMoveIntent>(
           onInvoke: (SnippetStartMoveIntent intent) => () {
             for (var id in timelinePaneProvider.selectingSnippets) {
@@ -240,7 +238,6 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             timingService.undo();
           }(),
         ),
-        /*
         TextPaneCursorMoveLeftIntent: CallbackAction<TextPaneCursorMoveLeftIntent>(
           onInvoke: (TextPaneCursorMoveLeftIntent intent) => () {
             textPaneProvider.moveLeftCursor();
@@ -261,7 +258,6 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             textPaneProvider.moveRightCursor();
           }(),
         ),
-        */
         TimelineZoomInIntent: CallbackAction<TimelineZoomInIntent>(
           onInvoke: (TimelineZoomInIntent intent) => () {
             timelinePaneProvider.zoomIn();
@@ -284,7 +280,6 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             timingService.removeSection(seekPosition);
           }(),
         ),
-        /*
         TimingPointAddIntent: CallbackAction<TimingPointAddIntent>(
           onInvoke: (TimingPointAddIntent intent) => () {
             SeekPosition seekPosition = musicPlayerProvider.seekPosition;
@@ -331,7 +326,6 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             timingService.divideSnippet(timelinePaneProvider.selectingSnippets[0], textPaneProvider.cursor.charPosition, musicPlayerProvider.seekPosition);
           }(),
         ),
-        */
         SnippetConcatenateIntent: CallbackAction<SnippetConcatenateIntent>(
           onInvoke: (SnippetConcatenateIntent intent) => () {
             final List<LyricSnippetID> selectingSnippets = timelinePaneProvider.selectingSnippets;
@@ -365,15 +359,13 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             timelinePaneProvider.moveRightCursor();
           }(),
         ),
-        /*
         CancelIntent: CallbackAction<CancelIntent>(
           onInvoke: (CancelIntent intent) => () {
-            if (textPaneProvider.cursor.isSegmentSelectionMode) {
-              textPaneProvider.cursor.exitSegmentSelectionMode();
+            if (textPaneProvider.isSegmentSelection) {
+              textPaneProvider.exitSegmentSelectionMode();
             }
           }(),
         ),
-        */
       };
 
   @override
