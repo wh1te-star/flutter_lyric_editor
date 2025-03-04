@@ -46,7 +46,7 @@ class LyricSnippet {
     );
   }
 
-  int? getAnnotationIndexFromSeekPosition(SeekPosition seekPosition) {
+  SegmentRange getAnnotationIndexFromSeekPosition(SeekPosition seekPosition) {
     for (MapEntry<SegmentRange, Annotation> entry in annotationMap.map.entries) {
       SegmentRange range = entry.key;
       Annotation annotation = entry.value;
@@ -56,10 +56,10 @@ class LyricSnippet {
       SeekPosition startSeekPosition = SeekPosition(startTimestamp.position + timingPoints[range.startIndex].seekPosition.position + annotationTimingPoints.first.seekPosition.position);
       SeekPosition endSeekPosition = SeekPosition(startTimestamp.position + timingPoints[range.startIndex].seekPosition.position + annotationTimingPoints.last.seekPosition.position);
       if (startSeekPosition <= seekPosition && seekPosition < endSeekPosition) {
-        return range.startIndex;
+        return range;
       }
     }
-    return null;
+    return SegmentRange.empty;
   }
 
   LyricSnippet editSentence(String newSentence) {
@@ -213,7 +213,7 @@ class LyricSnippet {
     if (annotations.isEmpty) {
       return [
         Tuple2(
-          SegmentRange(0, sentenceSegments.length-1),
+          SegmentRange(0, sentenceSegments.length - 1),
           null,
         ),
       ];

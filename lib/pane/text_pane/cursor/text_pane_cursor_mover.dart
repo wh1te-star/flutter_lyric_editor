@@ -3,6 +3,7 @@ import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/sentence_selection_cursor.dart';
+import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor.dart';
@@ -10,42 +11,41 @@ import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 abstract class TextPaneCursorMover {
   final LyricSnippetMap lyricSnippetMap;
-  TextPaneCursor textPaneCursor;
-  CursorBlinker cursorBlinker;
+  final TextPaneCursor textPaneCursor;
+  final CursorBlinker cursorBlinker;
+  final SeekPosition seekPosition;
 
   TextPaneCursorMover({
     required this.lyricSnippetMap,
     required this.textPaneCursor,
     required this.cursorBlinker,
+    required this.seekPosition,
   });
 
-  TextPaneCursor defaultCursor();
+  TextPaneCursor defaultCursor(LyricSnippetID lyricSnippetID);
   TextPaneCursorMover moveUpCursor();
   TextPaneCursorMover moveDownCursor();
   TextPaneCursorMover moveLeftCursor();
   TextPaneCursorMover moveRightCursor();
+}
 
-  TextPaneCursorMover moveUpCursor() {
-    if (isSegmentSelection) {
-      Map<LyricSnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition().map;
-      LyricSnippet cursorSnippet = timingService.lyricSnippetMap[textPaneCursor.lyricSnippetID]!;
+TextPaneCursorMover moveUpCursor() {
+  if (isSegmentSelection) {
+    Map<LyricSnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition().map;
+    LyricSnippet lyricSnippet = lyricSnippetMap[textPaneCursor.lyricSnippetID];
+    assert(lyricSnippet != null);
 
-      int? annotationIndex = cursorSnippet.getAnnotationIndexFromSeekPosition(musicPlayerProvider.seekPosition);
+    int? annotationIndex = lyricSnippet.getAnnotationIndexFromSeekPosition(seekPosition);
 
-      if (isAnnotationSelection || annotationIndex == null) {
-        int index = currentSnippets.keys.toList().indexWhere((id) => id == textPaneCursor.lyricSnippetID);
-        if (index > 0) {
-          LyricSnippetID nextSnippetID = currentSnippets.keys.toList()[index - 1];
-          textPaneCursor = getDefaultSentenceSelectionCursor(nextSnippetID);
-        }
-      } else {
-        textPaneCursor = getDefaultAnnotationSelectionCursor(textPaneCursor.lyricSnippetID);
+    if (isAnnotationSelection || annotationIndex == null) {
+      int index = currentSnippets.keys.toList().indexWhere((id) => id == textPaneCursor.lyricSnippetID);
+      if (index > 0) {
+        LyricSnippetID nextSnippetID = currentSnippets.keys.toList()[index - 1];
+        textPaneCursor = getDefaultSentenceSelectionCursor(nextSnippetID);
       }
+    } else {
+      textPaneCursor = getDefaultAnnotationSelectionCursor(textPaneCursor.lyricSnippetID);
     }
-
-    debugPrint("$textPaneCursor");
-    cursorBlinker.restartCursorTimer();
-    notifyListeners();
   }
 
   TextPaneCursorMover moveDownCursor() {

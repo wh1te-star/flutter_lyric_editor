@@ -1,7 +1,7 @@
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/annotation_selection_cursor_mover.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/annotation_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_mover.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
@@ -10,14 +10,14 @@ import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
-class SentenceSelectionCursorMover extends TextPaneCursorMover {
-  SentenceSelectionCursorMover({
+class AnnotationSelectionCursorMover extends TextPaneCursorMover {
+  AnnotationSelectionCursorMover({
     required super.lyricSnippetMap,
     required super.textPaneCursor,
     required super.cursorBlinker,
     required super.seekPosition,
   }) {
-    assert(isIDContained(), "At SentenceSelectionCursorMover, the passed lyricSnippetID does not point to a lyric snippet in lyricSnippetMap.");
+    assert(isIDContained(), "At AnnotationSelectionCursorMover, the passed lyricSnippetID does not point to a lyric snippet in lyricSnippetMap.");
   }
 
   bool isIDContained() {
@@ -28,19 +28,19 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
     return true;
   }
 
-  factory SentenceSelectionCursorMover.withDefaultCursor({
+  factory AnnotationSelectionCursorMover.withDefaultCursor({
     required LyricSnippetMap lyricSnippetMap,
     required LyricSnippetID lyricSnippetID,
     required CursorBlinker cursorBlinker,
     required SeekPosition seekPosition,
   }) {
-    final SentenceSelectionCursor tempCursor = SentenceSelectionCursor(
+    final AnnotationSelectionCursor tempCursor = AnnotationSelectionCursor(
       lyricSnippetID,
       cursorBlinker,
       InsertionPosition.empty,
       Option.former,
     );
-    final SentenceSelectionCursorMover mover = SentenceSelectionCursorMover(
+    final AnnotationSelectionCursorMover mover = AnnotationSelectionCursorMover(
       lyricSnippetMap: lyricSnippetMap,
       textPaneCursor: tempCursor,
       cursorBlinker: cursorBlinker,
@@ -50,11 +50,11 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
   }
 
   @override
-  SentenceSelectionCursor defaultCursor(LyricSnippetID lyricSnippetID) {
+  AnnotationSelectionCursor defaultCursor(LyricSnippetID lyricSnippetID) {
     LyricSnippet lyricSnippet = lyricSnippetMap.getLyricSnippetByID(lyricSnippetID);
     int segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
     InsertionPosition charPosition = lyricSnippet.timingPoints[segmentIndex].charPosition + 1;
-    return SentenceSelectionCursor(textPaneCursor.lyricSnippetID, cursorBlinker, charPosition, Option.former);
+    return AnnotationSelectionCursor(textPaneCursor.lyricSnippetID, cursorBlinker, charPosition, Option.former);
   }
 
   @override
@@ -73,7 +73,7 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
       }
 
       LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[index - 1];
-      return SentenceSelectionCursorMover.withDefaultCursor(
+      return AnnotationSelectionCursorMover.withDefaultCursor(
         lyricSnippetMap: lyricSnippetMap,
         lyricSnippetID: nextLyricSnippetID,
         cursorBlinker: cursorBlinker,
@@ -104,13 +104,13 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
     return this;
   }
 
-  SentenceSelectionCursorMover copyWith({
+  AnnotationSelectionCursorMover copyWith({
     LyricSnippetMap? lyricSnippetMap,
-    SentenceSelectionCursor? sentenceSelectionCursor,
+    AnnotationSelectionCursor? sentenceSelectionCursor,
     CursorBlinker? cursorBlinker,
     SeekPosition? seekPosition,
   }) {
-    return SentenceSelectionCursorMover(
+    return AnnotationSelectionCursorMover(
       lyricSnippetMap: lyricSnippetMap ?? this.lyricSnippetMap,
       textPaneCursor: sentenceSelectionCursor ?? textPaneCursor,
       cursorBlinker: cursorBlinker ?? this.cursorBlinker,
@@ -120,18 +120,18 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
 
   @override
   String toString() {
-    return 'SentenceSelectionCursorMover($lyricSnippetMap, $textPaneCursor, $cursorBlinker, $seekPosition)';
+    return 'AnnotationSelectionCursorMover($lyricSnippetMap, $textPaneCursor, $cursorBlinker, $seekPosition)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final SentenceSelectionCursorMover otherSentenceSelectionCursorMover = other as SentenceSelectionCursorMover;
-    if (lyricSnippetMap != otherSentenceSelectionCursorMover.lyricSnippetMap) return false;
-    if (textPaneCursor != otherSentenceSelectionCursorMover.textPaneCursor) return false;
-    if (cursorBlinker != otherSentenceSelectionCursorMover.cursorBlinker) return false;
-    if (seekPosition != otherSentenceSelectionCursorMover.seekPosition) return false;
+    final AnnotationSelectionCursorMover otherAnnotationSelectionCursorMover = other as AnnotationSelectionCursorMover;
+    if (lyricSnippetMap != otherAnnotationSelectionCursorMover.lyricSnippetMap) return false;
+    if (textPaneCursor != otherAnnotationSelectionCursorMover.textPaneCursor) return false;
+    if (cursorBlinker != otherAnnotationSelectionCursorMover.cursorBlinker) return false;
+    if (seekPosition != otherAnnotationSelectionCursorMover.seekPosition) return false;
     return true;
   }
 
