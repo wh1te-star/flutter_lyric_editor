@@ -46,7 +46,7 @@ class LyricSnippet {
     );
   }
 
-  SegmentRange getAnnotationIndexFromSeekPosition(SeekPosition seekPosition) {
+  SegmentRange getAnnotationRangeFromSeekPosition(SeekPosition seekPosition) {
     for (MapEntry<SegmentRange, Annotation> entry in annotationMap.map.entries) {
       SegmentRange range = entry.key;
       Annotation annotation = entry.value;

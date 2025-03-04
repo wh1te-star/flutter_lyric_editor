@@ -109,7 +109,7 @@ class TextPaneProvider with ChangeNotifier {
     AnnotationSelectionCursor defaultCursor = AnnotationSelectionCursor.empty;
 
     LyricSnippet snippet = timingService.getLyricSnippetByID(id);
-    int? annotationIndex = snippet.getAnnotationIndexFromSeekPosition(musicPlayerProvider.seekPosition);
+    int? annotationIndex = snippet.getAnnotationRangeFromSeekPosition(musicPlayerProvider.seekPosition);
     MapEntry<SegmentRange, Annotation>? cursorAnnotationEntry = snippet.getAnnotationWords(annotationIndex!);
     SegmentRange range = cursorAnnotationEntry.key;
     Annotation annotation = cursorAnnotationEntry.value;
@@ -127,5 +127,4 @@ class TextPaneProvider with ChangeNotifier {
   int countOccurrences(List<int> list, int number) {
     return list.where((element) => element == number).length;
   }
-
 }

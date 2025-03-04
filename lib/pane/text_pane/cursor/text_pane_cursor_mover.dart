@@ -35,7 +35,7 @@ TextPaneCursorMover moveUpCursor() {
     LyricSnippet lyricSnippet = lyricSnippetMap[textPaneCursor.lyricSnippetID];
     assert(lyricSnippet != null);
 
-    int? annotationIndex = lyricSnippet.getAnnotationIndexFromSeekPosition(seekPosition);
+    int? annotationIndex = lyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
 
     if (isAnnotationSelection || annotationIndex == null) {
       int index = currentSnippets.keys.toList().indexWhere((id) => id == textPaneCursor.lyricSnippetID);
@@ -60,7 +60,7 @@ TextPaneCursorMover moveUpCursor() {
           LyricSnippetID nextSnippetID = currentSnippets.keys.toList()[index + 1];
           LyricSnippet nextSnippet = currentSnippets.values.toList()[index + 1];
 
-          int? annotationIndex = nextSnippet.getAnnotationIndexFromSeekPosition(musicPlayerProvider.seekPosition);
+          int? annotationIndex = nextSnippet.getAnnotationRangeFromSeekPosition(musicPlayerProvider.seekPosition);
           if (annotationIndex == null) {
             textPaneCursor = getDefaultSentenceSelectionCursor(nextSnippetID);
           } else {

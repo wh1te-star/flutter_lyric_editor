@@ -1,8 +1,9 @@
+import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/annotation_selection_cursor.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/sentence_selection_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/sentence_selection_cursor_mover.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_mover.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
@@ -17,7 +18,9 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
     required super.cursorBlinker,
     required super.seekPosition,
   }) {
-    assert(isIDContained(), "At AnnotationSelectionCursorMover, the passed lyricSnippetID does not point to a lyric snippet in lyricSnippetMap.");
+    assert(textPaneCursor is AnnotationSelectionCursor, "Wrong type textPaneCursor is passed: AnnotationSelectionCursor is expected but ${textPaneCursor.runtimeType} is passed.");
+    assert(isIDContained(), "The passed lyricSnippetID does not point to a lyric snippet in lyricSnippetMap.");
+    assert(doesSeekPositionPointAnnotation(), "The passed seek position does not point to any annotation.");
   }
 
   bool isIDContained() {
@@ -26,6 +29,12 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
       return false;
     }
     return true;
+  }
+
+  bool doesSeekPositionPointAnnotation() {
+    LyricSnippet lyricSnippet = lyricSnippetMap.getLyricSnippetByID(textPaneCursor.lyricSnippetID);
+    SegmentRange annotationSegmentRange = lyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
+    return annotationSegmentRange.isNotEmpty;
   }
 
   factory AnnotationSelectionCursorMover.withDefaultCursor({
@@ -37,56 +46,53 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
     final AnnotationSelectionCursor tempCursor = AnnotationSelectionCursor(
       lyricSnippetID,
       cursorBlinker,
+      SegmentRange.empty,
       InsertionPosition.empty,
       Option.former,
     );
-    final AnnotationSelectionCursorMover mover = AnnotationSelectionCursorMover(
+    final AnnotationSelectionCursorMover tempMover = AnnotationSelectionCursorMover(
       lyricSnippetMap: lyricSnippetMap,
       textPaneCursor: tempCursor,
       cursorBlinker: cursorBlinker,
       seekPosition: seekPosition,
     );
-    return mover.copyWith(sentenceSelectionCursor: mover.defaultCursor(lyricSnippetID));
+    return tempMover.copyWith(annotationSelectionCursor: tempMover.defaultCursor(lyricSnippetID));
   }
 
   @override
   AnnotationSelectionCursor defaultCursor(LyricSnippetID lyricSnippetID) {
     LyricSnippet lyricSnippet = lyricSnippetMap.getLyricSnippetByID(lyricSnippetID);
-    int segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
-    InsertionPosition charPosition = lyricSnippet.timingPoints[segmentIndex].charPosition + 1;
-    return AnnotationSelectionCursor(textPaneCursor.lyricSnippetID, cursorBlinker, charPosition, Option.former);
+    SegmentRange annotationSegmentRange = lyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
+    Annotation annotation = lyricSnippet.annotationMap[annotationSegmentRange]!;
+    int index = annotation.timing.getSegmentIndexFromSeekPosition(seekPosition);
+
+    return AnnotationSelectionCursor(
+      lyricSnippetID,
+      cursorBlinker,
+      annotationSegmentRange,
+      annotation.timingPoints[index].charPosition + 1,
+      Option.former,
+    );
   }
 
   @override
   TextPaneCursorMover moveUpCursor() {
     cursorBlinker.restartCursorTimer();
 
-    LyricSnippet lyricSnippet = lyricSnippetMap[textPaneCursor.lyricSnippetID]!;
-
-    SegmentRange annotationIndex = lyricSnippet.getAnnotationIndexFromSeekPosition(seekPosition);
-    if (annotationIndex.isEmpty) {
-      int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
-        return id == textPaneCursor.lyricSnippetID;
-      });
-      if (index <= 0) {
-        return this;
-      }
-
-      LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[index - 1];
-      return AnnotationSelectionCursorMover.withDefaultCursor(
-        lyricSnippetMap: lyricSnippetMap,
-        lyricSnippetID: nextLyricSnippetID,
-        cursorBlinker: cursorBlinker,
-        seekPosition: seekPosition,
-      );
-    } else {
-      return AnnotationSelectionCursorMover.withDefaultCursor(
-        lyricSnippetMap: lyricSnippetMap,
-        lyricSnippetID: nextLyricSnippetID,
-        cursorBlinker: cursorBlinker,
-        seekPosition: seekPosition,
-      );
+    int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
+      return id == textPaneCursor.lyricSnippetID;
+    });
+    if (index <= 0) {
+      return this;
     }
+
+    LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[index - 1];
+    return SentenceSelectionCursorMover.withDefaultCursor(
+      lyricSnippetMap: lyricSnippetMap,
+      lyricSnippetID: nextLyricSnippetID,
+      cursorBlinker: cursorBlinker,
+      seekPosition: seekPosition,
+    );
   }
 
   @override
@@ -106,13 +112,13 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
 
   AnnotationSelectionCursorMover copyWith({
     LyricSnippetMap? lyricSnippetMap,
-    AnnotationSelectionCursor? sentenceSelectionCursor,
+    AnnotationSelectionCursor? annotationSelectionCursor,
     CursorBlinker? cursorBlinker,
     SeekPosition? seekPosition,
   }) {
     return AnnotationSelectionCursorMover(
       lyricSnippetMap: lyricSnippetMap ?? this.lyricSnippetMap,
-      textPaneCursor: sentenceSelectionCursor ?? textPaneCursor,
+      textPaneCursor: annotationSelectionCursor ?? textPaneCursor,
       cursorBlinker: cursorBlinker ?? this.cursorBlinker,
       seekPosition: seekPosition ?? this.seekPosition,
     );

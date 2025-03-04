@@ -17,7 +17,8 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
     required super.cursorBlinker,
     required super.seekPosition,
   }) {
-    assert(isIDContained(), "At SentenceSelectionCursorMover, the passed lyricSnippetID does not point to a lyric snippet in lyricSnippetMap.");
+    assert(textPaneCursor is SentenceSelectionCursor, "Wrong type textPaneCursor is passed: SentenceSelectionCursor is expected but ${textPaneCursor.runtimeType} is passed.");
+    assert(isIDContained(), "The passed lyricSnippetID does not point to a lyric snippet in lyricSnippetMap.");
   }
 
   bool isIDContained() {
@@ -40,13 +41,13 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
       InsertionPosition.empty,
       Option.former,
     );
-    final SentenceSelectionCursorMover mover = SentenceSelectionCursorMover(
+    final SentenceSelectionCursorMover tempMover = SentenceSelectionCursorMover(
       lyricSnippetMap: lyricSnippetMap,
       textPaneCursor: tempCursor,
       cursorBlinker: cursorBlinker,
       seekPosition: seekPosition,
     );
-    return mover.copyWith(sentenceSelectionCursor: mover.defaultCursor(lyricSnippetID));
+    return tempMover.copyWith(sentenceSelectionCursor: tempMover.defaultCursor(lyricSnippetID));
   }
 
   @override
@@ -62,31 +63,30 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
     cursorBlinker.restartCursorTimer();
 
     LyricSnippet lyricSnippet = lyricSnippetMap[textPaneCursor.lyricSnippetID]!;
-
-    SegmentRange annotationIndex = lyricSnippet.getAnnotationIndexFromSeekPosition(seekPosition);
-    if (annotationIndex.isEmpty) {
-      int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
-        return id == textPaneCursor.lyricSnippetID;
-      });
-      if (index <= 0) {
-        return this;
-      }
-
-      LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[index - 1];
-      return SentenceSelectionCursorMover.withDefaultCursor(
-        lyricSnippetMap: lyricSnippetMap,
-        lyricSnippetID: nextLyricSnippetID,
-        cursorBlinker: cursorBlinker,
-        seekPosition: seekPosition,
-      );
-    } else {
+    SegmentRange annotationIndex = lyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
+    if (annotationIndex.isNotEmpty) {
       return AnnotationSelectionCursorMover.withDefaultCursor(
         lyricSnippetMap: lyricSnippetMap,
-        lyricSnippetID: nextLyricSnippetID,
+        lyricSnippetID: textPaneCursor.lyricSnippetID,
         cursorBlinker: cursorBlinker,
         seekPosition: seekPosition,
       );
     }
+
+    int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
+      return id == textPaneCursor.lyricSnippetID;
+    });
+    if (index <= 0) {
+      return this;
+    }
+
+    LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[index - 1];
+    return SentenceSelectionCursorMover.withDefaultCursor(
+      lyricSnippetMap: lyricSnippetMap,
+      lyricSnippetID: nextLyricSnippetID,
+      cursorBlinker: cursorBlinker,
+      seekPosition: seekPosition,
+    );
   }
 
   @override
