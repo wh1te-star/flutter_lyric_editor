@@ -38,6 +38,8 @@ class SentenceSelectionEdit extends LyricSnippetEdit<SentenceSelectionCursor> {
         Row(children: sentenceRowWidgets),
       ],
     );
+  }
+}
 
     /*
     for (int index = 0; index < rangeList.length; index++) {
@@ -191,5 +193,3 @@ class SentenceSelectionEdit extends LyricSnippetEdit<SentenceSelectionCursor> {
       ],
     );
     */
-  }
-}

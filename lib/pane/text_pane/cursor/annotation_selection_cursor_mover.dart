@@ -24,6 +24,9 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
   }
 
   bool isIDContained() {
+    if (textPaneCursor.isEmpty) {
+      return true;
+    }
     LyricSnippet? lyricSnippet = lyricSnippetMap[textPaneCursor.lyricSnippetID];
     if (lyricSnippet == null) {
       return false;

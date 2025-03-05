@@ -29,6 +29,7 @@ abstract class TextPaneCursorMover {
   TextPaneCursorMover moveRightCursor();
 }
 
+/*
 TextPaneCursorMover moveUpCursor() {
   if (isSegmentSelection) {
     Map<LyricSnippetID, LyricSnippet> currentSnippets = timingService.getSnippetsAtSeekPosition().map;
@@ -193,3 +194,4 @@ TextPaneCursorMover moveUpCursor() {
     notifyListeners();
   }
 }
+*/

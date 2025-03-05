@@ -82,7 +82,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
         },
         child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
-          child: EditColumn(timingService.getSnippetsAtSeekPosition(), musicPlayerService.seekPosition, textPaneProvider.textPaneCursor),
+          child: EditColumn(timingService.getSnippetsAtSeekPosition(), musicPlayerService.seekPosition, textPaneProvider.textPaneCursorMover),
         ),
       ),
     );
