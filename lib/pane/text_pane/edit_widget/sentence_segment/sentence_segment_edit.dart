@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/segment_selection_cursor.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/sentence_selection_cursor.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/segment_selection_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/sentence_selection_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 class SentenceSegmentEdit extends StatelessWidget {

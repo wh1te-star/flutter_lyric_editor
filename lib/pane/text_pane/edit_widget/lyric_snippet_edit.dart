@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 
 abstract class LyricSnippetEdit<CursorType extends TextPaneCursor> extends StatelessWidget {
