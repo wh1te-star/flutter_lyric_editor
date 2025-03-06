@@ -12,6 +12,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/senten
 import 'package:lyric_editor/pane/text_pane/cursor/mover/sentence_selection_cursor_mover.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor_mover.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_controller.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/position_type_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
@@ -29,22 +30,19 @@ final textPaneMasterProvider = ChangeNotifierProvider((ref) {
 class TextPaneProvider with ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
   final TimingService timingService;
-  late TextPaneCursorMover textPaneCursorMover;
+  late TextPaneCursorController textPaneCursorController;
   late CursorBlinker cursorBlinker;
-
-  bool isAnnotationSelection = false;
-  bool isSegmentSelection = false;
 
   TextPaneProvider({
     required this.musicPlayerProvider,
     required this.timingService,
   }) {
     musicPlayerProvider.addListener(() {
-      updateCursorBySeekPosition();
+      textPaneCursorController.updateCursorBySeekPosition();
     });
 
     timingService.addListener(() {
-      updateCursorIfNeedByItemDeletion();
+      textPaneCursorController.updateCursorIfNeedByItemDeletion();
     });
 
     cursorBlinker = CursorBlinker(
@@ -53,87 +51,34 @@ class TextPaneProvider with ChangeNotifier {
         notifyListeners();
       },
     );
-    updateCursorBySeekPosition();
+    textPaneCursorController.updateCursorBySeekPosition();
   }
 
-  void updateCursorBySeekPosition() {
-    LyricSnippetMap lyricSnippetsAtSeekPosition = timingService.getSnippetsAtSeekPosition();
-    if (lyricSnippetsAtSeekPosition.isEmpty) {
-      textPaneCursorMover = SentenceSelectionCursorMover(
-        lyricSnippetMap: lyricSnippetsAtSeekPosition,
-        textPaneCursor: SentenceSelectionCursor.empty,
-        cursorBlinker: cursorBlinker,
-        seekPosition: musicPlayerProvider.seekPosition,
-      );
-      return;
-    }
-
-    SeekPosition seekPosition = musicPlayerProvider.seekPosition;
-    TextPaneCursor textPaneCursor = textPaneCursorMover.textPaneCursor;
-
-    LyricSnippetID lyricSnippetID = lyricSnippetsAtSeekPosition.keys.first;
-    LyricSnippet lyricSnippet = lyricSnippetsAtSeekPosition.values.first;
-    if (lyricSnippetsAtSeekPosition.containsKey(lyricSnippetID)) {
-      lyricSnippetID = textPaneCursor.lyricSnippetID;
-      lyricSnippet = lyricSnippetsAtSeekPosition[lyricSnippetID]!;
-    }
-
-    int currentSnippetPosition = lyricSnippet.timing.getSegmentIndexFromSeekPosition(seekPosition);
-    PositionTypeInfo nextSnippetPosition = lyricSnippet.timing.getPositionTypeInfo((textPaneCursor as SentenceSelectionCursor).charPosition.position);
-    if (currentSnippetPosition != nextSnippetPosition.index) {
-      textPaneCursorMover = SentenceSelectionCursorMover.withDefaultCursor(
-        lyricSnippetMap: lyricSnippetsAtSeekPosition,
-        lyricSnippetID: lyricSnippetID,
-        cursorBlinker: cursorBlinker,
-        seekPosition: seekPosition,
-      );
-      cursorBlinker.restartCursorTimer();
-    }
+  void moveUpCursor() {
+    textPaneCursorController.moveUpCursor();
   }
 
-  void updateCursorIfNeedByItemDeletion() {
-    LyricSnippetMap lyricSnippetsAtSeekPosition = timingService.getSnippetsAtSeekPosition();
-    if (lyricSnippetsAtSeekPosition.isEmpty) {
-      return;
-    }
-
-    SeekPosition seekPosition = musicPlayerProvider.seekPosition;
-    TextPaneCursor textPaneCursor = textPaneCursorMover.textPaneCursor;
-    LyricSnippet? lyricSnippet = timingService.lyricSnippetMap[textPaneCursor.lyricSnippetID];
-    if (lyricSnippet == null) {
-      textPaneCursorMover = SentenceSelectionCursorMover.withDefaultCursor(
-        lyricSnippetMap: lyricSnippetsAtSeekPosition,
-        lyricSnippetID: LyricSnippetID(1),
-        cursorBlinker: cursorBlinker,
-        seekPosition: seekPosition,
-      );
-      return;
-    }
-
-    if (isAnnotationSelection) {
-      return;
-    }
-
-    Annotation? annotation = lyricSnippet.annotationMap.map[(textPaneCursor as AnnotationSelectionCursor).segmentRange];
-    if (annotation == null) {
-      textPaneCursorMover = AnnotationSelectionCursorMover.withDefaultCursor(
-        lyricSnippetMap: lyricSnippetsAtSeekPosition,
-        lyricSnippetID: textPaneCursor.lyricSnippetID,
-        cursorBlinker: cursorBlinker,
-        seekPosition: seekPosition,
-      );
-      return;
-    }
+  void moveDownCursor() {
+    textPaneCursorController.moveDownCursor();
   }
 
-  void moveUpCursor() {}
-  void moveDownCursor() {}
-  void moveLeftCursor() {}
-  void moveRightCursor() {}
+  void moveLeftCursor() {
+    textPaneCursorController.moveLeftCursor();
+  }
 
-  void enterSegmentSelectionMode() {}
+  void moveRightCursor() {
+    textPaneCursorController.moveRightCursor();
+  }
 
-  void exitSegmentSelectionMode() {}
+  void enterSegmentSelectionMode() {
+    textPaneCursorController.enterSegmentSelectionMode();
+  }
 
-  void switchToRangeSelection() {}
+  void exitSegmentSelectionMode() {
+    textPaneCursorController.exitSegmentSelectionMode();
+  }
+
+  void switchToRangeSelection() {
+    textPaneCursorController.switchToRangeSelection();
+  }
 }
