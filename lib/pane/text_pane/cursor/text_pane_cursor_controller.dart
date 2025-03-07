@@ -2,9 +2,12 @@ import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/annotation_selection_cursor_mover.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/mover/sentence_selection_cursor_mover.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/sentence_selection_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor_mover.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/position_type_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/service/timing_service.dart';
@@ -12,9 +15,6 @@ import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 class TextPaneCursorController {
   TextPaneCursorMover textPaneCursorMover;
-
-  bool isAnnotationSelection = false;
-  bool isSegmentSelection = false;
 
   TextPaneCursorController({
     required this.textPaneCursorMover,
@@ -44,19 +44,17 @@ class TextPaneCursorController {
     );
   }
 
-  void updateCursorBySeekPosition() {
-    LyricSnippetMap lyricSnippetsAtSeekPosition = timingService.getSnippetsAtSeekPosition();
+  void updateCursorBySeekPosition(LyricSnippetMap lyricSnippetsAtSeekPosition, CursorBlinker cursorBlinker, SeekPosition seekPosition) {
     if (lyricSnippetsAtSeekPosition.isEmpty) {
       textPaneCursorMover = SentenceSelectionCursorMover(
         lyricSnippetMap: lyricSnippetsAtSeekPosition,
         textPaneCursor: SentenceSelectionCursor.empty,
         cursorBlinker: cursorBlinker,
-        seekPosition: musicPlayerProvider.seekPosition,
+        seekPosition: seekPosition,
       );
       return;
     }
 
-    SeekPosition seekPosition = musicPlayerProvider.seekPosition;
     TextPaneCursor textPaneCursor = textPaneCursorMover.textPaneCursor;
 
     LyricSnippetID lyricSnippetID = lyricSnippetsAtSeekPosition.keys.first;
