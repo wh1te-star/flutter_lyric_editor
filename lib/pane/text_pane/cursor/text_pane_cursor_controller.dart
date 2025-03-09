@@ -1,8 +1,10 @@
+import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/annotation_selection_cursor_mover.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/sentence_selection_cursor_mover.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/annotation_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor_mover.dart';
@@ -44,15 +46,30 @@ class TextPaneCursorController {
     );
   }
 
-  void updateCursorBySeekPosition(LyricSnippetMap lyricSnippetsAtSeekPosition, CursorBlinker cursorBlinker, SeekPosition seekPosition) {
+  TextPaneCursorController updateControllerBySeekPosition(
+    LyricSnippetMap lyricSnippetsAtSeekPosition,
+    CursorBlinker cursorBlinker,
+    SeekPosition seekPosition,
+  ) {
+    return TextPaneCursorController(
+      textPaneCursorMover: updateMoverBySeekPosition(
+        lyricSnippetsAtSeekPosition,
+        cursorBlinker,
+        seekPosition,
+      ),
+    );
+  }
+
+  TextPaneCursorMover updateMoverBySeekPosition(LyricSnippetMap lyricSnippetsAtSeekPosition, CursorBlinker cursorBlinker, SeekPosition seekPosition) {
+    cursorBlinker.restartCursorTimer();
+
     if (lyricSnippetsAtSeekPosition.isEmpty) {
-      textPaneCursorMover = SentenceSelectionCursorMover(
+      return SentenceSelectionCursorMover(
         lyricSnippetMap: lyricSnippetsAtSeekPosition,
         textPaneCursor: SentenceSelectionCursor.empty,
         cursorBlinker: cursorBlinker,
         seekPosition: seekPosition,
       );
-      return;
     }
 
     TextPaneCursor textPaneCursor = textPaneCursorMover.textPaneCursor;
@@ -67,69 +84,60 @@ class TextPaneCursorController {
     int currentSnippetPosition = lyricSnippet.timing.getSegmentIndexFromSeekPosition(seekPosition);
     PositionTypeInfo nextSnippetPosition = lyricSnippet.timing.getPositionTypeInfo((textPaneCursor as SentenceSelectionCursor).charPosition.position);
     if (currentSnippetPosition != nextSnippetPosition.index) {
-      textPaneCursorMover = SentenceSelectionCursorMover.withDefaultCursor(
+      return SentenceSelectionCursorMover.withDefaultCursor(
         lyricSnippetMap: lyricSnippetsAtSeekPosition,
         lyricSnippetID: lyricSnippetID,
         cursorBlinker: cursorBlinker,
         seekPosition: seekPosition,
       );
-      cursorBlinker.restartCursorTimer();
     }
+
+    return textPaneCursorMover;
   }
 
-  void updateCursorIfNeedByItemDeletion() {
-    LyricSnippetMap lyricSnippetsAtSeekPosition = timingService.getSnippetsAtSeekPosition();
+  TextPaneCursorController updateCursorByItemDeletion(LyricSnippetMap allLyricSnippetMap, LyricSnippetMap lyricSnippetsAtSeekPosition, CursorBlinker cursorBlinker, SeekPosition seekPosition) {
     if (lyricSnippetsAtSeekPosition.isEmpty) {
-      return;
+      return textPaneCursorMover;
     }
 
-    SeekPosition seekPosition = musicPlayerProvider.seekPosition;
     TextPaneCursor textPaneCursor = textPaneCursorMover.textPaneCursor;
-    LyricSnippet? lyricSnippet = timingService.lyricSnippetMap[textPaneCursor.lyricSnippetID];
+    LyricSnippet? lyricSnippet = allLyricSnippetMap[textPaneCursor.lyricSnippetID];
     if (lyricSnippet == null) {
-      textPaneCursorMover = SentenceSelectionCursorMover.withDefaultCursor(
+      return SentenceSelectionCursorMover.withDefaultCursor(
         lyricSnippetMap: lyricSnippetsAtSeekPosition,
         lyricSnippetID: LyricSnippetID(1),
         cursorBlinker: cursorBlinker,
         seekPosition: seekPosition,
       );
-      return;
     }
 
-    if (isAnnotationSelection) {
-      return;
+    if (textPaneCursorMover is AnnotationSelectionCursorMover) {
+      return textPaneCursorMover;
     }
 
     Annotation? annotation = lyricSnippet.annotationMap.map[(textPaneCursor as AnnotationSelectionCursor).segmentRange];
     if (annotation == null) {
-      textPaneCursorMover = AnnotationSelectionCursorMover.withDefaultCursor(
+      return AnnotationSelectionCursorMover.withDefaultCursor(
         lyricSnippetMap: lyricSnippetsAtSeekPosition,
         lyricSnippetID: textPaneCursor.lyricSnippetID,
         cursorBlinker: cursorBlinker,
         seekPosition: seekPosition,
       );
-      return;
     }
+    return textPaneCursorMover;
   }
 
-
   TextPaneCursorController copyWith({
-    LyricSnippetMap? lyricSnippetMap,
-    SentenceSelectionCursor? sentenceSelectionCursor,
-    CursorBlinker? cursorBlinker,
-    SeekPosition? seekPosition,
+    TextPaneCursorMover? textPaneCursorMover,
   }) {
     return TextPaneCursorController(
-      lyricSnippetMap: lyricSnippetMap ?? this.lyricSnippetMap,
-      textPaneCursor: sentenceSelectionCursor ?? textPaneCursor,
-      cursorBlinker: cursorBlinker ?? this.cursorBlinker,
-      seekPosition: seekPosition ?? this.seekPosition,
+      textPaneCursorMover: textPaneCursorMover ?? this.textPaneCursorMover,
     );
   }
 
   @override
   String toString() {
-    return 'TextPaneCursorController($lyricSnippetMap, $textPaneCursor, $cursorBlinker, $seekPosition)';
+    return 'TextPaneCursorController($textPaneCursorMover)';
   }
 
   @override
@@ -137,13 +145,10 @@ class TextPaneCursorController {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
     final TextPaneCursorController otherTextPaneCursorController = other as TextPaneCursorController;
-    if (lyricSnippetMap != otherTextPaneCursorController.lyricSnippetMap) return false;
-    if (textPaneCursor != otherTextPaneCursorController.textPaneCursor) return false;
-    if (cursorBlinker != otherTextPaneCursorController.cursorBlinker) return false;
-    if (seekPosition != otherTextPaneCursorController.seekPosition) return false;
+    if (textPaneCursorMover != otherTextPaneCursorController.textPaneCursorMover) return false;
     return true;
   }
 
   @override
-  int get hashCode => lyricSnippetMap.hashCode ^ textPaneCursor.hashCode ^ cursorBlinker.hashCode ^ seekPosition.hashCode;
+  int get hashCode => textPaneCursorMover.hashCode;
 }

@@ -38,11 +38,11 @@ class TextPaneProvider with ChangeNotifier {
     required this.timingService,
   }) {
     musicPlayerProvider.addListener(() {
-      textPaneCursorController.updateCursorBySeekPosition();
+      textPaneCursorController.updateControllerBySeekPosition();
     });
 
     timingService.addListener(() {
-      textPaneCursorController.updateCursorIfNeedByItemDeletion();
+      textPaneCursorController.updateCursorByItemDeletion();
     });
 
     cursorBlinker = CursorBlinker(
@@ -51,7 +51,7 @@ class TextPaneProvider with ChangeNotifier {
         notifyListeners();
       },
     );
-    textPaneCursorController.updateCursorBySeekPosition();
+    textPaneCursorController.updateControllerBySeekPosition();
   }
 
   void moveUpCursor() {
