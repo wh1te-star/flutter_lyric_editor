@@ -1,3 +1,4 @@
+/*
 import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
@@ -152,3 +153,5 @@ class TextPaneCursorController {
   @override
   int get hashCode => textPaneCursorMover.hashCode;
 }
+
+*/
