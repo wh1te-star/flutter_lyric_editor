@@ -27,6 +27,7 @@ abstract class TextPaneCursorMover {
   TextPaneCursorMover moveDownCursor();
   TextPaneCursorMover moveLeftCursor();
   TextPaneCursorMover moveRightCursor();
+  TextPaneCursorMover updateCursor();
 }
 
 /*

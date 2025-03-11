@@ -3,8 +3,10 @@ import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/annotation_selection_cursor_mover.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/sentence_selection_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor_mover.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/position_type_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/service/timing_service.dart';
@@ -104,6 +106,40 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
 
   @override
   TextPaneCursorMover moveRightCursor() {
+    return this;
+  }
+
+  @override
+  TextPaneCursorMover updateCursor() {
+    cursorBlinker.restartCursorTimer();
+
+    if (lyricSnippetMap.isEmpty) {
+      return SentenceSelectionCursorMover(
+        lyricSnippetMap: lyricSnippetMap,
+        textPaneCursor: SentenceSelectionCursor.empty,
+        cursorBlinker: cursorBlinker,
+        seekPosition: seekPosition,
+      );
+    }
+
+    LyricSnippetID lyricSnippetID = lyricSnippetMap.keys.first;
+    LyricSnippet lyricSnippet = lyricSnippetMap.values.first;
+    if (lyricSnippetMap.containsKey(lyricSnippetID)) {
+      lyricSnippetID = textPaneCursor.lyricSnippetID;
+      lyricSnippet = lyricSnippetMap[lyricSnippetID]!;
+    }
+
+    int currentSnippetPosition = lyricSnippet.timing.getSegmentIndexFromSeekPosition(seekPosition);
+    PositionTypeInfo nextSnippetPosition = lyricSnippet.timing.getPositionTypeInfo((textPaneCursor as SentenceSelectionCursor).charPosition.position);
+    if (currentSnippetPosition != nextSnippetPosition.index) {
+      return SentenceSelectionCursorMover.withDefaultCursor(
+        lyricSnippetMap: lyricSnippetMap,
+        lyricSnippetID: lyricSnippetID,
+        cursorBlinker: cursorBlinker,
+        seekPosition: seekPosition,
+      );
+    }
+
     return this;
   }
 

@@ -6,6 +6,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/annota
 import 'package:lyric_editor/pane/text_pane/cursor/mover/sentence_selection_cursor_mover.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor_mover.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/position_type_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/service/timing_service.dart';
@@ -110,6 +111,40 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
 
   @override
   TextPaneCursorMover moveRightCursor() {
+    return this;
+  }
+
+  @override
+  TextPaneCursorMover updateCursor() {
+    cursorBlinker.restartCursorTimer();
+
+    if (lyricSnippetMap.isEmpty) {
+      return SentenceSelectionCursorMover(
+        lyricSnippetMap: lyricSnippetMap,
+        textPaneCursor: AnnotationSelectionCursor.empty,
+        cursorBlinker: cursorBlinker,
+        seekPosition: seekPosition,
+      );
+    }
+
+    LyricSnippetID lyricSnippetID = lyricSnippetMap.keys.first;
+    LyricSnippet lyricSnippet = lyricSnippetMap.values.first;
+    if (lyricSnippetMap.containsKey(lyricSnippetID)) {
+      lyricSnippetID = textPaneCursor.lyricSnippetID;
+      lyricSnippet = lyricSnippetMap[lyricSnippetID]!;
+    }
+
+    int currentSnippetPosition = lyricSnippet.timing.getSegmentIndexFromSeekPosition(seekPosition);
+    PositionTypeInfo nextSnippetPosition = lyricSnippet.timing.getPositionTypeInfo((textPaneCursor as AnnotationSelectionCursor).charPosition.position);
+    if (currentSnippetPosition != nextSnippetPosition.index) {
+      return SentenceSelectionCursorMover.withDefaultCursor(
+        lyricSnippetMap: lyricSnippetMap,
+        lyricSnippetID: lyricSnippetID,
+        cursorBlinker: cursorBlinker,
+        seekPosition: seekPosition,
+      );
+    }
+
     return this;
   }
 
