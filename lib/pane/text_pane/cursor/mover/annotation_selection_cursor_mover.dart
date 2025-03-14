@@ -101,7 +101,34 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
 
   @override
   TextPaneCursorMover moveDownCursor() {
-    return this;
+    cursorBlinker.restartCursorTimer();
+
+    int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
+      return id == textPaneCursor.lyricSnippetID;
+    });
+    if (index + 1 >= lyricSnippetMap.length) {
+      return this;
+    }
+
+    LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[index + 1];
+    LyricSnippet nextLyricSnippet = lyricSnippetMap[nextLyricSnippetID]!;
+
+    SegmentRange annotationIndex = nextLyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
+    if (annotationIndex.isNotEmpty) {
+      return AnnotationSelectionCursorMover.withDefaultCursor(
+        lyricSnippetMap: lyricSnippetMap,
+        lyricSnippetID: textPaneCursor.lyricSnippetID,
+        cursorBlinker: cursorBlinker,
+        seekPosition: seekPosition,
+      );
+    }
+
+    return SentenceSelectionCursorMover.withDefaultCursor(
+      lyricSnippetMap: lyricSnippetMap,
+      lyricSnippetID: nextLyricSnippetID,
+      cursorBlinker: cursorBlinker,
+      seekPosition: seekPosition,
+    );
   }
 
   @override
