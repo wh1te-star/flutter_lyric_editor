@@ -3,6 +3,7 @@ import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
+import 'package:lyric_editor/position/character_position.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/position_type_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
@@ -36,6 +37,8 @@ class LyricSnippet {
   SeekPosition get endTimestamp => timing.endTimestamp;
   List<SentenceSegment> get sentenceSegments => timing.sentenceSegmentList.list;
   List<TimingPoint> get timingPoints => timing.timingPointList.list;
+  int getSegmentIndexFromCharPosition(CharacterPosition charPosition) => timing.getSegmentIndexFromCharPosition(charPosition);
+  PositionTypeInfo getPositionTypeInfo(InsertionPosition insertionPosition) => timing.getPositionTypeInfo(insertionPosition);
   int getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timing.getSegmentIndexFromSeekPosition(seekPosition);
   double getSegmentProgress(SeekPosition seekPosition) => timing.getSegmentProgress(seekPosition);
 

@@ -30,7 +30,7 @@ final textPaneMasterProvider = ChangeNotifierProvider((ref) {
 class TextPaneProvider with ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
   final TimingService timingService;
-  late TextPaneCursorController textPaneCursorController;
+  late TextPaneCursorMover textPaneCursorMover;
   late CursorBlinker cursorBlinker;
 
   TextPaneProvider({
@@ -38,11 +38,11 @@ class TextPaneProvider with ChangeNotifier {
     required this.timingService,
   }) {
     musicPlayerProvider.addListener(() {
-      textPaneCursorController.updateControllerBySeekPosition();
+      textPaneCursorMover.updateControllerBySeekPosition();
     });
 
     timingService.addListener(() {
-      textPaneCursorController.updateCursorByItemDeletion();
+      textPaneCursorMover.updateCursorByItemDeletion();
     });
 
     cursorBlinker = CursorBlinker(
@@ -51,34 +51,34 @@ class TextPaneProvider with ChangeNotifier {
         notifyListeners();
       },
     );
-    textPaneCursorController.updateControllerBySeekPosition();
+    textPaneCursorMover.updateControllerBySeekPosition();
   }
 
   void moveUpCursor() {
-    textPaneCursorController.moveUpCursor();
+    textPaneCursorMover.moveUpCursor();
   }
 
   void moveDownCursor() {
-    textPaneCursorController.moveDownCursor();
+    textPaneCursorMover.moveDownCursor();
   }
 
   void moveLeftCursor() {
-    textPaneCursorController.moveLeftCursor();
+    textPaneCursorMover.moveLeftCursor();
   }
 
   void moveRightCursor() {
-    textPaneCursorController.moveRightCursor();
+    textPaneCursorMover.moveRightCursor();
   }
 
   void enterSegmentSelectionMode() {
-    textPaneCursorController.enterSegmentSelectionMode();
+    textPaneCursorMover.enterSegmentSelectionMode();
   }
 
   void exitSegmentSelectionMode() {
-    textPaneCursorController.exitSegmentSelectionMode();
+    textPaneCursorMover.exitSegmentSelectionMode();
   }
 
   void switchToRangeSelection() {
-    textPaneCursorController.switchToRangeSelection();
+    textPaneCursorMover.switchToRangeSelection();
   }
 }

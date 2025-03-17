@@ -128,6 +128,21 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
 
   @override
   TextPaneCursorMover moveLeftCursor() {
+    SentenceSelectionCursor cursor = textPaneCursor as SentenceSelectionCursor;
+    LyricSnippet lyricSnippet = lyricSnippetMap[cursor.lyricSnippetID]!;
+    PositionTypeInfo positionTypeInfo = lyricSnippet.timing.getPositionTypeInfo(
+      cursor.charPosition.position,
+    );
+
+    int segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
+    if (positionTypeInfo.type == PositionType.sentenceSegment) {
+      return SentenceSelectionCursorMover(
+        lyricSnippetMap: lyricSnippetMap,
+        textPaneCursor: cursor.copyWith(charPosition: cursor.charPosition - 1),
+        cursorBlinker: cursorBlinker,
+        seekPosition: seekPosition,
+      );
+    }
     return this;
   }
 
