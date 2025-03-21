@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/service/timing_service.dart';
-import 'package:lyric_editor/utility/signal_structure.dart';
 import 'timing_service_test.mocks.dart';
-import 'package:rxdart/rxdart.dart';
 
 Matcher throwsExceptionWithMessageContaining(String substring) {
   return throwsA(predicate((e) => e is TimingPointException && e.message.contains(substring)));

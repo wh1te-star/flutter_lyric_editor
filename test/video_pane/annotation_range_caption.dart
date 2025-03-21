@@ -1,17 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui';
-import 'dart:ui';
-
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:golden_toolkit/golden_toolkit.dart';
 import 'package:lyric_editor/main.dart';
-import 'package:lyric_editor/pane/video_pane/annotation_range_caption.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
