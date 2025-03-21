@@ -11,6 +11,7 @@ import 'package:lyric_editor/lyric_snippet/timing_point_exception.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_index.dart';
+import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 
@@ -166,6 +167,15 @@ class Timing {
 
   String getSegmentWord(int index) {
     return sentenceSegmentList.list[index].word;
+  }
+
+  SentenceSegmentList getSentenceSegmentList(SegmentRange segmentRange) {
+    return SentenceSegmentList(
+      sentenceSegments.sublist(
+        segmentRange.startIndex.index,
+        segmentRange.endIndex.index,
+      ),
+    );
   }
 
   SegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) {

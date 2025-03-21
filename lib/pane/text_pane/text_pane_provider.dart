@@ -37,21 +37,26 @@ class TextPaneProvider with ChangeNotifier {
     required this.musicPlayerProvider,
     required this.timingService,
   }) {
-    musicPlayerProvider.addListener(() {
-      textPaneCursorMover.updateControllerBySeekPosition();
-    });
-
-    timingService.addListener(() {
-      textPaneCursorMover.updateCursorByItemDeletion();
-    });
-
     cursorBlinker = CursorBlinker(
       blinkIntervalInMillisec: 1000,
       onTick: () {
         notifyListeners();
       },
     );
-    textPaneCursorMover.updateControllerBySeekPosition();
+    textPaneCursorMover = SentenceSelectionCursorMover.withDefaultCursor(
+      lyricSnippetMap: timingService.getSnippetsAtSeekPosition(),
+      lyricSnippetID: LyricSnippetID.empty,
+      cursorBlinker: cursorBlinker,
+      seekPosition: musicPlayerProvider.seekPosition,
+    );
+
+    musicPlayerProvider.addListener(() {
+      textPaneCursorMover.updateCursor();
+    });
+
+    timingService.addListener(() {
+      textPaneCursorMover.updateCursor();
+    });
   }
 
   void moveUpCursor() {
@@ -71,14 +76,14 @@ class TextPaneProvider with ChangeNotifier {
   }
 
   void enterSegmentSelectionMode() {
-    textPaneCursorMover.enterSegmentSelectionMode();
+    //textPaneCursorMover.enterSegmentSelectionMode();
   }
 
   void exitSegmentSelectionMode() {
-    textPaneCursorMover.exitSegmentSelectionMode();
+    //textPaneCursorMover.exitSegmentSelectionMode();
   }
 
   void switchToRangeSelection() {
-    textPaneCursorMover.switchToRangeSelection();
+    //textPaneCursorMover.switchToRangeSelection();
   }
 }

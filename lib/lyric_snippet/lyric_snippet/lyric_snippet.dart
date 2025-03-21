@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
@@ -41,11 +43,12 @@ class LyricSnippet {
   SegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timing.getSegmentIndexFromSeekPosition(seekPosition);
   SegmentIndex getSegmentIndexFromInsertionPosition(InsertionPosition insertionPosition) => timing.getSegmentIndexFromInsertionPosition(insertionPosition);
   double getSegmentProgress(SeekPosition seekPosition) => timing.getSegmentProgress(seekPosition);
+  SentenceSegmentList getSentenceSegmentList(SegmentRange segmentRange) => timing.getSentenceSegmentList(segmentRange);
 
-  MapEntry<SegmentRange, Annotation> getAnnotationWords(int index) {
+  MapEntry<SegmentRange, Annotation> getAnnotationWords(SegmentIndex index) {
     return annotationMap.map.entries.firstWhere(
       (entry) => entry.key.startIndex <= index && index <= entry.key.endIndex,
-      orElse: () => MapEntry(SegmentRange(-1, -1), Annotation.empty),
+      orElse: () => MapEntry(SegmentRange.empty, Annotation.empty),
     );
   }
 
@@ -56,8 +59,9 @@ class LyricSnippet {
       SeekPosition startTimestamp = timing.startTimestamp;
       List<TimingPoint> timingPoints = timing.timingPointList.list;
       List<TimingPoint> annotationTimingPoints = annotation.timing.timingPointList.list;
-      SeekPosition startSeekPosition = SeekPosition(startTimestamp.position + timingPoints[range.startIndex].seekPosition.position + annotationTimingPoints.first.seekPosition.position);
-      SeekPosition endSeekPosition = SeekPosition(startTimestamp.position + timingPoints[range.startIndex].seekPosition.position + annotationTimingPoints.last.seekPosition.position);
+      SeekPosition annotationStartSeekPosition = SeekPosition(startTimestamp.position + timingPoints[range.startIndex.index].seekPosition.position);
+      SeekPosition startSeekPosition = SeekPosition(annotationStartSeekPosition.position + annotationTimingPoints.first.seekPosition.position);
+      SeekPosition endSeekPosition = SeekPosition(annotationStartSeekPosition.position + annotationTimingPoints.last.seekPosition.position);
       if (startSeekPosition <= seekPosition && seekPosition < endSeekPosition) {
         return range;
       }
@@ -151,16 +155,16 @@ class LyricSnippet {
 
       switch (info.type) {
         case PositionType.sentenceSegment:
-          if (index < key.startIndex) {
+          if (index < key.startIndex.index) {
             newKey.startIndex++;
             newKey.endIndex++;
-          } else if (index <= key.endIndex) {
+          } else if (index <= key.endIndex.index) {
             newKey.endIndex++;
           }
           break;
         case PositionType.timingPoint:
-          int startIndex = key.startIndex;
-          int endIndex = key.endIndex + 1;
+          int startIndex = key.startIndex.index;
+          int endIndex = key.endIndex.index + 1;
           if (index <= startIndex) {
             newKey.startIndex++;
             newKey.endIndex++;
@@ -182,8 +186,8 @@ class LyricSnippet {
 
     annotationMap.map.forEach((SegmentRange key, Annotation value) {
       SegmentRange newKey = key.copyWith();
-      int startIndex = key.startIndex;
-      int endIndex = key.endIndex + 1;
+      int startIndex = key.startIndex.index;
+      int endIndex = key.endIndex.index + 1;
       if (timingPointIndex == startIndex && timingPointIndex == endIndex + 1) {
         if (info.duplicate) {
           newKey.startIndex--;
@@ -203,20 +207,13 @@ class LyricSnippet {
     return AnnotationMap(updatedAnnotations);
   }
 
-  SentenceSegmentList getSentenceSegmentList(SegmentRange segmentRange) {
-    return SentenceSegmentList(
-      sentenceSegments.sublist(
-        segmentRange.startIndex,
-        segmentRange.endIndex,
-      ),
-    );
-  }
-
   List<Tuple2<SegmentRange, Annotation?>> getAnnotationExistenceRangeList(Map<SegmentRange, Annotation> annotations, int numberOfSegments) {
     if (annotations.isEmpty) {
+      SegmentIndex startIndex = SegmentIndex(0);
+      SegmentIndex endIndex = SegmentIndex(sentenceSegments.length - 1);
       return [
         Tuple2(
-          SegmentRange(0, sentenceSegments.length - 1),
+            SegmentRange(startIndex, endIndex),
           null,
         ),
       ];
@@ -229,10 +226,12 @@ class LyricSnippet {
       SegmentRange segmentRange = entry.key;
       Annotation annotation = entry.value;
 
-      if (previousEnd + 1 <= segmentRange.startIndex - 1) {
+      if (previousEnd + 1 <= segmentRange.startIndex.index - 1) {
+        SegmentIndex startIndex = SegmentIndex(previousEnd + 1);
+        SegmentIndex endIndex = SegmentIndex(segmentRange.startIndex.index - 1);
         rangeList.add(
           Tuple2(
-            SegmentRange(previousEnd + 1, segmentRange.startIndex - 1),
+            SegmentRange(startIndex, endIndex),
             null,
           ),
         );
@@ -244,13 +243,15 @@ class LyricSnippet {
         ),
       );
 
-      previousEnd = segmentRange.endIndex;
+      previousEnd = segmentRange.endIndex.index;
     }
 
     if (previousEnd + 1 <= numberOfSegments - 1) {
+        SegmentIndex startIndex = SegmentIndex(previousEnd + 1);
+        SegmentIndex endIndex = SegmentIndex(numberOfSegments - 1);
       rangeList.add(
         Tuple2(
-          SegmentRange(previousEnd + 1, numberOfSegments - 1),
+          SegmentRange(startIndex, endIndex),
           null,
         ),
       );

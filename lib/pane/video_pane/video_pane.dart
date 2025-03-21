@@ -11,12 +11,12 @@ import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
 import 'package:lyric_editor/pane/video_pane/colored_text_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/timeline_pane.dart';
+import 'package:lyric_editor/position/segment_index.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
-
 
 class VideoPane extends ConsumerStatefulWidget {
   final FocusNode focusNode;
@@ -173,8 +173,8 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     );
   }
 
-  double getAnnotationSizePosition(LyricSnippet snippet, int segmentIndex) {
-    int startIndex = snippet.annotationMap.map.keys.toList()[segmentIndex].startIndex;
+  double getAnnotationSizePosition(LyricSnippet snippet, SegmentIndex segmentIndex) {
+    int startIndex = snippet.annotationMap.map.keys.toList()[segmentIndex.index].startIndex.index;
     double sumPosition = 0;
     int index = 0;
     for (index = 0; index < startIndex; index++) {
@@ -215,7 +215,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
           );
       if (targetSnippetID != LyricSnippetID(0)) {
         LyricSnippet targetSnippet = timingService.getLyricSnippetByID(targetSnippetID);
-      final Color color =Color(timingService.vocalistColorMap[targetSnippet.vocalistID]!.color);
+        final Color color = Color(timingService.vocalistColorMap[targetSnippet.vocalistID]!.color);
         content[i] = Expanded(
           child: Center(
             child: ColoredCaption(targetSnippet, seekPosition, color),

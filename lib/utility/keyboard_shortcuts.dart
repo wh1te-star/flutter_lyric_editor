@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/mover/segment_selection_cursor_mover.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/annotation_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/annotation_selection_cursor_mover.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/segment_selection_cursor.dart';
@@ -387,7 +388,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         CancelIntent: CallbackAction<CancelIntent>(
           onInvoke: (CancelIntent intent) => () {
-            if (textPaneProvider.isSegmentSelection) {
+            if (textPaneProvider.textPaneCursorMover is SegmentSelectionCursorMover) {
               textPaneProvider.exitSegmentSelectionMode();
             }
           }(),

@@ -3,6 +3,7 @@ import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/pane/video_pane/colored_text_painter.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/segment_index.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 
 class ColoredCaption extends StatelessWidget {
@@ -16,10 +17,10 @@ class ColoredCaption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
+    SegmentIndex segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
     return Wrap(
       children: lyricSnippet.sentenceSegments.asMap().entries.map((MapEntry<int, SentenceSegment> entry) {
-        int index = entry.key;
+        SegmentIndex index = SegmentIndex(entry.key);
         SentenceSegment sentenceSegment = entry.value;
         double progress = 0.0;
         if (index == segmentIndex) {

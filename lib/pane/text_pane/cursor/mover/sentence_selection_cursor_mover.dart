@@ -26,7 +26,7 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
   }
 
   bool isIDContained() {
-    if (textPaneCursor.isEmpty) {
+    if (lyricSnippetMap.isEmpty || textPaneCursor.isEmpty) {
       return true;
     }
     LyricSnippet? lyricSnippet = lyricSnippetMap[textPaneCursor.lyricSnippetID];
@@ -59,6 +59,9 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
 
   @override
   SentenceSelectionCursor defaultCursor(LyricSnippetID lyricSnippetID) {
+    if(lyricSnippetMap.isEmpty){
+      return SentenceSelectionCursor(LyricSnippetID.empty, cursorBlinker, InsertionPosition.empty, Option.former);
+    }
     LyricSnippet lyricSnippet = lyricSnippetMap.getLyricSnippetByID(lyricSnippetID);
     SegmentIndex segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
     InsertionPosition charPosition = lyricSnippet.timing.leftTimingPoint(segmentIndex).charPosition + 1;

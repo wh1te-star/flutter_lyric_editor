@@ -44,6 +44,9 @@ class LyricSnippetMap {
   }
 
   LyricSnippet getLyricSnippetByID(LyricSnippetID id) {
+    if (!map.containsKey(id)) {
+      return LyricSnippet.empty;
+    }
     return map[id]!;
   }
 
@@ -171,7 +174,7 @@ class LyricSnippetMap {
     }
 
     SentenceSegmentList concatenatedSentenceSegmentList = formerSnippet.timing.sentenceSegmentList.copyWith();
-    Duration bondPointDuration =Duration(milliseconds: latterSnippet.startTimestamp.position - formerSnippet.endTimestamp.position);
+    Duration bondPointDuration = Duration(milliseconds: latterSnippet.startTimestamp.position - formerSnippet.endTimestamp.position);
     int indexCarryUp = formerSnippet.timing.sentenceSegmentList.list.length;
     if (bondPointDuration > Duration.zero) {
       concatenatedSentenceSegmentList = concatenatedSentenceSegmentList.addSegment(SentenceSegment("", bondPointDuration));

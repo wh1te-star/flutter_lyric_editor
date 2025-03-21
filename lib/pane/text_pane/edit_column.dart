@@ -9,13 +9,15 @@ import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor_mover.
 import 'package:lyric_editor/pane/text_pane/edit_widget/lyric_snippet_edit.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/sentence_selection_edit.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 class EditColumn extends StatelessWidget {
   final LyricSnippetMap lyricSnippetMap;
   final SeekPosition seekPosition;
   final TextPaneCursorMover textPaneCursorMover;
+  final CursorBlinker cursorBlinker;
 
-  const EditColumn(this.lyricSnippetMap, this.seekPosition, this.textPaneCursorMover, {super.key});
+  const EditColumn(this.lyricSnippetMap, this.seekPosition, this.textPaneCursorMover, this.cursorBlinker, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +27,7 @@ class EditColumn extends StatelessWidget {
       LyricSnippet lyricSnippet = lyricSnippetEntry.value;
       Widget widget = Container();
       if (textPaneCursorMover.textPaneCursor is SentenceSelectionCursor) {
-        widget = SentenceSelectionEdit(lyricSnippet, seekPosition, textPaneCursorMover.textPaneCursor as SentenceSelectionCursor);
+        widget = SentenceSelectionEdit(lyricSnippet, seekPosition, textPaneCursorMover.textPaneCursor as SentenceSelectionCursor, cursorBlinker);
       }
       elements.add(widget);
     }
