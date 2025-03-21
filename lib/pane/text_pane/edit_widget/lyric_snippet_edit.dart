@@ -14,10 +14,10 @@ import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:tuple/tuple.dart';
 
 class LyricSnippetEdit extends StatelessWidget {
-  LyricSnippet lyricSnippet;
-  SeekPosition seekPosition;
-  TextPaneCursor textPaneCursor;
-  CursorBlinker cursorBlinker;
+  final LyricSnippet lyricSnippet;
+  final SeekPosition seekPosition;
+  final TextPaneCursor textPaneCursor;
+  final CursorBlinker cursorBlinker;
   LyricSnippetEdit(this.lyricSnippet, this.seekPosition, this.textPaneCursor, this.cursorBlinker);
 
   @override
