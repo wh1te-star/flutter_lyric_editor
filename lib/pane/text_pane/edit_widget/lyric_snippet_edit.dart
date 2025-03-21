@@ -29,9 +29,21 @@ class LyricSnippetEdit extends StatelessWidget {
       SegmentRange segmentRange = rangeList[index].item1;
       Annotation? annotation = rangeList[index].item2;
 
-      debugPrint(segmentRange.toString());
-      Widget sentenceEdit = getSentenceEdit(lyricSnippet.getSentenceSegmentList(segmentRange), textPaneCursor, cursorBlinker);
-      Widget annotationEdit = getAnnotationEdit(annotation, segmentRange, textPaneCursor, cursorBlinker);
+      SentenceSegmentList? sentenceSubList = lyricSnippet.getSentenceSegmentList(segmentRange);
+      SentenceSegmentList? annotationSubList = annotation?.getSentenceSegmentList(segmentRange);
+
+      TextPaneCursor adjustedCursor = textPaneCursor.shiftLeftBy(sentenceSubList);
+
+      Widget sentenceEdit = getSentenceEdit(
+        sentenceSubList,
+        adjustedCursor,
+        cursorBlinker,
+      );
+      Widget annotationEdit = getAnnotationEdit(
+        annotationSubList,
+        adjustedCursor,
+        cursorBlinker,
+      );
       annotationExistenceEdits.add(Column(children: [
         sentenceEdit,
         annotationEdit,
@@ -68,8 +80,7 @@ class LyricSnippetEdit extends StatelessWidget {
   }
 
   Widget getAnnotationEdit(
-    Annotation? annotation,
-    SegmentRange segmentRange,
+    SentenceSegmentList? sentenceSegmentList,
     TextPaneCursor? textPaneCursor,
     CursorBlinker? cursorBlinker,
   ) {
@@ -79,9 +90,9 @@ class LyricSnippetEdit extends StatelessWidget {
     }
 
     Widget annotationEdit = Container();
-    if (annotation != null) {
+    if (sentenceSegmentList != null) {
       annotationEdit = SentenceSegmentListEdit(
-        sentenceSegmentList: annotation.getSentenceSegmentList(segmentRange),
+        sentenceSegmentList: sentenceSegmentList,
         textPaneCursor: textPaneCursor,
         cursorBlinker: cursorBlinker,
       );

@@ -34,6 +34,8 @@ class Timing {
 
   List<SentenceSegment> get sentenceSegments => sentenceSegmentList.list;
   List<TimingPoint> get timingPoints => timingPointList.list;
+  int get charLength => sentenceSegmentList.charLength;
+  int get segmentLength => sentenceSegmentList.segmentLength;
 
   static Timing get empty => Timing(
         startTimestamp: SeekPosition.empty,

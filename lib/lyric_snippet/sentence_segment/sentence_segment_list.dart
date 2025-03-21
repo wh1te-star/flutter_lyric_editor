@@ -28,6 +28,13 @@ class SentenceSegmentList {
     }).join("");
   }
 
+  int get segmentLength => list.length;
+  int get charLength {
+    return list.fold(0, (total, sentenceSegment) {
+      return total + sentenceSegment.word.length;
+    });
+  }
+
   bool has2ConseqentEmpty() {
     for (int index = 0; index < _list.length - 1; index++) {
       if (_list[index].word == "" && _list[index + 1].word == "") {

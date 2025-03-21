@@ -1,4 +1,5 @@
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 class TextPaneCursor {
@@ -17,6 +18,10 @@ class TextPaneCursor {
   static TextPaneCursor get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
+
+  TextPaneCursor shiftLeftBy(SentenceSegmentList sentenceSegmentList) {
+    return this;
+  }
 }
 
 /*

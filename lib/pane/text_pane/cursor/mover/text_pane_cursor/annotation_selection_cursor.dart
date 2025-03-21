@@ -1,4 +1,5 @@
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/segment_range.dart';
@@ -35,6 +36,11 @@ class AnnotationSelectionCursor extends TextPaneCursor {
   static AnnotationSelectionCursor get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
+
+  @override
+  AnnotationSelectionCursor shiftLeftBy(SentenceSegmentList sentenceSegmentList) {
+    return this;
+  }
 
   AnnotationSelectionCursor copyWith({
     LyricSnippetID? lyricSnippetID,

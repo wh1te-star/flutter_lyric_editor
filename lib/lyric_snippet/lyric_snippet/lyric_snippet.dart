@@ -40,6 +40,8 @@ class LyricSnippet {
   SeekPosition get endTimestamp => timing.endTimestamp;
   List<SentenceSegment> get sentenceSegments => timing.sentenceSegmentList.list;
   List<TimingPoint> get timingPoints => timing.timingPointList.list;
+  int get charLength => timing.charLength;
+  int get segmentLength => timing.segmentLength;
   SegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timing.getSegmentIndexFromSeekPosition(seekPosition);
   SegmentIndex getSegmentIndexFromInsertionPosition(InsertionPosition insertionPosition) => timing.getSegmentIndexFromInsertionPosition(insertionPosition);
   double getSegmentProgress(SeekPosition seekPosition) => timing.getSegmentProgress(seekPosition);
@@ -213,7 +215,7 @@ class LyricSnippet {
       SegmentIndex endIndex = SegmentIndex(sentenceSegments.length - 1);
       return [
         Tuple2(
-            SegmentRange(startIndex, endIndex),
+          SegmentRange(startIndex, endIndex),
           null,
         ),
       ];
@@ -247,8 +249,8 @@ class LyricSnippet {
     }
 
     if (previousEnd + 1 <= numberOfSegments - 1) {
-        SegmentIndex startIndex = SegmentIndex(previousEnd + 1);
-        SegmentIndex endIndex = SegmentIndex(numberOfSegments - 1);
+      SegmentIndex startIndex = SegmentIndex(previousEnd + 1);
+      SegmentIndex endIndex = SegmentIndex(numberOfSegments - 1);
       rangeList.add(
         Tuple2(
           SegmentRange(startIndex, endIndex),
