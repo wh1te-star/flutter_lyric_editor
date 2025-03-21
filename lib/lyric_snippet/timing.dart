@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:lyric_editor/pane/text_pane/edit_widget/sentence_segment/sentence_segment_edit.dart';
 import 'package:lyric_editor/position/character_position.dart';
 import 'package:lyric_editor/position/position_type_info.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
@@ -9,7 +10,9 @@ import 'package:lyric_editor/lyric_snippet/timing_point/timing_point_list.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point_exception.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/segment_index.dart';
 import 'package:lyric_editor/service/timing_service.dart';
+import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 
 class Timing {
   final SeekPosition startTimestamp;
@@ -44,6 +47,24 @@ class Timing {
 
   SentenceSegmentList syncSentenceSegments(TimingPointList timingPointList) {
     return timingPointList.toSentenceSegmentList(sentence);
+  }
+
+  SentenceSegment toSentenceSegment(SegmentIndex segmentIndex) {
+    return sentenceSegments[segmentIndex.index];
+  }
+
+  TimingPoint leftTimingPoint(SegmentIndex segmentIndex) {
+    if (segmentIndex.index < 0 && sentenceSegments.length < segmentIndex.index) {
+      return TimingPoint.empty;
+    }
+    return timingPoints[segmentIndex.index];
+  }
+
+  TimingPoint rightTimingPoint(SegmentIndex segmentIndex) {
+    if (segmentIndex.index + 1 < 0 && sentenceSegments.length < segmentIndex.index + 1) {
+      return TimingPoint.empty;
+    }
+    return timingPoints[segmentIndex.index + 1];
   }
 
   Timing editSentence(String newSentence) {
@@ -147,27 +168,44 @@ class Timing {
     return sentenceSegmentList.list[index].word;
   }
 
-  int getSegmentIndexFromSeekPosition(SeekPosition seekPosition) {
+  SegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) {
     if (seekPosition < startTimestamp) {
-      return 0;
+      return SegmentIndex.empty;
     }
     if (endTimestamp < seekPosition) {
-      return sentenceSegmentList.list.length - 1;
+      return SegmentIndex.empty;
     }
     List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
     List<TimingPoint> timingPoints = timingPointList.list;
     for (int index = 0; index < sentenceSegments.length; index++) {
       if (seekPosition.position <= startTimestamp.position + timingPoints[index + 1].seekPosition.position) {
-        return index;
+        return SegmentIndex(index);
       }
     }
-    return sentenceSegments.length;
+    return SegmentIndex.empty;
+  }
+
+  SegmentIndex getSegmentIndexFromInsertionPosition(InsertionPosition insertionPosition) {
+    if (insertionPosition.position < 0) {
+      return SegmentIndex.empty;
+    }
+    if (sentence.length <= insertionPosition.position) {
+      return SegmentIndex.empty;
+    }
+    List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
+    List<TimingPoint> timingPoints = timingPointList.list;
+    for (int index = 1; index <= sentenceSegments.length; index++) {
+      if (insertionPosition.position <= timingPoints[index].charPosition.position) {
+        return SegmentIndex(index);
+      }
+    }
+    return SegmentIndex.empty;
   }
 
   double getSegmentProgress(SeekPosition seekPosition) {
-    int segmentIndex = getSegmentIndexFromSeekPosition(seekPosition);
-    SeekPosition segmentStartSeekPosition = SeekPosition(startTimestamp.position + timingPointList[segmentIndex].seekPosition.position);
-    SeekPosition segmentEndSeekPosition = SeekPosition(startTimestamp.position + timingPointList[segmentIndex + 1].seekPosition.position);
+    SegmentIndex segmentIndex = getSegmentIndexFromSeekPosition(seekPosition);
+    SeekPosition segmentStartSeekPosition = SeekPosition(startTimestamp.position + leftTimingPoint(segmentIndex).seekPosition.position);
+    SeekPosition segmentEndSeekPosition = SeekPosition(startTimestamp.position + rightTimingPoint(segmentIndex).seekPosition.position);
     if (seekPosition < segmentStartSeekPosition) {
       return 0.0;
     }
@@ -175,7 +213,7 @@ class Timing {
       return 1.0;
     }
     Duration partialProgress = Duration(milliseconds: seekPosition.position - segmentStartSeekPosition.position);
-    Duration segmentDuration = sentenceSegmentList[segmentIndex].duration;
+    Duration segmentDuration = toSentenceSegment(segmentIndex).duration;
     return partialProgress.inMilliseconds / segmentDuration.inMilliseconds;
   }
 

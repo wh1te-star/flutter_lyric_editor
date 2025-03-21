@@ -8,6 +8,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor_mover.
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/position_type_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/segment_index.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
@@ -68,13 +69,13 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
     LyricSnippet lyricSnippet = lyricSnippetMap.getLyricSnippetByID(lyricSnippetID);
     SegmentRange annotationSegmentRange = lyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
     Annotation annotation = lyricSnippet.annotationMap[annotationSegmentRange]!;
-    int index = annotation.timing.getSegmentIndexFromSeekPosition(seekPosition);
+    SegmentIndex segmentIndex = annotation.getSegmentIndexFromSeekPosition(seekPosition);
 
     return AnnotationSelectionCursor(
       lyricSnippetID,
       cursorBlinker,
       annotationSegmentRange,
-      annotation.timingPoints[index].charPosition + 1,
+      annotation.timing.leftTimingPoint(segmentIndex).charPosition + 1,
       Option.former,
     );
   }
@@ -161,9 +162,9 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
       lyricSnippet = lyricSnippetMap[lyricSnippetID]!;
     }
 
-    int currentSnippetPosition = lyricSnippet.timing.getSegmentIndexFromSeekPosition(seekPosition);
+    SegmentIndex currentSnippetPosition = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
     PositionTypeInfo nextSnippetPosition = lyricSnippet.timing.getPositionTypeInfo((textPaneCursor as AnnotationSelectionCursor).charPosition.position);
-    if (currentSnippetPosition != nextSnippetPosition.index) {
+    if (currentSnippetPosition.index != nextSnippetPosition.index) {
       return SentenceSelectionCursorMover.withDefaultCursor(
         lyricSnippetMap: lyricSnippetMap,
         lyricSnippetID: lyricSnippetID,

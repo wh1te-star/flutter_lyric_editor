@@ -7,6 +7,7 @@ import 'package:lyric_editor/position/character_position.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/position_type_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/segment_index.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/timing.dart';
@@ -37,9 +38,8 @@ class LyricSnippet {
   SeekPosition get endTimestamp => timing.endTimestamp;
   List<SentenceSegment> get sentenceSegments => timing.sentenceSegmentList.list;
   List<TimingPoint> get timingPoints => timing.timingPointList.list;
-  int getSegmentIndexFromCharPosition(CharacterPosition charPosition) => timing.getSegmentIndexFromCharPosition(charPosition);
-  PositionTypeInfo getPositionTypeInfo(InsertionPosition insertionPosition) => timing.getPositionTypeInfo(insertionPosition);
-  int getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timing.getSegmentIndexFromSeekPosition(seekPosition);
+  SegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timing.getSegmentIndexFromSeekPosition(seekPosition);
+  SegmentIndex getSegmentIndexFromInsertionPosition(InsertionPosition insertionPosition) => timing.getSegmentIndexFromInsertionPosition(insertionPosition);
   double getSegmentProgress(SeekPosition seekPosition) => timing.getSegmentProgress(seekPosition);
 
   MapEntry<SegmentRange, Annotation> getAnnotationWords(int index) {
@@ -212,7 +212,7 @@ class LyricSnippet {
     );
   }
 
-  List<Tuple2<SegmentRange, Annotation?>> getRangeListForAnnotations(Map<SegmentRange, Annotation> annotations, int numberOfSegments) {
+  List<Tuple2<SegmentRange, Annotation?>> getAnnotationExistenceRangeList(Map<SegmentRange, Annotation> annotations, int numberOfSegments) {
     if (annotations.isEmpty) {
       return [
         Tuple2(

@@ -1,7 +1,9 @@
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/timing.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
+import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/segment_index.dart';
 
 class Annotation {
   Timing timing;
@@ -25,6 +27,8 @@ class Annotation {
   SeekPosition get endTimestamp => timing.endTimestamp;
   List<SentenceSegment> get sentenceSegments => timing.sentenceSegmentList.list;
   List<TimingPoint> get timingPoints => timing.timingPointList.list;
+  SegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timing.getSegmentIndexFromSeekPosition(seekPosition);
+  SegmentIndex getSegmentIndexFromInsertionPosition(InsertionPosition insertionPosition) => timing.getSegmentIndexFromInsertionPosition(insertionPosition);
 
   Annotation copyWith({
     Timing? timing,

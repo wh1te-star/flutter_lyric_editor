@@ -4,6 +4,7 @@ import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart'
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/segment_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor_mover.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/segment_index.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
@@ -56,7 +57,7 @@ class SegmentSelectionCursorMover extends TextPaneCursorMover {
   @override
   SegmentSelectionCursor defaultCursor(LyricSnippetID lyricSnippetID) {
     LyricSnippet lyricSnippet = lyricSnippetMap.getLyricSnippetByID(lyricSnippetID);
-    int segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
+    SegmentIndex segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
     return SegmentSelectionCursor(textPaneCursor.lyricSnippetID, cursorBlinker, SegmentRange(segmentIndex, segmentIndex));
   }
 
@@ -106,13 +107,13 @@ class SegmentSelectionCursorMover extends TextPaneCursorMover {
   TextPaneCursorMover moveLeftCursor() {
     SegmentSelectionCursor cursor = textPaneCursor as SegmentSelectionCursor;
     SegmentRange segmentRange = cursor.segmentRange;
-    int currentIndex = segmentRange.startIndex;
+    SegmentIndex currentIndex = segmentRange.startIndex;
     if (isRangeSelection) {
       currentIndex = segmentRange.endIndex;
     }
 
-    int nextIndex = currentIndex - 1;
-    if (nextIndex < 0) {
+    SegmentIndex nextIndex = currentIndex - 1;
+    if (nextIndex < SegmentIndex(0)) {
       return this;
     }
 
@@ -135,13 +136,13 @@ class SegmentSelectionCursorMover extends TextPaneCursorMover {
   TextPaneCursorMover moveRightCursor() {
     SegmentSelectionCursor cursor = textPaneCursor as SegmentSelectionCursor;
     SegmentRange segmentRange = cursor.segmentRange;
-    int currentIndex = segmentRange.startIndex;
+    SegmentIndex currentIndex = segmentRange.startIndex;
     if (isRangeSelection) {
       currentIndex = segmentRange.endIndex;
     }
 
-    int nextIndex = currentIndex + 1;
-    if (nextIndex + 1 >= lyricSnippetMap[cursor.lyricSnippetID]!.sentenceSegments.length) {
+    SegmentIndex nextIndex = currentIndex + 1;
+    if (nextIndex.index + 1 >= lyricSnippetMap[cursor.lyricSnippetID]!.sentenceSegments.length) {
       return this;
     }
 

@@ -1,20 +1,26 @@
+import 'dart:typed_data';
+
+import 'package:lyric_editor/position/segment_index.dart';
+
 class SegmentRange {
-  int startIndex;
-  int endIndex;
+  SegmentIndex startIndex;
+  SegmentIndex endIndex;
   SegmentRange(this.startIndex, this.endIndex) {
-    if(!isEmpty){
-    assert(startIndex >= 0);
-    assert(endIndex >= 0);
+    if (!isEmpty) {
+      assert(startIndex >= SegmentIndex(0));
+      assert(endIndex >= SegmentIndex(0));
     }
   }
 
   SegmentRange._privateConstructor(this.startIndex, this.endIndex);
-  static final SegmentRange _empty = SegmentRange._privateConstructor(-1, -1);
+  static final SegmentRange _empty = SegmentRange._privateConstructor(SegmentIndex.empty, SegmentIndex.empty);
   static SegmentRange get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
-  SegmentRange copyWith({int? startIndex, int? endIndex}) {
+  int get length => endIndex.index - startIndex.index + 1;
+
+  SegmentRange copyWith({SegmentIndex? startIndex, SegmentIndex? endIndex}) {
     return SegmentRange(
       startIndex ?? this.startIndex,
       endIndex ?? this.endIndex,
