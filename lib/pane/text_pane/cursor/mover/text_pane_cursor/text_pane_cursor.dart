@@ -1,4 +1,5 @@
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
@@ -19,7 +20,11 @@ class TextPaneCursor {
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
-  TextPaneCursor shiftLeftBy(SentenceSegmentList sentenceSegmentList) {
+  TextPaneCursor? shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {
+    return this;
+  }
+
+  TextPaneCursor? shiftLeftBySentenceSegment(SentenceSegment sentenceSegment) {
     return this;
   }
 }

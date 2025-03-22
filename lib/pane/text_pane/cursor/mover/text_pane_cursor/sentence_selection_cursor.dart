@@ -1,4 +1,5 @@
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
@@ -33,8 +34,20 @@ class SentenceSelectionCursor extends TextPaneCursor {
   bool get isNotEmpty => !identical(this, _empty);
 
   @override
-  SentenceSelectionCursor shiftLeftBy(SentenceSegmentList sentenceSegmentList) {
+  SentenceSelectionCursor? shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {
+    if (charPosition.position - sentenceSegmentList.charLength < 0) {
+      return null;
+    }
     InsertionPosition newCharPosition = charPosition - sentenceSegmentList.charLength;
+    return copyWith(charPosition: newCharPosition);
+  }
+
+  @override
+  SentenceSelectionCursor? shiftLeftBySentenceSegment(SentenceSegment sentenceSegment) {
+    if (charPosition.position - sentenceSegment.word.length < 0) {
+      return null;
+    }
+    InsertionPosition newCharPosition = charPosition - sentenceSegment.word.length;
     return copyWith(charPosition: newCharPosition);
   }
 

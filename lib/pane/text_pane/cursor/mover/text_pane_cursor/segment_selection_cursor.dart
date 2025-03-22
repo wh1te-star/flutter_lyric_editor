@@ -1,5 +1,6 @@
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/text_pane_cursor.dart';
@@ -31,9 +32,23 @@ class SegmentSelectionCursor extends TextPaneCursor {
   bool get isNotEmpty => !identical(this, _empty);
 
   @override
-  SegmentSelectionCursor shiftLeftBy(SentenceSegmentList sentenceSegmentList) {
+  SegmentSelectionCursor? shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {
+    if (segmentRange.startIndex.index - 1 < 0 || segmentRange.endIndex.index - 1 < 0) {
+      return null;
+    }
     SegmentIndex startIndex = segmentRange.startIndex - sentenceSegmentList.segmentLength;
     SegmentIndex endIndex = segmentRange.endIndex - sentenceSegmentList.segmentLength;
+    SegmentRange newRange = SegmentRange(startIndex, endIndex);
+    return copyWith(segmentRange: newRange);
+  }
+
+  @override
+  SegmentSelectionCursor? shiftLeftBySentenceSegment(SentenceSegment sentenceSegment) {
+    if (segmentRange.startIndex.index - 1 < 0 || segmentRange.endIndex.index - 1 < 0) {
+      return null;
+    }
+    SegmentIndex startIndex = segmentRange.startIndex - 1;
+    SegmentIndex endIndex = segmentRange.endIndex - 1;
     SegmentRange newRange = SegmentRange(startIndex, endIndex);
     return copyWith(segmentRange: newRange);
   }

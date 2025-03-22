@@ -1,4 +1,8 @@
+import 'dart:ui';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/segment_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/sentence_selection_cursor.dart';
@@ -10,7 +14,18 @@ class SentenceSegmentEdit extends StatelessWidget {
   final TextPaneCursor? textPaneCursor;
   final CursorBlinker? cursorBlinker;
 
-  const SentenceSegmentEdit({
+  final double cursorWidth = 1.0;
+  final double cursorHeight = 15.0;
+  final Color wordCursorColor = Colors.black;
+  final TextStyle normalTextStyle = const TextStyle(
+    color: Colors.black,
+  );
+  final TextStyle incursorTextStyle = TextStyle(
+    color: Colors.white,
+    background: (Paint()..color = Colors.black),
+  );
+
+  SentenceSegmentEdit({
     required this.sentenceSegment,
     this.textPaneCursor,
     this.cursorBlinker,
@@ -18,56 +33,48 @@ class SentenceSegmentEdit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    TextStyle textStyle = const TextStyle(
-      color: Colors.black,
-    );
-    if (textPaneCursor == null || cursorBlinker == null) {
-      return Text(
-        sentenceSegment.word,
-        style: textStyle,
-      );
-    }
+    return Stack(children: [
+      cursorWidget(),
+      textWidget(),
+    ]);
+  }
 
-    if (textPaneCursor is SegmentSelectionCursor) {
-      TextStyle textStyleIncursor = TextStyle(
-        color: Colors.white,
-        background: (Paint()..color = Colors.black),
-      );
+  Widget cursorWidget() {
+    TextStyle textStyle = cursorTextStyle();
 
-      return Text(
-        sentenceSegment.word,
-        style: cursorBlinker!.visible ? textStyleIncursor : textStyle,
-      );
-    } else {
-      Color wordCursorColor = Colors.black;
-      SentenceSelectionCursor cursor = textPaneCursor! as SentenceSelectionCursor;
-      double cursorWidth = 1.0;
-      double cursorHeight = 15.0;
+    if (textPaneCursor is SentenceSelectionCursor) {
+      SentenceSelectionCursor cursor = textPaneCursor as SentenceSelectionCursor;
       double cursorOffset = calculateCursorPosition(
         sentenceSegment.word,
         cursor.charPosition.position,
         textStyle,
       );
-
-      return Stack(children: [
-          /*
-        Positioned(
-            left: cursorOffset,
-            child: Positioned(
-              left: cursorOffset - cursorWidth / 2,
-              child: Container(
-                width: cursorWidth,
-                height: cursorHeight,
-                color: wordCursorColor,
-              ),
-            )),
-            */
-        Text(
-          sentenceSegment.word,
-          style: textStyle,
+      return Positioned(
+        left: cursorOffset - cursorWidth / 2,
+        child: Container(
+          width: cursorWidth,
+          height: cursorHeight,
+          color: wordCursorColor,
         ),
-      ]);
+      );
     }
+
+    return const ColoredBox(color: Colors.transparent);
+  }
+
+  Widget textWidget() {
+    return Text(
+      sentenceSegment.word,
+      style: normalTextStyle,
+    );
+  }
+
+  TextStyle cursorTextStyle() {
+    if (cursorBlinker == null || cursorBlinker!.visible == false) {
+      return normalTextStyle;
+    }
+
+    return incursorTextStyle;
   }
 
   double calculateCursorPosition(String text, int charPosition, TextStyle style) {

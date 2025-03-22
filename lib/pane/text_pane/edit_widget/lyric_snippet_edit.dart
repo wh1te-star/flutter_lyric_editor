@@ -25,14 +25,13 @@ class LyricSnippetEdit extends StatelessWidget {
     List<Widget> annotationExistenceEdits = [];
     List<Tuple2<SegmentRange, Annotation?>> rangeList = lyricSnippet.getAnnotationExistenceRangeList(lyricSnippet.annotationMap.map, lyricSnippet.sentenceSegments.length);
 
+    TextPaneCursor? adjustedCursor = textPaneCursor;
     for (int index = 0; index < rangeList.length; index++) {
       SegmentRange segmentRange = rangeList[index].item1;
       Annotation? annotation = rangeList[index].item2;
 
       SentenceSegmentList? sentenceSubList = lyricSnippet.getSentenceSegmentList(segmentRange);
       SentenceSegmentList? annotationSubList = annotation?.getSentenceSegmentList(segmentRange);
-
-      TextPaneCursor adjustedCursor = textPaneCursor.shiftLeftBy(sentenceSubList);
 
       Widget sentenceEdit = getSentenceEdit(
         sentenceSubList,
@@ -57,6 +56,8 @@ class LyricSnippetEdit extends StatelessWidget {
           ],
         ));
       }
+
+      adjustedCursor = adjustedCursor?.shiftLeftBySentenceSegmentList(sentenceSubList);
     }
 
     return Row(children: annotationExistenceEdits);
