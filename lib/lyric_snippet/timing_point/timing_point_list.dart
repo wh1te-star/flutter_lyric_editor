@@ -48,6 +48,7 @@ class TimingPointList {
   static TimingPointList get empty => TimingPointList([]);
   bool get isEmpty => list.isEmpty;
 
+  int get length => list.length;
   TimingPoint operator [](int index) => list[index];
   void operator []=(int index, TimingPoint value) {
     list[index] = value;

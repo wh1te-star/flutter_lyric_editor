@@ -7,8 +7,11 @@ class TimingPoint {
 
   TimingPoint(this.charPosition, this.seekPosition);
 
-  static TimingPoint get empty => TimingPoint(InsertionPosition.empty, SeekPosition.empty);
-  bool get isEmpty => this == empty;
+  TimingPoint._privateConstructor(this.charPosition, this.seekPosition);
+  static final TimingPoint _empty = TimingPoint._privateConstructor(InsertionPosition.empty, SeekPosition.empty);
+  static TimingPoint get empty => _empty;
+  bool get isEmpty => identical(this, _empty);
+  bool get isNotEmpty => !identical(this, _empty);
 
   TimingPoint copyWith({InsertionPosition? charPosition, SeekPosition? seekPosition}) {
     return TimingPoint(

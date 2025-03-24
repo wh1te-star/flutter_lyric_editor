@@ -190,7 +190,7 @@ class Timing {
     List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
     List<TimingPoint> timingPoints = timingPointList.list;
     for (int index = 0; index < sentenceSegments.length; index++) {
-      if (seekPosition.position <= startTimestamp.position + timingPoints[index + 1].seekPosition.position) {
+      if (seekPosition.position < startTimestamp.position + timingPoints[index + 1].seekPosition.position) {
         return SegmentIndex(index);
       }
     }
@@ -207,11 +207,21 @@ class Timing {
     List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
     List<TimingPoint> timingPoints = timingPointList.list;
     for (int index = 0; index < sentenceSegments.length; index++) {
-      if (insertionPosition.position <= timingPoints[index+1].charPosition.position) {
+      if (insertionPosition.position < timingPoints[index + 1].charPosition.position) {
         return SegmentIndex(index);
       }
     }
     return SegmentIndex.empty;
+  }
+
+  int? getTimingPointIndexFromInsertionPosition(InsertionPosition insertionPosition) {
+    for (int index = 0; index < timingPointList.length; index++) {
+      TimingPoint timingPoint = timingPointList[index];
+      if (timingPoint.charPosition == insertionPosition) {
+        return index;
+      }
+    }
+    return null;
   }
 
   double getSegmentProgress(SeekPosition seekPosition) {

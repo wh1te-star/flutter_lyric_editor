@@ -140,11 +140,18 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
     SegmentIndex segmentIndex = lyricSnippet.getSegmentIndexFromInsertionPosition(cursor.charPosition);
     TimingPoint leftTimingPoint = lyricSnippet.timing.leftTimingPoint(segmentIndex);
     TimingPoint rightTimingPoint = lyricSnippet.timing.rightTimingPoint(segmentIndex);
-    SentenceSelectionCursor movedCursor = cursor.copyWith();
-    if (leftTimingPoint.charPosition < cursor.charPosition && cursor.charPosition < rightTimingPoint.charPosition) {
-      movedCursor = cursor.copyWith(charPosition: cursor.charPosition - 1);
+    if (leftTimingPoint.charPosition < cursor.charPosition && cursor.charPosition <= rightTimingPoint.charPosition) {
+      SentenceSelectionCursor movedCursor = cursor.copyWith(charPosition: cursor.charPosition - 1);
+      return SentenceSelectionCursorMover(lyricSnippetMap: lyricSnippetMap, textPaneCursor: movedCursor, cursorBlinker: cursorBlinker, seekPosition: seekPosition);
     }
-    return SentenceSelectionCursorMover(lyricSnippetMap: lyricSnippetMap, textPaneCursor: movedCursor, cursorBlinker: cursorBlinker, seekPosition: seekPosition);
+
+    int? timingPointIndex = lyricSnippet.getTimingPointIndexFromInsertionPosition(cursor.charPosition);
+    if (timingPointIndex != null && timingPointIndex - 1 > 0) {
+      SentenceSelectionCursor movedCursor = cursor.copyWith(charPosition: lyricSnippet.timingPoints[timingPointIndex - 1].charPosition);
+      return SentenceSelectionCursorMover(lyricSnippetMap: lyricSnippetMap, textPaneCursor: movedCursor, cursorBlinker: cursorBlinker, seekPosition: seekPosition);
+    }
+
+    return this;
   }
 
   @override
@@ -155,11 +162,18 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
     SegmentIndex segmentIndex = lyricSnippet.getSegmentIndexFromInsertionPosition(cursor.charPosition);
     TimingPoint leftTimingPoint = lyricSnippet.timing.leftTimingPoint(segmentIndex);
     TimingPoint rightTimingPoint = lyricSnippet.timing.rightTimingPoint(segmentIndex);
-    SentenceSelectionCursor movedCursor = cursor.copyWith();
-    if (leftTimingPoint.charPosition < cursor.charPosition && cursor.charPosition < rightTimingPoint.charPosition) {
-      movedCursor = cursor.copyWith(charPosition: cursor.charPosition + 1);
+    if (leftTimingPoint.charPosition <= cursor.charPosition && cursor.charPosition < rightTimingPoint.charPosition) {
+      SentenceSelectionCursor movedCursor = cursor.copyWith(charPosition: cursor.charPosition + 1);
+      return SentenceSelectionCursorMover(lyricSnippetMap: lyricSnippetMap, textPaneCursor: movedCursor, cursorBlinker: cursorBlinker, seekPosition: seekPosition);
     }
-    return SentenceSelectionCursorMover(lyricSnippetMap: lyricSnippetMap, textPaneCursor: movedCursor, cursorBlinker: cursorBlinker, seekPosition: seekPosition);
+
+    int? timingPointIndex = lyricSnippet.getTimingPointIndexFromInsertionPosition(cursor.charPosition);
+    if (timingPointIndex != null && timingPointIndex + 1 < lyricSnippet.timingPoints.length - 1) {
+      SentenceSelectionCursor movedCursor = cursor.copyWith(charPosition: lyricSnippet.timingPoints[timingPointIndex + 1].charPosition);
+      return SentenceSelectionCursorMover(lyricSnippetMap: lyricSnippetMap, textPaneCursor: movedCursor, cursorBlinker: cursorBlinker, seekPosition: seekPosition);
+    }
+
+    return this;
   }
 
   @override

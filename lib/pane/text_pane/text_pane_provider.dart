@@ -1,22 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
-import 'package:lyric_editor/lyric_snippet/timing.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/annotation_selection_cursor.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/mover/annotation_selection_cursor_mover.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/segment_selection_cursor.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/sentence_selection_cursor_mover.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor_mover.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_controller.dart';
-import 'package:lyric_editor/position/insertion_position.dart';
-import 'package:lyric_editor/position/position_type_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
-import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
@@ -88,14 +76,14 @@ class TextPaneProvider with ChangeNotifier {
   }
 
   void enterSegmentSelectionMode() {
-    //textPaneCursorMover.enterSegmentSelectionMode();
+    //textPaneCursorMover = textPaneCursorMover.enterSegmentSelectionMode();
   }
 
   void exitSegmentSelectionMode() {
-    //textPaneCursorMover.exitSegmentSelectionMode();
+    //textPaneCursorMover = textPaneCursorMover.exitSegmentSelectionMode();
   }
 
   void switchToRangeSelection() {
-    //textPaneCursorMover.switchToRangeSelection();
+    //textPaneCursorMover = textPaneCursorMover.switchToRangeSelection();
   }
 }

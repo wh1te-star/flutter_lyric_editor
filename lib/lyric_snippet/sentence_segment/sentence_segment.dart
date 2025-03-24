@@ -4,8 +4,11 @@ class SentenceSegment {
 
   SentenceSegment(this.word, this.duration);
 
-  static SentenceSegment get empty => SentenceSegment("", Duration.zero);
-  bool get isEmpty => this == empty;
+  SentenceSegment._privateConstructor(this.word, this.duration);
+  static final SentenceSegment _empty = SentenceSegment._privateConstructor("", Duration.zero);
+  static SentenceSegment get empty => _empty;
+  bool get isEmpty => identical(this, _empty);
+  bool get isNotEmpty => !identical(this, _empty);
 
   SentenceSegment copyWith({String? word, Duration? duration}) {
     return SentenceSegment(
