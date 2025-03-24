@@ -143,7 +143,11 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
   }
 
   @override
-  TextPaneCursorMover updateCursor() {
+  TextPaneCursorMover updateCursor(
+    LyricSnippetMap lyricSnippetMap,
+    CursorBlinker cursorBlinker,
+    SeekPosition seekPosition,
+  ) {
     cursorBlinker.restartCursorTimer();
 
     if (lyricSnippetMap.isEmpty) {

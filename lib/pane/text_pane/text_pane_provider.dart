@@ -51,11 +51,16 @@ class TextPaneProvider with ChangeNotifier {
     );
 
     musicPlayerProvider.addListener(() {
-      textPaneCursorMover.updateCursor();
+      LyricSnippetMap lyricSnippetMap = timingService.getSnippetsAtSeekPosition();
+      SeekPosition seekPosition = musicPlayerProvider.seekPosition;
+      textPaneCursorMover = textPaneCursorMover.updateCursor(lyricSnippetMap, cursorBlinker, seekPosition);
+      debugPrint("${textPaneCursorMover.textPaneCursor}");
     });
 
     timingService.addListener(() {
-      textPaneCursorMover.updateCursor();
+      LyricSnippetMap lyricSnippetMap = timingService.getSnippetsAtSeekPosition();
+      SeekPosition seekPosition = musicPlayerProvider.seekPosition;
+      textPaneCursorMover = textPaneCursorMover.updateCursor(lyricSnippetMap, cursorBlinker, seekPosition);
     });
   }
 

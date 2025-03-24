@@ -27,7 +27,11 @@ abstract class TextPaneCursorMover {
   TextPaneCursorMover moveDownCursor();
   TextPaneCursorMover moveLeftCursor();
   TextPaneCursorMover moveRightCursor();
-  TextPaneCursorMover updateCursor();
+  TextPaneCursorMover updateCursor(
+    LyricSnippetMap lyricSnippetMap,
+    CursorBlinker cursorBlinker,
+    SeekPosition seekPosition,
+  );
 }
 
 /*

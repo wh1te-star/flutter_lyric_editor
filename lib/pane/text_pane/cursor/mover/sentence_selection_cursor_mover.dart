@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
@@ -59,7 +60,7 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
 
   @override
   SentenceSelectionCursor defaultCursor(LyricSnippetID lyricSnippetID) {
-    if(lyricSnippetMap.isEmpty){
+    if (lyricSnippetMap.isEmpty) {
       return SentenceSelectionCursor(LyricSnippetID.empty, cursorBlinker, InsertionPosition.empty, Option.former);
     }
     LyricSnippet lyricSnippet = lyricSnippetMap.getLyricSnippetByID(lyricSnippetID);
@@ -162,7 +163,11 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
   }
 
   @override
-  TextPaneCursorMover updateCursor() {
+  TextPaneCursorMover updateCursor(
+    LyricSnippetMap lyricSnippetMap,
+    CursorBlinker cursorBlinker,
+    SeekPosition seekPosition,
+  ) {
     cursorBlinker.restartCursorTimer();
 
     if (lyricSnippetMap.isEmpty) {
@@ -177,7 +182,6 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
     LyricSnippetID lyricSnippetID = lyricSnippetMap.keys.first;
     LyricSnippet lyricSnippet = lyricSnippetMap.values.first;
     if (lyricSnippetMap.containsKey(lyricSnippetID)) {
-      lyricSnippetID = textPaneCursor.lyricSnippetID;
       lyricSnippet = lyricSnippetMap[lyricSnippetID]!;
     }
 
