@@ -23,9 +23,22 @@ class LyricSnippetEdit extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Widget> annotationExistenceEdits = [];
-    List<Tuple2<SegmentRange, Annotation?>> rangeList = lyricSnippet.getAnnotationExistenceRangeList(lyricSnippet.annotationMap.map, lyricSnippet.sentenceSegments.length);
+    List<Tuple2<SegmentRange, Annotation?>> rangeList = lyricSnippet.getAnnotationExistenceRangeList();
 
-    TextPaneCursor? adjustedCursor = textPaneCursor;
+    int incursorIndex = 0;
+    TextPaneCursor adjustedCursor = textPaneCursor;
+    for (int index = 0; index < rangeList.length; index++) {
+      SegmentRange segmentRange = rangeList[index].item1;
+      SentenceSegmentList? sentenceSubList = lyricSnippet.getSentenceSegmentList(segmentRange);
+      TextPaneCursor? nextCursor = adjustedCursor.shiftLeftBySentenceSegmentList(sentenceSubList);
+      if (nextCursor == null) {
+        incursorIndex = index;
+        break;
+      }
+      adjustedCursor = nextCursor;
+    }
+    debugPrint("${incursorIndex}");
+
     for (int index = 0; index < rangeList.length; index++) {
       SegmentRange segmentRange = rangeList[index].item1;
       Annotation? annotation = rangeList[index].item2;
@@ -33,14 +46,19 @@ class LyricSnippetEdit extends StatelessWidget {
       SentenceSegmentList? sentenceSubList = lyricSnippet.getSentenceSegmentList(segmentRange);
       SentenceSegmentList? annotationSubList = annotation?.getSentenceSegmentList(segmentRange);
 
+      TextPaneCursor? useCursor;
+      if (index == incursorIndex) {
+        useCursor = adjustedCursor;
+      }
+
       Widget sentenceEdit = getSentenceEdit(
         sentenceSubList,
-        adjustedCursor,
+        useCursor,
         cursorBlinker,
       );
       Widget annotationEdit = getAnnotationEdit(
         annotationSubList,
-        adjustedCursor,
+        useCursor,
         cursorBlinker,
       );
       annotationExistenceEdits.add(Column(children: [
@@ -56,8 +74,6 @@ class LyricSnippetEdit extends StatelessWidget {
           ],
         ));
       }
-
-      adjustedCursor = adjustedCursor?.shiftLeftBySentenceSegmentList(sentenceSubList);
     }
 
     return Row(children: annotationExistenceEdits);

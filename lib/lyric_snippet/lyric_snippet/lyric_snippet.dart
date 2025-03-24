@@ -209,10 +209,10 @@ class LyricSnippet {
     return AnnotationMap(updatedAnnotations);
   }
 
-  List<Tuple2<SegmentRange, Annotation?>> getAnnotationExistenceRangeList(Map<SegmentRange, Annotation> annotations, int numberOfSegments) {
-    if (annotations.isEmpty) {
+  List<Tuple2<SegmentRange, Annotation?>> getAnnotationExistenceRangeList() {
+    if (annotationMap.isEmpty) {
       SegmentIndex startIndex = SegmentIndex(0);
-      SegmentIndex endIndex = SegmentIndex(sentenceSegments.length - 1);
+      SegmentIndex endIndex = SegmentIndex(sentenceSegments.length);
       return [
         Tuple2(
           SegmentRange(startIndex, endIndex),
@@ -224,7 +224,7 @@ class LyricSnippet {
     List<Tuple2<SegmentRange, Annotation?>> rangeList = [];
     int previousEnd = -1;
 
-    for (MapEntry<SegmentRange, Annotation> entry in annotations.entries) {
+    for (MapEntry<SegmentRange, Annotation> entry in annotationMap.entries) {
       SegmentRange segmentRange = entry.key;
       Annotation annotation = entry.value;
 
@@ -248,9 +248,9 @@ class LyricSnippet {
       previousEnd = segmentRange.endIndex.index;
     }
 
-    if (previousEnd + 1 <= numberOfSegments - 1) {
+    if (previousEnd + 1 <= sentenceSegments.length - 1) {
       SegmentIndex startIndex = SegmentIndex(previousEnd + 1);
-      SegmentIndex endIndex = SegmentIndex(numberOfSegments - 1);
+      SegmentIndex endIndex = SegmentIndex(sentenceSegments.length - 1);
       rangeList.add(
         Tuple2(
           SegmentRange(startIndex, endIndex),

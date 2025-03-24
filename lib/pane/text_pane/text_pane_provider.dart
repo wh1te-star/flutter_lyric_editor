@@ -54,7 +54,6 @@ class TextPaneProvider with ChangeNotifier {
       LyricSnippetMap lyricSnippetMap = timingService.getSnippetsAtSeekPosition();
       SeekPosition seekPosition = musicPlayerProvider.seekPosition;
       textPaneCursorMover = textPaneCursorMover.updateCursor(lyricSnippetMap, cursorBlinker, seekPosition);
-      debugPrint("${textPaneCursorMover.textPaneCursor}");
     });
 
     timingService.addListener(() {
