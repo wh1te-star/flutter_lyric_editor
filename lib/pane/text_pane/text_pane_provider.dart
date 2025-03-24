@@ -64,19 +64,27 @@ class TextPaneProvider with ChangeNotifier {
   }
 
   void moveUpCursor() {
-    textPaneCursorMover.moveUpCursor();
+    textPaneCursorMover = textPaneCursorMover.moveUpCursor();
+    debugPrint("${textPaneCursorMover.textPaneCursor}");
+    notifyListeners();
   }
 
   void moveDownCursor() {
-    textPaneCursorMover.moveDownCursor();
+    textPaneCursorMover = textPaneCursorMover.moveDownCursor();
+    debugPrint("${textPaneCursorMover.textPaneCursor}");
+    notifyListeners();
   }
 
   void moveLeftCursor() {
-    textPaneCursorMover.moveLeftCursor();
+    textPaneCursorMover = textPaneCursorMover.moveLeftCursor();
+    debugPrint("${textPaneCursorMover.textPaneCursor}");
+    notifyListeners();
   }
 
   void moveRightCursor() {
-    textPaneCursorMover.moveRightCursor();
+    textPaneCursorMover = textPaneCursorMover.moveRightCursor();
+    debugPrint("${textPaneCursorMover.textPaneCursor}");
+    notifyListeners();
   }
 
   void enterSegmentSelectionMode() {

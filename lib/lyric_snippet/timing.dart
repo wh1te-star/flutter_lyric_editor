@@ -206,8 +206,8 @@ class Timing {
     }
     List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
     List<TimingPoint> timingPoints = timingPointList.list;
-    for (int index = 1; index <= sentenceSegments.length; index++) {
-      if (insertionPosition.position <= timingPoints[index].charPosition.position) {
+    for (int index = 0; index < sentenceSegments.length; index++) {
+      if (insertionPosition.position <= timingPoints[index+1].charPosition.position) {
         return SegmentIndex(index);
       }
     }
