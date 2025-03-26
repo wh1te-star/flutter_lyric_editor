@@ -7,6 +7,7 @@ class SegmentIndex implements Comparable<SegmentIndex> {
   static final SegmentIndex _empty = SegmentIndex._privateConstructor(-1);
   static SegmentIndex get empty => _empty;
   bool get isEmpty => identical(this, _empty);
+  bool get isNotEmpty => !identical(this, _empty);
 
   SegmentIndex copyWith({int? index}) {
     return SegmentIndex(

@@ -204,9 +204,17 @@ class Timing {
     if (sentence.length <= insertionPosition.position) {
       return SegmentIndex.empty;
     }
+
+    if (insertionPosition.position == 0) {
+      return SegmentIndex.empty;
+    }
+
     List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
     List<TimingPoint> timingPoints = timingPointList.list;
     for (int index = 0; index < sentenceSegments.length; index++) {
+      if (insertionPosition.position == timingPoints[index + 1].charPosition.position) {
+        return SegmentIndex.empty;
+      }
       if (insertionPosition.position < timingPoints[index + 1].charPosition.position) {
         return SegmentIndex(index);
       }
