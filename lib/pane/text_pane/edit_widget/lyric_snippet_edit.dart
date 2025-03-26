@@ -47,33 +47,41 @@ class LyricSnippetEdit extends StatelessWidget {
       SentenceSegmentList? annotationSubList = annotation?.getSentenceSegmentList(segmentRange);
 
       TextPaneCursor? useCursor;
+      bool isTimingPointPosition = false;
       if (index == incursorIndex) {
         useCursor = adjustedCursor;
+        if (adjustedCursor is SentenceSelectionCursor && adjustedCursor.charPosition.position == 0) {
+          isTimingPointPosition = true;
+        }
+      }
+
+      if (index > 0) {
+        annotationExistenceEdits.add(Column(
+          children: [
+            TimingPointEdit(
+              cursorBlinker: isTimingPointPosition ? cursorBlinker : null,
+            ),
+            TimingPointEdit(
+              cursorBlinker: isTimingPointPosition ? cursorBlinker : null,
+            ),
+          ],
+        ));
       }
 
       Widget sentenceEdit = getSentenceEdit(
         sentenceSubList,
-        useCursor,
+        !isTimingPointPosition ? useCursor : null,
         cursorBlinker,
       );
       Widget annotationEdit = getAnnotationEdit(
         annotationSubList,
-        useCursor,
+        !isTimingPointPosition ? useCursor : null,
         cursorBlinker,
       );
       annotationExistenceEdits.add(Column(children: [
         sentenceEdit,
         annotationEdit,
       ]));
-
-      if (index < rangeList.length - 1) {
-        annotationExistenceEdits.add(const Column(
-          children: [
-            TimingPointEdit(),
-            TimingPointEdit(),
-          ],
-        ));
-      }
     }
 
     return Row(children: annotationExistenceEdits);

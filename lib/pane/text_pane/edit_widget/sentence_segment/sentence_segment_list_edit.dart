@@ -37,22 +37,28 @@ class SentenceSegmentListEdit extends StatelessWidget {
     for (int index = 0; index < sentenceSegments.length; index++) {
       SentenceSegment sentenceSegment = sentenceSegments[index];
 
-      TextPaneCursor? useCursor;
+      TextPaneCursor? segmentCursor;
+      bool isTimingPointPosition = false;
       if (index == incursorIndex) {
-        useCursor = adjustedCursor;
+        segmentCursor = adjustedCursor;
+        if (adjustedCursor is SentenceSelectionCursor && adjustedCursor.charPosition.position == 0) {
+          isTimingPointPosition = true;
+        }
+      }
+
+      if (index > 0) {
+        editWidgets.add(TimingPointEdit(
+          cursorBlinker: isTimingPointPosition ? cursorBlinker : null,
+        ));
       }
 
       editWidgets.add(
         SentenceSegmentEdit(
           sentenceSegment: sentenceSegment,
-          textPaneCursor: useCursor,
+          textPaneCursor: !isTimingPointPosition ? segmentCursor : null,
           cursorBlinker: cursorBlinker,
         ),
       );
-
-      if (index < sentenceSegments.length - 1) {
-        editWidgets.add(TimingPointEdit());
-      }
     }
 
     return Row(children: editWidgets);
