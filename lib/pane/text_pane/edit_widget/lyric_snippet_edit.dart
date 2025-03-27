@@ -59,9 +59,11 @@ class LyricSnippetEdit extends StatelessWidget {
         annotationExistenceEdits.add(Column(
           children: [
             TimingPointEdit(
+              timingPoint: false,
               cursorBlinker: isTimingPointPosition ? cursorBlinker : null,
             ),
             TimingPointEdit(
+              timingPoint: false,
               cursorBlinker: isTimingPointPosition ? cursorBlinker : null,
             ),
           ],
