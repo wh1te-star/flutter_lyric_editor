@@ -42,36 +42,50 @@ class TextPaneProvider with ChangeNotifier {
       LyricSnippetMap lyricSnippetMap = timingService.getSnippetsAtSeekPosition();
       SeekPosition seekPosition = musicPlayerProvider.seekPosition;
       textPaneCursorMover = textPaneCursorMover.updateCursor(lyricSnippetMap, cursorBlinker, seekPosition);
+
+      textPaneCursorMover.cursorBlinker.restartCursorTimer();
+      notifyListeners();
     });
 
     timingService.addListener(() {
       LyricSnippetMap lyricSnippetMap = timingService.getSnippetsAtSeekPosition();
       SeekPosition seekPosition = musicPlayerProvider.seekPosition;
       textPaneCursorMover = textPaneCursorMover.updateCursor(lyricSnippetMap, cursorBlinker, seekPosition);
+
+      textPaneCursorMover.cursorBlinker.restartCursorTimer();
+      notifyListeners();
     });
   }
 
   void moveUpCursor() {
     textPaneCursorMover = textPaneCursorMover.moveUpCursor();
     debugPrint("${textPaneCursorMover.textPaneCursor}");
+
+    textPaneCursorMover.cursorBlinker.restartCursorTimer();
     notifyListeners();
   }
 
   void moveDownCursor() {
     textPaneCursorMover = textPaneCursorMover.moveDownCursor();
     debugPrint("${textPaneCursorMover.textPaneCursor}");
+
+    textPaneCursorMover.cursorBlinker.restartCursorTimer();
     notifyListeners();
   }
 
   void moveLeftCursor() {
     textPaneCursorMover = textPaneCursorMover.moveLeftCursor();
     debugPrint("${textPaneCursorMover.textPaneCursor}");
+
+    textPaneCursorMover.cursorBlinker.restartCursorTimer();
     notifyListeners();
   }
 
   void moveRightCursor() {
     textPaneCursorMover = textPaneCursorMover.moveRightCursor();
     debugPrint("${textPaneCursorMover.textPaneCursor}");
+
+    textPaneCursorMover.cursorBlinker.restartCursorTimer();
     notifyListeners();
   }
 
