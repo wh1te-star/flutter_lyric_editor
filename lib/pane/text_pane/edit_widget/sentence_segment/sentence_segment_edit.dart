@@ -40,8 +40,7 @@ class SentenceSegmentEdit extends StatelessWidget {
   }
 
   Widget cursorWidget() {
-    TextStyle textStyle = cursorTextStyle();
-
+    TextStyle textStyle = cursorTextStyle(textPaneCursor != null);
     if (textPaneCursor is SentenceSelectionCursor) {
       SentenceSelectionCursor cursor = textPaneCursor as SentenceSelectionCursor;
       double cursorOffset = calculateCursorPosition(
@@ -63,13 +62,17 @@ class SentenceSegmentEdit extends StatelessWidget {
   }
 
   Widget textWidget() {
+    bool incursor = textPaneCursor != null;
+    TextStyle textStyle = normalTextStyle.copyWith(
+      decoration:incursor ? TextDecoration.underline : null,
+    );
     return Text(
       sentenceSegment.word,
-      style: normalTextStyle,
+      style: textStyle,
     );
   }
 
-  TextStyle cursorTextStyle() {
+  TextStyle cursorTextStyle(bool incursor) {
     if (cursorBlinker == null || cursorBlinker!.visible == false) {
       return normalTextStyle;
     }
