@@ -36,7 +36,7 @@ class SentenceSegmentEdit extends StatelessWidget {
 
   Widget cursorWidget() {
     TextStyle textStyle = cursorTextStyle(textPaneCursor != null);
-    if (textPaneCursor is SentenceSelectionCursor) {
+    if (textPaneCursor is SentenceSelectionCursor && cursorBlinker != null && cursorBlinker!.visible) {
       SentenceSelectionCursor cursor = textPaneCursor as SentenceSelectionCursor;
       double cursorOffset = calculateCursorPosition(
         sentenceSegment.word,
