@@ -1,7 +1,9 @@
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/mover/sentence_selection_cursor_mover.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/segment_selection_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor_mover.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_index.dart';
@@ -142,11 +144,11 @@ class SegmentSelectionCursorMover extends TextPaneCursorMover {
     }
 
     SegmentIndex nextIndex = currentIndex + 1;
-    if (nextIndex.index + 1 >= lyricSnippetMap[cursor.lyricSnippetID]!.sentenceSegments.length) {
+    if (nextIndex.index >= lyricSnippetMap[cursor.lyricSnippetID]!.sentenceSegments.length) {
       return this;
     }
 
-    if (isRangeSelection) {
+    if (!isRangeSelection) {
       segmentRange.startIndex = nextIndex;
     } else {
       segmentRange.endIndex = nextIndex;
@@ -169,6 +171,20 @@ class SegmentSelectionCursorMover extends TextPaneCursorMover {
   ) {
     cursorBlinker.restartCursorTimer();
     return this;
+  }
+
+  TextPaneCursorMover exitSegmentSelectionMode() {
+    return SentenceSelectionCursorMover.withDefaultCursor(
+      lyricSnippetMap: lyricSnippetMap,
+      lyricSnippetID: textPaneCursor.lyricSnippetID,
+      cursorBlinker: cursorBlinker,
+      seekPosition: seekPosition,
+    );
+  }
+
+  TextPaneCursorMover switchToRangeSelection() {
+    bool isRangeSelection = !this.isRangeSelection;
+    return copyWith(isRangeSelection: isRangeSelection);
   }
 
   SegmentSelectionCursorMover copyWith({

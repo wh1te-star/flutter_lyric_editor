@@ -17,7 +17,7 @@ class SegmentIndex implements Comparable<SegmentIndex> {
 
   @override
   String toString() {
-    return "SegmentIndex: $index.";
+    return "SegmentIndex: $index";
   }
 
   @override

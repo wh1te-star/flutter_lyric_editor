@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/mover/segment_selection_cursor_mover.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/sentence_selection_cursor_mover.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor_mover.dart';
 import 'package:lyric_editor/position/seek_position.dart';
@@ -90,14 +91,20 @@ class TextPaneProvider with ChangeNotifier {
   }
 
   void enterSegmentSelectionMode() {
-    //textPaneCursorMover = textPaneCursorMover.enterSegmentSelectionMode();
+    assert(textPaneCursorMover is SentenceSelectionCursorMover, "This is an unexpected call. The cursor type must be SentenceSelectionCursorMover, but is ${textPaneCursorMover.runtimeType}");
+    SentenceSelectionCursorMover cursorMover = textPaneCursorMover as SentenceSelectionCursorMover;
+    textPaneCursorMover = cursorMover.enterSegmentSelectionMode();
   }
 
   void exitSegmentSelectionMode() {
-    //textPaneCursorMover = textPaneCursorMover.exitSegmentSelectionMode();
+    assert(textPaneCursorMover is SegmentSelectionCursorMover, "This is an unexpected call. The cursor type must be SegmentSelectionCursorMover, but is ${textPaneCursorMover.runtimeType}");
+    SegmentSelectionCursorMover cursorMover = textPaneCursorMover as SegmentSelectionCursorMover;
+    textPaneCursorMover = cursorMover.exitSegmentSelectionMode();
   }
 
   void switchToRangeSelection() {
-    //textPaneCursorMover = textPaneCursorMover.switchToRangeSelection();
+    assert(textPaneCursorMover is SegmentSelectionCursorMover, "This is an unexpected call. The cursor type must be SegmentSelectionCursorMover, but is ${textPaneCursorMover.runtimeType}");
+    SegmentSelectionCursorMover cursorMover = textPaneCursorMover as SegmentSelectionCursorMover;
+    textPaneCursorMover = cursorMover.switchToRangeSelection();
   }
 }

@@ -182,7 +182,13 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         AddAnnotationIntent: CallbackAction<AddAnnotationIntent>(
           onInvoke: (AddAnnotationIntent intent) => () async {
             TextPaneCursorMover cursorMover = textPaneProvider.textPaneCursorMover;
-            assert(cursorMover is SegmentSelectionCursor, 'cursorMover must be of type SegmentSelectionCursor');
+            if (cursorMover is! SentenceSelectionCursorMover) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Cannot determine which annotation should be deleted."),
+                ),
+              );
+            }
 
             SegmentSelectionCursor cursor = cursorMover.textPaneCursor as SegmentSelectionCursor;
             LyricSnippetID targetID = cursor.lyricSnippetID;
