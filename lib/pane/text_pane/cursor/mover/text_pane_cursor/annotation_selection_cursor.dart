@@ -39,12 +39,12 @@ class AnnotationSelectionCursor extends TextPaneCursor {
   bool get isNotEmpty => !identical(this, _empty);
 
   @override
-  AnnotationSelectionCursor? shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {
+  AnnotationSelectionCursor shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {
     return this;
   }
 
   @override
-  AnnotationSelectionCursor? shiftLeftBySentenceSegment(SentenceSegment sentenceSegment) {
+  AnnotationSelectionCursor shiftLeftBySentenceSegment(SentenceSegment sentenceSegment) {
     return this;
   }
 

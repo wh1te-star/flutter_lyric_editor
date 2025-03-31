@@ -2,8 +2,10 @@ import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/annotation_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/sentence_selection_cursor_mover.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor_mover.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/position_type_info.dart';
@@ -178,6 +180,20 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
     }
 
     return this;
+  }
+
+  @override
+  List<TextPaneCursor> getSeparatedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
+    List<AnnotationSelectionCursor> separatedCursors = List.filled(rangeList.length, AnnotationSelectionCursor.empty);
+    AnnotationSelectionCursor cursor = textPaneCursor as AnnotationSelectionCursor;
+    for (int index = 0; index < rangeList.length; index++) {
+      SegmentRange segmentRange = rangeList[index];
+      if (segmentRange == cursor.segmentRange) {
+        separatedCursors[index] = cursor;
+        break;
+      }
+    }
+    return separatedCursors;
   }
 
   AnnotationSelectionCursorMover copyWith({

@@ -4,6 +4,7 @@ import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart'
 import 'package:lyric_editor/pane/text_pane/cursor/mover/sentence_selection_cursor_mover.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/segment_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/sentence_selection_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor_mover.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_index.dart';
@@ -185,6 +186,22 @@ class SegmentSelectionCursorMover extends TextPaneCursorMover {
   TextPaneCursorMover switchToRangeSelection() {
     bool isRangeSelection = !this.isRangeSelection;
     return copyWith(isRangeSelection: isRangeSelection);
+  }
+
+  @override
+  List<TextPaneCursor> getSeparatedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
+    List<SegmentSelectionCursor> separatedCursors = List.filled(rangeList.length, SegmentSelectionCursor.empty);
+    SegmentSelectionCursor shiftedCursor = textPaneCursor as SegmentSelectionCursor;
+    for (int index = 0; index < rangeList.length; index++) {
+      SegmentRange segmentRange = rangeList[index];
+      SegmentSelectionCursor? nextCursor = shiftedCursor.shiftLeftBySentenceSegmentList(segmentRange.length);
+      if (nextCursor == null) {
+        separatedCursors[index] = shiftedCursor;
+        break;
+      }
+      shiftedCursor = nextCursor;
+    }
+    return separatedCursors;
   }
 
   SegmentSelectionCursorMover copyWith({

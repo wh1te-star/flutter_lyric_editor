@@ -25,20 +25,6 @@ class LyricSnippetEdit extends StatelessWidget {
     List<Widget> annotationExistenceEdits = [];
     List<Tuple2<SegmentRange, Annotation?>> rangeList = lyricSnippet.getAnnotationExistenceRangeList();
 
-    int incursorIndex = 0;
-    TextPaneCursor adjustedCursor = textPaneCursor;
-    for (int index = 0; index < rangeList.length; index++) {
-      SegmentRange segmentRange = rangeList[index].item1;
-      SentenceSegmentList? sentenceSubList = lyricSnippet.getSentenceSegmentList(segmentRange);
-      TextPaneCursor? nextCursor = adjustedCursor.shiftLeftBySentenceSegmentList(sentenceSubList);
-      if (nextCursor == null) {
-        incursorIndex = index;
-        break;
-      }
-      adjustedCursor = nextCursor;
-    }
-    debugPrint("${incursorIndex}");
-
     for (int index = 0; index < rangeList.length; index++) {
       SegmentRange segmentRange = rangeList[index].item1;
       Annotation? annotation = rangeList[index].item2;
