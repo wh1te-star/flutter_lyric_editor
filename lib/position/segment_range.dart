@@ -20,6 +20,10 @@ class SegmentRange {
 
   int get length => endIndex.index - startIndex.index + 1;
 
+  bool isInRange(SegmentIndex segmentIndex) {
+    return startIndex <= segmentIndex && segmentIndex <= endIndex;
+  }
+
   SegmentRange copyWith({SegmentIndex? startIndex, SegmentIndex? endIndex}) {
     return SegmentRange(
       startIndex ?? this.startIndex,

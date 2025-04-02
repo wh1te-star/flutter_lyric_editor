@@ -190,17 +190,37 @@ class SegmentSelectionCursorMover extends TextPaneCursorMover {
 
   @override
   List<TextPaneCursor> getSeparatedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
+    SegmentSelectionCursor cursor = textPaneCursor as SegmentSelectionCursor;
     List<SegmentSelectionCursor> separatedCursors = List.filled(rangeList.length, SegmentSelectionCursor.empty);
-    SegmentSelectionCursor shiftedCursor = textPaneCursor as SegmentSelectionCursor;
-    for (int index = 0; index < rangeList.length; index++) {
-      SegmentRange segmentRange = rangeList[index];
-      SegmentSelectionCursor? nextCursor = shiftedCursor.shiftLeftBySentenceSegmentList(segmentRange.length);
-      if (nextCursor == null) {
-        separatedCursors[index] = shiftedCursor;
-        break;
-      }
-      shiftedCursor = nextCursor;
+
+    int startRangeIndex = rangeList.indexWhere((SegmentRange segmentRange) {
+      return segmentRange.isInRange(segmentRange.startIndex);
+    });
+    int endRangeIndex = rangeList.indexWhere((SegmentRange segmentRange) {
+      return segmentRange.isInRange(segmentRange.endIndex);
+    });
+
+    if (startRangeIndex == endRangeIndex) {
+      separatedCursors[startRangeIndex] = textPaneCursor as SegmentSelectionCursor;
+      return separatedCursors;
     }
+
+    separatedCursors[startRangeIndex] = cursor.copyWith(
+      segmentRange: SegmentRange(
+        cursor.segmentRange.startIndex,
+        rangeList[startRangeIndex].endIndex,
+      ),
+    );
+    for (int index = startRangeIndex + 1; index <= endRangeIndex - 1; index++) {
+      separatedCursors[index] = cursor.copyWith(segmentRange: rangeList[index]);
+    }
+    separatedCursors[startRangeIndex] = cursor.copyWith(
+      segmentRange: SegmentRange(
+        rangeList[startRangeIndex].startIndex,
+        cursor.segmentRange.endIndex,
+      ),
+    );
+
     return separatedCursors;
   }
 
