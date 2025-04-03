@@ -33,7 +33,7 @@ abstract class TextPaneCursorMover {
     CursorBlinker cursorBlinker,
     SeekPosition seekPosition,
   );
-  List<TextPaneCursor> getSeparatedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList);
+  List<TextPaneCursor?> getSeparatedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList);
 }
 
 /*
