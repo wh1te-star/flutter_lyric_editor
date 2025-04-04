@@ -111,14 +111,23 @@ class SegmentSelectionCursorMover extends TextPaneCursorMover {
     SegmentSelectionCursor cursor = textPaneCursor as SegmentSelectionCursor;
     SegmentRange segmentRange = cursor.segmentRange;
 
-    SegmentIndex currentIndex = segmentRange.startIndex;
-    SegmentIndex nextIndex = currentIndex - 1;
-    if (nextIndex < SegmentIndex(0)) {
-      return this;
-    }
-    segmentRange.startIndex = nextIndex;
+    if (!isRangeSelection) {
+      SegmentIndex currentIndex = segmentRange.startIndex;
+      SegmentIndex nextIndex = currentIndex - 1;
+      if (nextIndex < SegmentIndex(0)) {
+        return this;
+      }
+      segmentRange.startIndex = nextIndex;
 
-    segmentRange.endIndex = segmentRange.endIndex - 1;
+      segmentRange.endIndex = segmentRange.endIndex - 1;
+    } else {
+      SegmentIndex currentIndex = segmentRange.endIndex;
+      SegmentIndex nextIndex = currentIndex - 1;
+      if (nextIndex < segmentRange.startIndex) {
+        return this;
+      }
+      segmentRange.endIndex = nextIndex;
+    }
 
     return SegmentSelectionCursorMover(
       lyricSnippetMap: lyricSnippetMap,
@@ -140,7 +149,9 @@ class SegmentSelectionCursorMover extends TextPaneCursorMover {
       return this;
     }
     segmentRange.endIndex = nextIndex;
-    segmentRange.startIndex = segmentRange.startIndex + 1;
+    if (!isRangeSelection) {
+      segmentRange.startIndex = segmentRange.startIndex + 1;
+    }
 
     return SegmentSelectionCursorMover(
       lyricSnippetMap: lyricSnippetMap,

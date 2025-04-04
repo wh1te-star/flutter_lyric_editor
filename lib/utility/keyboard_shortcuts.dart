@@ -94,7 +94,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyS): DeleteSnippetIntent(),
         LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyA): DeleteAnnotationIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyC): SnippetStartMoveIntent(),
-        //LogicalKeySet(LogicalKeyboardKey.keyV): textPaneProvider.cursor.isSegmentSelectionMode ? SegmentRangeSelectIntent() : SnippetEndMoveIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyV): textPaneProvider.textPaneCursorMover is SegmentSelectionCursorMover ? SegmentRangeSelectIntent() : SnippetEndMoveIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowLeft): SpeedDownIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowRight): SpeedUpIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowUp): VolumeUpIntent(),
