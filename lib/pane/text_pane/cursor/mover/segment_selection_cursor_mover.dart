@@ -110,21 +110,15 @@ class SegmentSelectionCursorMover extends TextPaneCursorMover {
   TextPaneCursorMover moveLeftCursor() {
     SegmentSelectionCursor cursor = textPaneCursor as SegmentSelectionCursor;
     SegmentRange segmentRange = cursor.segmentRange;
-    SegmentIndex currentIndex = segmentRange.startIndex;
-    if (isRangeSelection) {
-      currentIndex = segmentRange.endIndex;
-    }
 
+    SegmentIndex currentIndex = segmentRange.startIndex;
     SegmentIndex nextIndex = currentIndex - 1;
     if (nextIndex < SegmentIndex(0)) {
       return this;
     }
+    segmentRange.startIndex = nextIndex;
 
-    if (isRangeSelection) {
-      segmentRange.startIndex = nextIndex;
-    } else {
-      segmentRange.endIndex = nextIndex;
-    }
+    segmentRange.endIndex = segmentRange.endIndex - 1;
 
     return SegmentSelectionCursorMover(
       lyricSnippetMap: lyricSnippetMap,
@@ -139,21 +133,14 @@ class SegmentSelectionCursorMover extends TextPaneCursorMover {
   TextPaneCursorMover moveRightCursor() {
     SegmentSelectionCursor cursor = textPaneCursor as SegmentSelectionCursor;
     SegmentRange segmentRange = cursor.segmentRange;
-    SegmentIndex currentIndex = segmentRange.startIndex;
-    if (isRangeSelection) {
-      currentIndex = segmentRange.endIndex;
-    }
 
+    SegmentIndex currentIndex = segmentRange.endIndex;
     SegmentIndex nextIndex = currentIndex + 1;
     if (nextIndex.index >= lyricSnippetMap[cursor.lyricSnippetID]!.sentenceSegments.length) {
       return this;
     }
-
-    if (!isRangeSelection) {
-      segmentRange.startIndex = nextIndex;
-    } else {
-      segmentRange.endIndex = nextIndex;
-    }
+    segmentRange.endIndex = nextIndex;
+    segmentRange.startIndex = segmentRange.startIndex + 1;
 
     return SegmentSelectionCursorMover(
       lyricSnippetMap: lyricSnippetMap,
