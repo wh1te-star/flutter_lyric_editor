@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/segment_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
@@ -14,6 +15,10 @@ class SentenceSegmentEdit extends StatelessWidget {
   final Color wordCursorColor = Colors.black;
   final TextStyle normalTextStyle = const TextStyle(
     color: Colors.black,
+  );
+  final TextStyle underlineTextStyle = const TextStyle(
+    color: Colors.black,
+    decoration: TextDecoration.underline,
   );
   final TextStyle incursorTextStyle = TextStyle(
     color: Colors.white,
@@ -57,10 +62,13 @@ class SentenceSegmentEdit extends StatelessWidget {
   }
 
   Widget textWidget() {
-    bool incursor = textPaneCursor != null;
-    TextStyle textStyle = normalTextStyle.copyWith(
-      decoration:incursor ? TextDecoration.underline : null,
-    );
+    TextStyle textStyle = normalTextStyle;
+    if (textPaneCursor != null && textPaneCursor is! SegmentSelectionCursor) {
+      textStyle = underlineTextStyle;
+    }
+    if (textPaneCursor is SegmentSelectionCursor && cursorBlinker!.visible) {
+      textStyle = incursorTextStyle;
+    }
     return Text(
       sentenceSegment.word,
       style: textStyle,
