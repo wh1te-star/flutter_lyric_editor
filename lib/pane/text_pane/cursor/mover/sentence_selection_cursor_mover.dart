@@ -248,8 +248,8 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
   }
 
   @override
-  List<TextPaneCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
-    List<SentenceSelectionCursor> separatedCursors = List.filled(rangeList.length, null);
+  List<TextPaneCursor> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
+    List<SentenceSelectionCursor> separatedCursors = List.filled(rangeList.length, SentenceSelectionCursor.empty);
     SentenceSelectionCursor shiftedCursor = textPaneCursor as SentenceSelectionCursor;
     for (int index = 0; index < rangeList.length; index++) {
       SegmentRange segmentRange = rangeList[index];
