@@ -29,7 +29,7 @@ class LyricSnippetEdit extends StatelessWidget {
     List<SegmentRange> rangeList = rangeAnnotationEntry.map((Tuple2<SegmentRange, Annotation?> entry) {
       return entry.item1;
     }).toList();
-    List<TextPaneCursor?> cursorList = textPaneCursorMover.getSeparatedCursors(lyricSnippet, rangeList);
+    List<TextPaneCursor?> cursorList = textPaneCursorMover.getRangeDividedCursors(lyricSnippet, rangeList);
 
     for (int index = 0; index < rangeAnnotationEntry.length; index++) {
       SegmentRange segmentRange = rangeAnnotationEntry[index].item1;

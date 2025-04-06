@@ -2,6 +2,7 @@ import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/annotation_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/sentence_selection_cursor_mover.dart';
@@ -183,7 +184,7 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
   }
 
   @override
-  List<TextPaneCursor> getSeparatedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
+  List<TextPaneCursor> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
     List<AnnotationSelectionCursor> separatedCursors = List.filled(rangeList.length, AnnotationSelectionCursor.empty);
     AnnotationSelectionCursor cursor = textPaneCursor as AnnotationSelectionCursor;
     for (int index = 0; index < rangeList.length; index++) {
@@ -193,6 +194,12 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
         break;
       }
     }
+    return separatedCursors;
+  }
+
+  @override
+  List<TextPaneCursor> getSegmentDividedCursors(LyricSnippet lyricSnippet, SentenceSegmentList sentenceSegmentList) {
+    List<AnnotationSelectionCursor> separatedCursors = List.filled(sentenceSegmentList.length, AnnotationSelectionCursor.empty);
     return separatedCursors;
   }
 

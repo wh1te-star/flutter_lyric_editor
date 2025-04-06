@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_range.dart';
@@ -33,7 +35,8 @@ abstract class TextPaneCursorMover {
     CursorBlinker cursorBlinker,
     SeekPosition seekPosition,
   );
-  List<TextPaneCursor?> getSeparatedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList);
+  List<TextPaneCursor> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList);
+  List<TextPaneCursor> getSegmentDividedCursors(LyricSnippet lyricSnippet, SentenceSegmentList sentenceSegmentList);
 }
 
 /*

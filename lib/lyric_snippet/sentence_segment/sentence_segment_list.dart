@@ -17,6 +17,7 @@ class SentenceSegmentList {
   static SentenceSegmentList get empty => SentenceSegmentList([]);
   bool get isEmpty => list.isEmpty;
 
+  int get length => list.length;
   SentenceSegment operator [](int index) => list[index];
   void operator []=(int index, SentenceSegment value) {
     list[index] = value;
