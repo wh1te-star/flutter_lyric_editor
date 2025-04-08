@@ -18,9 +18,9 @@ import 'package:tuple/tuple.dart';
 class LyricSnippetEdit extends StatelessWidget {
   final LyricSnippet lyricSnippet;
   final SeekPosition seekPosition;
-  final TextPaneCursorMover textPaneCursorMover;
+  final TextPaneCursor textPaneCursor;
   final CursorBlinker cursorBlinker;
-  LyricSnippetEdit(this.lyricSnippet, this.seekPosition, this.textPaneCursorMover, this.cursorBlinker);
+  LyricSnippetEdit(this.lyricSnippet, this.seekPosition, this.textPaneCursor, this.cursorBlinker);
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +29,7 @@ class LyricSnippetEdit extends StatelessWidget {
     List<SegmentRange> rangeList = rangeAnnotationEntry.map((Tuple2<SegmentRange, Annotation?> entry) {
       return entry.item1;
     }).toList();
-    List<TextPaneCursor?> cursorList = textPaneCursorMover.getRangeDividedCursors(lyricSnippet, rangeList);
+    List<TextPaneCursor?> cursorList = textPaneCursor.getRangeDividedCursors(lyricSnippet, rangeList);
 
     for (int index = 0; index < rangeAnnotationEntry.length; index++) {
       SegmentRange segmentRange = rangeAnnotationEntry[index].item1;
@@ -40,14 +40,12 @@ class LyricSnippetEdit extends StatelessWidget {
 
       TextPaneCursor? cursor = cursorList[index];
       bool isTimingPointPosition = false;
-      if (cursor != null) {
-        if (cursor is SentenceSelectionCursor && cursor.charPosition == InsertionPosition(0)) {
+        if (cursor is SentenceSelectionCursor && cursor.isEmpty && cursor.charPosition == InsertionPosition(0)) {
           isTimingPointPosition = true;
         }
-        if (cursor is AnnotationSelectionCursor && cursor.charPosition == InsertionPosition(0)) {
+        if (cursor is AnnotationSelectionCursor && cursor.isEmpty && cursor.charPosition == InsertionPosition(0)) {
           isTimingPointPosition = true;
         }
-      }
 
       if (index > 0) {
         annotationExistenceEdits.add(Column(

@@ -247,39 +247,6 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
     );
   }
 
-  @override
-  List<TextPaneCursor> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
-    List<SentenceSelectionCursor> separatedCursors = List.filled(rangeList.length, SentenceSelectionCursor.empty);
-    SentenceSelectionCursor shiftedCursor = textPaneCursor as SentenceSelectionCursor;
-    for (int index = 0; index < rangeList.length; index++) {
-      SegmentRange segmentRange = rangeList[index];
-      SentenceSegmentList? sentenceSubList = lyricSnippet.getSentenceSegmentList(segmentRange);
-      SentenceSelectionCursor? nextCursor = shiftedCursor.shiftLeftBySentenceSegmentList(sentenceSubList);
-      if (nextCursor == null) {
-        separatedCursors[index] = shiftedCursor;
-        break;
-      }
-      shiftedCursor = nextCursor;
-    }
-    return separatedCursors;
-  }
-  
-  @override
-  List<TextPaneCursor> getSegmentDividedCursors(LyricSnippet lyricSnippet, SentenceSegmentList sentenceSegmentList) {
-    List<SentenceSelectionCursor> separatedCursors = List.filled(sentenceSegmentList.length, SentenceSelectionCursor.empty);
-    SentenceSelectionCursor shiftedCursor = textPaneCursor as SentenceSelectionCursor;
-    for (int index = 0; index < sentenceSegmentList.length; index++) {
-      SentenceSegment sentenceSegment = sentenceSegmentList[index];
-      SentenceSelectionCursor? nextCursor = shiftedCursor.shiftLeftBySentenceSegment(sentenceSegment);
-      if (nextCursor == null) {
-        separatedCursors[index] = shiftedCursor;
-        break;
-      }
-      shiftedCursor = nextCursor;
-    }
-    return separatedCursors;
-  }
-
   SentenceSelectionCursorMover copyWith({
     LyricSnippetMap? lyricSnippetMap,
     SentenceSelectionCursor? sentenceSelectionCursor,

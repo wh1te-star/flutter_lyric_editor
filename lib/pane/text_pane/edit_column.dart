@@ -23,7 +23,7 @@ class EditColumn extends StatelessWidget {
       Widget widget = LyricSnippetEdit(
         lyricSnippet,
         seekPosition,
-        textPaneCursorMover,
+        textPaneCursorMover.textPaneCursor,
         cursorBlinker,
       );
       elements.add(widget);

@@ -1,8 +1,10 @@
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
@@ -32,6 +34,39 @@ class SentenceSelectionCursor extends TextPaneCursor {
   static SentenceSelectionCursor get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
+
+  @override
+  List<TextPaneCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
+    List<SentenceSelectionCursor?> separatedCursors = List.filled(rangeList.length, null);
+    SentenceSelectionCursor shiftedCursor = copyWith();
+    for (int index = 0; index < rangeList.length; index++) {
+      SegmentRange segmentRange = rangeList[index];
+      SentenceSegmentList? sentenceSubList = lyricSnippet.getSentenceSegmentList(segmentRange);
+      SentenceSelectionCursor? nextCursor = shiftedCursor.shiftLeftBySentenceSegmentList(sentenceSubList);
+      if (nextCursor == null) {
+        separatedCursors[index] = shiftedCursor;
+        break;
+      }
+      shiftedCursor = nextCursor;
+    }
+    return separatedCursors;
+  }
+
+  @override
+  List<TextPaneCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList) {
+    List<SentenceSelectionCursor?> separatedCursors = List.filled(sentenceSegmentList.length, null);
+    SentenceSelectionCursor shiftedCursor = copyWith();
+    for (int index = 0; index < sentenceSegmentList.length; index++) {
+      SentenceSegment sentenceSegment = sentenceSegmentList[index];
+      SentenceSelectionCursor? nextCursor = shiftedCursor.shiftLeftBySentenceSegment(sentenceSegment);
+      if (nextCursor == null) {
+        separatedCursors[index] = shiftedCursor;
+        break;
+      }
+      shiftedCursor = nextCursor;
+    }
+    return separatedCursors;
+  }
 
   @override
   SentenceSelectionCursor? shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {

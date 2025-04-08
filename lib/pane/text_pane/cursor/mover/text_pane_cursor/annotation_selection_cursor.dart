@@ -1,4 +1,5 @@
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/text_pane_cursor.dart';
@@ -39,12 +40,32 @@ class AnnotationSelectionCursor extends TextPaneCursor {
   bool get isNotEmpty => !identical(this, _empty);
 
   @override
-  AnnotationSelectionCursor shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {
+  List<TextPaneCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
+    List<AnnotationSelectionCursor?> separatedCursors = List.filled(rangeList.length, null);
+    AnnotationSelectionCursor cursor = copyWith();
+    for (int index = 0; index < rangeList.length; index++) {
+      SegmentRange segmentRange = rangeList[index];
+      if (segmentRange == cursor.segmentRange) {
+        separatedCursors[index] = cursor;
+        break;
+      }
+    }
+    return separatedCursors;
+  }
+
+  @override
+  List<TextPaneCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList) {
+    List<AnnotationSelectionCursor?> separatedCursors = List.filled(sentenceSegmentList.length, null);
+    return separatedCursors;
+  }
+
+  @override
+  AnnotationSelectionCursor? shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {
     return this;
   }
 
   @override
-  AnnotationSelectionCursor shiftLeftBySentenceSegment(SentenceSegment sentenceSegment) {
+  AnnotationSelectionCursor? shiftLeftBySentenceSegment(SentenceSegment sentenceSegment) {
     return this;
   }
 

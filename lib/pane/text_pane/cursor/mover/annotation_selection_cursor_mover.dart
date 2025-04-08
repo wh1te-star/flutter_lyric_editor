@@ -183,26 +183,6 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
     return this;
   }
 
-  @override
-  List<TextPaneCursor> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
-    List<AnnotationSelectionCursor> separatedCursors = List.filled(rangeList.length, AnnotationSelectionCursor.empty);
-    AnnotationSelectionCursor cursor = textPaneCursor as AnnotationSelectionCursor;
-    for (int index = 0; index < rangeList.length; index++) {
-      SegmentRange segmentRange = rangeList[index];
-      if (segmentRange == cursor.segmentRange) {
-        separatedCursors[index] = cursor;
-        break;
-      }
-    }
-    return separatedCursors;
-  }
-
-  @override
-  List<TextPaneCursor> getSegmentDividedCursors(LyricSnippet lyricSnippet, SentenceSegmentList sentenceSegmentList) {
-    List<AnnotationSelectionCursor> separatedCursors = List.filled(sentenceSegmentList.length, AnnotationSelectionCursor.empty);
-    return separatedCursors;
-  }
-
   AnnotationSelectionCursorMover copyWith({
     LyricSnippetMap? lyricSnippetMap,
     AnnotationSelectionCursor? annotationSelectionCursor,
