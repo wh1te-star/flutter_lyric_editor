@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
@@ -37,32 +39,30 @@ class SegmentSelectionCursor extends TextPaneCursor {
     List<SegmentSelectionCursor?> separatedCursors = List.filled(rangeList.length, null);
 
     int startRangeIndex = rangeList.indexWhere((SegmentRange segmentRange) {
-      return segmentRange.isInRange(segmentRange.startIndex);
+      return segmentRange.isInRange(cursor.segmentRange.startIndex);
     });
     int endRangeIndex = rangeList.indexWhere((SegmentRange segmentRange) {
-      return segmentRange.isInRange(segmentRange.endIndex);
+      return segmentRange.isInRange(cursor.segmentRange.endIndex);
     });
 
-    if (startRangeIndex == endRangeIndex) {
-      separatedCursors[startRangeIndex] = copyWith();
-      return separatedCursors;
-    }
+    int shiftLength = 0;
+    for (int index = 0; index <= endRangeIndex; index++) {
+      SegmentIndex startIndex = rangeList[index].startIndex - shiftLength;
+      SegmentIndex endIndex = rangeList[index].endIndex - shiftLength;
+      if (index == startRangeIndex) {
+        startIndex = cursor.segmentRange.startIndex - shiftLength;
+      }
+      if (index == endRangeIndex) {
+        endIndex = cursor.segmentRange.endIndex - shiftLength;
+      }
 
-    separatedCursors[startRangeIndex] = cursor.copyWith(
-      segmentRange: SegmentRange(
-        cursor.segmentRange.startIndex,
-        rangeList[startRangeIndex].endIndex,
-      ),
-    );
-    for (int index = startRangeIndex + 1; index <= endRangeIndex - 1; index++) {
-      separatedCursors[index] = cursor.copyWith(segmentRange: rangeList[index]);
+      if (startRangeIndex <= index && index <= endRangeIndex) {
+        separatedCursors[index] = cursor.copyWith(
+          segmentRange: SegmentRange(startIndex, endIndex),
+        );
+      }
+      shiftLength += rangeList[index].length;
     }
-    separatedCursors[startRangeIndex] = cursor.copyWith(
-      segmentRange: SegmentRange(
-        rangeList[startRangeIndex].startIndex,
-        cursor.segmentRange.endIndex,
-      ),
-    );
 
     return separatedCursors;
   }

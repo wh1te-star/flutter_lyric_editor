@@ -85,6 +85,15 @@ class LyricSnippetEdit extends StatelessWidget {
         annotationEdit,
         sentenceEdit,
       ]));
+
+      String separatedCursors = "cursors";
+      if (textPaneCursor is SegmentSelectionCursor) {
+        for (var cursor in cursorList) {
+          if (cursor is SegmentSelectionCursor) separatedCursors += "${cursor.segmentRange}:::";
+          else separatedCursors += "null:::";
+        }
+      }
+      debugPrint("$separatedCursors");
     }
 
     return Row(
