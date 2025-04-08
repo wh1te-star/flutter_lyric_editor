@@ -40,23 +40,33 @@ class LyricSnippetEdit extends StatelessWidget {
 
       TextPaneCursor? cursor = cursorList[index];
       bool isTimingPointPosition = false;
-        if (cursor is SentenceSelectionCursor && cursor.isEmpty && cursor.charPosition == InsertionPosition(0)) {
-          isTimingPointPosition = true;
-        }
-        if (cursor is AnnotationSelectionCursor && cursor.isEmpty && cursor.charPosition == InsertionPosition(0)) {
-          isTimingPointPosition = true;
-        }
+      if (cursor is SentenceSelectionCursor && cursor.isEmpty && cursor.charPosition == InsertionPosition(0)) {
+        isTimingPointPosition = true;
+      }
+      if (cursor is AnnotationSelectionCursor && cursor.isEmpty && cursor.charPosition == InsertionPosition(0)) {
+        isTimingPointPosition = true;
+      }
+
+      CursorBlinker? timingPointCursorBlinker;
+      CursorBlinker? sentenceSegmentCursorBlinker;
+      TextPaneCursor? sentenceSegmentCursor;
+      if (isTimingPointPosition) {
+        timingPointCursorBlinker = cursorBlinker;
+      } else {
+        sentenceSegmentCursorBlinker = cursorBlinker;
+        sentenceSegmentCursor = cursor;
+      }
 
       if (index > 0) {
         annotationExistenceEdits.add(Column(
           children: [
             TimingPointEdit(
               timingPoint: false,
-              cursorBlinker: isTimingPointPosition ? cursorBlinker : null,
+              cursorBlinker: timingPointCursorBlinker,
             ),
             TimingPointEdit(
               timingPoint: false,
-              cursorBlinker: isTimingPointPosition ? cursorBlinker : null,
+              cursorBlinker: timingPointCursorBlinker,
             ),
           ],
         ));
@@ -64,13 +74,13 @@ class LyricSnippetEdit extends StatelessWidget {
 
       Widget sentenceEdit = getSentenceEdit(
         sentenceSubList,
-        !isTimingPointPosition ? cursor : null,
-        cursorBlinker,
+        sentenceSegmentCursor,
+        sentenceSegmentCursorBlinker,
       );
       Widget annotationEdit = getAnnotationEdit(
         annotationSubList,
-        !isTimingPointPosition ? cursor : null,
-        cursorBlinker,
+        sentenceSegmentCursor,
+        sentenceSegmentCursorBlinker,
       );
       annotationExistenceEdits.add(Column(children: [
         sentenceEdit,
