@@ -87,7 +87,7 @@ class AnnotationSelectionCursor extends TextPaneCursor {
 
   @override
   String toString() {
-    return 'AnnotationSelectionCursor(ID: ${lyricSnippetID.id}, position: ${charPosition.position}, option: $option)';
+    return 'AnnotationSelectionCursor(ID: ${lyricSnippetID.id}, $segmentRange, position: ${charPosition.position}, option: $option)';
   }
 
   @override

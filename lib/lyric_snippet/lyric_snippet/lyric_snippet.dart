@@ -103,8 +103,8 @@ class LyricSnippet {
 
   LyricSnippet addAnnotation(SegmentRange segmentRange, String annotationString) {
     AnnotationMap annotationMap = this.annotationMap;
-    SeekPosition annotationStartTimestamp = timingPoints[segmentRange.startIndex.index].seekPosition;
-    SeekPosition annotationEndTimestamp = timingPoints[segmentRange.endIndex.index + 1].seekPosition;
+    SeekPosition annotationStartTimestamp = SeekPosition(startTimestamp.position + timingPoints[segmentRange.startIndex.index].seekPosition.position);
+    SeekPosition annotationEndTimestamp = SeekPosition(startTimestamp.position + timingPoints[segmentRange.endIndex.index + 1].seekPosition.position);
     Duration annotationDuration = Duration(milliseconds: annotationEndTimestamp.position - annotationStartTimestamp.position);
     SentenceSegment sentenceSegment = SentenceSegment(annotationString, annotationDuration);
     Timing timing = Timing(

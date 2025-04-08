@@ -87,14 +87,18 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
   TextPaneCursorMover moveUpCursor() {
     cursorBlinker.restartCursorTimer();
 
+    AnnotationSelectionCursor cursor = textPaneCursor as AnnotationSelectionCursor;
+
     int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
-      return id == textPaneCursor.lyricSnippetID;
+      return id == cursor.lyricSnippetID;
     });
-    if (index <= 0) {
+
+    int nextIndex = index - 1;
+    if (nextIndex < 0) {
       return this;
     }
 
-    LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[index - 1];
+    LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[nextIndex];
     return SentenceSelectionCursorMover.withDefaultCursor(
       lyricSnippetMap: lyricSnippetMap,
       lyricSnippetID: nextLyricSnippetID,
@@ -107,29 +111,9 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
   TextPaneCursorMover moveDownCursor() {
     cursorBlinker.restartCursorTimer();
 
-    int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
-      return id == textPaneCursor.lyricSnippetID;
-    });
-    if (index + 1 >= lyricSnippetMap.length) {
-      return this;
-    }
-
-    LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[index + 1];
-    LyricSnippet nextLyricSnippet = lyricSnippetMap[nextLyricSnippetID]!;
-
-    SegmentRange annotationIndex = nextLyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
-    if (annotationIndex.isNotEmpty) {
-      return AnnotationSelectionCursorMover.withDefaultCursor(
-        lyricSnippetMap: lyricSnippetMap,
-        lyricSnippetID: textPaneCursor.lyricSnippetID,
-        cursorBlinker: cursorBlinker,
-        seekPosition: seekPosition,
-      );
-    }
-
     return SentenceSelectionCursorMover.withDefaultCursor(
       lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: nextLyricSnippetID,
+      lyricSnippetID: textPaneCursor.lyricSnippetID,
       cursorBlinker: cursorBlinker,
       seekPosition: seekPosition,
     );
