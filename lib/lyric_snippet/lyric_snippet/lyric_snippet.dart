@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
@@ -102,7 +103,14 @@ class LyricSnippet {
 
   LyricSnippet addAnnotation(SegmentRange segmentRange, String annotationString) {
     AnnotationMap annotationMap = this.annotationMap;
-    Timing timing = this.timing;
+    SeekPosition annotationStartTimestamp = timingPoints[segmentRange.startIndex.index].seekPosition;
+    SeekPosition annotationEndTimestamp = timingPoints[segmentRange.endIndex.index + 1].seekPosition;
+    Duration annotationDuration = Duration(milliseconds: annotationEndTimestamp.position - annotationStartTimestamp.position);
+    SentenceSegment sentenceSegment = SentenceSegment(annotationString, annotationDuration);
+    Timing timing = Timing(
+      startTimestamp: annotationStartTimestamp,
+      sentenceSegmentList: SentenceSegmentList([sentenceSegment]),
+    );
     annotationMap.map[segmentRange] = Annotation(timing: timing);
     return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
@@ -213,7 +221,7 @@ class LyricSnippet {
   List<Tuple2<SegmentRange, Annotation?>> getAnnotationExistenceRangeList() {
     if (annotationMap.isEmpty) {
       SegmentIndex startIndex = SegmentIndex(0);
-      SegmentIndex endIndex = SegmentIndex(sentenceSegments.length);
+      SegmentIndex endIndex = SegmentIndex(sentenceSegments.length - 1);
       return [
         Tuple2(
           SegmentRange(startIndex, endIndex),

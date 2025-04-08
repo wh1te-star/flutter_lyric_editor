@@ -175,7 +175,7 @@ class Timing {
     return SentenceSegmentList(
       sentenceSegments.sublist(
         segmentRange.startIndex.index,
-        segmentRange.endIndex.index,
+        segmentRange.endIndex.index + 1,
       ),
     );
   }

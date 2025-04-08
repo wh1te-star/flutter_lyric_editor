@@ -6,7 +6,6 @@ import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/annota
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/segment_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/text_pane_cursor.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor_mover.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/sentence_segment/sentence_segment_list_edit.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/sentence_segment/timing_point_edit.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
@@ -36,7 +35,7 @@ class LyricSnippetEdit extends StatelessWidget {
       Annotation? annotation = rangeAnnotationEntry[index].item2;
 
       SentenceSegmentList? sentenceSubList = lyricSnippet.getSentenceSegmentList(segmentRange);
-      SentenceSegmentList? annotationSubList = annotation?.getSentenceSegmentList(segmentRange);
+      SentenceSegmentList? annotationSubList = annotation?.timing.sentenceSegmentList;
 
       TextPaneCursor? cursor = cursorList[index];
       bool isTimingPointPosition = false;
@@ -83,8 +82,8 @@ class LyricSnippetEdit extends StatelessWidget {
         sentenceSegmentCursorBlinker,
       );
       annotationExistenceEdits.add(Column(children: [
-        sentenceEdit,
         annotationEdit,
+        sentenceEdit,
       ]));
     }
 
