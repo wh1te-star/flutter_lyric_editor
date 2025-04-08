@@ -87,7 +87,10 @@ class LyricSnippetEdit extends StatelessWidget {
       ]));
     }
 
-    return Row(children: annotationExistenceEdits);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: annotationExistenceEdits,
+    );
   }
 
   Widget getSentenceEdit(
