@@ -39,10 +39,10 @@ class LyricSnippetEdit extends StatelessWidget {
 
       TextPaneCursor? cursor = cursorList[index];
       bool isTimingPointPosition = false;
-      if (cursor is SentenceSelectionCursor && cursor.isEmpty && cursor.charPosition == InsertionPosition(0)) {
+      if (cursor is SentenceSelectionCursor && cursor.charPosition == InsertionPosition(0)) {
         isTimingPointPosition = true;
       }
-      if (cursor is AnnotationSelectionCursor && cursor.isEmpty && cursor.charPosition == InsertionPosition(0)) {
+      if (cursor is AnnotationSelectionCursor && cursor.charPosition == InsertionPosition(0)) {
         isTimingPointPosition = true;
       }
 
