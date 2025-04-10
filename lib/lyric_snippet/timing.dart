@@ -367,7 +367,7 @@ class Timing {
     List<TimingPoint> timingPoints = timingPointList.list;
     seekPosition = SeekPosition(seekPosition.position - startTimestamp.position);
     for (int index = 0; index < timingPoints.length - 1; index++) {
-      if (charPosition.position == timingPoints[index].charPosition.position) {
+      if (charPosition == timingPoints[index].charPosition) {
         if (timingPoints[index].charPosition == timingPoints[index + 1].charPosition) {
           throw TimingPointException("A timing point cannot be inserted three times or more at the same char position.");
         }
