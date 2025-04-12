@@ -80,7 +80,10 @@ void main() {
       final InsertionPosition characterPosition = InsertionPosition(8);
       final SeekPosition seekPosition = SeekPosition(2300);
 
-      expect(() => target.addTimingPoint(characterPosition, seekPosition), TimingPointException("The seek position is out of the valid range."));
+      expect(
+        () => target.addTimingPoint(characterPosition, seekPosition),
+        throwsA(TimingPointException("The seek position is out of the valid range.")),
+      );
     });
 
     test('Test to add a timing point twice. No.1', () {
