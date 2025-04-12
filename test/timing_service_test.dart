@@ -5,6 +5,7 @@ import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dar
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/lyric_snippet/timing.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
+import 'package:lyric_editor/lyric_snippet/timing_point_exception.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/service/timing_service.dart';
@@ -56,310 +57,297 @@ void main() {
       expect(target.sentenceSegmentList, expected);
     });
 
-    /*
-    test('Test to add a timing point to a snippet No.2', () {
-      final LyricSnippet targetSnippet = dataSet1.copyWith();
-      const characterPosition = 8;
-      const seekPosition = 2450;
-      final List<TimingPoint> expectedSentenceSegments = [
-        TimingPoint(3, 300),
-        TimingPoint(2, 100),
-        TimingPoint(3, 50),
-        TimingPoint(3, 650),
-        TimingPoint(4, 500),
-        TimingPoint(5, 600),
-      ];
+    test('Test to add a timing point No.2', () {
+      Timing target = dataSet1.copyWith();
+      final InsertionPosition characterPosition = InsertionPosition(8);
+      final SeekPosition seekPosition = SeekPosition(2450);
+      final SentenceSegmentList expected = SentenceSegmentList([
+        SentenceSegment("abc", const Duration(milliseconds: 300)),
+        SentenceSegment("de", const Duration(milliseconds: 100)),
+        SentenceSegment("fgh", const Duration(milliseconds: 50)),
+        SentenceSegment("ijk", const Duration(milliseconds: 650)),
+        SentenceSegment("lmno", const Duration(milliseconds: 500)),
+        SentenceSegment("pqrst", const Duration(milliseconds: 600)),
+      ]);
 
-      timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
+      target = target.addTimingPoint(characterPosition, seekPosition);
 
-      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
+      expect(target.sentenceSegmentList, expected);
     });
 
     test('Test the seek position is not valid', () {
-      final LyricSnippet targetSnippet = dataSet1.copyWith();
-      const characterPosition = 8;
-      const seekPosition = 2300;
+      Timing target = dataSet1.copyWith();
+      final InsertionPosition characterPosition = InsertionPosition(8);
+      final SeekPosition seekPosition = SeekPosition(2300);
 
-      expect(() => timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition), throwsExceptionWithMessageContaining("not valid"));
+      expect(() => target.addTimingPoint(characterPosition, seekPosition), TimingPointException("The seek position is out of the valid range."));
     });
 
     test('Test to add a timing point twice. No.1', () {
-      final LyricSnippet targetSnippet = dataSet1.copyWith();
-      const characterPosition = 5;
-      const seekPosition = 2450;
-      final List<TimingPoint> expectedSentenceSegments = [
-        TimingPoint(3, 300),
-        TimingPoint(2, 100),
-        TimingPoint(0, 50),
-        TimingPoint(6, 650),
-        TimingPoint(4, 500),
-        TimingPoint(5, 600),
-      ];
+      Timing target = dataSet1.copyWith();
+      final InsertionPosition characterPosition = InsertionPosition(5);
+      final SeekPosition seekPosition = SeekPosition(2450);
+      final SentenceSegmentList expected = SentenceSegmentList([
+        SentenceSegment("abc", const Duration(milliseconds: 300)),
+        SentenceSegment("de", const Duration(milliseconds: 100)),
+        SentenceSegment("", const Duration(milliseconds: 50)),
+        SentenceSegment("fghijk", const Duration(milliseconds: 650)),
+        SentenceSegment("lmno", const Duration(milliseconds: 500)),
+        SentenceSegment("pqrst", const Duration(milliseconds: 600)),
+      ]);
 
-      timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
+      target = target.addTimingPoint(characterPosition, seekPosition);
 
-      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
+      expect(target.sentenceSegmentList, expected);
     });
 
     test('Test to add a timing point twice. No.2', () {
-      final LyricSnippet targetSnippet = dataSet1.copyWith();
-      const characterPosition = 5;
-      const seekPosition = 2360;
-      final List<TimingPoint> expectedSentenceSegments = [
-        TimingPoint(3, 300),
-        TimingPoint(2, 60),
-        TimingPoint(0, 40),
-        TimingPoint(6, 700),
-        TimingPoint(4, 500),
-        TimingPoint(5, 600),
-      ];
+      Timing target = dataSet1.copyWith();
+      final InsertionPosition characterPosition = InsertionPosition(5);
+      final SeekPosition seekPosition = SeekPosition(2360);
+      final SentenceSegmentList expected = SentenceSegmentList([
+        SentenceSegment("abc", const Duration(milliseconds: 300)),
+        SentenceSegment("de", const Duration(milliseconds: 60)),
+        SentenceSegment("", const Duration(milliseconds: 40)),
+        SentenceSegment("fghijk", const Duration(milliseconds: 700)),
+        SentenceSegment("lmno", const Duration(milliseconds: 500)),
+        SentenceSegment("pqrst", const Duration(milliseconds: 600)),
+      ]);
 
-      timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
+      target = target.addTimingPoint(characterPosition, seekPosition);
 
-      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
+      expect(target.sentenceSegmentList, expected);
     });
 
     test('Test to add a timing point to a snippet that have a char position with 2 timing point. No.1', () {
-      final LyricSnippet targetSnippet = dataSet2.copyWith();
-      const characterPosition = 4;
-      const seekPosition = 5450;
-      final List<TimingPoint> expectedSentenceSegments = [
-        TimingPoint(3, 400),
-        TimingPoint(1, 50),
-        TimingPoint(1, 250),
-        TimingPoint(7, 700),
-        TimingPoint(0, 100),
-        TimingPoint(5, 600),
-        TimingPoint(2, 200),
-      ];
+      Timing target = dataSet2.copyWith();
+      final InsertionPosition characterPosition = InsertionPosition(4);
+      final SeekPosition seekPosition = SeekPosition(5450);
+      final SentenceSegmentList expected = SentenceSegmentList([
+        SentenceSegment("abc", const Duration(milliseconds: 400)),
+        SentenceSegment("d", const Duration(milliseconds: 50)),
+        SentenceSegment("e", const Duration(milliseconds: 250)),
+        SentenceSegment("fghijkl", const Duration(milliseconds: 700)),
+        SentenceSegment("", const Duration(milliseconds: 100)),
+        SentenceSegment("mnopq", const Duration(milliseconds: 600)),
+        SentenceSegment("rs", const Duration(milliseconds: 200)),
+      ]);
 
-      timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
+      target = target.addTimingPoint(characterPosition, seekPosition);
 
-      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
+      expect(target.sentenceSegmentList, expected);
     });
 
     test('Test to add a timing point to a snippet that have a char position with 2 timing point. No.2', () {
-      final LyricSnippet targetSnippet = dataSet2.copyWith();
-      const characterPosition = 18;
-      const seekPosition = 7200;
-      final List<TimingPoint> expectedSentenceSegments = [
-        TimingPoint(3, 400),
-        TimingPoint(2, 300),
-        TimingPoint(7, 700),
-        TimingPoint(0, 100),
-        TimingPoint(5, 600),
-        TimingPoint(1, 100),
-        TimingPoint(1, 100),
-      ];
+      Timing target = dataSet2.copyWith();
+      final InsertionPosition characterPosition = InsertionPosition(18);
+      final SeekPosition seekPosition = SeekPosition(7200);
+      final SentenceSegmentList expected = SentenceSegmentList([
+        SentenceSegment("abc", const Duration(milliseconds: 400)),
+        SentenceSegment("de", const Duration(milliseconds: 300)),
+        SentenceSegment("fghijkl", const Duration(milliseconds: 700)),
+        SentenceSegment("", const Duration(milliseconds: 100)),
+        SentenceSegment("mnopq", const Duration(milliseconds: 600)),
+        SentenceSegment("r", const Duration(milliseconds: 100)),
+        SentenceSegment("s", const Duration(milliseconds: 100)),
+      ]);
 
-      timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
+      target = target.addTimingPoint(characterPosition, seekPosition);
 
-      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
+      expect(target.sentenceSegmentList, expected);
     });
 
     test('Test to add a timing point twice. No.1', () {
-      final LyricSnippet targetSnippet = dataSet2.copyWith();
-      const characterPosition = 5;
-      const seekPosition = 5450;
-      final List<TimingPoint> expectedSentenceSegments = [
-        TimingPoint(3, 400),
-        TimingPoint(2, 50),
-        TimingPoint(0, 250),
-        TimingPoint(7, 700),
-        TimingPoint(0, 100),
-        TimingPoint(5, 600),
-        TimingPoint(2, 200),
-      ];
+      Timing target = dataSet2.copyWith();
+      final InsertionPosition characterPosition = InsertionPosition(5);
+      final SeekPosition seekPosition = SeekPosition(5450);
+      final SentenceSegmentList expected = SentenceSegmentList([
+        SentenceSegment("abc", const Duration(milliseconds: 400)),
+        SentenceSegment("de", const Duration(milliseconds: 50)),
+        SentenceSegment("", const Duration(milliseconds: 250)),
+        SentenceSegment("fghijkl", const Duration(milliseconds: 700)),
+        SentenceSegment("", const Duration(milliseconds: 100)),
+        SentenceSegment("mnopq", const Duration(milliseconds: 600)),
+        SentenceSegment("rs", const Duration(milliseconds: 200)),
+      ]);
 
-      timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
+      target = target.addTimingPoint(characterPosition, seekPosition);
 
-      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
+      expect(target.sentenceSegmentList, expected);
     });
 
     test('Test to add a timing point twice. No.2', () {
-      final LyricSnippet targetSnippet = dataSet2.copyWith();
-      const characterPosition = 5;
-      const seekPosition = 5800;
-      final List<TimingPoint> expectedSentenceSegments = [
-        TimingPoint(3, 400),
-        TimingPoint(2, 300),
-        TimingPoint(0, 100),
-        TimingPoint(7, 600),
-        TimingPoint(0, 100),
-        TimingPoint(5, 600),
-        TimingPoint(2, 200),
-      ];
+      Timing target = dataSet2.copyWith();
+      final InsertionPosition characterPosition = InsertionPosition(5);
+      final SeekPosition seekPosition = SeekPosition(5800);
+      final SentenceSegmentList expected = SentenceSegmentList([
+        SentenceSegment("abc", const Duration(milliseconds: 400)),
+        SentenceSegment("de", const Duration(milliseconds: 300)),
+        SentenceSegment("", const Duration(milliseconds: 100)),
+        SentenceSegment("fghijkl", const Duration(milliseconds: 600)),
+        SentenceSegment("", const Duration(milliseconds: 100)),
+        SentenceSegment("mnopq", const Duration(milliseconds: 600)),
+        SentenceSegment("rs", const Duration(milliseconds: 200)),
+      ]);
 
-      timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition);
+      target = target.addTimingPoint(characterPosition, seekPosition);
 
-      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
+      expect(target.sentenceSegmentList, expected);
     });
 
-    test('Test to throw TimingPointException when tring to add a timing point third time at the same char position. No.1', () {
-      final LyricSnippet targetSnippet = dataSet2.copyWith();
-      const characterPosition = 12;
-      const seekPosition = 5800;
+    test('Test to throw TimingPointException when tring to add a timing point third time at the same insertion position. No.1', () {
+      Timing target = dataSet2.copyWith();
+      final InsertionPosition characterPosition = InsertionPosition(12);
+      final SeekPosition seekPosition = SeekPosition(5800);
 
-      expect(() => timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition), throwsExceptionWithMessageContaining("Cannot add timing point more than 2"));
-    });
-
-    test('Test to delete a timing point. No.1', () {
-      final LyricSnippet targetSnippet = dataSet1.copyWith();
-      const characterPosition = 5;
-      const option = Option.former;
-      final List<TimingPoint> expectedSentenceSegments = [
-        TimingPoint(3, 300),
-        TimingPoint(8, 800),
-        TimingPoint(4, 500),
-        TimingPoint(5, 600),
-      ];
-
-      timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
-
-      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
-    });
-
-    test('Test to delete a timing point. No.2', () {
-      final LyricSnippet targetSnippet = dataSet1.copyWith();
-      const characterPosition = 11;
-      const option = Option.former;
-      final List<TimingPoint> expectedSentenceSegments = [
-        TimingPoint(3, 300),
-        TimingPoint(2, 100),
-        TimingPoint(10, 1200),
-        TimingPoint(5, 600),
-      ];
-
-      timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
-
-      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
-    });
-
-    test('Test to try to delete a non-existent timing point.', () {
-      final LyricSnippet targetSnippet = dataSet1.copyWith();
-      const characterPosition = 6;
-      const option = Option.former;
-
-      expect(() => timingService.deleteTimingPoint(targetSnippet, characterPosition, option), throwsExceptionWithMessageContaining("There is not specified timing point."));
+      expect(() => target.addTimingPoint(characterPosition, seekPosition), TimingPointException("Cannot add timing point more than 2"));
     });
 
     test('Test to delete a timing point. No.1', () {
-      final LyricSnippet targetSnippet = dataSet2.copyWith();
-      const characterPosition = 5;
-      const option = Option.former;
-      final List<TimingPoint> expectedSentenceSegments = [
-        TimingPoint(3, 400),
-        TimingPoint(9, 1000),
-        TimingPoint(0, 100),
-        TimingPoint(5, 600),
-        TimingPoint(2, 200),
-      ];
+      Timing target = dataSet1.copyWith();
+      final InsertionPosition characterPosition = InsertionPosition(5);
+      final option = Option.former;
+      final SentenceSegmentList expected = SentenceSegmentList([
+        SentenceSegment("abc", const Duration(milliseconds: 300)),
+        SentenceSegment("defghijk", const Duration(milliseconds: 800)),
+        SentenceSegment("lmno", const Duration(milliseconds: 500)),
+        SentenceSegment("pqrst", const Duration(milliseconds: 600)),
+      ]);
 
-      timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
+      target = target.deleteTimingPoint(characterPosition, option);
 
-      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
+      expect(target.sentenceSegmentList, expected);
     });
 
     test('Test to delete a timing point. No.2', () {
-      final LyricSnippet targetSnippet = dataSet2.copyWith();
-      const characterPosition = 17;
-      const option = Option.former;
-      final List<TimingPoint> expectedSentenceSegments = [
-        TimingPoint(3, 400),
-        TimingPoint(2, 300),
-        TimingPoint(7, 700),
-        TimingPoint(0, 100),
-        TimingPoint(7, 800),
-      ];
+      Timing target = dataSet1.copyWith();
+      final InsertionPosition characterPosition = InsertionPosition(11);
+      final option = Option.former;
+      final SentenceSegmentList expected = SentenceSegmentList([
+        SentenceSegment("abc", const Duration(milliseconds: 300)),
+        SentenceSegment("de", const Duration(milliseconds: 100)),
+        SentenceSegment("fghijklmno", const Duration(milliseconds: 1200)),
+        SentenceSegment("pqrst", const Duration(milliseconds: 600)),
+      ]);
 
-      timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
+      target = target.deleteTimingPoint(characterPosition, option);
 
-      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
+      expect(target.sentenceSegmentList, expected);
     });
 
     test('Test to try to delete a non-existent timing point.', () {
-      final LyricSnippet targetSnippet = dataSet2.copyWith();
-      const characterPosition = 17;
+      Timing target = dataSet1.copyWith();
+      final InsertionPosition characterPosition = InsertionPosition(6);
+      const option = Option.former;
+
+      expect(() => target.deleteTimingPoint(characterPosition, option), TimingPointException("There is not specified timing point."));
+    });
+
+    test('Test to delete a timing point. No.1', () {
+      Timing target = dataSet2.copyWith();
+      final InsertionPosition characterPosition = InsertionPosition(5);
+      const option = Option.former;
+      final SentenceSegmentList expected = SentenceSegmentList([
+        SentenceSegment("abc", const Duration(milliseconds: 400)),
+        SentenceSegment("defghijkl", const Duration(milliseconds: 1000)),
+        SentenceSegment("", const Duration(milliseconds: 100)),
+        SentenceSegment("mnopq", const Duration(milliseconds: 600)),
+        SentenceSegment("rs", const Duration(milliseconds: 200)),
+      ]);
+
+      target = target.deleteTimingPoint(characterPosition, option);
+
+      expect(target.sentenceSegmentList, expected);
+    });
+
+    test('Test to delete a timing point. No.2', () {
+      Timing target = dataSet2.copyWith();
+      final InsertionPosition characterPosition = InsertionPosition(17);
+      const option = Option.former;
+      final SentenceSegmentList expected = SentenceSegmentList([
+        SentenceSegment("abc", const Duration(milliseconds: 400)),
+        SentenceSegment("de", const Duration(milliseconds: 300)),
+        SentenceSegment("fghijkl", const Duration(milliseconds: 700)),
+        SentenceSegment("", const Duration(milliseconds: 100)),
+        SentenceSegment("mnopqrs", const Duration(milliseconds: 800)),
+      ]);
+
+      target = target.deleteTimingPoint(characterPosition, option);
+
+      expect(target.sentenceSegmentList, expected);
+    });
+
+    test('Test to try to delete a non-existent timing point.', () {
+      Timing target = dataSet2.copyWith();
+      final InsertionPosition characterPosition = InsertionPosition(17);
       const option = Option.latter;
 
-      expect(() => timingService.deleteTimingPoint(targetSnippet, characterPosition, option), throwsExceptionWithMessageContaining("There is not specified timing point."));
+      expect(() => target.deleteTimingPoint(characterPosition, option), TimingPointException("There is not specified timing point."));
     });
 
     test('Test to a former timing point of a character position.', () {
-      final LyricSnippet targetSnippet = dataSet2.copyWith();
-      const characterPosition = 12;
+      Timing target = dataSet2.copyWith();
+      final InsertionPosition characterPosition = InsertionPosition(12);
       const option = Option.former;
-      final List<TimingPoint> expectedSentenceSegments = [
-        TimingPoint(3, 400),
-        TimingPoint(2, 300),
-        TimingPoint(7, 800),
-        TimingPoint(5, 600),
-        TimingPoint(2, 200),
-      ];
+      final SentenceSegmentList expected = SentenceSegmentList([
+        SentenceSegment("abc", Duration(milliseconds: 400)),
+        SentenceSegment("de", Duration(milliseconds: 300)),
+        SentenceSegment("fghijkl", Duration(milliseconds: 800)),
+        SentenceSegment("mnopq", Duration(milliseconds: 600)),
+        SentenceSegment("rs", Duration(milliseconds: 200)),
+      ]);
 
-      timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
+      target = target.deleteTimingPoint(characterPosition, option);
 
-      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
+      expect(target.sentenceSegmentList, expected);
     });
 
     test('Test to a latter timing point of a character position.', () {
-      final LyricSnippet targetSnippet = dataSet2.copyWith();
-      const characterPosition = 12;
+      Timing target = dataSet2.copyWith();
+      final InsertionPosition characterPosition = InsertionPosition(12);
       const option = Option.latter;
-      final List<TimingPoint> expectedSentenceSegments = [
-        TimingPoint(3, 400),
-        TimingPoint(2, 300),
-        TimingPoint(7, 700),
-        TimingPoint(5, 700),
-        TimingPoint(2, 200),
-      ];
+      final SentenceSegmentList expected = SentenceSegmentList([
+        SentenceSegment("abc", Duration(milliseconds: 400)),
+        SentenceSegment("de", Duration(milliseconds: 300)),
+        SentenceSegment("fghijkl", Duration(milliseconds: 700)),
+        SentenceSegment("mnopq", Duration(milliseconds: 700)),
+        SentenceSegment("rs", Duration(milliseconds: 200)),
+      ]);
 
-      timingService.deleteTimingPoint(targetSnippet, characterPosition, option);
+      target = target.deleteTimingPoint(characterPosition, option);
 
-      expect(targetSnippet._sentenceSegments, expectedSentenceSegments);
+      expect(target.sentenceSegmentList, expected);
     });
   });
 
+  /*
   group('Edit sentence test.', () {
-    late MockBuildContext mockContext;
-    late PublishSubject<dynamic> masterSubject;
-    late TimingService timingService;
-    final dataSetSnippet1 = LyricSnippet(
-      vocalist: Vocalist("sample vocalist name", Colors.black.value),
-      index: 0,
-      sentence: "abcdefghij",
-      startTimestamp: 2000,
-      sentenceSegments: [
-        TimingPoint(1, 200),
-        TimingPoint(3, 400),
-        TimingPoint(4, 500),
-        TimingPoint(2, 300),
-      ],
+    final Timing dataSet1 = Timing(
+      startTimestamp: SeekPosition(2000),
+      sentenceSegmentList: SentenceSegmentList([
+        SentenceSegment("a", Duration(milliseconds: 200)),
+        SentenceSegment("bcd", Duration(milliseconds: 400)),
+        SentenceSegment("efgh", Duration(milliseconds: 500)),
+        SentenceSegment("ij", Duration(milliseconds: 300)),
+      ]),
     );
-    final dataSetSnippet2 = LyricSnippet(
-      vocalist: Vocalist("sample vocalist name", Colors.black.value),
-      index: 0,
-      sentence: "abcdefghijkl",
-      startTimestamp: 5000,
-      sentenceSegments: [
-        TimingPoint(3, 400),
-        TimingPoint(1, 300),
-        TimingPoint(0, 100),
-        TimingPoint(3, 500),
-        TimingPoint(1, 100),
-        TimingPoint(2, 300),
-        TimingPoint(0, 100),
-        TimingPoint(2, 200),
-      ],
+    final Timing dataSet2 = Timing(
+      startTimestamp: SeekPosition(5000),
+      sentenceSegmentList: SentenceSegmentList([
+        SentenceSegment("abc", Duration(milliseconds: 400)),
+        SentenceSegment("d", Duration(milliseconds: 300)),
+        SentenceSegment("", Duration(milliseconds: 100)),
+        SentenceSegment("efg", Duration(milliseconds: 500)),
+        SentenceSegment("h", Duration(milliseconds: 100)),
+        SentenceSegment("ij", Duration(milliseconds: 300)),
+        SentenceSegment("", Duration(milliseconds: 100)),
+        SentenceSegment("kl", Duration(milliseconds: 200)),
+      ]),
     );
 
     TestWidgetsFlutterBinding.ensureInitialized();
 
-    setUp(() {
-      mockContext = MockBuildContext();
-      masterSubject = PublishSubject<dynamic>();
-      timingService = TimingService(masterSubject: masterSubject, context: mockContext);
-    });
+    setUp(() {});
 
     test('Test the index translation when deleting a word.', () {
       const String oldSentence = "abcde";
@@ -402,7 +390,7 @@ void main() {
     });
 
     test('Test to edit a substring from a sentence. No.1', () {
-      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final LyricSnippet targetSnippet = dataSet1.copyWith();
       const String newSentence = "abcxxxhij";
       final List<TimingPoint> expectedSentenceSegments = [
         TimingPoint(1, 200),
@@ -417,7 +405,7 @@ void main() {
     });
 
     test('Test to delete a substring from a sentence. No.1', () {
-      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final LyricSnippet targetSnippet = dataSet1.copyWith();
       const String newSentence = "abchij";
       final List<TimingPoint> expectedSentenceSegments = [
         TimingPoint(1, 200),
@@ -432,7 +420,7 @@ void main() {
     });
 
     test('Test to add a string to a sentence. No.1', () {
-      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final LyricSnippet targetSnippet = dataSet1.copyWith();
       const String newSentence = "abcdefgxxhij";
       final List<TimingPoint> expectedSentenceSegments = [
         TimingPoint(1, 200),
@@ -448,7 +436,7 @@ void main() {
     });
 
     test('Test to edit a substring from a sentence. No.2 (Edit just a segment)', () {
-      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final LyricSnippet targetSnippet = dataSet1.copyWith();
       const String newSentence = "abcdxxxij";
       final List<TimingPoint> expectedSentenceSegments = [
         TimingPoint(1, 200),
@@ -464,7 +452,7 @@ void main() {
     });
 
     test('Test to delete a substring from a sentence. No.2 (Delete just a segment)', () {
-      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final LyricSnippet targetSnippet = dataSet1.copyWith();
       const String newSentence = "abcdij";
       final List<TimingPoint> expectedSentenceSegments = [
         TimingPoint(1, 200),
@@ -480,7 +468,7 @@ void main() {
     });
 
     test('Test to add a string to a sentence. No.2 (Add a string at the same position of a timing point)', () {
-      final LyricSnippet targetSnippet = dataSetSnippet1.copyWith();
+      final LyricSnippet targetSnippet = dataSet1.copyWith();
       const String newSentence = "abcdxxefghij";
       final List<TimingPoint> expectedSentenceSegments = [
         TimingPoint(1, 200),
@@ -617,6 +605,6 @@ void main() {
       expect(() => timingService.addTimingPoint(targetSnippet, characterPosition, seekPosition), throwsExceptionWithMessageContaining("not valid"));
       */
     });
-  */
   });
+*/
 }
