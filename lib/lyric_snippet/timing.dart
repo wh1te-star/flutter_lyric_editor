@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/sentence_segment/sentence_segment_edit.dart';
 import 'package:lyric_editor/position/character_position.dart';
@@ -360,47 +361,44 @@ class Timing {
     if (charPosition.position <= 0 || sentence.length <= charPosition.position) {
       throw TimingPointException("The char position is out of the valid range.");
     }
-    if (seekPosition <= startTimestamp || endTimestamp <= seekPosition) {
-      throw TimingPointException("The seek position is out of the valid range.");
-    }
-
-    List<TimingPoint> timingPoints = timingPointList.list;
     seekPosition = SeekPosition(seekPosition.position - startTimestamp.position);
-    for (int index = 0; index < timingPoints.length - 1; index++) {
-      if (charPosition == timingPoints[index].charPosition) {
-        if (timingPoints[index].charPosition == timingPoints[index + 1].charPosition) {
-          throw TimingPointException("A timing point cannot be inserted three times or more at the same char position.");
-        }
-        if (seekPosition == timingPoints[index].seekPosition) {
-          throw TimingPointException("A timing point cannot be inserted twice or more at the same seek position.");
-        }
 
-        if (seekPosition < timingPoints[index].seekPosition) {
-          timingPoints.insert(
-            index,
-            TimingPoint(InsertionPosition(charPosition.position), seekPosition),
-          );
-          break;
-        } else {
-          timingPoints.insert(
-            index + 1,
-            TimingPoint(InsertionPosition(charPosition.position), seekPosition),
-          );
+    int startTimingPointIndex = timingPoints.indexWhere((TimingPoint timingPoint) {
+      return timingPoint.charPosition == charPosition;
+    });
+    if (startTimingPointIndex == -1) {
+      int insertSegmentIndex = -1;
+      for (int index = 0; index < sentenceSegments.length; index++) {
+        if (timingPoints[index].charPosition < charPosition && charPosition < timingPoints[index + 1].charPosition) {
+          insertSegmentIndex = index;
           break;
         }
       }
+      assert(insertSegmentIndex != -1, "An unexpected state occured.");
 
-      if (timingPoints[index].charPosition.position < charPosition.position && charPosition.position < timingPoints[index + 1].charPosition.position) {
-        timingPoints.insert(
-          index + 1,
-          TimingPoint(InsertionPosition(charPosition.position), seekPosition),
-        );
-        break;
-      }
+      timingPoints.insert(
+        insertSegmentIndex + 1,
+        TimingPoint(charPosition, seekPosition),
+      );
+      SentenceSegmentList sentenceSegmentList = syncSentenceSegments(TimingPointList(timingPoints));
+      return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
     }
+
+    int endTimingPointIndex = timingPoints.lastIndexWhere((TimingPoint timingPoint) {
+      return timingPoint.charPosition == charPosition;
+    });
+    assert(endTimingPointIndex == -1, "An unexpected state occured.");
+
+    if (startTimingPointIndex == endTimingPointIndex) {}
 
     SentenceSegmentList sentenceSegmentList = syncSentenceSegments(TimingPointList(timingPoints));
     return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
+
+    /*
+    throw TimingPointException("A timing point cannot be inserted three times or more at the same char position.");
+    throw TimingPointException("A timing point cannot be inserted twice or more at the same seek position.");
+    throw TimingPointException("The seek position is out of the valid range.");
+    */
   }
 
   Timing deleteTimingPoint(InsertionPosition charPosition, Option option) {
