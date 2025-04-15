@@ -363,31 +363,41 @@ class Timing {
     }
     seekPosition = SeekPosition(seekPosition.position - startTimestamp.position);
 
-    int startTimingPointIndex = timingPoints.indexWhere((TimingPoint timingPoint) {
-      return timingPoint.charPosition == charPosition;
-    });
-    if (startTimingPointIndex == -1) {
-      int insertSegmentIndex = -1;
-      for (int index = 0; index < sentenceSegments.length; index++) {
-        if (timingPoints[index].charPosition < charPosition && charPosition < timingPoints[index + 1].charPosition) {
-          insertSegmentIndex = index;
-          break;
-        }
+    int segmentIndex = -1;
+    int timingPointIndex = -1;
+    for (int index = 0; index < sentenceSegments.length; index++) {
+      if (timingPoints[index].charPosition == charPosition) {
+        timingPointIndex = index;
+        break;
       }
-      assert(insertSegmentIndex != -1, "An unexpected state occured.");
+      if (timingPoints[index].charPosition < charPosition && charPosition < timingPoints[index + 1].charPosition) {
+        segmentIndex = index;
+        break;
+      }
+    }
+    assert(segmentIndex != -1 || timingPointIndex != -1, "An unexpected state occured.");
+
+    if (segmentIndex != -1) {
+      TimingPoint leftTimingPoint = timingPoints[segmentIndex];
+      TimingPoint rightTimingPoint = timingPoints[segmentIndex + 1];
+      if (seekPosition <= leftTimingPoint.seekPosition && rightTimingPoint.seekPosition <= seekPosition) {
+        throw TimingPointException("The seek position is out of the valid range.");
+      }
 
       timingPoints.insert(
-        insertSegmentIndex + 1,
+        segmentIndex + 1,
         TimingPoint(charPosition, seekPosition),
       );
       SentenceSegmentList sentenceSegmentList = syncSentenceSegments(TimingPointList(timingPoints));
       return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
     }
 
-    int endTimingPointIndex = timingPoints.lastIndexWhere((TimingPoint timingPoint) {
+    int count = timingPoints.where((TimingPoint timingPoint) {
       return timingPoint.charPosition == charPosition;
-    });
-    assert(endTimingPointIndex == -1, "An unexpected state occured.");
+    }).length;
+    if (count >= 2) {
+      throw TimingPointException("A timing point cannot be inserted three times or more at the same char position.");
+    }
 
     if (startTimingPointIndex == endTimingPointIndex) {}
 
@@ -395,9 +405,7 @@ class Timing {
     return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
 
     /*
-    throw TimingPointException("A timing point cannot be inserted three times or more at the same char position.");
     throw TimingPointException("A timing point cannot be inserted twice or more at the same seek position.");
-    throw TimingPointException("The seek position is out of the valid range.");
     */
   }
 
