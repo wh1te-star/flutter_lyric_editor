@@ -82,7 +82,7 @@ void main() {
 
       expect(
         () => target.addTimingPoint(characterPosition, seekPosition),
-        throwsA(TimingPointException("The seek position is out of the valid range.")),
+        throwsA(predicate((e) => e is TimingPointException && e.message == "The seek position is out of the valid range.")),
       );
     });
 
@@ -203,7 +203,10 @@ void main() {
       final InsertionPosition characterPosition = InsertionPosition(12);
       final SeekPosition seekPosition = SeekPosition(5800);
 
-      expect(() => target.addTimingPoint(characterPosition, seekPosition), TimingPointException("Cannot add timing point more than 2"));
+      expect(
+        () => target.addTimingPoint(characterPosition, seekPosition),
+        throwsA(predicate((e) => e is TimingPointException && e.message == "A timing point cannot be inserted three times or more at the same char position.")),
+      );
     });
 
     test('Test to delete a timing point. No.1', () {
@@ -243,7 +246,10 @@ void main() {
       final InsertionPosition characterPosition = InsertionPosition(6);
       const option = Option.former;
 
-      expect(() => target.deleteTimingPoint(characterPosition, option), TimingPointException("There is not specified timing point."));
+      expect(
+        () => target.deleteTimingPoint(characterPosition, option),
+        throwsA(predicate((e) => e is TimingPointException && e.message == "There is not specified timing point.")),
+      );
     });
 
     test('Test to delete a timing point. No.1', () {

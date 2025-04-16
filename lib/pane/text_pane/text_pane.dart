@@ -28,18 +28,6 @@ class TextPane extends ConsumerStatefulWidget {
 class _TextPaneState extends ConsumerState<TextPane> {
   final FocusNode focusNode;
 
-  static const String cursorChar = '\xa0';
-  //static const String sectionChar = '\n\n';
-
-  double lineHeight = 20;
-
-  List<LyricSnippetID> selectingSnippets = [];
-
-  SortedMap<int, String> sentenceSegmentMap = SortedMap<int, String>();
-  SortedMap<int, String> sectionPointMap = SortedMap<int, String>();
-
-  int selectionBasePosition = 0;
-
   _TextPaneState(this.focusNode);
 
   @override
@@ -63,10 +51,6 @@ class _TextPaneState extends ConsumerState<TextPane> {
     });
   }
 
-  int countOccurrences(List<int> list, int number) {
-    return list.where((element) => element == number).length;
-  }
-
   @override
   Widget build(BuildContext context) {
     final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
@@ -82,7 +66,12 @@ class _TextPaneState extends ConsumerState<TextPane> {
         },
         child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
-          child: EditColumn(timingService.getSnippetsAtSeekPosition(), musicPlayerService.seekPosition, textPaneProvider.textPaneCursorMover, textPaneProvider.cursorBlinker),
+          child: EditColumn(
+            timingService.getSnippetsAtSeekPosition(),
+            musicPlayerService.seekPosition,
+            textPaneProvider.textPaneCursorMover,
+            textPaneProvider.cursorBlinker,
+          ),
         ),
       ),
     );
