@@ -110,17 +110,14 @@ class LyricSnippetMap {
   }
 
   LyricSnippetMap addTimingPoint(LyricSnippetID id, InsertionPosition charPosition, SeekPosition seekPosition) {
-    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
-    LyricSnippet lyricSnippet = copiedMap[id]!;
-    lyricSnippet = lyricSnippet.addTimingPoint(charPosition, seekPosition);
-    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+    map[id] = map[id]!.addTimingPoint(charPosition, seekPosition);
+    return LyricSnippetMap(map);
   }
 
   LyricSnippetMap removeTimingPoint(LyricSnippetID id, InsertionPosition charPosition, Option option) {
-    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
-    LyricSnippet lyricSnippet = copiedMap[id]!;
+    LyricSnippet lyricSnippet = map[id]!;
     lyricSnippet = lyricSnippet.removeTimingPoint(charPosition, option);
-    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+    return LyricSnippetMap(map);
   }
 
   LyricSnippetMap addAnnotationTimingPoint(LyricSnippetID id, SegmentRange segmentRange, InsertionPosition charPosition, SeekPosition seekPosition) {
