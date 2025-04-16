@@ -380,7 +380,7 @@ class Timing {
     if (segmentIndex != -1) {
       TimingPoint leftTimingPoint = timingPoints[segmentIndex];
       TimingPoint rightTimingPoint = timingPoints[segmentIndex + 1];
-      if (seekPosition <= leftTimingPoint.seekPosition && rightTimingPoint.seekPosition <= seekPosition) {
+      if (seekPosition <= leftTimingPoint.seekPosition || rightTimingPoint.seekPosition <= seekPosition) {
         throw TimingPointException("The seek position is out of the valid range.");
       }
 
@@ -399,14 +399,32 @@ class Timing {
       throw TimingPointException("A timing point cannot be inserted three times or more at the same char position.");
     }
 
-    if (startTimingPointIndex == endTimingPointIndex) {}
+    assert(0 < timingPointIndex && timingPointIndex < timingPoints.length - 1);
+    TimingPoint leftTimingPoint = timingPoints[timingPointIndex - 1];
+    TimingPoint centerTimingPoint = timingPoints[timingPointIndex];
+    TimingPoint rightTimingPoint = timingPoints[timingPointIndex + 1];
+
+    if (seekPosition <= leftTimingPoint.seekPosition || rightTimingPoint.seekPosition <= seekPosition) {
+      throw TimingPointException("The seek position is out of the valid range.");
+    }
+    if (seekPosition == centerTimingPoint.seekPosition) {
+      throw TimingPointException("A timing point cannot be inserted twice or more at the same seek position.");
+    }
+    
+    if(seekPosition < centerTimingPoint.seekPosition){
+      timingPoints.insert(
+        timingPointIndex,
+        TimingPoint(charPosition, seekPosition),
+      );
+    }else{
+      timingPoints.insert(
+        timingPointIndex + 1,
+        TimingPoint(charPosition, seekPosition),
+      );
+    }
 
     SentenceSegmentList sentenceSegmentList = syncSentenceSegments(TimingPointList(timingPoints));
     return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
-
-    /*
-    throw TimingPointException("A timing point cannot be inserted twice or more at the same seek position.");
-    */
   }
 
   Timing deleteTimingPoint(InsertionPosition charPosition, Option option) {
