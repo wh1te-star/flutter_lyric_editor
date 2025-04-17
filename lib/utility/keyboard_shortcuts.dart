@@ -139,7 +139,6 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         AddSnippetIntent: CallbackAction<AddSnippetIntent>(
           onInvoke: (AddSnippetIntent intent) => () {
-            if (timelinePaneProvider.selectingVocalist.isNotEmpty) {
               Timing timing = Timing(
                 startTimestamp: musicPlayerProvider.seekPosition,
                 sentenceSegmentList: SentenceSegmentList([
@@ -152,7 +151,6 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
                 annotationMap: AnnotationMap.empty,
               );
               timingService.addLyricSnippet(lyricSnippet);
-            }
           }(),
         ),
         DeleteSnippetIntent: CallbackAction<DeleteSnippetIntent>(
