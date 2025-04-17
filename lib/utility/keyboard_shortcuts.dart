@@ -18,9 +18,7 @@ import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/lyric_snippet/timing.dart';
-import 'package:lyric_editor/pane/text_pane/text_pane.dart';
 import 'package:lyric_editor/pane/timeline_pane/timeline_pane.dart';
-import 'package:lyric_editor/pane/video_pane/video_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/dialog/text_field_dialog.dart';
@@ -139,18 +137,18 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         AddSnippetIntent: CallbackAction<AddSnippetIntent>(
           onInvoke: (AddSnippetIntent intent) => () {
-              Timing timing = Timing(
-                startTimestamp: musicPlayerProvider.seekPosition,
-                sentenceSegmentList: SentenceSegmentList([
-                  SentenceSegment("default sentence", Duration(milliseconds: 3000)),
-                ]),
-              );
-              LyricSnippet lyricSnippet = LyricSnippet(
-                vocalistID: timelinePaneProvider.selectingVocalist[0],
-                timing: timing,
-                annotationMap: AnnotationMap.empty,
-              );
-              timingService.addLyricSnippet(lyricSnippet);
+            Timing timing = Timing(
+              startTimestamp: musicPlayerProvider.seekPosition,
+              sentenceSegmentList: SentenceSegmentList([
+                SentenceSegment("default sentence", Duration(milliseconds: 3000)),
+              ]),
+            );
+            LyricSnippet lyricSnippet = LyricSnippet(
+              vocalistID: timelinePaneProvider.selectingVocalist[0],
+              timing: timing,
+              annotationMap: AnnotationMap.empty,
+            );
+            timingService.addLyricSnippet(lyricSnippet);
           }(),
         ),
         DeleteSnippetIntent: CallbackAction<DeleteSnippetIntent>(
