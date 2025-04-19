@@ -3,7 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/sentence_segment/sentence_segment_edit.dart';
 import 'package:lyric_editor/position/character_position.dart';
-import 'package:lyric_editor/position/position_type_info.dart';
+import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
@@ -198,41 +198,6 @@ class Timing {
     return SegmentIndex.empty;
   }
 
-  SegmentIndex getSegmentIndexFromInsertionPosition(InsertionPosition insertionPosition) {
-    if (insertionPosition.position < 0) {
-      return SegmentIndex.empty;
-    }
-    if (sentence.length <= insertionPosition.position) {
-      return SegmentIndex.empty;
-    }
-
-    if (insertionPosition.position == 0) {
-      return SegmentIndex.empty;
-    }
-
-    List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
-    List<TimingPoint> timingPoints = timingPointList.list;
-    for (int index = 0; index < sentenceSegments.length; index++) {
-      if (insertionPosition.position == timingPoints[index + 1].charPosition.position) {
-        return SegmentIndex.empty;
-      }
-      if (insertionPosition.position < timingPoints[index + 1].charPosition.position) {
-        return SegmentIndex(index);
-      }
-    }
-    return SegmentIndex.empty;
-  }
-
-  int? getTimingPointIndexFromInsertionPosition(InsertionPosition insertionPosition) {
-    for (int index = 0; index < timingPointList.length; index++) {
-      TimingPoint timingPoint = timingPointList[index];
-      if (timingPoint.charPosition == insertionPosition) {
-        return index;
-      }
-    }
-    return null;
-  }
-
   double getSegmentProgress(SeekPosition seekPosition) {
     SegmentIndex segmentIndex = getSegmentIndexFromSeekPosition(seekPosition);
     SeekPosition segmentStartSeekPosition = SeekPosition(startTimestamp.position + leftTimingPoint(segmentIndex).seekPosition.position);
@@ -248,8 +213,8 @@ class Timing {
     return partialProgress.inMilliseconds / segmentDuration.inMilliseconds;
   }
 
-  InsertionPositionInfo getInsertionPositionInfo(int charPosition) {
-    if (charPosition < 0 || sentence.length < charPosition) {
+  InsertionPositionInfo getInsertionPositionInfo(InsertionPosition insertionPosition) {
+    if (insertionPosition.position < 0 || sentence.length < insertionPosition.position) {
       return InsertionPositionInfo(PositionType.sentenceSegment, -1, false);
     }
 
@@ -258,10 +223,10 @@ class Timing {
     for (int index = 0; index < sentenceSegments.length; index++) {
       int leftSegmentPosition = timingPoints[index].charPosition.position;
       int rightSegmentPosition = timingPoints[index + 1].charPosition.position;
-      if (leftSegmentPosition < charPosition && charPosition < rightSegmentPosition) {
-        return InsertionPositionInfo(PositionType.sentenceSegment, index, false);
+        if (leftSegmentPosition < insertionPosition.position && insertionPosition.position < rightSegmentPosition) {
+          return InsertionPositionInfo(PositionType.sentenceSegment, index, false);
       }
-      if (charPosition == leftSegmentPosition) {
+      if (insertionPosition.position == leftSegmentPosition) {
         if (leftSegmentPosition == rightSegmentPosition) {
           return InsertionPositionInfo(PositionType.timingPoint, index, true);
         } else {

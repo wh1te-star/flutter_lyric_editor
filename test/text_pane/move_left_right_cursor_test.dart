@@ -19,7 +19,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/sentence_sel
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_mover.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
-import 'package:lyric_editor/position/position_type_info.dart';
+import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';

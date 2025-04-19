@@ -1,14 +1,9 @@
-import 'dart:typed_data';
-
-import 'package:flutter/foundation.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
-import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
-import 'package:lyric_editor/position/character_position.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
-import 'package:lyric_editor/position/position_type_info.dart';
+import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_index.dart';
 import 'package:lyric_editor/position/segment_range.dart';
@@ -44,8 +39,7 @@ class LyricSnippet {
   int get charLength => timing.charLength;
   int get segmentLength => timing.segmentLength;
   SegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timing.getSegmentIndexFromSeekPosition(seekPosition);
-  SegmentIndex getSegmentIndexFromInsertionPosition(InsertionPosition insertionPosition) => timing.getSegmentIndexFromInsertionPosition(insertionPosition);
-  int? getTimingPointIndexFromInsertionPosition(InsertionPosition insertionPosition) => timing.getTimingPointIndexFromInsertionPosition(insertionPosition);
+  InsertionPositionInfo getInsertionPositionInfo(InsertionPosition insertionPosition) => timing.getInsertionPositionInfo(insertionPosition);
   double getSegmentProgress(SeekPosition seekPosition) => timing.getSegmentProgress(seekPosition);
   SentenceSegmentList getSentenceSegmentList(SegmentRange segmentRange) => timing.getSentenceSegmentList(segmentRange);
 
@@ -156,8 +150,8 @@ class LyricSnippet {
     return Tuple2(snippet1, snippet2);
   }
 
-  AnnotationMap carryUpAnnotationSegments(InsertionPosition charPosition) {
-    InsertionPositionInfo info = timing.getInsertionPositionInfo(charPosition.position);
+  AnnotationMap carryUpAnnotationSegments(InsertionPosition insertionPosition) {
+    InsertionPositionInfo info = timing.getInsertionPositionInfo(insertionPosition);
     Map<SegmentRange, Annotation> updatedAnnotations = {};
     int index = info.index;
 
@@ -191,7 +185,7 @@ class LyricSnippet {
   }
 
   AnnotationMap carryDownAnnotationSegments(InsertionPosition charPosition) {
-    InsertionPositionInfo info = timing.getInsertionPositionInfo(charPosition.position);
+    InsertionPositionInfo info = timing.getInsertionPositionInfo(charPosition);
     Map<SegmentRange, Annotation> updatedAnnotations = {};
     int timingPointIndex = info.index;
 

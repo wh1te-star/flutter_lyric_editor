@@ -9,7 +9,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/sentence_selection_cursor_mov
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_mover.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
-import 'package:lyric_editor/position/position_type_info.dart';
+import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_index.dart';
 import 'package:lyric_editor/position/segment_range.dart';

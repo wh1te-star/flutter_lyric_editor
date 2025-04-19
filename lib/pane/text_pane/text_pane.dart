@@ -7,7 +7,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/sentence_sel
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/edit_column.dart';
 import 'package:lyric_editor/pane/text_pane/text_pane_provider.dart';
-import 'package:lyric_editor/position/position_type_info.dart';
+import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
