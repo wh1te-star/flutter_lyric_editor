@@ -10,9 +10,12 @@ import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point_list.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point_exception.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/insertion_position_info/sentence_segment_insertion_position_info.dart';
+import 'package:lyric_editor/position/insertion_position_info/timing_point_insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_index.dart';
 import 'package:lyric_editor/position/segment_range.dart';
+import 'package:lyric_editor/position/timing_point_index.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 
@@ -55,6 +58,20 @@ class Timing {
 
   SentenceSegment toSentenceSegment(SentenceSegmentIndex segmentIndex) {
     return sentenceSegments[segmentIndex.index];
+  }
+
+  TimingPointIndex leftTimingPointIndex(SentenceSegmentIndex segmentIndex) {
+    if (segmentIndex.index < 0 && sentenceSegments.length < segmentIndex.index) {
+      return TimingPointIndex.empty;
+    }
+    return TimingPointIndex(segmentIndex.index);
+  }
+
+  TimingPointIndex rightTimingPointIndex(SentenceSegmentIndex segmentIndex) {
+    if (segmentIndex.index + 1 < 0 && sentenceSegments.length < segmentIndex.index + 1) {
+      return TimingPointIndex.empty;
+    }
+    return TimingPointIndex(segmentIndex.index + 1);
   }
 
   TimingPoint leftTimingPoint(SentenceSegmentIndex segmentIndex) {
@@ -213,9 +230,9 @@ class Timing {
     return partialProgress.inMilliseconds / segmentDuration.inMilliseconds;
   }
 
-  InsertionPositionInfo getInsertionPositionInfo(InsertionPosition insertionPosition) {
+  InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) {
     if (insertionPosition.position < 0 || sentence.length < insertionPosition.position) {
-      return InsertionPositionInfo(PositionType.sentenceSegment, -1, false);
+      return null;
     }
 
     List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
@@ -224,17 +241,17 @@ class Timing {
       int leftSegmentPosition = timingPoints[index].charPosition.position;
       int rightSegmentPosition = timingPoints[index + 1].charPosition.position;
       if (leftSegmentPosition < insertionPosition.position && insertionPosition.position < rightSegmentPosition) {
-        return InsertionPositionInfo(PositionType.sentenceSegment, index, false);
+        return SentenceSegmentInsertionPositionInfo(SentenceSegmentIndex(index));
       }
       if (insertionPosition.position == leftSegmentPosition) {
         if (leftSegmentPosition == rightSegmentPosition) {
-          return InsertionPositionInfo(PositionType.timingPoint, index, true);
+          return TimingPointInsertionPositionInfo(TimingPointIndex(index), true);
         } else {
-          return InsertionPositionInfo(PositionType.timingPoint, index, false);
+          return TimingPointInsertionPositionInfo(TimingPointIndex(index), false);
         }
       }
     }
-    return InsertionPositionInfo(PositionType.timingPoint, sentenceSegments.length, false);
+    return TimingPointInsertionPositionInfo(TimingPointIndex(sentenceSegments.length), false);
   }
 
   Timing manipulateTiming(SeekPosition seekPosition, SnippetEdge snippetEdge, bool holdLength) {

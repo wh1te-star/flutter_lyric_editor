@@ -1,12 +1,12 @@
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
 import 'package:lyric_editor/position/timing_point_index.dart';
 
-class TimingPointInsertionPositionInfo implements InsertionPositionInfo{
-  TimingPointIndex index;
+class TimingPointInsertionPositionInfo implements InsertionPositionInfo {
+  TimingPointIndex timingPointIndex;
   bool duplicate;
-  TimingPointInsertionPositionInfo(this.index, this.duplicate);
+  TimingPointInsertionPositionInfo(this.timingPointIndex, this.duplicate);
 
-  TimingPointInsertionPositionInfo._privateConstructor(this.index, this.duplicate);
+  TimingPointInsertionPositionInfo._privateConstructor(this.timingPointIndex, this.duplicate);
   static final TimingPointInsertionPositionInfo _empty = TimingPointInsertionPositionInfo._privateConstructor(TimingPointIndex.empty, false);
   static TimingPointInsertionPositionInfo get empty => _empty;
   bool get isEmpty => identical(this, _empty);
@@ -17,14 +17,14 @@ class TimingPointInsertionPositionInfo implements InsertionPositionInfo{
     bool? duplicate,
   }) {
     return TimingPointInsertionPositionInfo(
-      index ?? this.index,
+      index ?? this.timingPointIndex,
       duplicate ?? this.duplicate,
     );
   }
 
   @override
   String toString() {
-    return "InsertionPositionInfo: TimingPoint at index $index";
+    return "InsertionPositionInfo: TimingPoint at index $timingPointIndex";
   }
 
   @override
@@ -35,9 +35,9 @@ class TimingPointInsertionPositionInfo implements InsertionPositionInfo{
     if (other is! TimingPointInsertionPositionInfo) {
       return false;
     }
-    return index == other.index && duplicate == other.duplicate;
+    return timingPointIndex == other.timingPointIndex && duplicate == other.duplicate;
   }
 
   @override
-  int get hashCode => index.hashCode ^ duplicate.hashCode;
+  int get hashCode => timingPointIndex.hashCode ^ duplicate.hashCode;
 }

@@ -2,10 +2,10 @@ import 'package:lyric_editor/position/insertion_position_info/insertion_position
 import 'package:lyric_editor/position/segment_index.dart';
 
 class SentenceSegmentInsertionPositionInfo implements InsertionPositionInfo {
-  SentenceSegmentIndex index;
-  SentenceSegmentInsertionPositionInfo(this.index);
+  SentenceSegmentIndex sentenceSegmentIndex;
+  SentenceSegmentInsertionPositionInfo(this.sentenceSegmentIndex);
 
-  SentenceSegmentInsertionPositionInfo._privateConstructor(this.index);
+  SentenceSegmentInsertionPositionInfo._privateConstructor(this.sentenceSegmentIndex);
   static final SentenceSegmentInsertionPositionInfo _empty = SentenceSegmentInsertionPositionInfo._privateConstructor(SentenceSegmentIndex.empty);
   static SentenceSegmentInsertionPositionInfo get empty => _empty;
   bool get isEmpty => identical(this, _empty);
@@ -15,13 +15,13 @@ class SentenceSegmentInsertionPositionInfo implements InsertionPositionInfo {
     SentenceSegmentIndex? index,
   }) {
     return SentenceSegmentInsertionPositionInfo(
-      index ?? this.index,
+      index ?? this.sentenceSegmentIndex,
     );
   }
 
   @override
   String toString() {
-    return "InsertionPositionInfo: SentenceSegment at index $index";
+    return "InsertionPositionInfo: SentenceSegment at index $sentenceSegmentIndex";
   }
 
   @override
@@ -32,9 +32,9 @@ class SentenceSegmentInsertionPositionInfo implements InsertionPositionInfo {
     if (other is! SentenceSegmentInsertionPositionInfo) {
       return false;
     }
-    return index == other.index;
+    return sentenceSegmentIndex == other.sentenceSegmentIndex;
   }
 
   @override
-  int get hashCode => index.hashCode;
+  int get hashCode => sentenceSegmentIndex.hashCode;
 }

@@ -4,12 +4,15 @@ import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
+import 'package:lyric_editor/position/insertion_position_info/sentence_segment_insertion_position_info.dart';
+import 'package:lyric_editor/position/insertion_position_info/timing_point_insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_index.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/timing.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
+import 'package:lyric_editor/position/timing_point_index.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:tuple/tuple.dart';
 
@@ -39,7 +42,7 @@ class LyricSnippet {
   int get charLength => timing.charLength;
   int get segmentLength => timing.segmentLength;
   SentenceSegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timing.getSegmentIndexFromSeekPosition(seekPosition);
-  InsertionPositionInfo getInsertionPositionInfo(InsertionPosition insertionPosition) => timing.getInsertionPositionInfo(insertionPosition);
+  InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timing.getInsertionPositionInfo(insertionPosition);
   double getSegmentProgress(SeekPosition seekPosition) => timing.getSegmentProgress(seekPosition);
   SentenceSegmentList getSentenceSegmentList(SegmentRange segmentRange) => timing.getSentenceSegmentList(segmentRange);
 
@@ -151,25 +154,27 @@ class LyricSnippet {
   }
 
   AnnotationMap carryUpAnnotationSegments(InsertionPosition insertionPosition) {
-    InsertionPositionInfo info = timing.getInsertionPositionInfo(insertionPosition);
+    InsertionPositionInfo info = timing.getInsertionPositionInfo(insertionPosition)!;
     Map<SegmentRange, Annotation> updatedAnnotations = {};
-    int index = info.index;
 
     annotationMap.map.forEach((SegmentRange key, Annotation value) {
       SegmentRange newKey = key.copyWith();
 
-      switch (info.type) {
-        case PositionType.sentenceSegment:
-          if (index < key.startIndex.index) {
+      switch (info) {
+        case SentenceSegmentInsertionPositionInfo():
+          SentenceSegmentIndex index = info.sentenceSegmentIndex;
+          if (index < key.startIndex) {
             newKey.startIndex++;
             newKey.endIndex++;
-          } else if (index <= key.endIndex.index) {
+          } else if (index <= key.endIndex) {
             newKey.endIndex++;
           }
           break;
-        case PositionType.timingPoint:
-          int startIndex = key.startIndex.index;
-          int endIndex = key.endIndex.index + 1;
+
+        case TimingPointInsertionPositionInfo():
+          TimingPointIndex index = info.timingPointIndex;
+          TimingPointIndex startIndex = timing.leftTimingPointIndex(key.startIndex);
+          TimingPointIndex endIndex = timing.rightTimingPointIndex(key.endIndex);
           if (index <= startIndex) {
             newKey.startIndex++;
             newKey.endIndex++;
@@ -177,33 +182,44 @@ class LyricSnippet {
             newKey.endIndex++;
           }
           break;
+
+        default:
+          assert(false, "An unexpected state occurred for the insertion position info");
       }
+
       updatedAnnotations[newKey] = value;
     });
 
     return AnnotationMap(updatedAnnotations);
   }
 
-  AnnotationMap carryDownAnnotationSegments(InsertionPosition charPosition) {
-    InsertionPositionInfo info = timing.getInsertionPositionInfo(charPosition);
+  AnnotationMap carryDownAnnotationSegments(InsertionPosition insertionPosition) {
+    InsertionPositionInfo info = timing.getInsertionPositionInfo(insertionPosition)!;
     Map<SegmentRange, Annotation> updatedAnnotations = {};
-    int timingPointIndex = info.index;
+    int index = -1;
+    if (info is SentenceSegmentInsertionPositionInfo) {
+      index = info.sentenceSegmentIndex.index;
+    } else if (info is TimingPointInsertionPositionInfo) {
+      index = info.timingPointIndex.index;
+    } else {
+      assert(false, "An unexpected state was occurred for the insertion position");
+    }
 
     annotationMap.map.forEach((SegmentRange key, Annotation value) {
       SegmentRange newKey = key.copyWith();
       int startIndex = key.startIndex.index;
       int endIndex = key.endIndex.index + 1;
-      if (timingPointIndex == startIndex && timingPointIndex == endIndex + 1) {
-        if (info.duplicate) {
+      if (index == startIndex && index == endIndex + 1) {
+        if (info is TimingPointInsertionPositionInfo && info.duplicate) {
           newKey.startIndex--;
           newKey.endIndex--;
         } else {
           return;
         }
-      } else if (timingPointIndex < startIndex) {
+      } else if (index < startIndex) {
         newKey.startIndex--;
         newKey.endIndex--;
-      } else if (timingPointIndex < endIndex) {
+      } else if (index < endIndex) {
         newKey.endIndex--;
       }
       updatedAnnotations[newKey] = value;
