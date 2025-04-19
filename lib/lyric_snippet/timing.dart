@@ -248,9 +248,9 @@ class Timing {
     return partialProgress.inMilliseconds / segmentDuration.inMilliseconds;
   }
 
-  PositionTypeInfo getPositionTypeInfo(int charPosition) {
+  InsertionPositionInfo getInsertionPositionInfo(int charPosition) {
     if (charPosition < 0 || sentence.length < charPosition) {
-      return PositionTypeInfo(PositionType.sentenceSegment, -1, false);
+      return InsertionPositionInfo(PositionType.sentenceSegment, -1, false);
     }
 
     List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
@@ -259,17 +259,17 @@ class Timing {
       int leftSegmentPosition = timingPoints[index].charPosition.position;
       int rightSegmentPosition = timingPoints[index + 1].charPosition.position;
       if (leftSegmentPosition < charPosition && charPosition < rightSegmentPosition) {
-        return PositionTypeInfo(PositionType.sentenceSegment, index, false);
+        return InsertionPositionInfo(PositionType.sentenceSegment, index, false);
       }
       if (charPosition == leftSegmentPosition) {
         if (leftSegmentPosition == rightSegmentPosition) {
-          return PositionTypeInfo(PositionType.timingPoint, index, true);
+          return InsertionPositionInfo(PositionType.timingPoint, index, true);
         } else {
-          return PositionTypeInfo(PositionType.timingPoint, index, false);
+          return InsertionPositionInfo(PositionType.timingPoint, index, false);
         }
       }
     }
-    return PositionTypeInfo(PositionType.timingPoint, sentenceSegments.length, false);
+    return InsertionPositionInfo(PositionType.timingPoint, sentenceSegments.length, false);
   }
 
   Timing manipulateTiming(SeekPosition seekPosition, SnippetEdge snippetEdge, bool holdLength) {
@@ -410,13 +410,13 @@ class Timing {
     if (seekPosition == centerTimingPoint.seekPosition) {
       throw TimingPointException("A timing point cannot be inserted twice or more at the same seek position.");
     }
-    
-    if(seekPosition < centerTimingPoint.seekPosition){
+
+    if (seekPosition < centerTimingPoint.seekPosition) {
       timingPoints.insert(
         timingPointIndex,
         TimingPoint(charPosition, seekPosition),
       );
-    }else{
+    } else {
       timingPoints.insert(
         timingPointIndex + 1,
         TimingPoint(charPosition, seekPosition),

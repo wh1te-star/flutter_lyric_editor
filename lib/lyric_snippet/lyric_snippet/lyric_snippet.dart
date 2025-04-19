@@ -157,7 +157,7 @@ class LyricSnippet {
   }
 
   AnnotationMap carryUpAnnotationSegments(InsertionPosition charPosition) {
-    PositionTypeInfo info = timing.getPositionTypeInfo(charPosition.position);
+    InsertionPositionInfo info = timing.getInsertionPositionInfo(charPosition.position);
     Map<SegmentRange, Annotation> updatedAnnotations = {};
     int index = info.index;
 
@@ -191,7 +191,7 @@ class LyricSnippet {
   }
 
   AnnotationMap carryDownAnnotationSegments(InsertionPosition charPosition) {
-    PositionTypeInfo info = timing.getPositionTypeInfo(charPosition.position);
+    InsertionPositionInfo info = timing.getInsertionPositionInfo(charPosition.position);
     Map<SegmentRange, Annotation> updatedAnnotations = {};
     int timingPointIndex = info.index;
 

@@ -4,10 +4,10 @@ import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/annotation_selection_cursor.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/mover/sentence_selection_cursor_mover.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/text_pane_cursor.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor_mover.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/annotation_selection_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/sentence_selection_cursor_mover.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_mover.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/position_type_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
@@ -154,7 +154,7 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
     }
 
     SegmentIndex currentSnippetPosition = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
-    PositionTypeInfo nextSnippetPosition = lyricSnippet.timing.getPositionTypeInfo((textPaneCursor as AnnotationSelectionCursor).charPosition.position);
+    InsertionPositionInfo nextSnippetPosition = lyricSnippet.timing.getInsertionPositionInfo((textPaneCursor as AnnotationSelectionCursor).charPosition.position);
     if (currentSnippetPosition.index != nextSnippetPosition.index) {
       return SentenceSelectionCursorMover.withDefaultCursor(
         lyricSnippetMap: lyricSnippetMap,

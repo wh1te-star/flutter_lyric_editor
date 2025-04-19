@@ -1,20 +1,20 @@
-class PositionTypeInfo {
+class InsertionPositionInfo {
   PositionType type;
   int index;
   bool duplicate;
-  PositionTypeInfo(this.type, this.index, this.duplicate);
+  InsertionPositionInfo(this.type, this.index, this.duplicate);
 
-  PositionTypeInfo._privateConstructor(this.type, this.index, this.duplicate);
-  static final PositionTypeInfo _empty = PositionTypeInfo._privateConstructor(PositionType.timingPoint, -1, false);
-  static PositionTypeInfo get empty => _empty;
+  InsertionPositionInfo._privateConstructor(this.type, this.index, this.duplicate);
+  static final InsertionPositionInfo _empty = InsertionPositionInfo._privateConstructor(PositionType.timingPoint, -1, false);
+  static InsertionPositionInfo get empty => _empty;
   bool get isEmpty => identical(this, _empty);
 
-  PositionTypeInfo copyWith({
+  InsertionPositionInfo copyWith({
     PositionType? type,
     int? index,
     bool? duplicate,
   }) {
-    return PositionTypeInfo(
+    return InsertionPositionInfo(
       type ?? this.type,
       index ?? this.index,
       duplicate ?? this.duplicate,
@@ -31,7 +31,7 @@ class PositionTypeInfo {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! PositionTypeInfo) {
+    if (other is! InsertionPositionInfo) {
       return false;
     }
     return type == other.type && index == other.index && duplicate == other.duplicate;
