@@ -1,30 +1,27 @@
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
+import 'package:lyric_editor/position/segment_index.dart';
 
-class SentenceSegmentInsertionPositionInfo implements InsertionPositionInfo{
-  int index;
-  bool duplicate;
-  SentenceSegmentInsertionPositionInfo(this.index, this.duplicate);
+class SentenceSegmentInsertionPositionInfo implements InsertionPositionInfo {
+  SegmentIndex index;
+  SentenceSegmentInsertionPositionInfo(this.index);
 
-  InsertionPositionInfo._privateConstructor(this.type, this.index, this.duplicate);
-  static final InsertionPositionInfo _empty = InsertionPositionInfo._privateConstructor(PositionType.timingPoint, -1, false);
-  static InsertionPositionInfo get empty => _empty;
+  SentenceSegmentInsertionPositionInfo._privateConstructor(this.index);
+  static final SentenceSegmentInsertionPositionInfo _empty = SentenceSegmentInsertionPositionInfo._privateConstructor(SegmentIndex.empty);
+  static SentenceSegmentInsertionPositionInfo get empty => _empty;
   bool get isEmpty => identical(this, _empty);
+  bool get isNotEmpty => !identical(this, _empty);
 
-  InsertionPositionInfo copyWith({
-    PositionType? type,
-    int? index,
-    bool? duplicate,
+  SentenceSegmentInsertionPositionInfo copyWith({
+    SegmentIndex? index,
   }) {
-    return InsertionPositionInfo(
-      type ?? this.type,
+    return SentenceSegmentInsertionPositionInfo(
       index ?? this.index,
-      duplicate ?? this.duplicate,
     );
   }
 
   @override
   String toString() {
-    return "$type at $index (duplicate: $duplicate)";
+    return "InsertionPositionInfo: SentenceSegment at index $index";
   }
 
   @override
@@ -35,9 +32,9 @@ class SentenceSegmentInsertionPositionInfo implements InsertionPositionInfo{
     if (other is! SentenceSegmentInsertionPositionInfo) {
       return false;
     }
-    return index == other.index && duplicate == other.duplicate;
+    return index == other.index;
   }
 
   @override
-  int get hashCode => index.hashCode ^ duplicate.hashCode;
+  int get hashCode => index.hashCode;
 }
