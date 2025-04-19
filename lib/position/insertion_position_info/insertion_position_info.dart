@@ -1,2 +1,1 @@
-abstract class InsertionPositionInfo {
-}
+abstract class InsertionPositionInfo {}
