@@ -39,7 +39,7 @@ class LyricSnippet {
   int get charLength => timing.charLength;
   int get segmentLength => timing.segmentLength;
   SegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timing.getSegmentIndexFromSeekPosition(seekPosition);
-  InsertionPositionInfo getInsertionPositionInfo(InsertionPosition insertionPosition) => timing.getInsertionPositionInfo(insertionPosition);
+  InsertionPositionInfo getInsertionPositionInfo(InsertionPosition insertionPosition) => timing.getInsertionPositionType(insertionPosition);
   double getSegmentProgress(SeekPosition seekPosition) => timing.getSegmentProgress(seekPosition);
   SentenceSegmentList getSentenceSegmentList(SegmentRange segmentRange) => timing.getSentenceSegmentList(segmentRange);
 
@@ -151,7 +151,7 @@ class LyricSnippet {
   }
 
   AnnotationMap carryUpAnnotationSegments(InsertionPosition insertionPosition) {
-    InsertionPositionInfo info = timing.getInsertionPositionInfo(insertionPosition);
+    InsertionPositionInfo info = timing.getInsertionPositionType(insertionPosition);
     Map<SegmentRange, Annotation> updatedAnnotations = {};
     int index = info.index;
 
@@ -185,7 +185,7 @@ class LyricSnippet {
   }
 
   AnnotationMap carryDownAnnotationSegments(InsertionPosition charPosition) {
-    InsertionPositionInfo info = timing.getInsertionPositionInfo(charPosition);
+    InsertionPositionInfo info = timing.getInsertionPositionType(charPosition);
     Map<SegmentRange, Annotation> updatedAnnotations = {};
     int timingPointIndex = info.index;
 
