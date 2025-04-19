@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
@@ -18,10 +19,17 @@ import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/senten
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/mover/text_pane_cursor_mover.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/position_type_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
-import 'package:tuple/tuple.dart';
+
+class PositionTestInfo {
+  int charPosition;
+  Option option;
+
+  PositionTestInfo(this.charPosition, this.option);
+}
 
 void main() {
   group('Tests to move to left and right the text pane cursor.', () {
@@ -64,46 +72,56 @@ void main() {
 
     TestWidgetsFlutterBinding.ensureInitialized();
 
-    bool sentenceSelectionCursorMatcher(SentenceSelectionCursorMover result, SentenceSelectionCursor expectedCursor) {
+    SentenceSelectionCursor constructCursor(PositionTestInfo positionInfo) {
+      return SentenceSelectionCursor(
+        lyricSnippetID,
+        cursorBlinker,
+        InsertionPosition(positionInfo.charPosition),
+        positionInfo.option,
+      );
+    }
+
+    bool cursorMatcher(SentenceSelectionCursorMover result, SentenceSelectionCursor expectedCursor) {
       if (result.textPaneCursor is! SentenceSelectionCursor) return false;
 
       SentenceSelectionCursor resultCursor = result.textPaneCursor as SentenceSelectionCursor;
       return resultCursor == expectedCursor;
     }
 
-    bool cursorMatcher(TextPaneCursorMover result, TextPaneCursor expectedCursor) {
-      if (result is SentenceSelectionCursorMover) {
-        assert(expectedCursor is SentenceSelectionCursor, "The result type and the expected type are not match, the expected cursor can be incorrect.");
-        sentenceSelectionCursorMatcher(result, expectedCursor as SentenceSelectionCursor);
-      }
-      if (result is AnnotationSelectionCursorMover) {
-        assert(expectedCursor is AnnotationSelectionCursor, "The result type and the expected type are not match, the expected cursor can be incorrect.");
-        //annotationSelectionCursorMatcher(result, expectedCursor as AnnotationSelectionCursor);
-      }
-      if (result is SegmentSelectionCursorMover) {
-        assert(expectedCursor is SegmentSelectionCursor, "The result type and the expected type are not match, the expected cursor can be incorrect.");
-        //segmentSelectionCursorMatcher(result, expectedCursor as SegmentSelectionCursorMover);
-      }
-      assert(false, "An unexpected state is occurred for the text pane cursor type, the cursor is not any of those.");
-      return false;
-    }
+    bool cursorMovementMatcher(TextPaneCursorMover initialMover, List<PositionTestInfo> expectedMovement) {
+      TextPaneCursorMover result = initialMover;
+      for (int index = 0; index < expectedMovement.length; index++) {
+        PositionTestInfo position = expectedMovement[index];
+        SentenceSelectionCursor expectedCursor = constructCursor(position);
 
-    bool cursorMovementMatcher(TextPaneCursorMover initialMover, List<dynamic> expectedMovement) {
-      TextPaneCursorMover result;
-      for (List<dynamic> position in expectedMovement) {
-        result = initialMover.moveRightCursor();
-        bool matcherResult = cursorMatcher(result, expectedCursor);
-        if (matcherResult == false) return false;
+        result = result.moveRightCursor();
+        assert(result is SentenceSelectionCursorMover, "An unexpected state was occurred.");
+
+        bool matcherResult = cursorMatcher(result as SentenceSelectionCursorMover, expectedCursor);
+        if (!matcherResult) {
+          SentenceSelectionCursor resultCursor = result.textPaneCursor as SentenceSelectionCursor;
+          debugPrint('Test failed at iteration ${index + 1}:');
+          debugPrint('Expected cursor position: ${position.charPosition}, option: ${position.option}');
+          debugPrint('But the actual cursor position: ${resultCursor.charPosition}, option: ${resultCursor.option}');
+          return false;
+        }
       }
       return true;
     }
 
+// Usage
     setUp(() {});
-    test('Test to add a timing point No.1', () {
+    test('Test to move left and right the text pane cursor No.1', () {
       SentenceSelectionCursorMover target = mover.copyWith();
 
-      List<Tuple2<int, Option>> expectedCursorMovement = [
-        const Tuple2(2, Option.former),
+      List<PositionTestInfo> expectedCursorMovement = [
+        PositionTestInfo(2, Option.former),
+        PositionTestInfo(3, Option.former),
+        PositionTestInfo(5, Option.former),
+        PositionTestInfo(12, Option.former),
+        PositionTestInfo(12, Option.latter),
+        PositionTestInfo(17, Option.former),
+        PositionTestInfo(19, Option.former),
       ];
 
       expect(cursorMovementMatcher(target, expectedCursorMovement), true);
