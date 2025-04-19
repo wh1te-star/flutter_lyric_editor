@@ -10,6 +10,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cu
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_mover.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
+import 'package:lyric_editor/position/insertion_position_info/sentence_segment_insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_index.dart';
 import 'package:lyric_editor/position/segment_range.dart';
@@ -153,9 +154,10 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
       lyricSnippet = lyricSnippetMap[lyricSnippetID]!;
     }
 
-    SentenceSegmentIndex currentSnippetPosition = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
-    InsertionPositionInfo nextSnippetPosition = lyricSnippet.timing.getInsertionPositionInfo((textPaneCursor as AnnotationSelectionCursor).charPosition.position);
-    if (currentSnippetPosition.index != nextSnippetPosition.index) {
+    SentenceSegmentIndex currentSeekSegmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
+    InsertionPositionInfo? nextSnippetPositionInfo = lyricSnippet.getInsertionPositionInfo((textPaneCursor as AnnotationSelectionCursor).charPosition);
+
+    if (nextSnippetPositionInfo == null || nextSnippetPositionInfo is SentenceSegmentInsertionPositionInfo && nextSnippetPositionInfo.sentenceSegmentIndex != currentSeekSegmentIndex) {
       return SentenceSelectionCursorMover.withDefaultCursor(
         lyricSnippetMap: lyricSnippetMap,
         lyricSnippetID: lyricSnippetID,

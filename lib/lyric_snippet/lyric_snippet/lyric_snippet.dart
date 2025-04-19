@@ -45,6 +45,10 @@ class LyricSnippet {
   InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timing.getInsertionPositionInfo(insertionPosition);
   double getSegmentProgress(SeekPosition seekPosition) => timing.getSegmentProgress(seekPosition);
   SentenceSegmentList getSentenceSegmentList(SegmentRange segmentRange) => timing.getSentenceSegmentList(segmentRange);
+  TimingPointIndex leftTimingPointIndex(SentenceSegmentIndex segmentIndex) => timing.leftTimingPointIndex(segmentIndex);
+  TimingPointIndex rightTimingPointIndex(SentenceSegmentIndex segmentIndex) => timing.rightTimingPointIndex(segmentIndex);
+  TimingPoint leftTimingPoint(SentenceSegmentIndex segmentIndex) => timing.leftTimingPoint(segmentIndex);
+  TimingPoint rightTimingPoint(SentenceSegmentIndex segmentIndex) => timing.rightTimingPoint(segmentIndex);
 
   MapEntry<SegmentRange, Annotation> getAnnotationWords(SentenceSegmentIndex index) {
     return annotationMap.map.entries.firstWhere(
