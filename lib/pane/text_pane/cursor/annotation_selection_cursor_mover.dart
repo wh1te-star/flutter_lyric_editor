@@ -154,7 +154,7 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
     }
 
     SegmentIndex currentSnippetPosition = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
-    InsertionPositionInfo nextSnippetPosition = lyricSnippet.timing.getInsertionPositionType((textPaneCursor as AnnotationSelectionCursor).charPosition.position);
+    InsertionPositionInfo nextSnippetPosition = lyricSnippet.timing.getInsertionPositionInfo((textPaneCursor as AnnotationSelectionCursor).charPosition.position);
     if (currentSnippetPosition.index != nextSnippetPosition.index) {
       return SentenceSelectionCursorMover.withDefaultCursor(
         lyricSnippetMap: lyricSnippetMap,
