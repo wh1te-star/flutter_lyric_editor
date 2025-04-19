@@ -3,28 +3,28 @@ import 'dart:typed_data';
 import 'package:lyric_editor/position/segment_index.dart';
 
 class SegmentRange {
-  SegmentIndex startIndex;
-  SegmentIndex endIndex;
+  SentenceSegmentIndex startIndex;
+  SentenceSegmentIndex endIndex;
   SegmentRange(this.startIndex, this.endIndex) {
     if (!isEmpty) {
-      assert(startIndex >= SegmentIndex(0));
-      assert(endIndex >= SegmentIndex(0));
+      assert(startIndex >= SentenceSegmentIndex(0));
+      assert(endIndex >= SentenceSegmentIndex(0));
     }
   }
 
   SegmentRange._privateConstructor(this.startIndex, this.endIndex);
-  static final SegmentRange _empty = SegmentRange._privateConstructor(SegmentIndex.empty, SegmentIndex.empty);
+  static final SegmentRange _empty = SegmentRange._privateConstructor(SentenceSegmentIndex.empty, SentenceSegmentIndex.empty);
   static SegmentRange get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
   int get length => endIndex.index - startIndex.index + 1;
 
-  bool isInRange(SegmentIndex segmentIndex) {
+  bool isInRange(SentenceSegmentIndex segmentIndex) {
     return startIndex <= segmentIndex && segmentIndex <= endIndex;
   }
 
-  SegmentRange copyWith({SegmentIndex? startIndex, SegmentIndex? endIndex}) {
+  SegmentRange copyWith({SentenceSegmentIndex? startIndex, SentenceSegmentIndex? endIndex}) {
     return SegmentRange(
       startIndex ?? this.startIndex,
       endIndex ?? this.endIndex,

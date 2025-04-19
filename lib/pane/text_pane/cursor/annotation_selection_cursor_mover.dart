@@ -72,7 +72,7 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
     LyricSnippet lyricSnippet = lyricSnippetMap.getLyricSnippetByID(lyricSnippetID);
     SegmentRange annotationSegmentRange = lyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
     Annotation annotation = lyricSnippet.annotationMap[annotationSegmentRange]!;
-    SegmentIndex segmentIndex = annotation.getSegmentIndexFromSeekPosition(seekPosition);
+    SentenceSegmentIndex segmentIndex = annotation.getSegmentIndexFromSeekPosition(seekPosition);
 
     return AnnotationSelectionCursor(
       lyricSnippetID,
@@ -153,7 +153,7 @@ class AnnotationSelectionCursorMover extends TextPaneCursorMover {
       lyricSnippet = lyricSnippetMap[lyricSnippetID]!;
     }
 
-    SegmentIndex currentSnippetPosition = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
+    SentenceSegmentIndex currentSnippetPosition = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
     InsertionPositionInfo nextSnippetPosition = lyricSnippet.timing.getInsertionPositionInfo((textPaneCursor as AnnotationSelectionCursor).charPosition.position);
     if (currentSnippetPosition.index != nextSnippetPosition.index) {
       return SentenceSelectionCursorMover.withDefaultCursor(

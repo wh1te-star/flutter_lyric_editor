@@ -53,18 +53,18 @@ class Timing {
     return timingPointList.toSentenceSegmentList(sentence);
   }
 
-  SentenceSegment toSentenceSegment(SegmentIndex segmentIndex) {
+  SentenceSegment toSentenceSegment(SentenceSegmentIndex segmentIndex) {
     return sentenceSegments[segmentIndex.index];
   }
 
-  TimingPoint leftTimingPoint(SegmentIndex segmentIndex) {
+  TimingPoint leftTimingPoint(SentenceSegmentIndex segmentIndex) {
     if (segmentIndex.index < 0 && sentenceSegments.length < segmentIndex.index) {
       return TimingPoint.empty;
     }
     return timingPoints[segmentIndex.index];
   }
 
-  TimingPoint rightTimingPoint(SegmentIndex segmentIndex) {
+  TimingPoint rightTimingPoint(SentenceSegmentIndex segmentIndex) {
     if (segmentIndex.index + 1 < 0 && sentenceSegments.length < segmentIndex.index + 1) {
       return TimingPoint.empty;
     }
@@ -181,25 +181,25 @@ class Timing {
     );
   }
 
-  SegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) {
+  SentenceSegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) {
     if (seekPosition < startTimestamp) {
-      return SegmentIndex.empty;
+      return SentenceSegmentIndex.empty;
     }
     if (endTimestamp < seekPosition) {
-      return SegmentIndex.empty;
+      return SentenceSegmentIndex.empty;
     }
     List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
     List<TimingPoint> timingPoints = timingPointList.list;
     for (int index = 0; index < sentenceSegments.length; index++) {
       if (seekPosition.position < startTimestamp.position + timingPoints[index + 1].seekPosition.position) {
-        return SegmentIndex(index);
+        return SentenceSegmentIndex(index);
       }
     }
-    return SegmentIndex.empty;
+    return SentenceSegmentIndex.empty;
   }
 
   double getSegmentProgress(SeekPosition seekPosition) {
-    SegmentIndex segmentIndex = getSegmentIndexFromSeekPosition(seekPosition);
+    SentenceSegmentIndex segmentIndex = getSegmentIndexFromSeekPosition(seekPosition);
     SeekPosition segmentStartSeekPosition = SeekPosition(startTimestamp.position + leftTimingPoint(segmentIndex).seekPosition.position);
     SeekPosition segmentEndSeekPosition = SeekPosition(startTimestamp.position + rightTimingPoint(segmentIndex).seekPosition.position);
     if (seekPosition < segmentStartSeekPosition) {
@@ -223,8 +223,8 @@ class Timing {
     for (int index = 0; index < sentenceSegments.length; index++) {
       int leftSegmentPosition = timingPoints[index].charPosition.position;
       int rightSegmentPosition = timingPoints[index + 1].charPosition.position;
-        if (leftSegmentPosition < insertionPosition.position && insertionPosition.position < rightSegmentPosition) {
-          return InsertionPositionInfo(PositionType.sentenceSegment, index, false);
+      if (leftSegmentPosition < insertionPosition.position && insertionPosition.position < rightSegmentPosition) {
+        return InsertionPositionInfo(PositionType.sentenceSegment, index, false);
       }
       if (insertionPosition.position == leftSegmentPosition) {
         if (leftSegmentPosition == rightSegmentPosition) {

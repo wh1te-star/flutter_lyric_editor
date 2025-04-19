@@ -38,12 +38,12 @@ class LyricSnippet {
   List<TimingPoint> get timingPoints => timing.timingPointList.list;
   int get charLength => timing.charLength;
   int get segmentLength => timing.segmentLength;
-  SegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timing.getSegmentIndexFromSeekPosition(seekPosition);
+  SentenceSegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timing.getSegmentIndexFromSeekPosition(seekPosition);
   InsertionPositionInfo getInsertionPositionInfo(InsertionPosition insertionPosition) => timing.getInsertionPositionInfo(insertionPosition);
   double getSegmentProgress(SeekPosition seekPosition) => timing.getSegmentProgress(seekPosition);
   SentenceSegmentList getSentenceSegmentList(SegmentRange segmentRange) => timing.getSentenceSegmentList(segmentRange);
 
-  MapEntry<SegmentRange, Annotation> getAnnotationWords(SegmentIndex index) {
+  MapEntry<SegmentRange, Annotation> getAnnotationWords(SentenceSegmentIndex index) {
     return annotationMap.map.entries.firstWhere(
       (entry) => entry.key.startIndex <= index && index <= entry.key.endIndex,
       orElse: () => MapEntry(SegmentRange.empty, Annotation.empty),
@@ -214,8 +214,8 @@ class LyricSnippet {
 
   List<Tuple2<SegmentRange, Annotation?>> getAnnotationExistenceRangeList() {
     if (annotationMap.isEmpty) {
-      SegmentIndex startIndex = SegmentIndex(0);
-      SegmentIndex endIndex = SegmentIndex(sentenceSegments.length - 1);
+      SentenceSegmentIndex startIndex = SentenceSegmentIndex(0);
+      SentenceSegmentIndex endIndex = SentenceSegmentIndex(sentenceSegments.length - 1);
       return [
         Tuple2(
           SegmentRange(startIndex, endIndex),
@@ -232,8 +232,8 @@ class LyricSnippet {
       Annotation annotation = entry.value;
 
       if (previousEnd + 1 <= segmentRange.startIndex.index - 1) {
-        SegmentIndex startIndex = SegmentIndex(previousEnd + 1);
-        SegmentIndex endIndex = SegmentIndex(segmentRange.startIndex.index - 1);
+        SentenceSegmentIndex startIndex = SentenceSegmentIndex(previousEnd + 1);
+        SentenceSegmentIndex endIndex = SentenceSegmentIndex(segmentRange.startIndex.index - 1);
         rangeList.add(
           Tuple2(
             SegmentRange(startIndex, endIndex),
@@ -252,8 +252,8 @@ class LyricSnippet {
     }
 
     if (previousEnd + 1 <= sentenceSegments.length - 1) {
-      SegmentIndex startIndex = SegmentIndex(previousEnd + 1);
-      SegmentIndex endIndex = SegmentIndex(sentenceSegments.length - 1);
+      SentenceSegmentIndex startIndex = SentenceSegmentIndex(previousEnd + 1);
+      SentenceSegmentIndex endIndex = SentenceSegmentIndex(sentenceSegments.length - 1);
       rangeList.add(
         Tuple2(
           SegmentRange(startIndex, endIndex),

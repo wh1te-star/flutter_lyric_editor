@@ -173,7 +173,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     );
   }
 
-  double getAnnotationSizePosition(LyricSnippet snippet, SegmentIndex segmentIndex) {
+  double getAnnotationSizePosition(LyricSnippet snippet, SentenceSegmentIndex segmentIndex) {
     int startIndex = snippet.annotationMap.map.keys.toList()[segmentIndex.index].startIndex.index;
     double sumPosition = 0;
     int index = 0;

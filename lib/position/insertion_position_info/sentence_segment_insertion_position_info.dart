@@ -2,17 +2,17 @@ import 'package:lyric_editor/position/insertion_position_info/insertion_position
 import 'package:lyric_editor/position/segment_index.dart';
 
 class SentenceSegmentInsertionPositionInfo implements InsertionPositionInfo {
-  SegmentIndex index;
+  SentenceSegmentIndex index;
   SentenceSegmentInsertionPositionInfo(this.index);
 
   SentenceSegmentInsertionPositionInfo._privateConstructor(this.index);
-  static final SentenceSegmentInsertionPositionInfo _empty = SentenceSegmentInsertionPositionInfo._privateConstructor(SegmentIndex.empty);
+  static final SentenceSegmentInsertionPositionInfo _empty = SentenceSegmentInsertionPositionInfo._privateConstructor(SentenceSegmentIndex.empty);
   static SentenceSegmentInsertionPositionInfo get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
   SentenceSegmentInsertionPositionInfo copyWith({
-    SegmentIndex? index,
+    SentenceSegmentIndex? index,
   }) {
     return SentenceSegmentInsertionPositionInfo(
       index ?? this.index,

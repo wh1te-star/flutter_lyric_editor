@@ -47,8 +47,8 @@ class SegmentSelectionCursor extends TextPaneCursor {
 
     int shiftLength = 0;
     for (int index = 0; index <= endRangeIndex; index++) {
-      SegmentIndex startIndex = rangeList[index].startIndex - shiftLength;
-      SegmentIndex endIndex = rangeList[index].endIndex - shiftLength;
+      SentenceSegmentIndex startIndex = rangeList[index].startIndex - shiftLength;
+      SentenceSegmentIndex endIndex = rangeList[index].endIndex - shiftLength;
       if (index == startRangeIndex) {
         startIndex = cursor.segmentRange.startIndex - shiftLength;
       }
@@ -74,10 +74,10 @@ class SegmentSelectionCursor extends TextPaneCursor {
     SegmentSelectionCursor defaultCursor = SegmentSelectionCursor(
       lyricSnippetID,
       cursorBlinker,
-      SegmentRange(SegmentIndex(0), SegmentIndex(0)),
+      SegmentRange(SentenceSegmentIndex(0), SentenceSegmentIndex(0)),
     );
     for (int index = 0; index < sentenceSegmentList.length; index++) {
-      SegmentIndex segmentIndex = SegmentIndex(index);
+      SentenceSegmentIndex segmentIndex = SentenceSegmentIndex(index);
       if (cursor.segmentRange.isInRange(segmentIndex)) {
         separatedCursors[index] = defaultCursor.copyWith();
       }
@@ -90,8 +90,8 @@ class SegmentSelectionCursor extends TextPaneCursor {
     if (segmentRange.startIndex.index - 1 < 0 || segmentRange.endIndex.index - 1 < 0) {
       return SegmentSelectionCursor.empty;
     }
-    SegmentIndex startIndex = segmentRange.startIndex - sentenceSegmentList.segmentLength;
-    SegmentIndex endIndex = segmentRange.endIndex - sentenceSegmentList.segmentLength;
+    SentenceSegmentIndex startIndex = segmentRange.startIndex - sentenceSegmentList.segmentLength;
+    SentenceSegmentIndex endIndex = segmentRange.endIndex - sentenceSegmentList.segmentLength;
     SegmentRange newRange = SegmentRange(startIndex, endIndex);
     return copyWith(segmentRange: newRange);
   }
@@ -101,8 +101,8 @@ class SegmentSelectionCursor extends TextPaneCursor {
     if (segmentRange.startIndex.index - 1 < 0 || segmentRange.endIndex.index - 1 < 0) {
       return SegmentSelectionCursor.empty;
     }
-    SegmentIndex startIndex = segmentRange.startIndex - 1;
-    SegmentIndex endIndex = segmentRange.endIndex - 1;
+    SentenceSegmentIndex startIndex = segmentRange.startIndex - 1;
+    SentenceSegmentIndex endIndex = segmentRange.endIndex - 1;
     SegmentRange newRange = SegmentRange(startIndex, endIndex);
     return copyWith(segmentRange: newRange);
   }

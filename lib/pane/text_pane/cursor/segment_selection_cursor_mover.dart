@@ -61,7 +61,7 @@ class SegmentSelectionCursorMover extends TextPaneCursorMover {
   @override
   SegmentSelectionCursor defaultCursor(LyricSnippetID lyricSnippetID) {
     LyricSnippet lyricSnippet = lyricSnippetMap.getLyricSnippetByID(lyricSnippetID);
-    SegmentIndex segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
+    SentenceSegmentIndex segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
     return SegmentSelectionCursor(textPaneCursor.lyricSnippetID, cursorBlinker, SegmentRange(segmentIndex, segmentIndex));
   }
 
@@ -113,17 +113,17 @@ class SegmentSelectionCursorMover extends TextPaneCursorMover {
     SegmentRange segmentRange = cursor.segmentRange;
 
     if (!isRangeSelection) {
-      SegmentIndex currentIndex = segmentRange.startIndex;
-      SegmentIndex nextIndex = currentIndex - 1;
-      if (nextIndex < SegmentIndex(0)) {
+      SentenceSegmentIndex currentIndex = segmentRange.startIndex;
+      SentenceSegmentIndex nextIndex = currentIndex - 1;
+      if (nextIndex < SentenceSegmentIndex(0)) {
         return this;
       }
       segmentRange.startIndex = nextIndex;
 
       segmentRange.endIndex = segmentRange.endIndex - 1;
     } else {
-      SegmentIndex currentIndex = segmentRange.endIndex;
-      SegmentIndex nextIndex = currentIndex - 1;
+      SentenceSegmentIndex currentIndex = segmentRange.endIndex;
+      SentenceSegmentIndex nextIndex = currentIndex - 1;
       if (nextIndex < segmentRange.startIndex) {
         return this;
       }
@@ -144,8 +144,8 @@ class SegmentSelectionCursorMover extends TextPaneCursorMover {
     SegmentSelectionCursor cursor = textPaneCursor as SegmentSelectionCursor;
     SegmentRange segmentRange = cursor.segmentRange;
 
-    SegmentIndex currentIndex = segmentRange.endIndex;
-    SegmentIndex nextIndex = currentIndex + 1;
+    SentenceSegmentIndex currentIndex = segmentRange.endIndex;
+    SentenceSegmentIndex nextIndex = currentIndex + 1;
     if (nextIndex.index >= lyricSnippetMap[cursor.lyricSnippetID]!.sentenceSegments.length) {
       return this;
     }
@@ -187,7 +187,7 @@ class SegmentSelectionCursorMover extends TextPaneCursorMover {
     return copyWith(isRangeSelection: isRangeSelection);
   }
 
-  List<TextPaneCursor> getSegmentDividedCursors(LyricSnippet lyricSnippet, SentenceSegmentList sentenceSegmentList){
+  List<TextPaneCursor> getSegmentDividedCursors(LyricSnippet lyricSnippet, SentenceSegmentList sentenceSegmentList) {
     List<SegmentSelectionCursor> separatedCursors = List.filled(sentenceSegmentList.length, SegmentSelectionCursor.empty);
     return separatedCursors;
   }

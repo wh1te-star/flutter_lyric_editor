@@ -17,10 +17,10 @@ class ColoredCaption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SegmentIndex segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
+    SentenceSegmentIndex segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
     return Wrap(
       children: lyricSnippet.sentenceSegments.asMap().entries.map((MapEntry<int, SentenceSegment> entry) {
-        SegmentIndex index = SegmentIndex(entry.key);
+        SentenceSegmentIndex index = SentenceSegmentIndex(entry.key);
         SentenceSegment sentenceSegment = entry.value;
         double progress = 0.0;
         if (index == segmentIndex) {
