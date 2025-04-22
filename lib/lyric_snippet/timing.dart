@@ -93,7 +93,6 @@ class Timing {
 
     SentenceSegmentList sentenceSegmentList = this.sentenceSegmentList;
     List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
-    List<TimingPoint> timingPoints = timingPointList.list;
     Timing timing = Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
     for (TimingPoint timingPoint in timingPointList.list) {
       InsertionPosition currentCharPosition = timingPoint.charPosition;
@@ -235,23 +234,34 @@ class Timing {
       return null;
     }
 
-    List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
-    List<TimingPoint> timingPoints = timingPointList.list;
-    for (int index = 0; index < sentenceSegments.length; index++) {
-      int leftSegmentPosition = timingPoints[index].charPosition.position;
-      int rightSegmentPosition = timingPoints[index + 1].charPosition.position;
-      if (leftSegmentPosition < insertionPosition.position && insertionPosition.position < rightSegmentPosition) {
-        return SentenceSegmentInsertionPositionInfo(SentenceSegmentIndex(index));
-      }
-      if (insertionPosition.position == leftSegmentPosition) {
-        if (leftSegmentPosition == rightSegmentPosition) {
-          return TimingPointInsertionPositionInfo(TimingPointIndex(index), true);
-        } else {
-          return TimingPointInsertionPositionInfo(TimingPointIndex(index), false);
+    for (int index = 0; index < timingPoints.length; index++) {
+      TimingPoint timingPoint = timingPoints[index];
+      if (timingPoint.charPosition == insertionPosition) {
+        bool duplicate = false;
+        if (index + 1 >= timingPoints.length) {
+          return TimingPointInsertionPositionInfo(TimingPointIndex(index), duplicate);
         }
+
+        TimingPoint nextTimingPoint = timingPoints[index + 1];
+        if (timingPoint.charPosition == nextTimingPoint.charPosition) {
+          duplicate = true;
+        }
+        return TimingPointInsertionPositionInfo(TimingPointIndex(index), duplicate);
       }
     }
-    return TimingPointInsertionPositionInfo(TimingPointIndex(sentenceSegments.length), false);
+
+    for (int index = 0; index <= sentenceSegments.length; index++) {
+      TimingPoint leftTimingPoint = timingPoints[index];
+      TimingPoint rightTimingPoint = timingPoints[index + 1];
+      if (leftTimingPoint.charPosition < insertionPosition && insertionPosition < rightTimingPoint.charPosition) {
+        return SentenceSegmentInsertionPositionInfo(
+          SentenceSegmentIndex(index),
+        );
+      }
+    }
+
+    assert(false, "An unexpected state is occurred.");
+    return SentenceSegmentInsertionPositionInfo.empty;
   }
 
   Timing manipulateTiming(SeekPosition seekPosition, SnippetEdge snippetEdge, bool holdLength) {

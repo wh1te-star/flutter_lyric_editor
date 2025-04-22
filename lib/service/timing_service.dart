@@ -280,6 +280,7 @@ class TimingService extends ChangeNotifier {
 }
 
 enum Option {
+  segment,
   former,
   latter,
 }
