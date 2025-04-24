@@ -148,6 +148,7 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
     InsertionPositionInfo? insertionPositionInfo = lyricSnippet.getInsertionPositionInfo(insertionPosition);
     assert(insertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
 
+    debugPrint("seekPositon: $seekPosition");
     SentenceSegmentIndex highlightSegmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
     InsertionPosition nextInsertionPosition = InsertionPosition.empty;
     if (insertionPositionInfo is SentenceSegmentInsertionPositionInfo) {
@@ -167,7 +168,7 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
 
       TimingPointIndex rightTimingPointIndex = lyricSnippet.timing.rightTimingPointIndex(highlightSegmentIndex);
       TimingPointIndex timingPointIndex = insertionPositionInfo.timingPointIndex;
-      debugPrint("seekPositon: $seekPosition, highlightSegmentIndex: $highlightSegmentIndex, timingPointIndex: $timingPointIndex, rightTimingPointIndex: $rightTimingPointIndex");
+      debugPrint("highlightSegmentIndex: $highlightSegmentIndex, timingPointIndex: $timingPointIndex, rightTimingPointIndex: $rightTimingPointIndex");
       if (timingPointIndex == rightTimingPointIndex) {
         nextInsertionPosition = cursor.charPosition - 1;
       } else {
@@ -284,7 +285,12 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
       );
     }
 
-    return this;
+    return SentenceSelectionCursorMover(
+      lyricSnippetMap: lyricSnippetMap,
+      textPaneCursor: textPaneCursor,
+      cursorBlinker: cursorBlinker,
+      seekPosition: seekPosition,
+    );
   }
 
   TextPaneCursorMover enterSegmentSelectionMode() {
