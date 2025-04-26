@@ -109,7 +109,6 @@ void main() {
       return true;
     }
 
-// Usage
     setUp(() {});
     test('Test to move left and right the text pane cursor No.1', () {
       SentenceSelectionCursorMover target = mover.copyWith();
