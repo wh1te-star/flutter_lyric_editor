@@ -148,7 +148,6 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
     InsertionPositionInfo? insertionPositionInfo = lyricSnippet.getInsertionPositionInfo(insertionPosition);
     assert(insertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
 
-    debugPrint("seekPositon: $seekPosition");
     SentenceSegmentIndex highlightSegmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
     InsertionPosition nextInsertionPosition = InsertionPosition.empty;
     if (insertionPositionInfo is SentenceSegmentInsertionPositionInfo) {
@@ -168,11 +167,10 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
 
       TimingPointIndex rightTimingPointIndex = lyricSnippet.timing.rightTimingPointIndex(highlightSegmentIndex);
       TimingPointIndex timingPointIndex = insertionPositionInfo.timingPointIndex;
-      debugPrint("highlightSegmentIndex: $highlightSegmentIndex, timingPointIndex: $timingPointIndex, rightTimingPointIndex: $rightTimingPointIndex");
       if (timingPointIndex == rightTimingPointIndex) {
         nextInsertionPosition = cursor.charPosition - 1;
       } else {
-        if (timingPointIndex.index - 1 < 0) {
+        if (timingPointIndex.index - 1 <= 0) {
           return this;
         }
         TimingPoint previousTimingPoint = lyricSnippet.timingPoints[timingPointIndex.index - 1];
@@ -198,53 +196,57 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
     return this;
   }
 
-  SentenceSelectionCursorMover increaseCursor(SentenceSelectionCursor cursor) {
-    SentenceSelectionCursor movedCursor = cursor.copyWith(charPosition: cursor.charPosition + 1);
-    return SentenceSelectionCursorMover(lyricSnippetMap: lyricSnippetMap, textPaneCursor: movedCursor, cursorBlinker: cursorBlinker, seekPosition: seekPosition);
-  }
-
-  SentenceSelectionCursorMover moveCursorToNextTimingPoint(SentenceSelectionCursor cursor, LyricSnippet lyricSnippet, TimingPointIndex timingPointIndex) {
-    InsertionPosition insertionPosition = cursor.charPosition;
-    InsertionPositionInfo? insertionPositionInfo = lyricSnippet.getInsertionPositionInfo(insertionPosition);
-    assert(insertionPositionInfo is TimingPointInsertionPositionInfo, "An unexpected state was occurred.");
-
-    bool duplicated = (insertionPositionInfo as TimingPointInsertionPositionInfo).duplicate;
-    if (duplicated && cursor.option == Option.former) {
-      SentenceSelectionCursor movedCursor = cursor.copyWith(option: Option.latter);
-      return SentenceSelectionCursorMover(lyricSnippetMap: lyricSnippetMap, textPaneCursor: movedCursor, cursorBlinker: cursorBlinker, seekPosition: seekPosition);
-    } else {
-      InsertionPosition nextInsertionPosition = lyricSnippet.timingPoints[timingPointIndex.index + 1].charPosition;
-      SentenceSelectionCursor movedCursor = cursor.copyWith(charPosition: nextInsertionPosition);
-      return SentenceSelectionCursorMover(lyricSnippetMap: lyricSnippetMap, textPaneCursor: movedCursor, cursorBlinker: cursorBlinker, seekPosition: seekPosition);
-    }
-  }
-
   @override
   TextPaneCursorMover moveRightCursor() {
     SentenceSelectionCursor cursor = textPaneCursor as SentenceSelectionCursor;
     LyricSnippet lyricSnippet = lyricSnippetMap[cursor.lyricSnippetID]!;
 
-    InsertionPositionInfo? insertionPositionInfo = lyricSnippet.getInsertionPositionInfo(cursor.charPosition);
+    InsertionPosition insertionPosition = cursor.charPosition;
+    InsertionPositionInfo? insertionPositionInfo = lyricSnippet.getInsertionPositionInfo(insertionPosition);
+    assert(insertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
 
+    SentenceSegmentIndex highlightSegmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
+    InsertionPosition nextInsertionPosition = InsertionPosition.empty;
     if (insertionPositionInfo is SentenceSegmentInsertionPositionInfo) {
-      TimingPoint leftTimingPoint = lyricSnippet.timing.leftTimingPoint(insertionPositionInfo.sentenceSegmentIndex);
-      TimingPoint rightTimingPoint = lyricSnippet.timing.rightTimingPoint(insertionPositionInfo.sentenceSegmentIndex);
-      if (leftTimingPoint.charPosition <= cursor.charPosition && cursor.charPosition < rightTimingPoint.charPosition) {
-        return increaseCursor(cursor);
+      SentenceSegmentIndex segmentIndex = insertionPositionInfo.sentenceSegmentIndex;
+      assert(segmentIndex == highlightSegmentIndex, "An unexpected state was occurred.");
+      nextInsertionPosition = insertionPosition + 1;
+      if (nextInsertionPosition >= InsertionPosition(lyricSnippet.sentence.length)) {
+        return this;
       }
     }
 
     if (insertionPositionInfo is TimingPointInsertionPositionInfo) {
-      SentenceSegmentIndex highlightSegmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
+      if (insertionPositionInfo.duplicate && cursor.option == Option.former) {
+        SentenceSelectionCursor movedCursor = cursor.copyWith(option: Option.latter);
+        return SentenceSelectionCursorMover(lyricSnippetMap: lyricSnippetMap, textPaneCursor: movedCursor, cursorBlinker: cursorBlinker, seekPosition: seekPosition);
+      }
+
       TimingPointIndex leftTimingPointIndex = lyricSnippet.timing.leftTimingPointIndex(highlightSegmentIndex);
       TimingPointIndex timingPointIndex = insertionPositionInfo.timingPointIndex;
+      if (insertionPositionInfo.duplicate && timingPointIndex + 1 == leftTimingPointIndex) {
+        nextInsertionPosition = cursor.charPosition + 1;
+      } else if (!insertionPositionInfo.duplicate && timingPointIndex == leftTimingPointIndex) {
+      } else {
+        TimingPointIndex nextTimingPointIndex = timingPointIndex + 1;
+        if (insertionPositionInfo.duplicate) nextTimingPointIndex = timingPointIndex + 2;
+        if (nextTimingPointIndex.index >= lyricSnippet.timingPoints.length - 1) {
+          return this;
+        }
+        TimingPoint nextTimingPoint = lyricSnippet.timingPoints[nextTimingPointIndex.index];
+        nextInsertionPosition = nextTimingPoint.charPosition;
+      }
+    }
 
-      if (timingPointIndex == leftTimingPointIndex) {
-        return increaseCursor(cursor);
-      }
-      if (timingPointIndex.index + 1 < lyricSnippet.timingPoints.length - 1) {
-        return moveCursorToNextTimingPoint(cursor, lyricSnippet, timingPointIndex);
-      }
+    InsertionPositionInfo? nextInsertionPositionInfo = lyricSnippet.getInsertionPositionInfo(nextInsertionPosition);
+    assert(nextInsertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
+    if (nextInsertionPositionInfo is SentenceSegmentInsertionPositionInfo) {
+      SentenceSelectionCursor movedCursor = cursor.copyWith(charPosition: nextInsertionPosition, option: Option.segment);
+      return SentenceSelectionCursorMover(lyricSnippetMap: lyricSnippetMap, textPaneCursor: movedCursor, cursorBlinker: cursorBlinker, seekPosition: seekPosition);
+    }
+    if (nextInsertionPositionInfo is TimingPointInsertionPositionInfo) {
+      SentenceSelectionCursor movedCursor = cursor.copyWith(charPosition: nextInsertionPosition, option: Option.former);
+      return SentenceSelectionCursorMover(lyricSnippetMap: lyricSnippetMap, textPaneCursor: movedCursor, cursorBlinker: cursorBlinker, seekPosition: seekPosition);
     }
 
     return this;

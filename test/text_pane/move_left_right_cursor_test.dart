@@ -34,7 +34,7 @@ class PositionTestInfo {
 void main() {
   group('Tests to move to left and right the text pane cursor.', () {
     final LyricSnippetID lyricSnippetID = LyricSnippetID(1);
-    final Timing timingData = Timing(
+    final Timing timingData1 = Timing(
       startTimestamp: SeekPosition(2000),
       sentenceSegmentList: SentenceSegmentList([
         SentenceSegment("abc", const Duration(milliseconds: 400)),
@@ -45,29 +45,22 @@ void main() {
         SentenceSegment("rs", const Duration(milliseconds: 200)),
       ]),
     );
-    final LyricSnippet lyricSnippet = LyricSnippet(
-      vocalistID: VocalistID(1),
-      timing: timingData,
-      annotationMap: AnnotationMap.empty,
+    final Timing timingData2 = Timing(
+      startTimestamp: SeekPosition(2000),
+      sentenceSegmentList: SentenceSegmentList([
+        SentenceSegment("abcde", const Duration(milliseconds: 1000)),
+        SentenceSegment("", const Duration(milliseconds: 1000)),
+        SentenceSegment("fghij", const Duration(milliseconds: 1000)),
+        SentenceSegment("", const Duration(milliseconds: 1000)),
+        SentenceSegment("klmno", const Duration(milliseconds: 1000)),
+        SentenceSegment("", const Duration(milliseconds: 1000)),
+        SentenceSegment("pqrst", const Duration(milliseconds: 1000)),
+      ]),
     );
 
     final CursorBlinker cursorBlinker = CursorBlinker(
       blinkIntervalInMillisec: 1000,
       onTick: () {},
-    );
-
-    final SentenceSelectionCursor cursor = SentenceSelectionCursor(
-      lyricSnippetID,
-      cursorBlinker,
-      InsertionPosition(1),
-      Option.former,
-    );
-
-    final SentenceSelectionCursorMover mover = SentenceSelectionCursorMover(
-      lyricSnippetMap: LyricSnippetMap({lyricSnippetID: lyricSnippet}),
-      textPaneCursor: cursor,
-      cursorBlinker: cursorBlinker,
-      seekPosition: SeekPosition(2200),
     );
 
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -81,6 +74,15 @@ void main() {
       );
     }
 
+    void failedMessage(int index, TextPaneCursorMover actual, TextPaneCursor expected, bool reverse) {
+      SentenceSelectionCursor resultCursor = actual.textPaneCursor as SentenceSelectionCursor;
+      SentenceSelectionCursor expectedCursor = expected as SentenceSelectionCursor;
+      String order = reverse ? "backward" : "forward";
+      debugPrint('Test failed at the $order iteration ${index + 1}:');
+      debugPrint('Expected cursor position: ${expectedCursor.charPosition}, option: ${expectedCursor.option}');
+      debugPrint('But the actual cursor position: ${resultCursor.charPosition}, option: ${resultCursor.option}');
+    }
+
     bool cursorMatcher(SentenceSelectionCursorMover result, SentenceSelectionCursor expectedCursor) {
       if (result.textPaneCursor is! SentenceSelectionCursor) return false;
 
@@ -88,39 +90,118 @@ void main() {
       return resultCursor == expectedCursor;
     }
 
+    bool checkCursor(TextPaneCursorMover result, int index, List<PositionTestInfo> expectedMovement, bool reverse) {
+      SentenceSelectionCursor expectedCursor = constructCursor(expectedMovement[index]);
+      if (reverse) {
+        result = result.moveLeftCursor();
+      } else {
+        result = result.moveRightCursor();
+      }
+      assert(result is SentenceSelectionCursorMover, "An unexpected state was occurred.");
+      bool matcherResult = cursorMatcher(result as SentenceSelectionCursorMover, expectedCursor);
+      if (!matcherResult) {
+        failedMessage(index, result, expectedCursor, reverse);
+        return false;
+      }
+
+      SentenceSelectionCursor resultCursor = result.textPaneCursor as SentenceSelectionCursor;
+      debugPrint("movement: pos=${resultCursor.charPosition}, option=${resultCursor.option}");
+      return true;
+    }
+
     bool cursorMovementMatcher(TextPaneCursorMover initialMover, List<PositionTestInfo> expectedMovement) {
       TextPaneCursorMover result = initialMover;
-      for (int index = 0; index < expectedMovement.length; index++) {
-        PositionTestInfo position = expectedMovement[index];
-        SentenceSelectionCursor expectedCursor = constructCursor(position);
-
+      for (int index = 1; index < expectedMovement.length; index++) {
+        bool success = checkCursor(result, index, expectedMovement, false);
+        if (!success) return false;
         result = result.moveRightCursor();
-        assert(result is SentenceSelectionCursorMover, "An unexpected state was occurred.");
-
-        bool matcherResult = cursorMatcher(result as SentenceSelectionCursorMover, expectedCursor);
-        if (!matcherResult) {
-          SentenceSelectionCursor resultCursor = result.textPaneCursor as SentenceSelectionCursor;
-          debugPrint('Test failed at iteration ${index + 1}:');
-          debugPrint('Expected cursor position: ${position.charPosition}, option: ${position.option}');
-          debugPrint('But the actual cursor position: ${resultCursor.charPosition}, option: ${resultCursor.option}');
-          return false;
-        }
       }
+      bool success = checkCursor(result, expectedMovement.length - 1, expectedMovement, false);
+      if (!success) return false;
+
+      for (int index = expectedMovement.length - 2; index >= 0; index--) {
+        bool success = checkCursor(result, index, expectedMovement, true);
+        if (!success) return false;
+        result = result.moveLeftCursor();
+      }
+      success = checkCursor(result, 0, expectedMovement, true);
+      if (!success) return false;
+
       return true;
     }
 
     setUp(() {});
+
     test('Test to move left and right the text pane cursor No.1', () {
+      final LyricSnippet lyricSnippet = LyricSnippet(
+        vocalistID: VocalistID(1),
+        timing: timingData1,
+        annotationMap: AnnotationMap.empty,
+      );
+
+      final SentenceSelectionCursor cursor = SentenceSelectionCursor(
+        lyricSnippetID,
+        cursorBlinker,
+        InsertionPosition(1),
+        Option.segment,
+      );
+
+      final SentenceSelectionCursorMover mover = SentenceSelectionCursorMover(
+        lyricSnippetMap: LyricSnippetMap({lyricSnippetID: lyricSnippet}),
+        textPaneCursor: cursor,
+        cursorBlinker: cursorBlinker,
+        seekPosition: SeekPosition(2200),
+      );
+
       SentenceSelectionCursorMover target = mover.copyWith();
 
       List<PositionTestInfo> expectedCursorMovement = [
-        PositionTestInfo(2, Option.former),
+        PositionTestInfo(1, Option.segment),
+        PositionTestInfo(2, Option.segment),
         PositionTestInfo(3, Option.former),
         PositionTestInfo(5, Option.former),
         PositionTestInfo(12, Option.former),
         PositionTestInfo(12, Option.latter),
         PositionTestInfo(17, Option.former),
-        PositionTestInfo(19, Option.former),
+      ];
+
+      expect(cursorMovementMatcher(target, expectedCursorMovement), true);
+    });
+
+    test('Test to move left and right the text pane cursor No.2', () {
+      final LyricSnippet lyricSnippet = LyricSnippet(
+        vocalistID: VocalistID(1),
+        timing: timingData2,
+        annotationMap: AnnotationMap.empty,
+      );
+
+      final SentenceSelectionCursor cursor = SentenceSelectionCursor(
+        lyricSnippetID,
+        cursorBlinker,
+        InsertionPosition(5),
+        Option.former,
+      );
+
+      final SentenceSelectionCursorMover mover = SentenceSelectionCursorMover(
+        lyricSnippetMap: LyricSnippetMap({lyricSnippetID: lyricSnippet}),
+        textPaneCursor: cursor,
+        cursorBlinker: cursorBlinker,
+        seekPosition: SeekPosition(6500),
+      );
+
+      SentenceSelectionCursorMover target = mover.copyWith();
+
+      List<PositionTestInfo> expectedCursorMovement = [
+        PositionTestInfo(5, Option.former),
+        PositionTestInfo(5, Option.latter),
+        PositionTestInfo(10, Option.former),
+        PositionTestInfo(10, Option.latter),
+        PositionTestInfo(11, Option.segment),
+        PositionTestInfo(12, Option.segment),
+        PositionTestInfo(13, Option.segment),
+        PositionTestInfo(14, Option.segment),
+        PositionTestInfo(15, Option.former),
+        PositionTestInfo(15, Option.latter),
       ];
 
       expect(cursorMovementMatcher(target, expectedCursorMovement), true);
