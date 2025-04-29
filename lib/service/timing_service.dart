@@ -179,61 +179,6 @@ class TimingService extends ChangeNotifier {
   /* * * * * * * * * * * * * * * * * *
    Change Notifier's Original functions
   * * * * * * * * * * * * * * * * * */
-  Map<LyricSnippetID, int> getTrackNumber(Map<LyricSnippetID, LyricSnippet> lyricSnippetList, Duration startBulge, Duration endBulge) {
-    if (lyricSnippetList.isEmpty) return {};
-
-    Map<LyricSnippetID, int> snippetTracks = {};
-
-    int maxOverlap = 0;
-    int currentOverlap = 1;
-    int currentEndTime = lyricSnippetList.values.first.endTimestamp.position + endBulge.inMilliseconds;
-    snippetTracks[lyricSnippetList.keys.first] = 0;
-
-    for (int i = 1; i < lyricSnippetList.length; i++) {
-      LyricSnippetID currentSnippetID = lyricSnippetList.keys.toList()[i];
-      LyricSnippet currentSnippet = lyricSnippetList.values.toList()[i];
-      int start = currentSnippet.startTimestamp.position - startBulge.inMilliseconds;
-      int end = currentSnippet.endTimestamp.position + endBulge.inMilliseconds;
-      if (start <= currentEndTime) {
-        currentOverlap++;
-      } else {
-        currentOverlap = 1;
-        currentEndTime = end;
-      }
-      if (currentOverlap > maxOverlap) {
-        maxOverlap = currentOverlap;
-      }
-
-      snippetTracks[currentSnippetID] = currentOverlap - 1;
-    }
-
-    return snippetTracks;
-  }
-
-  int getLanes({VocalistID? vocalistID}) {
-    List<LyricSnippet> snippets = vocalistID != null ? getLyricSnippetByVocalistID(vocalistID).map.values.toList() : lyricSnippetMap.values.toList();
-    if (snippets.isEmpty) return 1;
-    int maxOverlap = 1;
-    int currentOverlap = 1;
-    int currentEndTime = snippets.first.endTimestamp.position;
-
-    for (int i = 1; i < snippets.length; ++i) {
-      int start = snippets[i].startTimestamp.position;
-      int end = snippets[i].endTimestamp.position;
-      if (start <= currentEndTime) {
-        currentOverlap++;
-      } else {
-        currentOverlap = 1;
-        currentEndTime = end;
-      }
-      if (currentOverlap > maxOverlap) {
-        maxOverlap = currentOverlap;
-      }
-    }
-
-    return maxOverlap;
-  }
-
   void importLyric(String importPath) async {
     File file = File(importPath);
     String rawText = await file.readAsString();

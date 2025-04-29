@@ -6,7 +6,7 @@ import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/pane/text_pane/text_pane_provider.dart';
 import 'package:lyric_editor/pane/video_pane/colored_caption.dart';
-import 'package:lyric_editor/pane/video_pane/show_hide_mode_screen.dart';
+import 'package:lyric_editor/pane/video_pane/show_hide_mode/show_hide_mode_screen.dart';
 import 'package:lyric_editor/pane/video_pane/video_pane_provider.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
@@ -31,8 +31,6 @@ class VideoPane extends ConsumerStatefulWidget {
 class _VideoPaneState extends ConsumerState<VideoPane> {
   final FocusNode focusNode;
   _VideoPaneState(this.focusNode);
-  Duration startBulge = const Duration(milliseconds: 1000);
-  Duration endBulge = const Duration(milliseconds: 1000);
 
   ScrollController scrollController = ScrollController();
 
@@ -63,7 +61,6 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     });
 
     timingService.addListener(() {
-      maxLanes = getMaxRequiredLanes(timingService.getTrackNumber(timingService.lyricSnippetMap.map, startBulge, endBulge)) + 1;
       setState(() {});
     });
 
@@ -175,6 +172,8 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
           debugPrint("The video pane is focused");
         },
         child: ShowHideModeScreen(
+          lyricSnippetMap: timingService.lyricSnippetMap,
+          vocalistColorMap: timingService.vocalistColorMap,
           seekPosition: musicPlayerService.seekPosition,
         ),
       ),

@@ -203,9 +203,9 @@ class LyricSnippetMap {
 
   LyricSnippetMap getSnippetsAtSeekPosition({
     required SeekPosition seekPosition,
-    VocalistID? vocalistID,
     Duration startBulge = Duration.zero,
     Duration endBulge = Duration.zero,
+    VocalistID? vocalistID,
   }) {
     final Iterable<MapEntry<LyricSnippetID, LyricSnippet>> filteredEntries = map.entries.where((MapEntry<LyricSnippetID, LyricSnippet> entry) {
       bool isWithinTimestamp = entry.value.startTimestamp.position - startBulge.inMilliseconds <= seekPosition.position && seekPosition.position <= entry.value.endTimestamp.position + endBulge.inMilliseconds;

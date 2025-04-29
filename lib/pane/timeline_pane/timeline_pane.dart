@@ -10,6 +10,7 @@ import 'package:lyric_editor/pane/timeline_pane/current_position_indicator_paint
 import 'package:lyric_editor/pane/timeline_pane/rectangle_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/scale_mark.dart';
 import 'package:lyric_editor/pane/snippet_timeline.dart';
+import 'package:lyric_editor/pane/video_pane/show_hide_mode/lyric_snippet_track_map.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
@@ -442,7 +443,8 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     if (isDragging || snippetsForeachVocalist[vocalistID] == null) {
       return 20;
     } else {
-      final int lanes = timingService.getLanes(vocalistID: vocalistID);
+      ShowHideTrackMap showHideTrackMap = ShowHideTrackMap(lyricSnippetMap: timingService.lyricSnippetMap, vocalistID: vocalistID);
+      final int lanes = showHideTrackMap.getMaxTrackNumber();
       return 60.0 * lanes;
     }
   }
