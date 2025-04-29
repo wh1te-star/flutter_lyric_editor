@@ -227,6 +227,7 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
       if (insertionPositionInfo.duplicate && timingPointIndex + 1 == leftTimingPointIndex) {
         nextInsertionPosition = cursor.charPosition + 1;
       } else if (!insertionPositionInfo.duplicate && timingPointIndex == leftTimingPointIndex) {
+        nextInsertionPosition = cursor.charPosition + 1;
       } else {
         TimingPointIndex nextTimingPointIndex = timingPointIndex + 1;
         if (insertionPositionInfo.duplicate) nextTimingPointIndex = timingPointIndex + 2;
@@ -269,15 +270,13 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
       );
     }
 
-    LyricSnippetID lyricSnippetID = lyricSnippetMap.keys.first;
-    LyricSnippet lyricSnippet = lyricSnippetMap.values.first;
-    if (lyricSnippetMap.containsKey(lyricSnippetID)) {
-      lyricSnippet = lyricSnippetMap[lyricSnippetID]!;
+    LyricSnippetID lyricSnippetID = textPaneCursor.lyricSnippetID;
+    if (!lyricSnippetMap.containsKey(lyricSnippetID)) {
+      lyricSnippetID = lyricSnippetMap.keys.first;
     }
-
+    LyricSnippet lyricSnippet = lyricSnippetMap[lyricSnippetID]!;
     SentenceSegmentIndex currentSeekSegmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
     InsertionPositionInfo? nextSnippetPositionInfo = lyricSnippet.getInsertionPositionInfo((textPaneCursor as SentenceSelectionCursor).charPosition);
-
     if (nextSnippetPositionInfo == null || nextSnippetPositionInfo is SentenceSegmentInsertionPositionInfo && nextSnippetPositionInfo.sentenceSegmentIndex != currentSeekSegmentIndex) {
       return SentenceSelectionCursorMover.withDefaultCursor(
         lyricSnippetMap: lyricSnippetMap,
