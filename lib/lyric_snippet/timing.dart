@@ -211,6 +211,7 @@ class Timing {
         return SentenceSegmentIndex(index);
       }
     }
+    assert(false);
     return SentenceSegmentIndex.empty;
   }
 

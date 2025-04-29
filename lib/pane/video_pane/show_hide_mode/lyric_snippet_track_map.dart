@@ -73,9 +73,7 @@ class ShowHideTrackMap {
   }
 
   int getMaxTrackNumber() {
-    return map.values.reduce((ShowHideTrack current, ShowHideTrack next) {
-      return current > next ? current : next;
-    }).track;
+    return map.values.fold<int>(1, (max, current) => max > current.track ? max : current.track);
   }
 
   ShowHideTrackMap copyWith({

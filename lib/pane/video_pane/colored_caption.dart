@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
+import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
 import 'package:lyric_editor/pane/video_pane/colored_text_painter.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_index.dart';
@@ -17,30 +18,55 @@ class ColoredCaption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SentenceSegmentIndex segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
+    List<Widget> coloredSentenceSegments = [];
+    for (int index = 0; index < lyricSnippet.sentenceSegments.length; index++) {
+      coloredSentenceSegments.add(getColoredSentenceSegment(lyricSnippet, seekPosition, color, index));
+    }
     return Wrap(
-      children: lyricSnippet.sentenceSegments.asMap().entries.map((MapEntry<int, SentenceSegment> entry) {
-        SentenceSegmentIndex index = SentenceSegmentIndex(entry.key);
-        SentenceSegment sentenceSegment = entry.value;
-        double progress = 0.0;
-        if (index == segmentIndex) {
-          progress = lyricSnippet.getSegmentProgress(seekPosition);
-        } else if (index < segmentIndex) {
-          progress = 1.0;
-        }
-        return CustomPaint(
-          painter: ColoredTextPainter(
-            text: sentenceSegment.word,
-            progress: progress,
-            fontBaseColor: color,
-            fontFamily: fontFamily,
-            fontSize: fontSize,
-            firstOutlineWidth: 2,
-            secondOutlineWidth: 4,
-          ),
-          size: getSizeFromFontInfo(sentenceSegment.word, fontSize, fontFamily),
-        );
-      }).toList(),
+      children: coloredSentenceSegments,
     );
+  }
+
+  Widget getColoredSentenceSegment(
+    LyricSnippet lyricSnippet,
+    SeekPosition seekPosition,
+    Color color,
+    int index,
+  ) {
+    SentenceSegment sentenceSegment = lyricSnippet.sentenceSegments[index];
+    double progress = getProgress(lyricSnippet, index);
+    return CustomPaint(
+      painter: ColoredTextPainter(
+        text: sentenceSegment.word,
+        progress: progress,
+        fontBaseColor: color,
+        fontFamily: fontFamily,
+        fontSize: fontSize,
+        firstOutlineWidth: 2,
+        secondOutlineWidth: 4,
+      ),
+      size: getSizeFromFontInfo(sentenceSegment.word, fontSize, fontFamily),
+    );
+  }
+
+  double getProgress(LyricSnippet lyricSnippet, int index) {
+    SentenceSegmentIndex seekSegmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
+    if (seekSegmentIndex.isEmpty) {
+      if (seekPosition <= lyricSnippet.startTimestamp) {
+        return 0.0;
+      }
+      if (lyricSnippet.endTimestamp <= seekPosition) {
+        return 1.0;
+      }
+      assert(false);
+    }
+
+    if (index == seekSegmentIndex.index) {
+      return lyricSnippet.getSegmentProgress(seekPosition);
+    }
+    if (index < seekSegmentIndex.index) {
+      return 1.0;
+    }
+    return 0.0;
   }
 }
