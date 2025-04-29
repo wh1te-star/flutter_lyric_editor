@@ -224,13 +224,11 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
 
       TimingPointIndex leftTimingPointIndex = lyricSnippet.timing.leftTimingPointIndex(highlightSegmentIndex);
       TimingPointIndex timingPointIndex = insertionPositionInfo.timingPointIndex;
-      if (insertionPositionInfo.duplicate && timingPointIndex + 1 == leftTimingPointIndex) {
-        nextInsertionPosition = cursor.charPosition + 1;
-      } else if (!insertionPositionInfo.duplicate && timingPointIndex == leftTimingPointIndex) {
+      if (insertionPositionInfo.duplicate) timingPointIndex = timingPointIndex + 1;
+      if (timingPointIndex == leftTimingPointIndex) {
         nextInsertionPosition = cursor.charPosition + 1;
       } else {
         TimingPointIndex nextTimingPointIndex = timingPointIndex + 1;
-        if (insertionPositionInfo.duplicate) nextTimingPointIndex = timingPointIndex + 2;
         if (nextTimingPointIndex.index >= lyricSnippet.timingPoints.length - 1) {
           return this;
         }

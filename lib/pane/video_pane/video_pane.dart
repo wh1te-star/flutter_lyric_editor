@@ -6,6 +6,7 @@ import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
 import 'package:lyric_editor/pane/text_pane/text_pane_provider.dart';
 import 'package:lyric_editor/pane/video_pane/colored_caption.dart';
+import 'package:lyric_editor/pane/video_pane/show_hide_mode_screen.dart';
 import 'package:lyric_editor/pane/video_pane/video_pane_provider.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
@@ -149,30 +150,6 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     return seekPosition;
   }
 
-  ColoredTextPainter getBeforeSnippetPainter(LyricSnippet snippet, fontFamily, Color fontColor) {
-    return ColoredTextPainter(
-      text: snippet.sentence,
-      progress: 0.0,
-      fontFamily: fontFamily,
-      fontSize: 40,
-      fontBaseColor: fontColor,
-      firstOutlineWidth: 2,
-      secondOutlineWidth: 4,
-    );
-  }
-
-  ColoredTextPainter getAfterSnippetPainter(LyricSnippet snippet, fontFamily, Color fontColor) {
-    return ColoredTextPainter(
-      text: snippet.sentence,
-      progress: 1.0,
-      fontFamily: fontFamily,
-      fontSize: 40,
-      fontBaseColor: fontColor,
-      firstOutlineWidth: 2,
-      secondOutlineWidth: 4,
-    );
-  }
-
   double getAnnotationSizePosition(LyricSnippet snippet, SentenceSegmentIndex segmentIndex) {
     int startIndex = snippet.annotationMap.map.keys.toList()[segmentIndex.index].startIndex.index;
     double sumPosition = 0;
@@ -188,47 +165,6 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
   Widget build(BuildContext context) {
     final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
     final TimingService timingService = ref.read(timingMasterProvider);
-    final SeekPosition seekPosition = musicPlayerService.seekPosition;
-    final Map<VocalistID, Vocalist> vocalistColorList = ref.read(timingMasterProvider).vocalistColorMap.map;
-
-    Map<LyricSnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetMap.map;
-    Map<LyricSnippetID, LyricSnippet> currentSnippets = timingService
-        .getSnippetsAtSeekPosition(
-          startBulge: startBulge,
-          endBulge: endBulge,
-        )
-        .map;
-
-    double fontSize = 40.0;
-    String fontFamily = "Times New Roman";
-    final VideoPaneProvider videoPaneProvider = ref.read(videoPaneMasterProvider);
-
-    DisplayMode displayMode = videoPaneProvider.displayMode;
-    //if (displayMode == DisplayMode.appearDissappear) {
-    final Map<LyricSnippetID, int> tracks = timingService.getTrackNumber(timingService.lyricSnippetMap.map, startBulge, endBulge);
-    List<Widget> content = List<Widget>.generate(maxLanes, (index) => Container());
-
-    for (int i = 0; i < maxLanes; i++) {
-      final LyricSnippetID targetSnippetID = currentSnippets.keys.toList().firstWhere(
-            (LyricSnippetID id) => tracks[id] == i,
-            orElse: () => LyricSnippetID(0),
-          );
-      if (targetSnippetID != LyricSnippetID(0)) {
-        LyricSnippet targetSnippet = timingService.getLyricSnippetByID(targetSnippetID);
-        final Color color = Color(timingService.vocalistColorMap[targetSnippet.vocalistID]!.color);
-        content[i] = Expanded(
-          child: Center(
-            child: ColoredCaption(targetSnippet, seekPosition, color),
-          ),
-        );
-      } else {
-        content[i] = Expanded(
-          child: Center(
-            child: Container(color: Colors.transparent),
-          ),
-        );
-      }
-    }
 
     return Focus(
       focusNode: focusNode,
@@ -238,9 +174,8 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
           focusNode.requestFocus();
           debugPrint("The video pane is focused");
         },
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: content,
+        child: ShowHideModeScreen(
+          seekPosition: musicPlayerService.seekPosition,
         ),
       ),
     );
