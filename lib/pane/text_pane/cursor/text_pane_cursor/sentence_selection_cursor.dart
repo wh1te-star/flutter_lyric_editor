@@ -14,20 +14,17 @@ class SentenceSelectionCursor extends TextPaneCursor {
 
   SentenceSelectionCursor(
     super.lyricSnippetID,
-    super.cursorBlinker,
     this.charPosition,
     this.option,
   );
 
   SentenceSelectionCursor._privateConstructor(
     super.lyricSnippetID,
-    super.cursorBlinker,
     this.charPosition,
     this.option,
   );
   static final SentenceSelectionCursor _empty = SentenceSelectionCursor._privateConstructor(
     LyricSnippetID.empty,
-    CursorBlinker.empty,
     InsertionPosition.empty,
     Option.former,
   );
@@ -94,7 +91,6 @@ class SentenceSelectionCursor extends TextPaneCursor {
   }) {
     return SentenceSelectionCursor(
       lyricSnippetID ?? this.lyricSnippetID,
-      cursorBlinker ?? this.cursorBlinker,
       charPosition ?? this.charPosition,
       option ?? this.option,
     );
@@ -111,12 +107,11 @@ class SentenceSelectionCursor extends TextPaneCursor {
     if (runtimeType != other.runtimeType) return false;
     final SentenceSelectionCursor otherSentenceSegments = other as SentenceSelectionCursor;
     if (lyricSnippetID != otherSentenceSegments.lyricSnippetID) return false;
-    if (cursorBlinker != otherSentenceSegments.cursorBlinker) return false;
     if (charPosition != otherSentenceSegments.charPosition) return false;
     if (option != otherSentenceSegments.option) return false;
     return true;
   }
 
   @override
-  int get hashCode => lyricSnippetID.hashCode ^ cursorBlinker.hashCode ^ charPosition.hashCode ^ option.hashCode;
+  int get hashCode => lyricSnippetID.hashCode ^ charPosition.hashCode ^ option.hashCode;
 }

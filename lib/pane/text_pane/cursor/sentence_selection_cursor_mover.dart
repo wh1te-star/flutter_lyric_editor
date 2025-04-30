@@ -37,8 +37,7 @@ class SentenceSelectionCursorMover extends TextPaneCursorMover {
     if (lyricSnippetMap.isEmpty || textPaneCursor.isEmpty) {
       return true;
     }
-    LyricSnippet? lyricSnippet = lyricSnippetMap[textPaneCursor.lyricSnippetID];
-    if (lyricSnippet == null) {
+    if (!lyricSnippetMap.containsKey(textPaneCursor.lyricSnippetID)) {
       return false;
     }
     return true;

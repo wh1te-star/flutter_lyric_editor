@@ -7,17 +7,12 @@ import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 class TextPaneCursor {
   LyricSnippetID lyricSnippetID;
-  CursorBlinker cursorBlinker;
-  TextPaneCursor(this.lyricSnippetID, this.cursorBlinker);
+  TextPaneCursor(this.lyricSnippetID);
 
   TextPaneCursor._privateConstructor(
     this.lyricSnippetID,
-    this.cursorBlinker,
   );
-  static final TextPaneCursor _empty = TextPaneCursor._privateConstructor(
-    LyricSnippetID.empty,
-    CursorBlinker.empty,
-  );
+  static final TextPaneCursor _empty = TextPaneCursor._privateConstructor(LyricSnippetID.empty);
   static TextPaneCursor get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
