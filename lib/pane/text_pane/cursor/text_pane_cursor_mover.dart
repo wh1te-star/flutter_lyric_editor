@@ -6,15 +6,17 @@ import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 abstract class TextPaneCursorMover {
   final LyricSnippetMap lyricSnippetMap;
+  final LyricSnippetID lyricSnippetID;
   final TextPaneCursor textPaneCursor;
-  final CursorBlinker cursorBlinker;
   final SeekPosition seekPosition;
+  final CursorBlinker cursorBlinker;
 
   TextPaneCursorMover({
     required this.lyricSnippetMap,
+    required this.lyricSnippetID,
     required this.textPaneCursor,
-    required this.cursorBlinker,
     required this.seekPosition,
+    required this.cursorBlinker,
   });
 
   TextPaneCursor defaultCursor(LyricSnippetID lyricSnippetID);
@@ -24,6 +26,7 @@ abstract class TextPaneCursorMover {
   TextPaneCursorMover moveRightCursor();
   TextPaneCursorMover updateCursor(
     LyricSnippetMap lyricSnippetMap,
+    LyricSnippetID lyricSnippetID,
     CursorBlinker cursorBlinker,
     SeekPosition seekPosition,
   );
