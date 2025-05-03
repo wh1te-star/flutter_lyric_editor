@@ -1,5 +1,6 @@
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
@@ -13,17 +14,20 @@ class SentenceSelectionCursor extends TextPaneCursor {
   Option option;
 
   SentenceSelectionCursor(
+    super.lyricSnippetMap,
     super.lyricSnippetID,
     this.charPosition,
     this.option,
   );
 
   SentenceSelectionCursor._privateConstructor(
+    super.lyricSnippetMap,
     super.lyricSnippetID,
     this.charPosition,
     this.option,
   );
   static final SentenceSelectionCursor _empty = SentenceSelectionCursor._privateConstructor(
+    LyricSnippetMap.empty,
     LyricSnippetID.empty,
     InsertionPosition.empty,
     Option.former,
@@ -32,31 +36,10 @@ class SentenceSelectionCursor extends TextPaneCursor {
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
-  factory SentenceSelectionCursorMover.withDefaultCursor({
-    required LyricSnippetMap lyricSnippetMap,
-    required LyricSnippetID lyricSnippetID,
-    required CursorBlinker cursorBlinker,
-    required SeekPosition seekPosition,
-  }) {
-    final SentenceSelectionCursor tempCursor = SentenceSelectionCursor(
-      lyricSnippetID,
-      cursorBlinker,
-      InsertionPosition.empty,
-      Option.former,
-    );
-    final SentenceSelectionCursorMover tempMover = SentenceSelectionCursorMover(
-      lyricSnippetMap: lyricSnippetMap,
-      textPaneCursor: tempCursor,
-      cursorBlinker: cursorBlinker,
-      seekPosition: seekPosition,
-    );
-    return tempMover.copyWith(sentenceSelectionCursor: tempMover.defaultCursor(lyricSnippetID));
-  }
-
   @override
   SentenceSelectionCursor defaultCursor(LyricSnippetID lyricSnippetID) {
     if (lyricSnippetMap.isEmpty) {
-      return SentenceSelectionCursor(LyricSnippetID.empty, cursorBlinker, InsertionPosition.empty, Option.former);
+      return SentenceSelectionCursor(LyricSnippetMap.empty, LyricSnippetID.empty, InsertionPosition.empty, Option.former);
     }
     LyricSnippet lyricSnippet = lyricSnippetMap.getLyricSnippetByID(lyricSnippetID);
     SentenceSegmentIndex segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
@@ -294,8 +277,6 @@ class SentenceSelectionCursor extends TextPaneCursor {
       isRangeSelection: false,
     );
   }
-
-
 
   @override
   List<TextPaneCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {

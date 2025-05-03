@@ -8,7 +8,10 @@ import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 abstract class TextPaneCursor {
-  TextPaneCursor();
+  LyricSnippetMap lyricSnippetMap;
+  LyricSnippetID lyricSnippetID;
+
+  TextPaneCursor(this.lyricSnippetMap, this.lyricSnippetID);
 
   TextPaneCursor defaultCursor(LyricSnippetID lyricSnippetID);
   TextPaneCursor moveUpCursor();
