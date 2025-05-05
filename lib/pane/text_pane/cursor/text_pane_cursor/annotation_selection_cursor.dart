@@ -14,16 +14,18 @@ class AnnotationSelectionCursor extends TextPaneCursor {
   Option option;
 
   AnnotationSelectionCursor(
+    super.lyricSnippetMap,
     super.lyricSnippetID,
-    super.cursorBlinker,
+    super.seekPosition,
     this.segmentRange,
     this.charPosition,
     this.option,
   );
 
   AnnotationSelectionCursor._privateConstructor(
+    super.lyricSnippetMap,
     super.lyricSnippetID,
-    super.cursorBlinker,
+    super.seekPosition,
     this.segmentRange,
     this.charPosition,
     this.option,
@@ -189,7 +191,6 @@ class AnnotationSelectionCursor extends TextPaneCursor {
 
     return this;
   }
-
 
   @override
   List<TextPaneCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {

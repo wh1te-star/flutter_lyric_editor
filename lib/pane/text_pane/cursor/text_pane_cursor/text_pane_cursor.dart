@@ -10,8 +10,9 @@ import 'package:lyric_editor/utility/cursor_blinker.dart';
 abstract class TextPaneCursor {
   LyricSnippetMap lyricSnippetMap;
   LyricSnippetID lyricSnippetID;
+  SeekPosition seekPosition;
 
-  TextPaneCursor(this.lyricSnippetMap, this.lyricSnippetID);
+  TextPaneCursor(this.lyricSnippetMap, this.lyricSnippetID, this.seekPosition);
 
   TextPaneCursor defaultCursor(LyricSnippetID lyricSnippetID);
   TextPaneCursor moveUpCursor();
