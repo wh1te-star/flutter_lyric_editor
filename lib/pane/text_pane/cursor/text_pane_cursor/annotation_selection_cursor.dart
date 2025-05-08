@@ -1,9 +1,11 @@
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
@@ -12,15 +14,6 @@ class AnnotationSelectionCursor extends TextPaneCursor {
   SegmentRange segmentRange;
   InsertionPosition charPosition;
   Option option;
-
-  AnnotationSelectionCursor(
-    super.lyricSnippetMap,
-    super.lyricSnippetID,
-    super.seekPosition,
-    this.segmentRange,
-    this.charPosition,
-    this.option,
-  );
 
   AnnotationSelectionCursor._privateConstructor(
     super.lyricSnippetMap,
@@ -31,8 +24,9 @@ class AnnotationSelectionCursor extends TextPaneCursor {
     this.option,
   );
   static final AnnotationSelectionCursor _empty = AnnotationSelectionCursor._privateConstructor(
+    LyricSnippetMap.empty,
     LyricSnippetID.empty,
-    CursorBlinker.empty,
+    SeekPosition.empty,
     SegmentRange.empty,
     InsertionPosition.empty,
     Option.former,
@@ -42,21 +36,19 @@ class AnnotationSelectionCursor extends TextPaneCursor {
   bool get isNotEmpty => !identical(this, _empty);
 
   AnnotationSelectionCursor({
-    required super.lyricSnippetMap,
-    required super.textPaneCursor,
-    required super.cursorBlinker,
-    required super.seekPosition,
-  }) {
-    assert(textPaneCursor is AnnotationSelectionCursor, "Wrong type textPaneCursor is passed: AnnotationSelectionCursor is expected but ${textPaneCursor.runtimeType} is passed.");
+    required LyricSnippetMap lyricSnippetMap,
+    required LyricSnippetID lyricSnippetID,
+    required SeekPosition seekPosition,
+    required this.segmentRange,
+    required this.charPosition,
+    required this.option,
+  }) : super(lyricSnippetMap, lyricSnippetID, seekPosition) {
     assert(isIDContained(), "The passed lyricSnippetID does not point to a lyric snippet in lyricSnippetMap.");
     assert(doesSeekPositionPointAnnotation(), "The passed seek position does not point to any annotation.");
   }
 
   bool isIDContained() {
-    if (textPaneCursor.isEmpty) {
-      return true;
-    }
-    LyricSnippet? lyricSnippet = lyricSnippetMap[textPaneCursor.lyricSnippetID];
+    LyricSnippet? lyricSnippet = lyricSnippetMap[lyricSnippetID];
     if (lyricSnippet == null) {
       return false;
     }
@@ -64,31 +56,24 @@ class AnnotationSelectionCursor extends TextPaneCursor {
   }
 
   bool doesSeekPositionPointAnnotation() {
-    LyricSnippet lyricSnippet = lyricSnippetMap.getLyricSnippetByID(textPaneCursor.lyricSnippetID);
+    LyricSnippet lyricSnippet = lyricSnippetMap[lyricSnippetID]!;
     SegmentRange annotationSegmentRange = lyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
     return annotationSegmentRange.isNotEmpty;
   }
 
-  factory AnnotationSelectionCursorMover.withDefaultCursor({
+  factory AnnotationSelectionCursor.withDefaultCursor({
     required LyricSnippetMap lyricSnippetMap,
     required LyricSnippetID lyricSnippetID,
     required CursorBlinker cursorBlinker,
     required SeekPosition seekPosition,
   }) {
-    final AnnotationSelectionCursor tempCursor = AnnotationSelectionCursor(
+    return AnnotationSelectionCursor(
       lyricSnippetID,
       cursorBlinker,
       SegmentRange.empty,
       InsertionPosition.empty,
       Option.former,
     );
-    final AnnotationSelectionCursorMover tempMover = AnnotationSelectionCursorMover(
-      lyricSnippetMap: lyricSnippetMap,
-      textPaneCursor: tempCursor,
-      cursorBlinker: cursorBlinker,
-      seekPosition: seekPosition,
-    );
-    return tempMover.copyWith(annotationSelectionCursor: tempMover.defaultCursor(lyricSnippetID));
   }
 
   @override

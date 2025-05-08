@@ -20,7 +20,7 @@ class TextPaneCursorMover {
     required this.cursorBlinker,
   });
 
-  TextPaneCursorMover defaultCursor(LyricSnippetID lyricSnippetID) {}
+  TextPaneCursorMover default(LyricSnippetID lyricSnippetID) {}
 
   TextPaneCursorMover initByCursor(TextPaneCursor cursor) {
     return TextPaneCursorMover(
