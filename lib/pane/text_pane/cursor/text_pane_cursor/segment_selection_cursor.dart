@@ -23,7 +23,7 @@ class SegmentSelectionCursor extends TextPaneCursor {
     required SeekPosition seekPosition,
     required this.segmentRange,
     required this.isRangeSelection,
-  }) {
+  }) : super(lyricSnippetMap, lyricSnippetID, seekPosition) {
     assert(isIDContained(), "The passed lyricSnippetID does not point to a lyric snippet in lyricSnippetMap.");
   }
 
@@ -165,7 +165,7 @@ class SegmentSelectionCursor extends TextPaneCursor {
     );
   }
 
-  TextPaneCursorMover switchToRangeSelection() {
+  TextPaneCursor switchToRangeSelection() {
     bool isRangeSelection = !this.isRangeSelection;
     return copyWith(isRangeSelection: isRangeSelection);
   }

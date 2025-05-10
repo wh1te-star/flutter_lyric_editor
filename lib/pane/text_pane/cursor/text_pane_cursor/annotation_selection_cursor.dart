@@ -1,11 +1,16 @@
+import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
+import 'package:lyric_editor/position/insertion_position_info/sentence_segment_insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/segment_index.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
@@ -61,45 +66,30 @@ class AnnotationSelectionCursor extends TextPaneCursor {
     return annotationSegmentRange.isNotEmpty;
   }
 
-  factory AnnotationSelectionCursor.withDefaultCursor({
+  factory AnnotationSelectionCursor.defaultCursor({
     required LyricSnippetMap lyricSnippetMap,
     required LyricSnippetID lyricSnippetID,
-    required CursorBlinker cursorBlinker,
     required SeekPosition seekPosition,
   }) {
-    return AnnotationSelectionCursor(
-      lyricSnippetID,
-      cursorBlinker,
-      SegmentRange.empty,
-      InsertionPosition.empty,
-      Option.former,
-    );
-  }
-
-  @override
-  AnnotationSelectionCursor defaultCursor(LyricSnippetID lyricSnippetID) {
     LyricSnippet lyricSnippet = lyricSnippetMap.getLyricSnippetByID(lyricSnippetID);
     SegmentRange annotationSegmentRange = lyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
     Annotation annotation = lyricSnippet.annotationMap[annotationSegmentRange]!;
     SentenceSegmentIndex segmentIndex = annotation.getSegmentIndexFromSeekPosition(seekPosition);
 
     return AnnotationSelectionCursor(
-      lyricSnippetID,
-      cursorBlinker,
-      annotationSegmentRange,
-      annotation.timing.leftTimingPoint(segmentIndex).charPosition + 1,
-      Option.former,
+      lyricSnippetMap: lyricSnippetMap,
+      lyricSnippetID: lyricSnippetID,
+      seekPosition: seekPosition,
+      segmentRange: annotationSegmentRange,
+      charPosition: annotation.timing.leftTimingPoint(segmentIndex).charPosition + 1,
+      option: Option.former,
     );
   }
 
   @override
-  TextPaneCursorMover moveUpCursor() {
-    cursorBlinker.restartCursorTimer();
-
-    AnnotationSelectionCursor cursor = textPaneCursor as AnnotationSelectionCursor;
-
+  TextPaneCursor moveUpCursor() {
     int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
-      return id == cursor.lyricSnippetID;
+      return id == lyricSnippetID;
     });
 
     int nextIndex = index - 1;
@@ -108,68 +98,73 @@ class AnnotationSelectionCursor extends TextPaneCursor {
     }
 
     LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[nextIndex];
-    return SentenceSelectionCursorMover.withDefaultCursor(
+    return SentenceSelectionCursor.defaultCursor(
       lyricSnippetMap: lyricSnippetMap,
       lyricSnippetID: nextLyricSnippetID,
-      cursorBlinker: cursorBlinker,
       seekPosition: seekPosition,
     );
   }
 
   @override
-  TextPaneCursorMover moveDownCursor() {
-    cursorBlinker.restartCursorTimer();
+  TextPaneCursor moveDownCursor() {
+    int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
+      return id == lyricSnippetID;
+    });
 
-    return SentenceSelectionCursorMover.withDefaultCursor(
+    int nextIndex = index + 1;
+    if (nextIndex >= lyricSnippetMap.length) {
+      return this;
+    }
+
+    LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[nextIndex];
+    return SentenceSelectionCursor.defaultCursor(
       lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: textPaneCursor.lyricSnippetID,
-      cursorBlinker: cursorBlinker,
+      lyricSnippetID: nextLyricSnippetID,
       seekPosition: seekPosition,
     );
   }
 
   @override
-  TextPaneCursorMover moveLeftCursor() {
+  TextPaneCursor moveLeftCursor() {
     return this;
   }
 
   @override
-  TextPaneCursorMover moveRightCursor() {
+  TextPaneCursor moveRightCursor() {
     return this;
   }
 
   @override
-  TextPaneCursorMover updateCursor(
+  TextPaneCursor updateCursor(
     LyricSnippetMap lyricSnippetMap,
-    CursorBlinker cursorBlinker,
+    LyricSnippetID lyricSnippetID,
     SeekPosition seekPosition,
   ) {
-    cursorBlinker.restartCursorTimer();
-
     if (lyricSnippetMap.isEmpty) {
-      return SentenceSelectionCursorMover(
-        lyricSnippetMap: lyricSnippetMap,
-        textPaneCursor: AnnotationSelectionCursor.empty,
-        cursorBlinker: cursorBlinker,
+      return AnnotationSelectionCursor(
+        lyricSnippetMap: LyricSnippetMap.empty,
+        lyricSnippetID: LyricSnippetID.empty,
         seekPosition: seekPosition,
+        segmentRange: SegmentRange.empty,
+        charPosition: InsertionPosition.empty,
+        option: Option.former,
       );
     }
 
-    LyricSnippetID lyricSnippetID = lyricSnippetMap.keys.first;
+    LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.first;
     LyricSnippet lyricSnippet = lyricSnippetMap.values.first;
-    if (lyricSnippetMap.containsKey(lyricSnippetID)) {
-      lyricSnippetID = textPaneCursor.lyricSnippetID;
-      lyricSnippet = lyricSnippetMap[lyricSnippetID]!;
+    if (lyricSnippetMap.containsKey(nextLyricSnippetID)) {
+      nextLyricSnippetID = lyricSnippetID;
+      lyricSnippet = lyricSnippetMap[nextLyricSnippetID]!;
     }
 
     SentenceSegmentIndex currentSeekSegmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
-    InsertionPositionInfo? nextSnippetPositionInfo = lyricSnippet.getInsertionPositionInfo((textPaneCursor as AnnotationSelectionCursor).charPosition);
+    InsertionPositionInfo? nextSnippetPositionInfo = lyricSnippet.getInsertionPositionInfo(charPosition);
 
     if (nextSnippetPositionInfo == null || nextSnippetPositionInfo is SentenceSegmentInsertionPositionInfo && nextSnippetPositionInfo.sentenceSegmentIndex != currentSeekSegmentIndex) {
-      return SentenceSelectionCursorMover.withDefaultCursor(
+      return AnnotationSelectionCursor.defaultCursor(
         lyricSnippetMap: lyricSnippetMap,
-        lyricSnippetID: lyricSnippetID,
-        cursorBlinker: cursorBlinker,
+        lyricSnippetID: nextLyricSnippetID,
         seekPosition: seekPosition,
       );
     }
@@ -208,18 +203,20 @@ class AnnotationSelectionCursor extends TextPaneCursor {
   }
 
   AnnotationSelectionCursor copyWith({
+    LyricSnippetMap? lyricSnippetMap,
     LyricSnippetID? lyricSnippetID,
-    CursorBlinker? cursorBlinker,
+    SeekPosition? seekPosition,
     SegmentRange? segmentRange,
     InsertionPosition? charPosition,
     Option? option,
   }) {
     return AnnotationSelectionCursor(
-      lyricSnippetID ?? this.lyricSnippetID,
-      cursorBlinker ?? this.cursorBlinker,
-      segmentRange ?? this.segmentRange,
-      charPosition ?? this.charPosition,
-      option ?? this.option,
+      lyricSnippetMap: lyricSnippetMap ?? this.lyricSnippetMap,
+      lyricSnippetID: lyricSnippetID ?? this.lyricSnippetID,
+      seekPosition: seekPosition ?? this.seekPosition,
+      segmentRange: segmentRange ?? this.segmentRange,
+      charPosition: charPosition ?? this.charPosition,
+      option: option ?? this.option,
     );
   }
 
@@ -233,8 +230,9 @@ class AnnotationSelectionCursor extends TextPaneCursor {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
     final AnnotationSelectionCursor otherSentenceSegments = other as AnnotationSelectionCursor;
+    if (lyricSnippetMap != otherSentenceSegments.lyricSnippetMap) return false;
     if (lyricSnippetID != otherSentenceSegments.lyricSnippetID) return false;
-    if (cursorBlinker != otherSentenceSegments.cursorBlinker) return false;
+    if (seekPosition != otherSentenceSegments.seekPosition) return false;
     if (segmentRange != otherSentenceSegments.segmentRange) return false;
     if (charPosition != otherSentenceSegments.charPosition) return false;
     if (option != otherSentenceSegments.option) return false;
@@ -242,5 +240,5 @@ class AnnotationSelectionCursor extends TextPaneCursor {
   }
 
   @override
-  int get hashCode => lyricSnippetID.hashCode ^ cursorBlinker.hashCode ^ segmentRange.hashCode ^ charPosition.hashCode ^ option.hashCode;
+  int get hashCode => lyricSnippetMap.hashCode ^ lyricSnippetID.hashCode ^ seekPosition.hashCode ^ segmentRange.hashCode ^ charPosition.hashCode ^ option.hashCode;
 }

@@ -48,8 +48,11 @@ class SentenceSelectionCursor extends TextPaneCursor {
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
-  @override
-  SentenceSelectionCursor defaultCursor(LyricSnippetID lyricSnippetID) {
+  factory SentenceSelectionCursor.defaultCursor({
+    required LyricSnippetMap lyricSnippetMap,
+    required LyricSnippetID lyricSnippetID,
+    required SeekPosition seekPosition,
+  }) {
     if (lyricSnippetMap.isEmpty) {
       return SentenceSelectionCursor(LyricSnippetMap.empty, LyricSnippetID.empty, SeekPosition.empty, InsertionPosition.empty, Option.former);
     }
@@ -93,7 +96,7 @@ class SentenceSelectionCursor extends TextPaneCursor {
     int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
       return id == lyricSnippetID;
     });
-    if (index <= 0) {
+    if (index >= lyricSnippetMap.length) {
       return this;
     }
 

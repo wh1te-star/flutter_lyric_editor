@@ -14,14 +14,13 @@ abstract class TextPaneCursor {
 
   TextPaneCursor(this.lyricSnippetMap, this.lyricSnippetID, this.seekPosition);
 
-  TextPaneCursor defaultCursor(LyricSnippetID lyricSnippetID);
   TextPaneCursor moveUpCursor();
   TextPaneCursor moveDownCursor();
   TextPaneCursor moveLeftCursor();
   TextPaneCursor moveRightCursor();
   TextPaneCursor updateCursor(
     LyricSnippetMap lyricSnippetMap,
-    CursorBlinker cursorBlinker,
+    LyricSnippetID lyricSnippetID,
     SeekPosition seekPosition,
   );
 }
