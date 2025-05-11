@@ -32,21 +32,21 @@ class SegmentSelectionCursor extends TextPaneCursor {
     super.lyricSnippetID,
     super.seekPosition,
     this.segmentRange,
+    this.isRangeSelection,
   );
   static final SegmentSelectionCursor _empty = SegmentSelectionCursor._privateConstructor(
+    LyricSnippetMap.empty,
     LyricSnippetID.empty,
-    CursorBlinker.empty,
+    SeekPosition.empty,
     SegmentRange.empty,
+    false,
   );
   static SegmentSelectionCursor get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
   bool isIDContained() {
-    if (textPaneCursor.isEmpty) {
-      return true;
-    }
-    LyricSnippet? lyricSnippet = lyricSnippetMap[textPaneCursor.lyricSnippetID];
+    LyricSnippet? lyricSnippet = lyricSnippetMap[lyricSnippetID];
     if (lyricSnippet == null) {
       return false;
     }
@@ -57,7 +57,13 @@ class SegmentSelectionCursor extends TextPaneCursor {
   SegmentSelectionCursor defaultCursor(LyricSnippetID lyricSnippetID) {
     LyricSnippet lyricSnippet = lyricSnippetMap.getLyricSnippetByID(lyricSnippetID);
     SentenceSegmentIndex segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
-    return SegmentSelectionCursor(textPaneCursor.lyricSnippetID, cursorBlinker, SegmentRange(segmentIndex, segmentIndex));
+    return SegmentSelectionCursor(
+      lyricSnippetMap: lyricSnippetMap,
+      lyricSnippetID: lyricSnippetID,
+      seekPosition: seekPosition,
+      segmentRange: SegmentRange(segmentIndex, segmentIndex),
+      isRangeSelection: isRangeSelection,
+    );
   }
 
   @override
@@ -145,7 +151,7 @@ class SegmentSelectionCursor extends TextPaneCursor {
   @override
   TextPaneCursor updateCursor(
     LyricSnippetMap lyricSnippetMap,
-    CursorBlinker cursorBlinker,
+    LyricSnippetID lyricSnippetID,
     SeekPosition seekPosition,
   ) {
     return SegmentSelectionCursor(
@@ -158,7 +164,7 @@ class SegmentSelectionCursor extends TextPaneCursor {
   }
 
   TextPaneCursor exitSegmentSelectionMode() {
-    return SentenceSelectionCursorMover.defaultCursor(
+    return SentenceSelectionCursor.defaultCursor(
       lyricSnippetMap: lyricSnippetMap,
       lyricSnippetID: lyricSnippetID,
       seekPosition: seekPosition,
