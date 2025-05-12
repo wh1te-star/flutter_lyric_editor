@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/segment_selection_cursor_mover.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/sentence_selection_cursor_mover.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_controller.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
@@ -19,7 +18,7 @@ final textPaneMasterProvider = ChangeNotifierProvider((ref) {
 class TextPaneProvider with ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
   final TimingService timingService;
-  late TextPaneCursorController textPaneCursorMover;
+  late TextPaneCursorController textPaneCursorController;
   late CursorBlinker cursorBlinker;
 
   TextPaneProvider({
@@ -32,79 +31,62 @@ class TextPaneProvider with ChangeNotifier {
         notifyListeners();
       },
     );
-    textPaneCursorMover = SentenceSelectionCursorMover.withDefaultCursor(
-      lyricSnippetMap: timingService.getSnippetsAtSeekPosition(),
-      lyricSnippetID: LyricSnippetID.empty,
-      cursorBlinker: cursorBlinker,
-      seekPosition: musicPlayerProvider.seekPosition,
-    );
+    textPaneCursorController = TextPaneCursorController.empty;
 
     musicPlayerProvider.addListener(() {
       LyricSnippetMap lyricSnippetMap = timingService.getSnippetsAtSeekPosition();
       SeekPosition seekPosition = musicPlayerProvider.seekPosition;
-      textPaneCursorMover = textPaneCursorMover.updateCursor(lyricSnippetMap, cursorBlinker, seekPosition);
+      textPaneCursorController = textPaneCursorController.updateCursor(lyricSnippetMap, seekPosition);
 
-      textPaneCursorMover.cursorBlinker.restartCursorTimer();
       notifyListeners();
     });
 
     timingService.addListener(() {
       LyricSnippetMap lyricSnippetMap = timingService.getSnippetsAtSeekPosition();
       SeekPosition seekPosition = musicPlayerProvider.seekPosition;
-      textPaneCursorMover = textPaneCursorMover.updateCursor(lyricSnippetMap, cursorBlinker, seekPosition);
+      textPaneCursorController = textPaneCursorController.updateCursor(lyricSnippetMap, seekPosition);
 
-      textPaneCursorMover.cursorBlinker.restartCursorTimer();
       notifyListeners();
     });
   }
 
   void moveUpCursor() {
-    textPaneCursorMover = textPaneCursorMover.moveUpCursor();
-    debugPrint("${textPaneCursorMover.textPaneCursor}");
+    textPaneCursorController = textPaneCursorController.moveUpCursor();
+    debugPrint("${textPaneCursorController.textPaneCursor}");
 
-    textPaneCursorMover.cursorBlinker.restartCursorTimer();
     notifyListeners();
   }
 
   void moveDownCursor() {
-    textPaneCursorMover = textPaneCursorMover.moveDownCursor();
-    debugPrint("${textPaneCursorMover.textPaneCursor}");
+    textPaneCursorController = textPaneCursorController.moveDownCursor();
+    debugPrint("${textPaneCursorController.textPaneCursor}");
 
-    textPaneCursorMover.cursorBlinker.restartCursorTimer();
     notifyListeners();
   }
 
   void moveLeftCursor() {
-    textPaneCursorMover = textPaneCursorMover.moveLeftCursor();
-    debugPrint("${textPaneCursorMover.textPaneCursor}");
+    textPaneCursorController = textPaneCursorController.moveLeftCursor();
+    debugPrint("${textPaneCursorController.textPaneCursor}");
 
-    textPaneCursorMover.cursorBlinker.restartCursorTimer();
     notifyListeners();
   }
 
   void moveRightCursor() {
-    textPaneCursorMover = textPaneCursorMover.moveRightCursor();
-    debugPrint("${textPaneCursorMover.textPaneCursor}");
+    textPaneCursorController = textPaneCursorController.moveRightCursor();
+    debugPrint("${textPaneCursorController.textPaneCursor}");
 
-    textPaneCursorMover.cursorBlinker.restartCursorTimer();
     notifyListeners();
   }
 
   void enterSegmentSelectionMode() {
-    assert(textPaneCursorMover is SentenceSelectionCursorMover, "This is an unexpected call. The cursor type must be SentenceSelectionCursorMover, but is ${textPaneCursorMover.runtimeType}");
-    SentenceSelectionCursorMover cursorMover = textPaneCursorMover as SentenceSelectionCursorMover;
-    textPaneCursorMover = cursorMover.enterSegmentSelectionMode();
+    textPaneCursorController = textPaneCursorController.enterSegmentSelectionMode();
   }
 
   void exitSegmentSelectionMode() {
-    assert(textPaneCursorMover is SegmentSelectionCursorMover, "This is an unexpected call. The cursor type must be SegmentSelectionCursorMover, but is ${textPaneCursorMover.runtimeType}");
-    SegmentSelectionCursorMover cursorMover = textPaneCursorMover as SegmentSelectionCursorMover;
-    textPaneCursorMover = cursorMover.exitSegmentSelectionMode();
+    textPaneCursorController = textPaneCursorController.exitSegmentSelectionMode();
   }
 
   void switchToRangeSelection() {
-    assert(textPaneCursorMover is SegmentSelectionCursorMover, "This is an unexpected call. The cursor type must be SegmentSelectionCursorMover, but is ${textPaneCursorMover.runtimeType}");
-    SegmentSelectionCursorMover cursorMover = textPaneCursorMover as SegmentSelectionCursorMover;
-    textPaneCursorMover = cursorMover.switchToRangeSelection();
+    textPaneCursorController = textPaneCursorController.switchToRangeSelection();
   }
 }

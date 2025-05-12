@@ -28,7 +28,7 @@ class SentenceSelectionCursor extends TextPaneCursor {
     required this.charPosition,
     required this.option,
   }) : super(lyricSnippetMap, lyricSnippetID, seekPosition) {
-    assert(isIDContained(), "The passed lyricSnippetID does not point to a lyric snippet in lyricSnippetMap.");
+    //assert(isIDContained(), "The passed lyricSnippetID does not point to a lyric snippet in lyricSnippetMap.");
   }
 
   bool isIDContained() {

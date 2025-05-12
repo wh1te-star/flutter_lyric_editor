@@ -58,7 +58,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
           child: EditColumn(
             timingService.getSnippetsAtSeekPosition(),
             musicPlayerService.seekPosition,
-            textPaneProvider.textPaneCursorMover,
+            textPaneProvider.textPaneCursorController,
             textPaneProvider.cursorBlinker,
           ),
         ),
