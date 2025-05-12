@@ -31,7 +31,13 @@ class TextPaneProvider with ChangeNotifier {
         notifyListeners();
       },
     );
-    textPaneCursorController = TextPaneCursorController.empty;
+    textPaneCursorController = TextPaneCursorController(
+      lyricSnippetMap: LyricSnippetMap.empty,
+      lyricSnippetID: LyricSnippetID.empty,
+      textPaneCursor: SentenceSelectionCursor.empty,
+      seekPosition: musicPlayerProvider.seekPosition,
+      cursorBlinker: cursorBlinker,
+    );
 
     musicPlayerProvider.addListener(() {
       LyricSnippetMap lyricSnippetMap = timingService.getSnippetsAtSeekPosition();
