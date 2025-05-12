@@ -5,11 +5,12 @@ import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dar
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pane_list_cursor.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_index.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 
-class SegmentSelectionCursor extends TextPaneCursor {
+class SegmentSelectionListCursor extends TextPaneListCursor {
   SegmentRange segmentRange;
   bool isRangeSelection = false;
 

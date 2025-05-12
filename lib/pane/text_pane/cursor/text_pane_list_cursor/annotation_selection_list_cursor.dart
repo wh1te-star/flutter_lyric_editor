@@ -15,7 +15,7 @@ import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
-class AnnotationSelectionCursor extends TextPaneCursor {
+class AnnotationSelectionListCursor extends TextPaneListCursor {
   SegmentRange segmentRange;
   InsertionPosition charPosition;
   Option option;

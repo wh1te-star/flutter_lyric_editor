@@ -7,6 +7,7 @@ import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/annotation_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/segment_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pane_list_cursor.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
 import 'package:lyric_editor/position/insertion_position_info/sentence_segment_insertion_position_info.dart';
@@ -17,7 +18,7 @@ import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/position/timing_point_index.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 
-class SentenceSelectionCursor extends TextPaneCursor {
+class SentenceSelectionListCursor extends TextPaneListCursor {
   InsertionPosition charPosition;
   Option option;
 
