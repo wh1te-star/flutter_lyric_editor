@@ -4,7 +4,7 @@ import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/segment_selection_cursor_mover.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/sentence_selection_cursor_mover.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_mover.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_controller.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
@@ -19,7 +19,7 @@ final textPaneMasterProvider = ChangeNotifierProvider((ref) {
 class TextPaneProvider with ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
   final TimingService timingService;
-  late TextPaneCursorMover textPaneCursorMover;
+  late TextPaneCursorController textPaneCursorMover;
   late CursorBlinker cursorBlinker;
 
   TextPaneProvider({

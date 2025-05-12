@@ -17,7 +17,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/annotation_s
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/segment_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_mover.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_controller.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
@@ -74,7 +74,7 @@ void main() {
       );
     }
 
-    void failedMessage(int index, TextPaneCursorMover actual, TextPaneCursor expected, bool reverse) {
+    void failedMessage(int index, TextPaneCursorController actual, TextPaneCursor expected, bool reverse) {
       SentenceSelectionCursor resultCursor = actual.textPaneCursor as SentenceSelectionCursor;
       SentenceSelectionCursor expectedCursor = expected as SentenceSelectionCursor;
       String order = reverse ? "backward" : "forward";
@@ -90,7 +90,7 @@ void main() {
       return resultCursor == expectedCursor;
     }
 
-    bool checkCursor(TextPaneCursorMover result, int index, List<PositionTestInfo> expectedMovement, bool reverse) {
+    bool checkCursor(TextPaneCursorController result, int index, List<PositionTestInfo> expectedMovement, bool reverse) {
       SentenceSelectionCursor expectedCursor = constructCursor(expectedMovement[index]);
       if (reverse) {
         result = result.moveLeftCursor();
@@ -109,8 +109,8 @@ void main() {
       return true;
     }
 
-    bool cursorMovementMatcher(TextPaneCursorMover initialMover, List<PositionTestInfo> expectedMovement) {
-      TextPaneCursorMover result = initialMover;
+    bool cursorMovementMatcher(TextPaneCursorController initialMover, List<PositionTestInfo> expectedMovement) {
+      TextPaneCursorController result = initialMover;
       for (int index = 1; index < expectedMovement.length; index++) {
         bool success = checkCursor(result, index, expectedMovement, false);
         if (!success) return false;

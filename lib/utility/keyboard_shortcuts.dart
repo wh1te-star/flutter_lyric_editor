@@ -10,7 +10,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/segment_sele
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/sentence_selection_cursor_mover.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_mover.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_controller.dart';
 import 'package:lyric_editor/pane/text_pane/text_pane_provider.dart';
 import 'package:lyric_editor/pane/video_pane/video_pane_provider.dart';
 import 'package:lyric_editor/position/seek_position.dart';
@@ -177,7 +177,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         AddAnnotationIntent: CallbackAction<AddAnnotationIntent>(
           onInvoke: (AddAnnotationIntent intent) => () async {
-            TextPaneCursorMover cursorMover = textPaneProvider.textPaneCursorMover;
+            TextPaneCursorController cursorMover = textPaneProvider.textPaneCursorMover;
             assert(cursorMover is SegmentSelectionCursorMover, "An unintended error occurred when adding an annotation. The cursor type must be segment type.");
 
             SegmentSelectionCursor cursor = cursorMover.textPaneCursor as SegmentSelectionCursor;
@@ -291,7 +291,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         TimingPointAddIntent: CallbackAction<TimingPointAddIntent>(
           onInvoke: (TimingPointAddIntent intent) => () {
             SeekPosition seekPosition = musicPlayerProvider.seekPosition;
-            TextPaneCursorMover cursorMover = textPaneProvider.textPaneCursorMover;
+            TextPaneCursorController cursorMover = textPaneProvider.textPaneCursorMover;
             if (cursorMover is SentenceSelectionCursorMover) {
               SentenceSelectionCursorMover sentenceSelectionCursorMover = cursorMover;
               SentenceSelectionCursor selectionCursor = sentenceSelectionCursorMover.textPaneCursor as SentenceSelectionCursor;
@@ -316,7 +316,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         TimingPointDeleteIntent: CallbackAction<TimingPointDeleteIntent>(
           onInvoke: (TimingPointDeleteIntent intent) => () {
             for (var id in timelinePaneProvider.selectingSnippets) {
-              TextPaneCursorMover cursorMover = textPaneProvider.textPaneCursorMover;
+              TextPaneCursorController cursorMover = textPaneProvider.textPaneCursorMover;
               if (cursorMover is SentenceSelectionCursorMover) {
                 SentenceSelectionCursorMover sentenceSelectionCursorMover = cursorMover;
                 SentenceSelectionCursor selectionCursor = sentenceSelectionCursorMover.textPaneCursor as SentenceSelectionCursor;
@@ -341,7 +341,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         SnippetDivideIntent: CallbackAction<SnippetDivideIntent>(
           onInvoke: (SnippetDivideIntent intent) => () {
-            TextPaneCursorMover cursorMover = textPaneProvider.textPaneCursorMover;
+            TextPaneCursorController cursorMover = textPaneProvider.textPaneCursorMover;
             if (cursorMover is SentenceSelectionCursorMover) {
               SentenceSelectionCursorMover sentenceSelectionCursorMover = cursorMover;
               SentenceSelectionCursor selectionCursor = sentenceSelectionCursorMover.textPaneCursor as SentenceSelectionCursor;
