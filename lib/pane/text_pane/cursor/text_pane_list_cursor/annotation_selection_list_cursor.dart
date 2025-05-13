@@ -90,7 +90,7 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
   }
 
   @override
-  TextPaneCursor moveUpCursor() {
+  TextPaneListCursor moveUpCursor() {
     int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
       return id == lyricSnippetID;
     });
@@ -109,7 +109,7 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
   }
 
   @override
-  TextPaneCursor moveDownCursor() {
+  TextPaneListCursor moveDownCursor() {
     int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
       return id == lyricSnippetID;
     });
@@ -128,17 +128,17 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
   }
 
   @override
-  TextPaneCursor moveLeftCursor() {
+  TextPaneListCursor moveLeftCursor() {
     return this;
   }
 
   @override
-  TextPaneCursor moveRightCursor() {
+  TextPaneListCursor moveRightCursor() {
     return this;
   }
 
   @override
-  TextPaneCursor updateCursor(
+  TextPaneListCursor updateCursor(
     LyricSnippetMap lyricSnippetMap,
     LyricSnippetID lyricSnippetID,
     SeekPosition seekPosition,
@@ -176,7 +176,7 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
   }
 
   @override
-  List<TextPaneCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
+  List<TextPaneListCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
     List<AnnotationSelectionCursor?> separatedCursors = List.filled(rangeList.length, null);
     AnnotationSelectionCursor cursor = copyWith();
     for (int index = 0; index < rangeList.length; index++) {
@@ -190,7 +190,7 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
   }
 
   @override
-  List<TextPaneCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList) {
+  List<TextPaneListCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList) {
     List<AnnotationSelectionCursor?> separatedCursors = List.filled(sentenceSegmentList.length, null);
     return separatedCursors;
   }

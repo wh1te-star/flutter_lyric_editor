@@ -9,7 +9,7 @@ import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 class SentenceSegmentListEdit extends StatelessWidget {
   final SentenceSegmentList sentenceSegmentList;
-  final TextPaneCursor? textPaneCursor;
+  final TextPaneListCursor? textPaneCursor;
   final CursorBlinker? cursorBlinker;
 
   const SentenceSegmentListEdit({
@@ -22,14 +22,14 @@ class SentenceSegmentListEdit extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Widget> editWidgets = [];
     List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
-    List<TextPaneCursor?> cursorList = List.filled(sentenceSegmentList.length, null);
+    List<TextPaneListCursor?> cursorList = List.filled(sentenceSegmentList.length, null);
     if (textPaneCursor != null) {
       cursorList = textPaneCursor!.getSegmentDividedCursors(sentenceSegmentList);
     }
 
     for (int index = 0; index < sentenceSegments.length; index++) {
       SentenceSegment sentenceSegment = sentenceSegments[index];
-      TextPaneCursor? segmentCursor = cursorList[index];
+      TextPaneListCursor? segmentCursor = cursorList[index];
 
       bool isTimingPointPosition = false;
       if (segmentCursor is SentenceSelectionCursor && segmentCursor.charPosition.position == 0) {

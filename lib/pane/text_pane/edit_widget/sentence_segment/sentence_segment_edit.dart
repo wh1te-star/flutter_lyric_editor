@@ -7,7 +7,7 @@ import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 class SentenceSegmentEdit extends StatelessWidget {
   final SentenceSegment sentenceSegment;
-  final TextPaneCursor? textPaneCursor;
+  final TextPaneListCursor? textPaneCursor;
   final CursorBlinker? cursorBlinker;
 
   final double cursorWidth = 1.0;

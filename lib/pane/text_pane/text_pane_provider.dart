@@ -34,7 +34,7 @@ class TextPaneProvider with ChangeNotifier {
     textPaneCursorController = TextPaneCursorController(
       lyricSnippetMap: LyricSnippetMap.empty,
       lyricSnippetID: LyricSnippetID.empty,
-      textPaneCursor: SentenceSelectionCursor.empty,
+      textPaneListCursor: SentenceSelectionCursor.empty,
       seekPosition: musicPlayerProvider.seekPosition,
       cursorBlinker: cursorBlinker,
     );
@@ -58,28 +58,28 @@ class TextPaneProvider with ChangeNotifier {
 
   void moveUpCursor() {
     textPaneCursorController = textPaneCursorController.moveUpCursor();
-    debugPrint("${textPaneCursorController.textPaneCursor}");
+    debugPrint("${textPaneCursorController.textPaneListCursor}");
 
     notifyListeners();
   }
 
   void moveDownCursor() {
     textPaneCursorController = textPaneCursorController.moveDownCursor();
-    debugPrint("${textPaneCursorController.textPaneCursor}");
+    debugPrint("${textPaneCursorController.textPaneListCursor}");
 
     notifyListeners();
   }
 
   void moveLeftCursor() {
     textPaneCursorController = textPaneCursorController.moveLeftCursor();
-    debugPrint("${textPaneCursorController.textPaneCursor}");
+    debugPrint("${textPaneCursorController.textPaneListCursor}");
 
     notifyListeners();
   }
 
   void moveRightCursor() {
     textPaneCursorController = textPaneCursorController.moveRightCursor();
-    debugPrint("${textPaneCursorController.textPaneCursor}");
+    debugPrint("${textPaneCursorController.textPaneListCursor}");
 
     notifyListeners();
   }

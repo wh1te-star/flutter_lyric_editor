@@ -67,7 +67,7 @@ class SegmentSelectionListCursor extends TextPaneListCursor {
   }
 
   @override
-  TextPaneCursor moveUpCursor() {
+  TextPaneListCursor moveUpCursor() {
     int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
       return id == lyricSnippetID;
     });
@@ -80,7 +80,7 @@ class SegmentSelectionListCursor extends TextPaneListCursor {
   }
 
   @override
-  TextPaneCursor moveDownCursor() {
+  TextPaneListCursor moveDownCursor() {
     int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
       return id == lyricSnippetID;
     });
@@ -93,7 +93,7 @@ class SegmentSelectionListCursor extends TextPaneListCursor {
   }
 
   @override
-  TextPaneCursor moveLeftCursor() {
+  TextPaneListCursor moveLeftCursor() {
     SegmentRange nextSegmentRange = segmentRange.copyWith();
 
     if (!isRangeSelection) {
@@ -125,7 +125,7 @@ class SegmentSelectionListCursor extends TextPaneListCursor {
   }
 
   @override
-  TextPaneCursor moveRightCursor() {
+  TextPaneListCursor moveRightCursor() {
     SegmentRange nextSegmentRange = segmentRange.copyWith();
 
     SentenceSegmentIndex currentIndex = segmentRange.endIndex;
@@ -149,7 +149,7 @@ class SegmentSelectionListCursor extends TextPaneListCursor {
   }
 
   @override
-  TextPaneCursor updateCursor(
+  TextPaneListCursor updateCursor(
     LyricSnippetMap lyricSnippetMap,
     LyricSnippetID lyricSnippetID,
     SeekPosition seekPosition,
@@ -163,7 +163,7 @@ class SegmentSelectionListCursor extends TextPaneListCursor {
     );
   }
 
-  TextPaneCursor exitSegmentSelectionMode() {
+  TextPaneListCursor exitSegmentSelectionMode() {
     return SentenceSelectionCursor.defaultCursor(
       lyricSnippetMap: lyricSnippetMap,
       lyricSnippetID: lyricSnippetID,
@@ -171,13 +171,13 @@ class SegmentSelectionListCursor extends TextPaneListCursor {
     );
   }
 
-  TextPaneCursor switchToRangeSelection() {
+  TextPaneListCursor switchToRangeSelection() {
     bool isRangeSelection = !this.isRangeSelection;
     return copyWith(isRangeSelection: isRangeSelection);
   }
 
   @override
-  List<TextPaneCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
+  List<TextPaneListCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
     SegmentSelectionCursor cursor = copyWith();
     List<SegmentSelectionCursor?> separatedCursors = List.filled(rangeList.length, null);
 
@@ -211,7 +211,7 @@ class SegmentSelectionListCursor extends TextPaneListCursor {
   }
 
   @override
-  List<TextPaneCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList) {
+  List<TextPaneListCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList) {
     SegmentSelectionCursor cursor = copyWith();
     List<SegmentSelectionCursor?> separatedCursors = List.filled(sentenceSegmentList.length, null);
     SegmentSelectionCursor initialCursor = SegmentSelectionCursor(

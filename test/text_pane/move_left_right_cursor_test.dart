@@ -74,8 +74,8 @@ void main() {
       );
     }
 
-    void failedMessage(int index, TextPaneCursorController actual, TextPaneCursor expected, bool reverse) {
-      SentenceSelectionCursor resultCursor = actual.textPaneCursor as SentenceSelectionCursor;
+    void failedMessage(int index, TextPaneCursorController actual, TextPaneListCursor expected, bool reverse) {
+      SentenceSelectionCursor resultCursor = actual.textPaneListCursor as SentenceSelectionCursor;
       SentenceSelectionCursor expectedCursor = expected as SentenceSelectionCursor;
       String order = reverse ? "backward" : "forward";
       debugPrint('Test failed at the $order iteration ${index + 1}:');
