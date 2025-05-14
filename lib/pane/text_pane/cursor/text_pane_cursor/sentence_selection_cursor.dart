@@ -4,6 +4,7 @@ import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart'
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
 import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/segment_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pane_list_cursor.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
@@ -17,20 +18,20 @@ import 'package:lyric_editor/position/timing_point_index.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 
 class SentenceSelectionCursor extends TextPaneCursor {
-  InsertionPosition charPosition;
+  InsertionPosition insertionPosition;
   Option option;
 
   SentenceSelectionCursor({
     required LyricSnippet lyricSnippet,
     required SeekPosition seekPosition,
-    required this.charPosition,
+    required this.insertionPosition,
     required this.option,
   }) : super(lyricSnippet, seekPosition);
 
   SentenceSelectionCursor._privateConstructor(
     super.lyricSnippet,
     super.seekPosition,
-    this.charPosition,
+    this.insertionPosition,
     this.option,
   );
   static final SentenceSelectionCursor _empty = SentenceSelectionCursor._privateConstructor(
@@ -52,14 +53,13 @@ class SentenceSelectionCursor extends TextPaneCursor {
     return SentenceSelectionCursor(
       lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
-      charPosition: charPosition,
+      insertionPosition: charPosition,
       option: Option.former,
     );
   }
 
   @override
-  TextPaneListCursor moveLeftCursor() {
-    InsertionPosition insertionPosition = charPosition;
+  TextPaneCursor moveLeftCursor() {
     InsertionPositionInfo? insertionPositionInfo = lyricSnippet.getInsertionPositionInfo(insertionPosition);
     assert(insertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
 
@@ -82,7 +82,7 @@ class SentenceSelectionCursor extends TextPaneCursor {
       TimingPointIndex rightTimingPointIndex = lyricSnippet.timing.rightTimingPointIndex(highlightSegmentIndex);
       TimingPointIndex timingPointIndex = insertionPositionInfo.timingPointIndex;
       if (timingPointIndex == rightTimingPointIndex) {
-        nextInsertionPosition = charPosition - 1;
+        nextInsertionPosition = insertionPosition - 1;
       } else {
         if (timingPointIndex.index - 1 <= 0) {
           return this;
@@ -95,22 +95,21 @@ class SentenceSelectionCursor extends TextPaneCursor {
     InsertionPositionInfo? nextInsertionPositionInfo = lyricSnippet.getInsertionPositionInfo(nextInsertionPosition);
     assert(nextInsertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
     if (nextInsertionPositionInfo is SentenceSegmentInsertionPositionInfo) {
-      return copyWith(charPosition: nextInsertionPosition, option: Option.segment);
+      return copyWith(insertionPosition: nextInsertionPosition, option: Option.segment);
     }
     if (nextInsertionPositionInfo is TimingPointInsertionPositionInfo) {
       Option nextOption = Option.former;
       if (nextInsertionPositionInfo.duplicate) {
         nextOption = Option.latter;
       }
-      return copyWith(charPosition: nextInsertionPosition, option: nextOption);
+      return copyWith(insertionPosition: nextInsertionPosition, option: nextOption);
     }
 
     return this;
   }
 
   @override
-  TextPaneListCursor moveRightCursor() {
-    InsertionPosition insertionPosition = charPosition;
+  TextPaneCursor moveRightCursor() {
     InsertionPositionInfo? insertionPositionInfo = lyricSnippet.getInsertionPositionInfo(insertionPosition);
     assert(insertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
 
@@ -134,7 +133,7 @@ class SentenceSelectionCursor extends TextPaneCursor {
       TimingPointIndex timingPointIndex = insertionPositionInfo.timingPointIndex;
       if (insertionPositionInfo.duplicate) timingPointIndex = timingPointIndex + 1;
       if (timingPointIndex == leftTimingPointIndex) {
-        nextInsertionPosition = charPosition + 1;
+        nextInsertionPosition = insertionPosition + 1;
       } else {
         TimingPointIndex nextTimingPointIndex = timingPointIndex + 1;
         if (nextTimingPointIndex.index >= lyricSnippet.timingPoints.length - 1) {
@@ -148,50 +147,33 @@ class SentenceSelectionCursor extends TextPaneCursor {
     InsertionPositionInfo? nextInsertionPositionInfo = lyricSnippet.getInsertionPositionInfo(nextInsertionPosition);
     assert(nextInsertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
     if (nextInsertionPositionInfo is SentenceSegmentInsertionPositionInfo) {
-      return copyWith(charPosition: nextInsertionPosition, option: Option.segment);
+      return copyWith(insertionPosition: nextInsertionPosition, option: Option.segment);
     }
     if (nextInsertionPositionInfo is TimingPointInsertionPositionInfo) {
-      return copyWith(charPosition: nextInsertionPosition, option: Option.former);
+      return copyWith(insertionPosition: nextInsertionPosition, option: Option.former);
     }
 
     return this;
   }
 
   @override
-  TextPaneListCursor updateCursor(
-    LyricSnippetMap lyricSnippetMap,
-    LyricSnippetID lyricSnippetID,
+  TextPaneCursor updateCursor(
+    LyricSnippet lyricSnippet,
     SeekPosition seekPosition,
   ) {
-    if (lyricSnippetMap.isEmpty) {
-      return SentenceSelectionCursor(
-        lyricSnippetMap: LyricSnippetMap.empty,
-        lyricSnippetID: LyricSnippetID.empty,
-        seekPosition: seekPosition,
-        charPosition: InsertionPosition.empty,
-        option: Option.former,
-      );
-    }
-
-    if (!lyricSnippetMap.containsKey(lyricSnippetID)) {
-      lyricSnippetID = lyricSnippetMap.keys.first;
-    }
-    LyricSnippet lyricSnippet = lyricSnippetMap[lyricSnippetID]!;
     SentenceSegmentIndex currentSeekSegmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
-    InsertionPositionInfo? nextSnippetPositionInfo = lyricSnippet.getInsertionPositionInfo(charPosition);
+    InsertionPositionInfo? nextSnippetPositionInfo = lyricSnippet.getInsertionPositionInfo(insertionPosition);
     if (nextSnippetPositionInfo == null || nextSnippetPositionInfo is SentenceSegmentInsertionPositionInfo && nextSnippetPositionInfo.sentenceSegmentIndex != currentSeekSegmentIndex) {
       return SentenceSelectionCursor.defaultCursor(
-        lyricSnippetMap: lyricSnippetMap,
-        lyricSnippetID: lyricSnippetID,
+        lyricSnippet: lyricSnippet,
         seekPosition: seekPosition,
       );
     }
 
     return SentenceSelectionCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
-      charPosition: charPosition,
+      insertionPosition: insertionPosition,
       option: option,
     );
   }
@@ -207,24 +189,22 @@ class SentenceSelectionCursor extends TextPaneCursor {
   }
 
   SentenceSelectionCursor copyWith({
-    LyricSnippetMap? lyricSnippetMap,
-    LyricSnippetID? lyricSnippetID,
+    LyricSnippet? lyricSnippet,
     SeekPosition? seekPosition,
-    InsertionPosition? charPosition,
+    InsertionPosition? insertionPosition,
     Option? option,
   }) {
     return SentenceSelectionCursor(
-      lyricSnippetMap: lyricSnippetMap ?? this.lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID ?? this.lyricSnippetID,
+      lyricSnippet: lyricSnippet ?? this.lyricSnippet,
       seekPosition: seekPosition ?? this.seekPosition,
-      charPosition: charPosition ?? this.charPosition,
+      insertionPosition: insertionPosition ?? this.insertionPosition,
       option: option ?? this.option,
     );
   }
 
   @override
   String toString() {
-    return 'SentenceSelectionCursor(ID: ${lyricSnippetID.id}, position: ${charPosition.position}, option: $option)';
+    return 'SentenceSelectionCursor(position: ${insertionPosition.position}, option: $option)';
   }
 
   @override
@@ -232,14 +212,13 @@ class SentenceSelectionCursor extends TextPaneCursor {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
     final SentenceSelectionCursor otherSentenceSegments = other as SentenceSelectionCursor;
-    if (lyricSnippetMap != otherSentenceSegments.lyricSnippetMap) return false;
-    if (lyricSnippetID != otherSentenceSegments.lyricSnippetID) return false;
+    if (lyricSnippet != otherSentenceSegments.lyricSnippet) return false;
     if (seekPosition != otherSentenceSegments.seekPosition) return false;
-    if (charPosition != otherSentenceSegments.charPosition) return false;
+    if (insertionPosition != otherSentenceSegments.insertionPosition) return false;
     if (option != otherSentenceSegments.option) return false;
     return true;
   }
 
   @override
-  int get hashCode => lyricSnippetMap.hashCode ^ lyricSnippetID.hashCode ^ seekPosition.hashCode ^ charPosition.hashCode ^ option.hashCode;
+  int get hashCode => lyricSnippet.hashCode ^ seekPosition.hashCode ^ insertionPosition.hashCode ^ option.hashCode;
 }

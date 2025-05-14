@@ -79,8 +79,8 @@ void main() {
       SentenceSelectionCursor expectedCursor = expected as SentenceSelectionCursor;
       String order = reverse ? "backward" : "forward";
       debugPrint('Test failed at the $order iteration ${index + 1}:');
-      debugPrint('Expected cursor position: ${expectedCursor.charPosition}, option: ${expectedCursor.option}');
-      debugPrint('But the actual cursor position: ${resultCursor.charPosition}, option: ${resultCursor.option}');
+      debugPrint('Expected cursor position: ${expectedCursor.insertionPosition}, option: ${expectedCursor.option}');
+      debugPrint('But the actual cursor position: ${resultCursor.insertionPosition}, option: ${resultCursor.option}');
     }
 
     bool cursorMatcher(SentenceSelectionCursorMover result, SentenceSelectionCursor expectedCursor) {
@@ -105,7 +105,7 @@ void main() {
       }
 
       SentenceSelectionCursor resultCursor = result.textPaneCursor as SentenceSelectionCursor;
-      debugPrint("movement: pos=${resultCursor.charPosition}, option=${resultCursor.option}");
+      debugPrint("movement: pos=${resultCursor.insertionPosition}, option=${resultCursor.option}");
       return true;
     }
 

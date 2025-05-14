@@ -32,7 +32,7 @@ class SentenceSegmentListEdit extends StatelessWidget {
       TextPaneListCursor? segmentCursor = cursorList[index];
 
       bool isTimingPointPosition = false;
-      if (segmentCursor is SentenceSelectionCursor && segmentCursor.charPosition.position == 0) {
+      if (segmentCursor is SentenceSelectionCursor && segmentCursor.insertionPosition.position == 0) {
         isTimingPointPosition = true;
       }
 

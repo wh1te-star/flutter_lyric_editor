@@ -292,7 +292,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             if (cursor is SentenceSelectionCursor) {
               timingService.addTimingPoint(
                 cursor.lyricSnippetID,
-                cursor.charPosition,
+                cursor.insertionPosition,
                 seekPosition,
               );
             }
@@ -313,7 +313,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
               if (cursor is SentenceSelectionCursor) {
                 timingService.removeTimingPoint(
                   id,
-                  cursor.charPosition,
+                  cursor.insertionPosition,
                   cursor.option,
                 );
               }
@@ -332,7 +332,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
           onInvoke: (SnippetDivideIntent intent) => () {
             TextPaneListCursor cursor = textPaneProvider.textPaneCursorController.textPaneListCursor;
             if (cursor is SentenceSelectionCursor) {
-              timingService.divideSnippet(timelinePaneProvider.selectingSnippets[0], cursor.charPosition, musicPlayerProvider.seekPosition);
+              timingService.divideSnippet(timelinePaneProvider.selectingSnippets[0], cursor.insertionPosition, musicPlayerProvider.seekPosition);
             }
           }(),
         ),
