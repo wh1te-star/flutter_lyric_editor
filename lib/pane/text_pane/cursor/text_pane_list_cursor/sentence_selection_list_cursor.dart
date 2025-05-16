@@ -160,7 +160,14 @@ class SentenceSelectionListCursor extends TextPaneListCursor {
 
   @override
   TextPaneListCursor moveRightCursor() {
-    return sentenceSelectionCursor.moveRightCursor();
+    SentenceSelectionCursor nextCursor = sentenceSelectionCursor.moveRightCursor() as SentenceSelectionCursor;
+    return SentenceSelectionListCursor(
+      lyricSnippetMap: lyricSnippetMap,
+      lyricSnippetID: lyricSnippetID,
+      seekPosition: seekPosition,
+      insertionPosition: nextCursor.insertionPosition,
+      option: nextCursor.option,
+    );
   }
 
   @override
