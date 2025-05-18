@@ -270,18 +270,18 @@ class SentenceSelectionListCursor extends TextPaneListCursor {
     return copyWith(charPosition: newCharPosition);
   }
 
-  SentenceSelectionCursor copyWith({
+  SentenceSelectionListCursor copyWith({
     LyricSnippetMap? lyricSnippetMap,
     LyricSnippetID? lyricSnippetID,
     SeekPosition? seekPosition,
-    InsertionPosition? charPosition,
+    InsertionPosition? insertionPosition,
     Option? option,
   }) {
-    return SentenceSelectionCursor(
+    return SentenceSelectionListCursor(
       lyricSnippetMap: lyricSnippetMap ?? this.lyricSnippetMap,
       lyricSnippetID: lyricSnippetID ?? this.lyricSnippetID,
       seekPosition: seekPosition ?? this.seekPosition,
-      insertionPosition: charPosition ?? this.charPosition,
+      insertionPosition: insertionPosition ?? this.insertionPosition,
       option: option ?? this.option,
     );
   }
