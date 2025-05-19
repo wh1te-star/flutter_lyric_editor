@@ -84,7 +84,7 @@ class AnnotationSelectionCursor extends TextPaneListCursor {
       lyricSnippetID: lyricSnippetID,
       seekPosition: seekPosition,
       segmentRange: annotationSegmentRange,
-      charPosition: annotation.timing.leftTimingPoint(segmentIndex).charPosition + 1,
+      charPosition: annotation.timing.leftTimingPoint(segmentIndex).insertionPosition + 1,
       option: Option.former,
     );
   }

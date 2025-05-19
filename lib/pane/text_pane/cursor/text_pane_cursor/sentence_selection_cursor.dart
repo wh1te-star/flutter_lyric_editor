@@ -49,11 +49,11 @@ class SentenceSelectionCursor extends TextPaneCursor {
     required SeekPosition seekPosition,
   }) {
     SentenceSegmentIndex segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
-    InsertionPosition charPosition = lyricSnippet.timing.leftTimingPoint(segmentIndex).charPosition + 1;
+    InsertionPosition insertionPosition = lyricSnippet.timing.leftTimingPoint(segmentIndex).insertionPosition + 1;
     return SentenceSelectionCursor(
       lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
-      insertionPosition: charPosition,
+      insertionPosition: insertionPosition,
       option: Option.former,
     );
   }
@@ -88,7 +88,7 @@ class SentenceSelectionCursor extends TextPaneCursor {
           return this;
         }
         TimingPoint previousTimingPoint = lyricSnippet.timingPoints[timingPointIndex.index - 1];
-        nextInsertionPosition = previousTimingPoint.charPosition;
+        nextInsertionPosition = previousTimingPoint.insertionPosition;
       }
     }
 
@@ -140,7 +140,7 @@ class SentenceSelectionCursor extends TextPaneCursor {
           return this;
         }
         TimingPoint nextTimingPoint = lyricSnippet.timingPoints[nextTimingPointIndex.index];
-        nextInsertionPosition = nextTimingPoint.charPosition;
+        nextInsertionPosition = nextTimingPoint.insertionPosition;
       }
     }
 

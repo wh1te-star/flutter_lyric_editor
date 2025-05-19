@@ -21,7 +21,7 @@ class TimingPointList {
 
   bool isCharPositionOrdered() {
     return _list.map((TimingPoint timingPoint) {
-      return timingPoint.charPosition;
+      return timingPoint.insertionPosition;
     }).isSorted((InsertionPosition left, InsertionPosition right) => left.compareTo(right));
   }
 
@@ -34,7 +34,7 @@ class TimingPointList {
   bool isCharPositionDuplicationAllowed() {
     return groupBy(
       _list,
-      (TimingPoint timingPoint) => timingPoint.charPosition,
+      (TimingPoint timingPoint) => timingPoint.insertionPosition,
     ).values.every((List<TimingPoint> group) => group.length <= charPositionDuplicationAllowed);
   }
 
@@ -59,8 +59,8 @@ class TimingPointList {
     List<TimingPoint> timingPoints = list;
     for (int index = 0; index < timingPoints.length - 1; index++) {
       String word = sentence.substring(
-        timingPoints[index].charPosition.position,
-        timingPoints[index + 1].charPosition.position,
+        timingPoints[index].insertionPosition.position,
+        timingPoints[index + 1].insertionPosition.position,
       );
       Duration duration = Duration(
         milliseconds: timingPoints[index + 1].seekPosition.position - timingPoints[index].seekPosition.position,

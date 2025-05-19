@@ -95,7 +95,7 @@ class Timing {
     List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
     Timing timing = Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
     for (TimingPoint timingPoint in timingPointList.list) {
-      InsertionPosition currentCharPosition = timingPoint.charPosition;
+      InsertionPosition currentCharPosition = timingPoint.insertionPosition;
       if (charPositionTranslation[currentCharPosition.position] == -1) {
         try {
           timing = timing.deleteTimingPoint(currentCharPosition, Option.former);
@@ -111,8 +111,8 @@ class Timing {
     }
 
     for (int index = 0; index < sentenceSegments.length; index++) {
-      int leftCharPosition = charPositionTranslation[timingPoints[index].charPosition.position];
-      int rightCharPosition = charPositionTranslation[timingPoints[index + 1].charPosition.position];
+      int leftCharPosition = charPositionTranslation[timingPoints[index].insertionPosition.position];
+      int rightCharPosition = charPositionTranslation[timingPoints[index + 1].insertionPosition.position];
       timing.sentenceSegmentList.list[index].word = newSentence.substring(leftCharPosition, rightCharPosition);
     }
     timing = timing.integrate2OrMoreTimingPoints();
@@ -237,14 +237,14 @@ class Timing {
 
     for (int index = 0; index < timingPoints.length; index++) {
       TimingPoint timingPoint = timingPoints[index];
-      if (timingPoint.charPosition == insertionPosition) {
+      if (timingPoint.insertionPosition == insertionPosition) {
         bool duplicate = false;
         if (index + 1 >= timingPoints.length) {
           return TimingPointInsertionPositionInfo(TimingPointIndex(index), duplicate);
         }
 
         TimingPoint nextTimingPoint = timingPoints[index + 1];
-        if (timingPoint.charPosition == nextTimingPoint.charPosition) {
+        if (timingPoint.insertionPosition == nextTimingPoint.insertionPosition) {
           duplicate = true;
         }
         return TimingPointInsertionPositionInfo(TimingPointIndex(index), duplicate);
@@ -254,7 +254,7 @@ class Timing {
     for (int index = 0; index <= sentenceSegments.length; index++) {
       TimingPoint leftTimingPoint = timingPoints[index];
       TimingPoint rightTimingPoint = timingPoints[index + 1];
-      if (leftTimingPoint.charPosition < insertionPosition && insertionPosition < rightTimingPoint.charPosition) {
+      if (leftTimingPoint.insertionPosition < insertionPosition && insertionPosition < rightTimingPoint.insertionPosition) {
         return SentenceSegmentInsertionPositionInfo(
           SentenceSegmentIndex(index),
         );
@@ -359,11 +359,11 @@ class Timing {
     int segmentIndex = -1;
     int timingPointIndex = -1;
     for (int index = 0; index < sentenceSegments.length; index++) {
-      if (timingPoints[index].charPosition == charPosition) {
+      if (timingPoints[index].insertionPosition == charPosition) {
         timingPointIndex = index;
         break;
       }
-      if (timingPoints[index].charPosition < charPosition && charPosition < timingPoints[index + 1].charPosition) {
+      if (timingPoints[index].insertionPosition < charPosition && charPosition < timingPoints[index + 1].insertionPosition) {
         segmentIndex = index;
         break;
       }
@@ -386,7 +386,7 @@ class Timing {
     }
 
     int count = timingPoints.where((TimingPoint timingPoint) {
-      return timingPoint.charPosition == charPosition;
+      return timingPoint.insertionPosition == charPosition;
     }).length;
     if (count >= 2) {
       throw TimingPointException("A timing point cannot be inserted three times or more at the same char position.");
@@ -422,7 +422,7 @@ class Timing {
 
   Timing deleteTimingPoint(InsertionPosition charPosition, Option option) {
     List<TimingPoint> timingPoints = timingPointList.list;
-    int index = timingPoints.indexWhere((timingPoint) => timingPoint.charPosition == charPosition);
+    int index = timingPoints.indexWhere((timingPoint) => timingPoint.insertionPosition == charPosition);
     if (index == -1) {
       throw TimingPointException("There is not the specified timing point.");
     }

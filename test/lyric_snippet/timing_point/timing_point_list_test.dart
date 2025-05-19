@@ -15,7 +15,7 @@ void main() {
         TimingPoint(InsertionPosition(-1), SeekPosition(0)),
       ]);
 
-      expect(list.list.first.charPosition, -1);
+      expect(list.list.first.insertionPosition, -1);
 
       expect(() => TimingPoint(InsertionPosition(-1), SeekPosition(0)), throwsAssertionError);
     });
