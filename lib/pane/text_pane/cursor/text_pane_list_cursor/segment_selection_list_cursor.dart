@@ -7,7 +7,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pa
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 
-class SegmentSelectionListCursor extends TextPaneCursor {
+class SegmentSelectionListCursor extends TextPaneListCursor {
   late SegmentSelectionCursor segmentSelectionCursor;
 
   SegmentSelectionListCursor({
@@ -64,7 +64,7 @@ class SegmentSelectionListCursor extends TextPaneCursor {
   }
 
   @override
-  TextPaneCursor moveUpCursor() {
+  TextPaneListCursor moveUpCursor() {
     int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
       return id == lyricSnippetID;
     });
@@ -77,7 +77,7 @@ class SegmentSelectionListCursor extends TextPaneCursor {
   }
 
   @override
-  TextPaneCursor moveDownCursor() {
+  TextPaneListCursor moveDownCursor() {
     int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
       return id == lyricSnippetID;
     });
@@ -90,7 +90,7 @@ class SegmentSelectionListCursor extends TextPaneCursor {
   }
 
   @override
-  TextPaneCursor moveLeftCursor() {
+  TextPaneListCursor moveLeftCursor() {
     SegmentSelectionCursor nextCursor = segmentSelectionCursor.moveLeftCursor() as SegmentSelectionCursor;
     return SegmentSelectionListCursor(
       lyricSnippetMap: lyricSnippetMap,
@@ -102,7 +102,7 @@ class SegmentSelectionListCursor extends TextPaneCursor {
   }
 
   @override
-  TextPaneCursor moveRightCursor() {
+  TextPaneListCursor moveRightCursor() {
     SegmentSelectionCursor nextCursor = segmentSelectionCursor.moveRightCursor() as SegmentSelectionCursor;
     return SegmentSelectionListCursor(
       lyricSnippetMap: lyricSnippetMap,
@@ -113,7 +113,7 @@ class SegmentSelectionListCursor extends TextPaneCursor {
     );
   }
 
-  TextPaneCursor exitSegmentSelectionMode() {
+  TextPaneListCursor exitSegmentSelectionMode() {
     return SentenceSelectionListCursor.defaultCursor(
       lyricSnippetMap: lyricSnippetMap,
       lyricSnippetID: lyricSnippetID,
@@ -121,13 +121,13 @@ class SegmentSelectionListCursor extends TextPaneCursor {
     );
   }
 
-  TextPaneCursor switchToRangeSelection() {
+  TextPaneListCursor switchToRangeSelection() {
     SegmentSelectionCursor nextCursor = segmentSelectionCursor.switchToRangeSelection() as SegmentSelectionCursor;
     return copyWith(segmentRange: nextCursor.segmentRange, isRangeSelection: nextCursor.isRangeSelection);
   }
 
   @override
-  TextPaneCursor updateCursor(
+  TextPaneListCursor updateCursor(
     LyricSnippetMap lyricSnippetMap,
     LyricSnippetID lyricSnippetID,
     SeekPosition seekPosition,

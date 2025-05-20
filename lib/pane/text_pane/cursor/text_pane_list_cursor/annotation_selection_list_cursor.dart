@@ -16,7 +16,7 @@ import 'package:lyric_editor/position/segment_index.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 
-class AnnotationSelectionListCursor extends TextPaneCursor {
+class AnnotationSelectionListCursor extends TextPaneListCursor {
   late AnnotationSelectionCursor annotationSelectionCursor;
 
   AnnotationSelectionListCursor({
@@ -36,6 +36,7 @@ class AnnotationSelectionListCursor extends TextPaneCursor {
       insertionPosition: insertionPosition,
       option: option,
     );
+    textPaneCursor = annotationSelectionCursor;
   }
 
   bool isIDContained() {
@@ -90,7 +91,7 @@ class AnnotationSelectionListCursor extends TextPaneCursor {
   }
 
   @override
-  TextPaneCursor moveUpCursor() {
+  TextPaneListCursor moveUpCursor() {
     int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
       return id == lyricSnippetID;
     });
@@ -109,7 +110,7 @@ class AnnotationSelectionListCursor extends TextPaneCursor {
   }
 
   @override
-  TextPaneCursor moveDownCursor() {
+  TextPaneListCursor moveDownCursor() {
     int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
       return id == lyricSnippetID;
     });
@@ -128,17 +129,17 @@ class AnnotationSelectionListCursor extends TextPaneCursor {
   }
 
   @override
-  TextPaneCursor moveLeftCursor() {
+  TextPaneListCursor moveLeftCursor() {
     return this;
   }
 
   @override
-  TextPaneCursor moveRightCursor() {
+  TextPaneListCursor moveRightCursor() {
     return this;
   }
 
   @override
-  TextPaneCursor updateCursor(
+  TextPaneListCursor updateCursor(
     LyricSnippetMap lyricSnippetMap,
     LyricSnippetID lyricSnippetID,
     SeekPosition seekPosition,

@@ -11,7 +11,7 @@ import 'package:lyric_editor/utility/cursor_blinker.dart';
 class TextPaneCursorController {
   final LyricSnippetMap lyricSnippetMap;
   final LyricSnippetID lyricSnippetID;
-  final TextPaneCursor textPaneListCursor;
+  final TextPaneListCursor textPaneListCursor;
   final SeekPosition seekPosition;
   final CursorBlinker cursorBlinker;
 
@@ -44,46 +44,46 @@ class TextPaneCursorController {
   TextPaneCursorController moveUpCursor() {
     cursorBlinker.restartCursorTimer();
 
-    TextPaneCursor nextCursor = textPaneListCursor.moveUpCursor();
+    TextPaneListCursor nextCursor = textPaneListCursor.moveUpCursor();
     return copyWith(textPaneListCursor: nextCursor);
   }
 
   TextPaneCursorController moveDownCursor() {
     cursorBlinker.restartCursorTimer();
 
-    TextPaneCursor nextCursor = textPaneListCursor.moveDownCursor();
+    TextPaneListCursor nextCursor = textPaneListCursor.moveDownCursor();
     return copyWith(textPaneListCursor: nextCursor);
   }
 
   TextPaneCursorController moveLeftCursor() {
     cursorBlinker.restartCursorTimer();
 
-    TextPaneCursor nextCursor = textPaneListCursor.moveLeftCursor();
+    TextPaneListCursor nextCursor = textPaneListCursor.moveLeftCursor();
     return copyWith(textPaneListCursor: nextCursor);
   }
 
   TextPaneCursorController moveRightCursor() {
     cursorBlinker.restartCursorTimer();
 
-    TextPaneCursor nextCursor = textPaneListCursor.moveRightCursor();
+    TextPaneListCursor nextCursor = textPaneListCursor.moveRightCursor();
     return copyWith(textPaneListCursor: nextCursor);
   }
 
   TextPaneCursorController enterSegmentSelectionMode() {
     assert(textPaneListCursor is SentenceSelectionCursor, "This is an unexpected call. The cursor type must be SentenceSelectionCursor, but is ${textPaneListCursor.runtimeType}");
-    TextPaneCursor cursor = (textPaneListCursor as SentenceSelectionListCursor).enterSegmentSelectionMode();
+    TextPaneListCursor cursor = (textPaneListCursor as SentenceSelectionListCursor).enterSegmentSelectionMode();
     return copyWith(textPaneListCursor: cursor);
   }
 
   TextPaneCursorController exitSegmentSelectionMode() {
     assert(textPaneListCursor is SegmentSelectionCursor, "This is an unexpected call. The cursor type must be SegmentSelectionCursor, but is ${textPaneListCursor.runtimeType}");
-    TextPaneCursor cursor = (textPaneListCursor as SegmentSelectionListCursor).exitSegmentSelectionMode();
+    TextPaneListCursor cursor = (textPaneListCursor as SegmentSelectionListCursor).exitSegmentSelectionMode();
     return copyWith(textPaneListCursor: cursor);
   }
 
   TextPaneCursorController switchToRangeSelection() {
     assert(textPaneListCursor is SegmentSelectionCursor, "This is an unexpected call. The cursor type must be SegmentSelectionCursor, but is ${textPaneListCursor.runtimeType}");
-    TextPaneCursor cursor = (textPaneListCursor as SegmentSelectionListCursor).switchToRangeSelection();
+    TextPaneListCursor cursor = (textPaneListCursor as SegmentSelectionListCursor).switchToRangeSelection();
     return copyWith(textPaneListCursor: cursor);
   }
 
@@ -91,14 +91,14 @@ class TextPaneCursorController {
     LyricSnippetMap lyricSnippetMap,
     SeekPosition seekPosition,
   ) {
-    TextPaneCursor nextCursor = textPaneListCursor.updateCursor(lyricSnippetMap, lyricSnippetID, seekPosition);
+    TextPaneListCursor nextCursor = textPaneListCursor.updateCursor(lyricSnippetMap, lyricSnippetID, seekPosition);
     return copyWith(textPaneListCursor: nextCursor);
   }
 
   TextPaneCursorController copyWith({
     LyricSnippetMap? lyricSnippetMap,
     LyricSnippetID? lyricSnippetID,
-    TextPaneCursor? textPaneListCursor,
+    TextPaneListCursor? textPaneListCursor,
     SeekPosition? seekPosition,
     CursorBlinker? cursorBlinker,
   }) {
