@@ -6,19 +6,19 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cu
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 
-abstract class TextPaneListCursor {
+abstract class TextPaneCursor {
   LyricSnippetMap lyricSnippetMap;
   LyricSnippetID lyricSnippetID;
   SeekPosition seekPosition;
 
-  TextPaneListCursor(this.lyricSnippetMap, this.lyricSnippetID, this.seekPosition);
+  TextPaneCursor(this.lyricSnippetMap, this.lyricSnippetID, this.seekPosition);
 
-  TextPaneListCursor moveUpCursor();
-  TextPaneListCursor moveDownCursor();
-  TextPaneListCursor moveLeftCursor();
-  TextPaneListCursor moveRightCursor();
+  TextPaneCursor moveUpCursor();
+  TextPaneCursor moveDownCursor();
+  TextPaneCursor moveLeftCursor();
+  TextPaneCursor moveRightCursor();
 
-  TextPaneListCursor updateCursor(
+  TextPaneCursor updateCursor(
     LyricSnippetMap lyricSnippetMap,
     LyricSnippetID lyricSnippetID,
     SeekPosition seekPosition,

@@ -17,7 +17,7 @@ import 'package:tuple/tuple.dart';
 class LyricSnippetEdit extends StatelessWidget {
   final LyricSnippet lyricSnippet;
   final SeekPosition seekPosition;
-  final TextPaneListCursor textPaneCursor;
+  final TextPaneCursor? textPaneCursor;
   final CursorBlinker cursorBlinker;
   LyricSnippetEdit(this.lyricSnippet, this.seekPosition, this.textPaneCursor, this.cursorBlinker);
 
@@ -28,7 +28,7 @@ class LyricSnippetEdit extends StatelessWidget {
     List<SegmentRange> rangeList = rangeAnnotationEntry.map((Tuple2<SegmentRange, Annotation?> entry) {
       return entry.item1;
     }).toList();
-    List<TextPaneListCursor?> cursorList = textPaneCursor.getRangeDividedCursors(lyricSnippet, rangeList);
+    List<TextPaneCursor?> cursorList = textPaneCursor.getRangeDividedCursors(lyricSnippet, rangeList);
 
     for (int index = 0; index < rangeAnnotationEntry.length; index++) {
       SegmentRange segmentRange = rangeAnnotationEntry[index].item1;
@@ -37,7 +37,7 @@ class LyricSnippetEdit extends StatelessWidget {
       SentenceSegmentList? sentenceSubList = lyricSnippet.getSentenceSegmentList(segmentRange);
       SentenceSegmentList? annotationSubList = annotation?.timing.sentenceSegmentList;
 
-      TextPaneListCursor? cursor = cursorList[index];
+      TextPaneCursor? cursor = cursorList[index];
       bool isTimingPointPosition = false;
       if (cursor is SentenceSelectionCursor && cursor.insertionPosition == InsertionPosition(0)) {
         isTimingPointPosition = true;
@@ -48,7 +48,7 @@ class LyricSnippetEdit extends StatelessWidget {
 
       CursorBlinker? timingPointCursorBlinker;
       CursorBlinker? sentenceSegmentCursorBlinker;
-      TextPaneListCursor? sentenceSegmentCursor;
+      TextPaneCursor? sentenceSegmentCursor;
       if (isTimingPointPosition) {
         timingPointCursorBlinker = cursorBlinker;
       } else {
@@ -95,7 +95,7 @@ class LyricSnippetEdit extends StatelessWidget {
 
   Widget getSentenceEdit(
     SentenceSegmentList sentenceSegmentList,
-    TextPaneListCursor? textPaneCursor,
+    TextPaneCursor? textPaneCursor,
     CursorBlinker? cursorBlinker,
   ) {
     if (textPaneCursor is! SentenceSelectionCursor && textPaneCursor is! SegmentSelectionCursor) {
@@ -112,7 +112,7 @@ class LyricSnippetEdit extends StatelessWidget {
 
   Widget getAnnotationEdit(
     SentenceSegmentList? sentenceSegmentList,
-    TextPaneListCursor? textPaneCursor,
+    TextPaneCursor? textPaneCursor,
     CursorBlinker? cursorBlinker,
   ) {
     if (textPaneCursor is! AnnotationSelectionCursor) {
