@@ -300,7 +300,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
               timingService.addAnnotationTimingPoint(
                 cursor.lyricSnippetID,
                 cursor.segmentRange,
-                cursor.charPosition,
+                cursor.insertionPosition,
                 seekPosition,
               );
             }
@@ -321,7 +321,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
                 timingService.removeAnnotationTimingPoint(
                   id,
                   cursor.segmentRange,
-                  cursor.charPosition,
+                  cursor.insertionPosition,
                   cursor.option,
                 );
               }

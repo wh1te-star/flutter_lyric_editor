@@ -12,8 +12,6 @@ abstract class TextPaneCursor {
   TextPaneCursor moveLeftCursor();
   TextPaneCursor moveRightCursor();
 
-  TextPaneCursor updateCursor(
-    LyricSnippet lyricSnippet,
-    SeekPosition seekPosition,
-  );
+  List<TextPaneCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList);
+  List<TextPaneCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList);
 }

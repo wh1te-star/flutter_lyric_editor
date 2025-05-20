@@ -23,13 +23,4 @@ abstract class TextPaneListCursor {
     LyricSnippetID lyricSnippetID,
     SeekPosition seekPosition,
   );
-
-  List<TextPaneCursor?> getRangeDividedCursors(
-    LyricSnippet lyricSnippet,
-    List<SegmentRange> rangeList,
-  );
-
-  List<TextPaneCursor?> getSegmentDividedCursors(
-    SentenceSegmentList sentenceSegmentList,
-  );
 }

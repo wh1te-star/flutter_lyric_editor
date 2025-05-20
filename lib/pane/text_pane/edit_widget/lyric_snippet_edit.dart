@@ -42,7 +42,7 @@ class LyricSnippetEdit extends StatelessWidget {
       if (cursor is SentenceSelectionCursor && cursor.insertionPosition == InsertionPosition(0)) {
         isTimingPointPosition = true;
       }
-      if (cursor is AnnotationSelectionCursor && cursor.charPosition == InsertionPosition(0)) {
+      if (cursor is AnnotationSelectionCursor && cursor.insertionPosition == InsertionPosition(0)) {
         isTimingPointPosition = true;
       }
 

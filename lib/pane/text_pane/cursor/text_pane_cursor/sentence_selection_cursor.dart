@@ -156,36 +156,64 @@ class SentenceSelectionCursor extends TextPaneCursor {
     return this;
   }
 
-  @override
-  TextPaneCursor updateCursor(
-    LyricSnippet lyricSnippet,
-    SeekPosition seekPosition,
-  ) {
-    SentenceSegmentIndex currentSeekSegmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
-    InsertionPositionInfo? nextSnippetPositionInfo = lyricSnippet.getInsertionPositionInfo(insertionPosition);
-    if (nextSnippetPositionInfo == null || nextSnippetPositionInfo is SentenceSegmentInsertionPositionInfo && nextSnippetPositionInfo.sentenceSegmentIndex != currentSeekSegmentIndex) {
-      return SentenceSelectionCursor.defaultCursor(
-        lyricSnippet: lyricSnippet,
-        seekPosition: seekPosition,
-      );
-    }
-
-    return SentenceSelectionCursor(
-      lyricSnippet: lyricSnippet,
-      seekPosition: seekPosition,
-      insertionPosition: insertionPosition,
-      option: option,
-    );
-  }
-
-  TextPaneListCursor enterSegmentSelectionMode() {
+  TextPaneCursor enterSegmentSelectionMode() {
     return SegmentSelectionCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
       segmentRange: SegmentRange(SentenceSegmentIndex(0), SentenceSegmentIndex(0)),
       isRangeSelection: false,
     );
+  }
+
+  @override
+  List<TextPaneCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
+    List<SentenceSelectionCursor?> separatedCursors = List.filled(rangeList.length, null);
+    SentenceSelectionCursor shiftedCursor = copyWith();
+    for (int index = 0; index < rangeList.length; index++) {
+      SegmentRange segmentRange = rangeList[index];
+      SentenceSegmentList? sentenceSubList = lyricSnippet.getSentenceSegmentList(segmentRange);
+      SentenceSelectionCursor? nextCursor = shiftedCursor.shiftLeftBySentenceSegmentList(sentenceSubList);
+      if (nextCursor == null) {
+        separatedCursors[index] = shiftedCursor;
+        break;
+      }
+      shiftedCursor = nextCursor;
+    }
+    return separatedCursors;
+  }
+
+  @override
+  List<TextPaneCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList) {
+    List<SentenceSelectionCursor?> separatedCursors = List.filled(sentenceSegmentList.length, null);
+    SentenceSelectionCursor shiftedCursor = copyWith();
+    for (int index = 0; index < sentenceSegmentList.length; index++) {
+      SentenceSegment sentenceSegment = sentenceSegmentList[index];
+      SentenceSelectionCursor? nextCursor = shiftedCursor.shiftLeftBySentenceSegment(sentenceSegment);
+      if (nextCursor == null) {
+        separatedCursors[index] = shiftedCursor;
+        break;
+      }
+      shiftedCursor = nextCursor;
+    }
+    return separatedCursors;
+  }
+
+  @override
+  SentenceSelectionCursor? shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {
+    if (insertionPosition.position - sentenceSegmentList.charLength < 0) {
+      return null;
+    }
+    InsertionPosition newInsertionPosition = insertionPosition - sentenceSegmentList.charLength;
+    return copyWith(insertionPosition: newInsertionPosition);
+  }
+
+  @override
+  SentenceSelectionCursor? shiftLeftBySentenceSegment(SentenceSegment sentenceSegment) {
+    if (insertionPosition.position - sentenceSegment.word.length < 0) {
+      return null;
+    }
+    InsertionPosition newInsertionPosition = insertionPosition - sentenceSegment.word.length;
+    return copyWith(insertionPosition: newInsertionPosition);
   }
 
   SentenceSelectionCursor copyWith({

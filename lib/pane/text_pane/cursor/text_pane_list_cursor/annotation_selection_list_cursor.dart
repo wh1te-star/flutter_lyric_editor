@@ -30,11 +30,10 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
     assert(isIDContained(), "The passed lyricSnippetID does not point to a lyric snippet in lyricSnippetMap.");
     assert(doesSeekPositionPointAnnotation(), "The passed seek position does not point to any annotation.");
     annotationSelectionCursor = AnnotationSelectionCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      lyricSnippet: lyricSnippetMap[lyricSnippetID]!,
       seekPosition: seekPosition,
       segmentRange: segmentRange,
-      charPosition: insertionPosition,
+      insertionPosition: insertionPosition,
       option: option,
     );
   }
@@ -150,7 +149,7 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
         lyricSnippetID: LyricSnippetID.empty,
         seekPosition: seekPosition,
         segmentRange: SegmentRange.empty,
-        charPosition: InsertionPosition.empty,
+        insertionPosition: InsertionPosition.empty,
         option: Option.former,
       );
     }
@@ -163,7 +162,7 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
     }
 
     SentenceSegmentIndex currentSeekSegmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
-    InsertionPositionInfo? nextSnippetPositionInfo = lyricSnippet.getInsertionPositionInfo(charPosition);
+    InsertionPositionInfo? nextSnippetPositionInfo = lyricSnippet.getInsertionPositionInfo(annotationSelectionCursor.insertionPosition);
 
     if (nextSnippetPositionInfo == null || nextSnippetPositionInfo is SentenceSegmentInsertionPositionInfo && nextSnippetPositionInfo.sentenceSegmentIndex != currentSeekSegmentIndex) {
       return AnnotationSelectionListCursor.defaultCursor(
@@ -176,73 +175,41 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
     return this;
   }
 
-  @override
-  List<TextPaneListCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
-    List<AnnotationSelectionCursor?> separatedCursors = List.filled(rangeList.length, null);
-    AnnotationSelectionCursor cursor = copyWith();
-    for (int index = 0; index < rangeList.length; index++) {
-      SegmentRange segmentRange = rangeList[index];
-      if (segmentRange == cursor.segmentRange) {
-        separatedCursors[index] = cursor;
-        break;
-      }
-    }
-    return separatedCursors;
-  }
-
-  @override
-  List<TextPaneListCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList) {
-    List<AnnotationSelectionCursor?> separatedCursors = List.filled(sentenceSegmentList.length, null);
-    return separatedCursors;
-  }
-
-  @override
-  AnnotationSelectionCursor? shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {
-    return this;
-  }
-
-  @override
-  AnnotationSelectionCursor? shiftLeftBySentenceSegment(SentenceSegment sentenceSegment) {
-    return this;
-  }
-
-  AnnotationSelectionCursor copyWith({
+  AnnotationSelectionListCursor copyWith({
     LyricSnippetMap? lyricSnippetMap,
     LyricSnippetID? lyricSnippetID,
     SeekPosition? seekPosition,
     SegmentRange? segmentRange,
-    InsertionPosition? charPosition,
+    InsertionPosition? insertionPosition,
     Option? option,
   }) {
-    return AnnotationSelectionCursor(
+    return AnnotationSelectionListCursor(
       lyricSnippetMap: lyricSnippetMap ?? this.lyricSnippetMap,
       lyricSnippetID: lyricSnippetID ?? this.lyricSnippetID,
       seekPosition: seekPosition ?? this.seekPosition,
-      segmentRange: segmentRange ?? this.segmentRange,
-      charPosition: charPosition ?? this.charPosition,
-      option: option ?? this.option,
+      segmentRange: segmentRange ?? annotationSelectionCursor.segmentRange,
+      insertionPosition: insertionPosition ?? annotationSelectionCursor.insertionPosition,
+      option: option ?? annotationSelectionCursor.option,
     );
   }
 
   @override
   String toString() {
-    return 'AnnotationSelectionCursor(ID: ${lyricSnippetID.id}, $segmentRange, position: ${charPosition.position}, option: $option)';
+    return 'AnnotationSelectionListCursor(ID: ${lyricSnippetID.id}, $annotationSelectionCursor';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final AnnotationSelectionCursor otherSentenceSegments = other as AnnotationSelectionCursor;
+    final AnnotationSelectionListCursor otherSentenceSegments = other as AnnotationSelectionListCursor;
     if (lyricSnippetMap != otherSentenceSegments.lyricSnippetMap) return false;
     if (lyricSnippetID != otherSentenceSegments.lyricSnippetID) return false;
     if (seekPosition != otherSentenceSegments.seekPosition) return false;
-    if (segmentRange != otherSentenceSegments.segmentRange) return false;
-    if (charPosition != otherSentenceSegments.charPosition) return false;
-    if (option != otherSentenceSegments.option) return false;
+    if (annotationSelectionCursor != otherSentenceSegments.annotationSelectionCursor) return false;
     return true;
   }
 
   @override
-  int get hashCode => lyricSnippetMap.hashCode ^ lyricSnippetID.hashCode ^ seekPosition.hashCode ^ segmentRange.hashCode ^ charPosition.hashCode ^ option.hashCode;
+  int get hashCode => lyricSnippetMap.hashCode ^ lyricSnippetID.hashCode ^ seekPosition.hashCode ^ annotationSelectionCursor.hashCode;
 }

@@ -9,30 +9,25 @@ import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_index.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 
-class SegmentSelectionCursor extends TextPaneListCursor {
+class SegmentSelectionCursor extends TextPaneCursor {
   SegmentRange segmentRange;
   bool isRangeSelection = false;
 
   SegmentSelectionCursor({
-    required LyricSnippetMap lyricSnippetMap,
-    required LyricSnippetID lyricSnippetID,
+    required LyricSnippet lyricSnippet,
     required SeekPosition seekPosition,
     required this.segmentRange,
     required this.isRangeSelection,
-  }) : super(lyricSnippetMap, lyricSnippetID, seekPosition) {
-    assert(isIDContained(), "The passed lyricSnippetID does not point to a lyric snippet in lyricSnippetMap.");
-  }
+  }) : super(lyricSnippet, seekPosition);
 
   SegmentSelectionCursor._privateConstructor(
-    super.lyricSnippetMap,
-    super.lyricSnippetID,
+    super.lyricSnippet,
     super.seekPosition,
     this.segmentRange,
     this.isRangeSelection,
   );
   static final SegmentSelectionCursor _empty = SegmentSelectionCursor._privateConstructor(
-    LyricSnippetMap.empty,
-    LyricSnippetID.empty,
+    LyricSnippet.empty,
     SeekPosition.empty,
     SegmentRange.empty,
     false,
@@ -41,24 +36,11 @@ class SegmentSelectionCursor extends TextPaneListCursor {
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
-  bool isIDContained() {
-    if (lyricSnippetMap.isEmpty) {
-      return true;
-    }
-    LyricSnippet? lyricSnippet = lyricSnippetMap[lyricSnippetID];
-    if (lyricSnippet == null) {
-      return false;
-    }
-    return true;
-  }
-
   @override
-  SegmentSelectionCursor defaultCursor(LyricSnippetID lyricSnippetID) {
-    LyricSnippet lyricSnippet = lyricSnippetMap.getLyricSnippetByID(lyricSnippetID);
+  SegmentSelectionCursor defaultCursor() {
     SentenceSegmentIndex segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
     return SegmentSelectionCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
       segmentRange: SegmentRange(segmentIndex, segmentIndex),
       isRangeSelection: isRangeSelection,
@@ -66,33 +48,7 @@ class SegmentSelectionCursor extends TextPaneListCursor {
   }
 
   @override
-  TextPaneListCursor moveUpCursor() {
-    int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
-      return id == lyricSnippetID;
-    });
-    if (index <= 0) {
-      return this;
-    }
-
-    LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[index - 1];
-    return defaultCursor(nextLyricSnippetID);
-  }
-
-  @override
-  TextPaneListCursor moveDownCursor() {
-    int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
-      return id == lyricSnippetID;
-    });
-    if (index + 1 >= lyricSnippetMap.length) {
-      return this;
-    }
-
-    LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[index + 1];
-    return defaultCursor(nextLyricSnippetID);
-  }
-
-  @override
-  TextPaneListCursor moveLeftCursor() {
+  TextPaneCursor moveLeftCursor() {
     SegmentRange nextSegmentRange = segmentRange.copyWith();
 
     if (!isRangeSelection) {
@@ -115,8 +71,7 @@ class SegmentSelectionCursor extends TextPaneListCursor {
     }
 
     return SegmentSelectionCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
       segmentRange: nextSegmentRange,
       isRangeSelection: isRangeSelection,
@@ -124,12 +79,12 @@ class SegmentSelectionCursor extends TextPaneListCursor {
   }
 
   @override
-  TextPaneListCursor moveRightCursor() {
+  TextPaneCursor moveRightCursor() {
     SegmentRange nextSegmentRange = segmentRange.copyWith();
 
     SentenceSegmentIndex currentIndex = segmentRange.endIndex;
     SentenceSegmentIndex nextIndex = currentIndex + 1;
-    if (nextIndex.index >= lyricSnippetMap[lyricSnippetID]!.sentenceSegments.length) {
+    if (nextIndex.index >= lyricSnippet.sentenceSegments.length) {
       return this;
     }
 
@@ -139,44 +94,27 @@ class SegmentSelectionCursor extends TextPaneListCursor {
     }
 
     return SegmentSelectionCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
       segmentRange: nextSegmentRange,
       isRangeSelection: isRangeSelection,
     );
   }
 
-  @override
-  TextPaneListCursor updateCursor(
-    LyricSnippetMap lyricSnippetMap,
-    LyricSnippetID lyricSnippetID,
-    SeekPosition seekPosition,
-  ) {
-    return SegmentSelectionCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
-      seekPosition: seekPosition,
-      segmentRange: segmentRange,
-      isRangeSelection: isRangeSelection,
-    );
-  }
-
-  TextPaneListCursor exitSegmentSelectionMode() {
+  TextPaneCursor exitSegmentSelectionMode() {
     return SentenceSelectionCursor.defaultCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
     );
   }
 
-  TextPaneListCursor switchToRangeSelection() {
+  TextPaneCursor switchToRangeSelection() {
     bool isRangeSelection = !this.isRangeSelection;
     return copyWith(isRangeSelection: isRangeSelection);
   }
 
   @override
-  List<TextPaneListCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
+  List<TextPaneCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
     SegmentSelectionCursor cursor = copyWith();
     List<SegmentSelectionCursor?> separatedCursors = List.filled(rangeList.length, null);
 
@@ -210,12 +148,11 @@ class SegmentSelectionCursor extends TextPaneListCursor {
   }
 
   @override
-  List<TextPaneListCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList) {
+  List<TextPaneCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList) {
     SegmentSelectionCursor cursor = copyWith();
     List<SegmentSelectionCursor?> separatedCursors = List.filled(sentenceSegmentList.length, null);
     SegmentSelectionCursor initialCursor = SegmentSelectionCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
       segmentRange: SegmentRange(SentenceSegmentIndex(0), SentenceSegmentIndex(0)),
       isRangeSelection: isRangeSelection,
@@ -252,15 +189,13 @@ class SegmentSelectionCursor extends TextPaneListCursor {
   }
 
   SegmentSelectionCursor copyWith({
-    LyricSnippetMap? lyricSnippetMap,
-    LyricSnippetID? lyricSnippetID,
+    LyricSnippet? lyricSnippet,
     SeekPosition? seekPosition,
     SegmentRange? segmentRange,
     bool? isRangeSelection,
   }) {
     return SegmentSelectionCursor(
-      lyricSnippetMap: lyricSnippetMap ?? this.lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID ?? this.lyricSnippetID,
+      lyricSnippet: lyricSnippet ?? this.lyricSnippet,
       seekPosition: seekPosition ?? this.seekPosition,
       segmentRange: segmentRange ?? this.segmentRange,
       isRangeSelection: isRangeSelection ?? this.isRangeSelection,
@@ -269,7 +204,7 @@ class SegmentSelectionCursor extends TextPaneListCursor {
 
   @override
   String toString() {
-    return 'SegmentSelectionCursor(ID: ${lyricSnippetID.id}, segmentIndex: $segmentRange)';
+    return 'SegmentSelectionCursor(ID: $lyricSnippet, segmentIndex: $segmentRange)';
   }
 
   @override
@@ -277,8 +212,7 @@ class SegmentSelectionCursor extends TextPaneListCursor {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
     final SegmentSelectionCursor otherSentenceSegments = other as SegmentSelectionCursor;
-    if (lyricSnippetMap != otherSentenceSegments.lyricSnippetMap) return false;
-    if (lyricSnippetID != otherSentenceSegments.lyricSnippetID) return false;
+    if (lyricSnippet != otherSentenceSegments.lyricSnippet) return false;
     if (seekPosition != otherSentenceSegments.seekPosition) return false;
     if (segmentRange != otherSentenceSegments.segmentRange) return false;
     if (isRangeSelection != otherSentenceSegments.isRangeSelection) return false;
@@ -286,5 +220,5 @@ class SegmentSelectionCursor extends TextPaneListCursor {
   }
 
   @override
-  int get hashCode => lyricSnippetMap.hashCode ^ lyricSnippetID.hashCode ^ seekPosition.hashCode ^ segmentRange.hashCode ^ isRangeSelection.hashCode;
+  int get hashCode => lyricSnippet.hashCode ^ seekPosition.hashCode ^ segmentRange.hashCode ^ isRangeSelection.hashCode;
 }
