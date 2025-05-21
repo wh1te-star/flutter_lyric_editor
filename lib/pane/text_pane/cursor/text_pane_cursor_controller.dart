@@ -70,19 +70,19 @@ class TextPaneCursorController {
   }
 
   TextPaneCursorController enterSegmentSelectionMode() {
-    assert(textPaneListCursor is SentenceSelectionCursor, "This is an unexpected call. The cursor type must be SentenceSelectionCursor, but is ${textPaneListCursor.runtimeType}");
+    assert(textPaneListCursor is SentenceSelectionListCursor, "This is an unexpected call. The cursor type must be SentenceSelectionCursor, but is ${textPaneListCursor.runtimeType}");
     TextPaneListCursor cursor = (textPaneListCursor as SentenceSelectionListCursor).enterSegmentSelectionMode();
     return copyWith(textPaneListCursor: cursor);
   }
 
   TextPaneCursorController exitSegmentSelectionMode() {
-    assert(textPaneListCursor is SegmentSelectionCursor, "This is an unexpected call. The cursor type must be SegmentSelectionCursor, but is ${textPaneListCursor.runtimeType}");
+    assert(textPaneListCursor is SegmentSelectionListCursor, "This is an unexpected call. The cursor type must be SegmentSelectionCursor, but is ${textPaneListCursor.runtimeType}");
     TextPaneListCursor cursor = (textPaneListCursor as SegmentSelectionListCursor).exitSegmentSelectionMode();
     return copyWith(textPaneListCursor: cursor);
   }
 
   TextPaneCursorController switchToRangeSelection() {
-    assert(textPaneListCursor is SegmentSelectionCursor, "This is an unexpected call. The cursor type must be SegmentSelectionCursor, but is ${textPaneListCursor.runtimeType}");
+    assert(textPaneListCursor is SegmentSelectionListCursor, "This is an unexpected call. The cursor type must be SegmentSelectionCursor, but is ${textPaneListCursor.runtimeType}");
     TextPaneListCursor cursor = (textPaneListCursor as SegmentSelectionListCursor).switchToRangeSelection();
     return copyWith(textPaneListCursor: cursor);
   }

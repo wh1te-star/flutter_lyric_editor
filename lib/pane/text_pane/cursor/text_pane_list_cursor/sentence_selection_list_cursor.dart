@@ -25,8 +25,9 @@ class SentenceSelectionListCursor extends TextPaneListCursor {
   }) : super(lyricSnippetMap, lyricSnippetID, seekPosition) {
     assert(isIDContained(), "The passed lyricSnippetID does not point to a lyric snippet in lyricSnippetMap.");
 
+    LyricSnippet lyricSnippet = lyricSnippetMap.containsKey(lyricSnippetID) ? lyricSnippetMap[lyricSnippetID]! : LyricSnippet.empty;
     sentenceSelectionCursor = SentenceSelectionCursor(
-      lyricSnippet: lyricSnippetMap[lyricSnippetID]!,
+      lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
       insertionPosition: insertionPosition,
       option: option,

@@ -25,6 +25,7 @@ class SegmentSelectionListCursor extends TextPaneListCursor {
       segmentRange: segmentRange,
       isRangeSelection: isRangeSelection,
     );
+    textPaneCursor = segmentSelectionCursor;
   }
 
   bool isIDContained() {
