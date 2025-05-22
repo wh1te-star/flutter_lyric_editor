@@ -3,19 +3,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/lyric_data/reading/reading_map.dart';
 import 'package:lyric_editor/sentence/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/annotation_selection_cursor.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/segment_selection_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/reading_selection_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/word_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_controller.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/annotation_selection_list_cursor.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/segment_selection_list_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/reading_selection_list_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/word_selection_list_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/sentence_selection_list_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pane_list_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/text_pane_provider.dart';
 import 'package:lyric_editor/pane/video_pane/video_pane_provider.dart';
 import 'package:lyric_editor/position/seek_position.dart';
-import 'package:lyric_editor/position/segment_range.dart';
+import 'package:lyric_editor/position/phrase_position.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/lyric_data/timeline.dart';
@@ -154,7 +154,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         DeleteSnippetIntent: CallbackAction<DeleteSnippetIntent>(
           onInvoke: (DeleteSnippetIntent intent) => () {
-            timingService.removeLyricSnippet(timelinePaneProvider.selectingSnippets[0]);
+            timingService.removeLyricSnippet(timelinePaneProvider.selectingSentences[0]);
           }(),
         ),
         EnterSegmentSelectionIntent: CallbackAction<EnterSegmentSelectionIntent>(
@@ -185,7 +185,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             LyricSnippetID lyricSnippetID = listCursor.lyricSnippetID;
 
             SegmentSelectionCursor cursor = listCursor.textPaneCursor as SegmentSelectionCursor;
-            Phrase segmentRange = cursor.segmentRange;
+            PhrasePosition segmentRange = cursor.segmentRange;
 
             String annotationString = (await displayTextFieldDialog(context, [""]))[0];
             if (annotationString != "") {
@@ -198,7 +198,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
           onInvoke: (DeleteAnnotationIntent intent) => () {
             TextPaneListCursor listCursor = textPaneProvider.textPaneCursorController.textPaneListCursor;
             LyricSnippetID lyricSnippetID = listCursor.lyricSnippetID;
-            if (listCursor is! AnnotationSelectionListCursor) {
+            if (listCursor is! ReadingSelectionListCursor) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text("Cannot determine which annotation should be deleted."),
@@ -206,22 +206,22 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
               );
             }
 
-            AnnotationSelectionCursor cursor = listCursor.textPaneCursor as AnnotationSelectionCursor;
-            Phrase segmentRange = cursor.segmentRange;
+            ReadingSelectionCursor cursor = listCursor.textPaneCursor as ReadingSelectionCursor;
+            PhrasePosition segmentRange = cursor.phrase;
             timingService.removeAnnotation(lyricSnippetID, segmentRange);
           }(),
         ),
         SnippetStartMoveIntent: CallbackAction<SnippetStartMoveIntent>(
           onInvoke: (SnippetStartMoveIntent intent) => () {
-            for (var id in timelinePaneProvider.selectingSnippets) {
-              timingService.manipulateSnippet(id, SnippetEdge.start, false);
+            for (var id in timelinePaneProvider.selectingSentences) {
+              timingService.manipulateSnippet(id, SentenceEdge.start, false);
             }
           }(),
         ),
         SnippetEndMoveIntent: CallbackAction<SnippetEndMoveIntent>(
           onInvoke: (SnippetEndMoveIntent intent) => () {
-            for (var id in timelinePaneProvider.selectingSnippets) {
-              timingService.manipulateSnippet(id, SnippetEdge.end, false);
+            for (var id in timelinePaneProvider.selectingSentences) {
+              timingService.manipulateSnippet(id, SentenceEdge.end, false);
             }
           }(),
         ),
@@ -304,11 +304,11 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
                 seekPosition,
               );
             }
-            if (listCursor is AnnotationSelectionListCursor) {
-              AnnotationSelectionCursor cursor = listCursor.textPaneCursor as AnnotationSelectionCursor;
+            if (listCursor is ReadingSelectionListCursor) {
+              ReadingSelectionCursor cursor = listCursor.textPaneCursor as ReadingSelectionCursor;
               timingService.addAnnotationTimingPoint(
                 listCursor.lyricSnippetID,
-                cursor.segmentRange,
+                cursor.phrase,
                 cursor.insertionPosition,
                 seekPosition,
               );
@@ -327,11 +327,11 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
                 cursor.option,
               );
             }
-            if (listCursor is AnnotationSelectionListCursor) {
-              AnnotationSelectionCursor cursor = listCursor.textPaneCursor as AnnotationSelectionCursor;
+            if (listCursor is ReadingSelectionListCursor) {
+              ReadingSelectionCursor cursor = listCursor.textPaneCursor as ReadingSelectionCursor;
               timingService.removeAnnotationTimingPoint(
                 lyricSnippetID,
-                cursor.segmentRange,
+                cursor.phrase,
                 cursor.insertionPosition,
                 cursor.option,
               );
@@ -343,13 +343,13 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             TextPaneListCursor listCursor = textPaneProvider.textPaneCursorController.textPaneListCursor;
             if (listCursor is SentenceSelectionListCursor) {
               SentenceSelectionCursor cursor = listCursor.textPaneCursor as SentenceSelectionCursor;
-              timingService.divideSnippet(timelinePaneProvider.selectingSnippets[0], cursor.insertionPosition, musicPlayerProvider.seekPosition);
+              timingService.divideSnippet(timelinePaneProvider.selectingSentences[0], cursor.insertionPosition, musicPlayerProvider.seekPosition);
             }
           }(),
         ),
         SnippetConcatenateIntent: CallbackAction<SnippetConcatenateIntent>(
           onInvoke: (SnippetConcatenateIntent intent) => () {
-            final List<LyricSnippetID> selectingSnippets = timelinePaneProvider.selectingSnippets;
+            final List<LyricSnippetID> selectingSnippets = timelinePaneProvider.selectingSentences;
             if (selectingSnippets.length >= 2) {
               timingService.concatenateSnippets(selectingSnippets[0], selectingSnippets[1]);
             }

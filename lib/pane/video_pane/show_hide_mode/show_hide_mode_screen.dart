@@ -4,8 +4,8 @@ import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
 import 'package:lyric_editor/lyric_data/vocalist/vocalist_color_map.dart';
 import 'package:lyric_editor/pane/video_pane/colored_caption.dart';
-import 'package:lyric_editor/pane/video_pane/show_hide_mode/lyric_snippet_track.dart';
-import 'package:lyric_editor/pane/video_pane/show_hide_mode/lyric_snippet_track_map.dart';
+import 'package:lyric_editor/pane/video_pane/show_hide_mode/sentence_track.dart';
+import 'package:lyric_editor/pane/video_pane/show_hide_mode/sentence_track_map.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 
 class ShowHideModeScreen extends StatelessWidget {

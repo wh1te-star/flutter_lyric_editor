@@ -9,8 +9,8 @@ import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
 import 'package:lyric_editor/pane/timeline_pane/current_position_indicator_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/rectangle_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/scale_mark.dart';
-import 'package:lyric_editor/pane/snippet_timeline.dart';
-import 'package:lyric_editor/pane/video_pane/show_hide_mode/lyric_snippet_track_map.dart';
+import 'package:lyric_editor/pane/sentence_timeline.dart';
+import 'package:lyric_editor/pane/video_pane/show_hide_mode/sentence_track_map.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
@@ -32,7 +32,7 @@ class TimelinePaneProvider with ChangeNotifier {
 
   Map<VocalistID, Map<LyricSnippetID, Sentence>> snippetsForeachVocalist = {};
   LyricSnippetID cursorPosition = LyricSnippetID(0);
-  List<LyricSnippetID> selectingSnippets = [];
+  List<LyricSnippetID> selectingSentences = [];
   List<VocalistID> selectingVocalist = [];
   double intervalLength = 10.0;
   double majorMarkLength = 15.0;
@@ -49,7 +49,7 @@ class TimelinePaneProvider with ChangeNotifier {
       List<LyricSnippetID> currentSelectingSnippet = timingService.getSnippetsAtSeekPosition().keys.toList();
 
       if (autoCurrentSelectMode) {
-        selectingSnippets = currentSelectingSnippet;
+        selectingSentences = currentSelectingSnippet;
         notifyListeners();
       }
     });
@@ -69,7 +69,7 @@ class TimelinePaneProvider with ChangeNotifier {
 
       cursorPosition = timingService.lyricSnippetMap.keys.first;
       List<LyricSnippetID> currentSelectingSnippet = timingService.getSnippetsAtSeekPosition().keys.toList();
-      selectingSnippets = currentSelectingSnippet;
+      selectingSentences = currentSelectingSnippet;
       notifyListeners();
     });
   }

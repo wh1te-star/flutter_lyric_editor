@@ -24,7 +24,7 @@ class SentenceSegmentListEdit extends StatelessWidget {
     List<Word> sentenceSegments = sentenceSegmentList.list;
     List<TextPaneCursor?> cursorList = List.filled(sentenceSegmentList.length, null);
     if (textPaneCursor != null) {
-      cursorList = textPaneCursor!.getSegmentDividedCursors(sentenceSegmentList);
+      cursorList = textPaneCursor!.getWordDividedCursors(sentenceSegmentList);
     }
 
     for (int index = 0; index < sentenceSegments.length; index++) {

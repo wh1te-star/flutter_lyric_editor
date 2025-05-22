@@ -6,7 +6,7 @@ import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
-import 'package:lyric_editor/position/segment_range.dart';
+import 'package:lyric_editor/position/phrase_position.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/lyric_data/timeline.dart';
@@ -95,17 +95,17 @@ class SentenceMap {
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  SentenceMap addAnnotation(SentenceID id, Phrase phrase, String readingString) {
+  SentenceMap addReadng(SentenceID id, PhrasePosition phrase, String readingString) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
-    Sentence lyricSnippet = copiedMap[id]!;
-    lyricSnippet = lyricSnippet.addAnnotation(phrase, readingString);
+    Sentence sentence = copiedMap[id]!;
+    sentence = sentence.addReading(phrase, readingString);
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  SentenceMap removeAnnotation(SentenceID id, Phrase phrase) {
+  SentenceMap removeReading(SentenceID id, PhrasePosition phrase) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
-    Sentence lyricSnippet = copiedMap[id]!;
-    lyricSnippet = lyricSnippet.removeAnnotation(phrase);
+    Sentence sentence = copiedMap[id]!;
+    sentence = sentence.removeReading(phrase);
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
@@ -120,24 +120,24 @@ class SentenceMap {
     return SentenceMap(map);
   }
 
-  SentenceMap addAnnotationTimingPoint(SentenceID id, Phrase phrase, InsertionPosition insertionPosition, SeekPosition seekPosition) {
+  SentenceMap addReadingTimingPoint(SentenceID id, PhrasePosition phrase, InsertionPosition insertionPosition, SeekPosition seekPosition) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
-    Sentence lyricSnippet = copiedMap[id]!;
-    lyricSnippet = lyricSnippet.addAnnotationTimingPoint(phrase, insertionPosition, seekPosition);
+    Sentence sentence = copiedMap[id]!;
+    sentence = sentence.addReadingTiming(phrase, insertionPosition, seekPosition);
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  SentenceMap removeAnnotationTimingPoint(SentenceID id, Phrase phrase, InsertionPosition insertionPosition, Option option) {
+  SentenceMap removeReadingTiming(SentenceID id, PhrasePosition phrase, InsertionPosition insertionPosition, Option option) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
-    Sentence lyricSnippet = copiedMap[id]!;
-    lyricSnippet = lyricSnippet.removeAnnotationTimingPoint(phrase, insertionPosition, option);
+    Sentence sentence = copiedMap[id]!;
+    sentence = sentence.removeReadingTiming(phrase, insertionPosition, option);
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  SentenceMap manipulateSentence(SentenceID id, SeekPosition seekPosition, SnippetEdge snippetEdge, bool holdLength) {
+  SentenceMap manipulateSentence(SentenceID id, SeekPosition seekPosition, SentenceEdge sentenceEdge, bool holdLength) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
     Sentence lyricSnippet = copiedMap[id]!;
-    lyricSnippet = lyricSnippet.manipulateSnippet(seekPosition, snippetEdge, holdLength);
+    lyricSnippet = lyricSnippet.manipulateSnippet(seekPosition, sentenceEdge, holdLength);
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
@@ -170,16 +170,16 @@ class SentenceMap {
       _swap(formerSentence, latterSentence);
     }
 
-    SentenceSegmentList concatenatedSentenceSegmentList = formerSentence.timeline.wordList.copyWith();
+    WordList concatenatedWordList = formerSentence.timeline.wordList.copyWith();
     Duration bondPointDuration = Duration(milliseconds: latterSentence.startTimestamp.position - formerSentence.endTimestamp.position);
     int indexCarryUp = formerSentence.timeline.wordList.list.length;
     if (bondPointDuration > Duration.zero) {
-      concatenatedSentenceSegmentList = concatenatedSentenceSegmentList.addSegment(Word("", bondPointDuration));
+      concatenatedWordList = concatenatedWordList.addSegment(Word("", bondPointDuration));
       indexCarryUp++;
     }
-    concatenatedSentenceSegmentList += latterSentence.timeline.wordList;
+    concatenatedWordList += latterSentence.timeline.wordList;
 
-    ReadingMap concatenatedAnnotationMap = formerSentence.readingMap.concatenate(indexCarryUp, latterSentence.readingMap);
+    ReadingMap concatenatedReadingMap = formerSentence.readingMap.concatenate(indexCarryUp, latterSentence.readingMap);
 
     copiedMap.remove(formerSentenceID);
     copiedMap.remove(latterSentenceID);
@@ -187,9 +187,9 @@ class SentenceMap {
       vocalistID: formerSentence.vocalistID,
       timeline: Timeline(
         startTime: formerSentence.startTimestamp,
-        wordList: concatenatedSentenceSegmentList,
+        wordList: concatenatedWordList,
       ),
-      readingMap: concatenatedAnnotationMap,
+      readingMap: concatenatedReadingMap,
     );
 
     return sortSentenceList(SentenceMap(copiedMap));

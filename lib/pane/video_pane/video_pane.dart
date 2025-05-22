@@ -12,7 +12,7 @@ import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
 import 'package:lyric_editor/pane/video_pane/colored_text_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/timeline_pane.dart';
-import 'package:lyric_editor/position/segment_index.dart';
+import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';

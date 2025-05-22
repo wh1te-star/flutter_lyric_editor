@@ -2,30 +2,30 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lyric_editor/sentence/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
 import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/diff_function/char_diff.dart';
-import 'package:lyric_editor/diff_function/diff_segment.dart';
+import 'package:lyric_editor/diff_function/word_diff.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 
-Future<void> displaySnippetDetailDialog(BuildContext context, LyricSnippetID snippetID, Sentence snippet) async {
+Future<void> displaySnippetDetailDialog(BuildContext context, SentenceID sentenceID, Sentence sentence) async {
   return await showDialog<void>(
     context: context,
     builder: (BuildContext context) {
-      return _SnippetDetailDialog(snippetID: snippetID, snippet: snippet);
+      return _SnippetDetailDialog(sentenceID: sentenceID, sentence: sentence);
     },
   );
 }
 
 class _SnippetDetailDialog extends ConsumerStatefulWidget {
-  final LyricSnippetID snippetID;
-  final Sentence snippet;
+  final SentenceID sentenceID;
+  final Sentence sentence;
 
-  const _SnippetDetailDialog({required this.snippetID, required this.snippet});
+  const _SnippetDetailDialog({required this.sentenceID, required this.sentence});
 
   @override
   __SnippetDetailDialogState createState() => __SnippetDetailDialogState();
@@ -33,14 +33,14 @@ class _SnippetDetailDialog extends ConsumerStatefulWidget {
 
 class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   late TimingService timingService;
-  late final LyricSnippetID snippetID;
-  late final Sentence snippet;
+  late final SentenceID sentenceID;
+  late final Sentence sentence;
 
-  late final FocusNode startTimestampFocusNode;
-  late final FocusNode endTimestampFocusNode;
+  late final FocusNode startTimeFocusNode;
+  late final FocusNode endTimeFocusNode;
   late final FocusNode sentenceFocusNode;
-  late final TextEditingController startTimestampController;
-  late final TextEditingController endTimestampController;
+  late final TextEditingController startTimeController;
+  late final TextEditingController endTimeController;
   late final TextEditingController sentenceController;
 
   late final TextStyle textStyle = const TextStyle();
@@ -48,7 +48,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   List<bool> vocalistCheckValues = [];
   List<String> vocalistNameList = [];
 
-  List<String> segmentTexts = [];
+  List<String> wordTexts = [];
   List<Vocalist> vocalists = [];
 
   late TableRow vocalistTabHeader;
@@ -65,18 +65,18 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
 
     timingService = ref.read(timingMasterProvider);
 
-    snippetID = widget.snippetID;
-    snippet = widget.snippet;
+    sentenceID = widget.sentenceID;
+    sentence = widget.sentence;
 
-    startTimestampFocusNode = FocusNode();
-    endTimestampFocusNode = FocusNode();
+    startTimeFocusNode = FocusNode();
+    endTimeFocusNode = FocusNode();
     sentenceFocusNode = FocusNode();
-    startTimestampController = TextEditingController();
-    endTimestampController = TextEditingController();
+    startTimeController = TextEditingController();
+    endTimeController = TextEditingController();
     sentenceController = TextEditingController();
-    startTimestampController.text = snippet.startTimestamp.toString();
-    endTimestampController.text = snippet.endTimestamp.toString();
-    sentenceController.text = snippet.sentence;
+    startTimeController.text = sentence.startTimestamp.toString();
+    endTimeController.text = sentence.endTimestamp.toString();
+    sentenceController.text = sentence.sentence;
     sentenceController.addListener(() {
       setState(() {});
     });
@@ -87,14 +87,14 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
       return isPowerOf2(id);
     }).map((entry) {
       int singleVocalistID = entry.key.id;
-      int snippetVocalistID = snippet.vocalistID.id;
+      int snippetVocalistID = sentence.vocalistID.id;
       vocalistCheckValues.add(hasBit(snippetVocalistID, singleVocalistID));
       return entry.value.name;
     }).toList();
 
     Map<VocalistID, Vocalist> headerVocalists = {};
     for (int id = 1; id < pow(2, timingService.vocalistColorMap.length); id *= 2) {
-      VocalistID vocalistID = snippet.vocalistID;
+      VocalistID vocalistID = sentence.vocalistID;
       if ((vocalistID.id & id) != 0) {
         headerVocalists[vocalistID] = (timingService.vocalistColorMap[VocalistID(id)]!);
       }
@@ -115,12 +115,12 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
     for (MapEntry<VocalistID, Vocalist> entry in headerVocalists.entries) {
       VocalistID vocalistID = entry.key;
       Vocalist vocalist = entry.value;
-      segmentWiseVocalistCheckValues[vocalistID] = List.filled(snippet.sentenceSegments.length, true);
+      segmentWiseVocalistCheckValues[vocalistID] = List.filled(sentence.sentenceSegments.length, true);
     }
 
-    for (int i = 0; i < snippet.sentenceSegments.length; i++) {
-      Word segment = snippet.sentenceSegments[i];
-      segmentTexts.add(segment.word);
+    for (int i = 0; i < sentence.sentenceSegments.length; i++) {
+      Word segment = sentence.sentenceSegments[i];
+      wordTexts.add(segment.word);
 
       List<Widget> segmentWiseVocalistCheckboxes = [];
       for (MapEntry<VocalistID, Vocalist> entry in headerVocalists.entries) {
@@ -165,16 +165,16 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
       );
     }
 
-    currentSentence = snippet.sentence;
+    currentSentence = sentence.sentence;
   }
 
   @override
   void dispose() {
-    startTimestampFocusNode.dispose();
-    endTimestampFocusNode.dispose();
+    startTimeFocusNode.dispose();
+    endTimeFocusNode.dispose();
     sentenceFocusNode.dispose();
-    startTimestampController.dispose();
-    endTimestampController.dispose();
+    startTimeController.dispose();
+    endTimeController.dispose();
     sentenceController.dispose();
     super.dispose();
   }
@@ -182,7 +182,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Snippet Details'),
+      title: const Text('Sentence Details'),
       content: SizedBox(
         width: 300,
         child: DefaultTabController(
@@ -222,7 +222,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
           child: const Text('OK'),
           onPressed: () {
             timingService = ref.read(timingMasterProvider);
-            timingService.editSentence(snippetID, sentenceController.text);
+            timingService.editSentence(sentenceID, sentenceController.text);
             Navigator.of(context).pop();
           },
         ),
@@ -234,14 +234,14 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
     return Column(
       children: [
         const SizedBox(height: 30),
-        const Text("Start and End Timestamp"),
+        const Text("Start and End Time"),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Expanded(
               child: TextField(
-                controller: startTimestampController,
-                focusNode: startTimestampFocusNode,
+                controller: startTimeController,
+                focusNode: startTimeFocusNode,
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 textAlign: TextAlign.center,
@@ -250,8 +250,8 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
             const Text("～"),
             Expanded(
               child: TextField(
-                controller: endTimestampController,
-                focusNode: endTimestampFocusNode,
+                controller: endTimeController,
+                focusNode: endTimeFocusNode,
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 textAlign: TextAlign.center,
@@ -314,9 +314,9 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
 
     CharDiff diff = CharDiff(before, after);
 
-    List<Widget> diffSegmentWidgets = diff.getLeastSegmentOne().map((DiffSegment diffSegment) {
-      String beforeStr = diffSegment.beforeStr;
-      String afterStr = diffSegment.afterStr;
+    List<Widget> wordDiffWidgets = diff.getLeastSegmentOne().map((WordDiff wordDiff) {
+      String beforeStr = wordDiff.beforeStr;
+      String afterStr = wordDiff.afterStr;
       TextStyle textStyle = plainStyle;
       if (beforeStr == "") {
         textStyle = addStyle;
@@ -326,13 +326,13 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
         textStyle = editStyle;
       }
       return Column(children: [
-        Text(diffSegment.beforeStr, style: textStyle),
-        Text(diffSegment.afterStr, style: textStyle),
+        Text(wordDiff.beforeStr, style: textStyle),
+        Text(wordDiff.afterStr, style: textStyle),
       ]);
     }).toList();
 
     return Row(
-      children: diffSegmentWidgets,
+      children: wordDiffWidgets,
     );
   }
 
