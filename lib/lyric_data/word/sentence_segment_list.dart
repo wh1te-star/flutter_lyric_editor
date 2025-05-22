@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
-import 'package:lyric_editor/lyric_data/timing/timing.dart';
-import 'package:lyric_editor/lyric_data/timing/timing_list.dart';
+import 'package:lyric_editor/lyric_data/timing_point/timing_point.dart';
+import 'package:lyric_editor/lyric_data/timing_point/timing_point_list.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 
@@ -46,16 +46,16 @@ class PhraseList {
   }
 
   TimingList toTimingPointList() {
-    List<Timing> timingPoints = [];
+    List<TimingPoint> timingPoints = [];
     InsertionPosition insertionPosition = InsertionPosition(0);
     SeekPosition seekPosition = SeekPosition(0);
     for (Word sentenceSegment in list) {
-      timingPoints.add(Timing(insertionPosition, seekPosition));
+      timingPoints.add(TimingPoint(insertionPosition, seekPosition));
 
       insertionPosition += sentenceSegment.word.length;
       seekPosition += sentenceSegment.duration;
     }
-    timingPoints.add(Timing(insertionPosition, seekPosition));
+    timingPoints.add(TimingPoint(insertionPosition, seekPosition));
 
     return TimingList(timingPoints);
   }

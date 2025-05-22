@@ -1,12 +1,12 @@
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/lyric_data/timeline.dart';
-import 'package:lyric_editor/lyric_data/timing/timing.dart';
+import 'package:lyric_editor/lyric_data/timing_point/timing_point.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
-import 'package:lyric_editor/position/word_index.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/segment_index.dart';
+import 'package:lyric_editor/position/segment_range.dart';
 
 class Reading {
   Timeline timeline;
@@ -26,13 +26,13 @@ class Reading {
   }
 
   String get sentence => timeline.sentence;
-  SeekPosition get startTime => timeline.startTime;
-  SeekPosition get endTime => timeline.endTimestamp;
+  SeekPosition get startTimestamp => timeline.startTime;
+  SeekPosition get endTimestamp => timeline.endTimestamp;
   List<Word> get sentenceSegments => timeline.wordList.list;
-  List<Timing> get timingPoints => timeline.timingList.list;
+  List<TimingPoint> get timingPoints => timeline.timingList.list;
   WordIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timeline.getSegmentIndexFromSeekPosition(seekPosition);
   InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timeline.getInsertionPositionInfo(insertionPosition);
-  WordList getSentenceSegmentList(PhrasePosition segmentRange) => timeline.getSentenceSegmentList(segmentRange);
+  WordList getSentenceSegmentList(Phrase segmentRange) => timeline.getSentenceSegmentList(segmentRange);
 
   Reading copyWith({
     Timeline? timing,
@@ -44,7 +44,7 @@ class Reading {
 
   @override
   String toString() {
-    return "Reading($timeline)";
+    return "Annotation($timeline)";
   }
 
   @override

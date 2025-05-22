@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_data/reading/reading.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/segment_range.dart';
 import 'package:tuple/tuple.dart';
 
 

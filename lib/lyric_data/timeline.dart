@@ -6,15 +6,15 @@ import 'package:lyric_editor/position/character_position.dart';
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
-import 'package:lyric_editor/lyric_data/timing/timing.dart';
-import 'package:lyric_editor/lyric_data/timing/timing_list.dart';
+import 'package:lyric_editor/lyric_data/timing_point/timing_point.dart';
+import 'package:lyric_editor/lyric_data/timing_point/timing_point_list.dart';
 import 'package:lyric_editor/lyric_data/timing_exception.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/insertion_position_info/sentence_segment_insertion_position_info.dart';
 import 'package:lyric_editor/position/insertion_position_info/timing_point_insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
-import 'package:lyric_editor/position/word_index.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/segment_index.dart';
+import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/position/timing_point_index.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
@@ -37,7 +37,7 @@ class Timeline {
   }
 
   List<Word> get words => wordList.list;
-  List<Timing> get timings => timingList.list;
+  List<TimingPoint> get timings => timingList.list;
   int get charCount => wordList.charLength;
   int get segmentCount => wordList.segmentLength;
 
@@ -74,16 +74,16 @@ class Timeline {
     return TimingIndex(wordIndex.index + 1);
   }
 
-  Timing leftTiming(WordIndex wordIndex) {
+  TimingPoint leftTiming(WordIndex wordIndex) {
     if (wordIndex.index < 0 && words.length < wordIndex.index) {
-      return Timing.empty;
+      return TimingPoint.empty;
     }
     return timings[wordIndex.index];
   }
 
-  Timing rightTiming(WordIndex wordIndex) {
+  TimingPoint rightTiming(WordIndex wordIndex) {
     if (wordIndex.index + 1 < 0 && words.length < wordIndex.index + 1) {
-      return Timing.empty;
+      return TimingPoint.empty;
     }
     return timings[wordIndex.index + 1];
   }
@@ -94,7 +94,7 @@ class Timeline {
     WordList wordList = this.wordList;
     List<Word> words = wordList.list;
     Timeline timeline = Timeline(startTime: startTime, wordList: wordList);
-    for (Timing timingPoint in timingList.list) {
+    for (TimingPoint timingPoint in timingList.list) {
       InsertionPosition currentInsertionPosition = timingPoint.insertionPosition;
       if (charPositionTranslation[currentInsertionPosition.position] == -1) {
         try {
@@ -188,7 +188,7 @@ class Timeline {
     return wordList.list[index].word;
   }
 
-  WordList getSentenceSegmentList(PhrasePosition segmentRange) {
+  WordList getSentenceSegmentList(Phrase segmentRange) {
     return WordList(
       words.sublist(
         segmentRange.startIndex.index,
@@ -205,7 +205,7 @@ class Timeline {
       return WordIndex.empty;
     }
     List<Word> sentenceSegments = wordList.list;
-    List<Timing> timingPoints = timingList.list;
+    List<TimingPoint> timingPoints = timingList.list;
     for (int index = 0; index < sentenceSegments.length; index++) {
       if (seekPosition.position < startTime.position + timingPoints[index + 1].seekPosition.position) {
         return WordIndex(index);
@@ -236,14 +236,14 @@ class Timeline {
     }
 
     for (int index = 0; index < timings.length; index++) {
-      Timing timingPoint = timings[index];
+      TimingPoint timingPoint = timings[index];
       if (timingPoint.insertionPosition == insertionPosition) {
         bool duplicate = false;
         if (index + 1 >= timings.length) {
           return TimingPointInsertionPositionInfo(TimingIndex(index), duplicate);
         }
 
-        Timing nextTimingPoint = timings[index + 1];
+        TimingPoint nextTimingPoint = timings[index + 1];
         if (timingPoint.insertionPosition == nextTimingPoint.insertionPosition) {
           duplicate = true;
         }
@@ -252,8 +252,8 @@ class Timeline {
     }
 
     for (int index = 0; index <= words.length; index++) {
-      Timing leftTimingPoint = timings[index];
-      Timing rightTimingPoint = timings[index + 1];
+      TimingPoint leftTimingPoint = timings[index];
+      TimingPoint rightTimingPoint = timings[index + 1];
       if (leftTimingPoint.insertionPosition < insertionPosition && insertionPosition < rightTimingPoint.insertionPosition) {
         return SentenceSegmentInsertionPositionInfo(
           WordIndex(index),
@@ -265,9 +265,9 @@ class Timeline {
     return SentenceSegmentInsertionPositionInfo.empty;
   }
 
-  Timeline manipulateTiming(SeekPosition seekPosition, SentenceEdge snippetEdge, bool holdLength) {
+  Timeline manipulateTiming(SeekPosition seekPosition, SnippetEdge snippetEdge, bool holdLength) {
     if (holdLength) {
-      if (snippetEdge == SentenceEdge.start) {
+      if (snippetEdge == SnippetEdge.start) {
         Duration shiftDuration = Duration(milliseconds: startTime.position - seekPosition.position);
         return shiftTimingBy(shiftDuration);
       } else {
@@ -276,23 +276,23 @@ class Timeline {
       }
     }
 
-    if (snippetEdge == SentenceEdge.start) {
+    if (snippetEdge == SnippetEdge.start) {
       if (seekPosition < startTime) {
         Duration extendDuration = Duration(milliseconds: startTime.position - seekPosition.position);
-        return extendTimingBy(SentenceEdge.start, extendDuration);
+        return extendTimingBy(SnippetEdge.start, extendDuration);
       }
       if (startTime < seekPosition) {
         Duration shortenDuration = Duration(milliseconds: seekPosition.position - startTime.position);
-        return shortenTimingBy(SentenceEdge.start, shortenDuration);
+        return shortenTimingBy(SnippetEdge.start, shortenDuration);
       }
     } else {
       if (seekPosition < endTimestamp) {
         Duration shortenDuration = Duration(milliseconds: endTimestamp.position - seekPosition.position);
-        return shortenTimingBy(SentenceEdge.start, shortenDuration);
+        return shortenTimingBy(SnippetEdge.start, shortenDuration);
       }
       if (endTimestamp < seekPosition) {
         Duration extendDuration = Duration(milliseconds: seekPosition.position - endTimestamp.position);
-        return extendTimingBy(SentenceEdge.start, extendDuration);
+        return extendTimingBy(SnippetEdge.start, extendDuration);
       }
     }
     return this;
@@ -305,12 +305,12 @@ class Timeline {
     );
   }
 
-  Timeline extendTimingBy(SentenceEdge snippetEdge, Duration extendDuration) {
+  Timeline extendTimingBy(SnippetEdge snippetEdge, Duration extendDuration) {
     assert(extendDuration >= Duration.zero, "Should be shorten function.");
 
     SeekPosition startTimestamp = this.startTime;
     WordList sentenceSegmentList = this.wordList;
-    if (snippetEdge == SentenceEdge.start) {
+    if (snippetEdge == SnippetEdge.start) {
       startTimestamp -= extendDuration;
       sentenceSegmentList.list.first.duration += extendDuration;
     } else {
@@ -320,13 +320,13 @@ class Timeline {
     return Timeline(startTime: startTimestamp, wordList: sentenceSegmentList);
   }
 
-  Timeline shortenTimingBy(SentenceEdge snippetEdge, Duration shortenDuration) {
+  Timeline shortenTimingBy(SnippetEdge snippetEdge, Duration shortenDuration) {
     assert(shortenDuration >= Duration.zero, "Should be extend function.");
 
     SeekPosition startTimestamp = this.startTime;
     WordList sentenceSegmentList = this.wordList;
     List<Word> sentenceSegments = sentenceSegmentList.list;
-    if (snippetEdge == SentenceEdge.start) {
+    if (snippetEdge == SnippetEdge.start) {
       int index = 0;
       Duration rest = shortenDuration;
       while (index < sentenceSegments.length && rest - sentenceSegments[index].duration > Duration.zero) {
@@ -371,21 +371,21 @@ class Timeline {
     assert(segmentIndex != -1 || timingPointIndex != -1, "An unexpected state occured.");
 
     if (segmentIndex != -1) {
-      Timing leftTimingPoint = timings[segmentIndex];
-      Timing rightTimingPoint = timings[segmentIndex + 1];
+      TimingPoint leftTimingPoint = timings[segmentIndex];
+      TimingPoint rightTimingPoint = timings[segmentIndex + 1];
       if (seekPosition <= leftTimingPoint.seekPosition || rightTimingPoint.seekPosition <= seekPosition) {
         throw TimingException("The seek position is out of the valid range.");
       }
 
       timings.insert(
         segmentIndex + 1,
-        Timing(charPosition, seekPosition),
+        TimingPoint(charPosition, seekPosition),
       );
       WordList sentenceSegmentList = syncSentenceSegments(TimingList(timings));
       return Timeline(startTime: startTime, wordList: sentenceSegmentList);
     }
 
-    int count = timings.where((Timing timingPoint) {
+    int count = timings.where((TimingPoint timingPoint) {
       return timingPoint.insertionPosition == charPosition;
     }).length;
     if (count >= 2) {
@@ -393,9 +393,9 @@ class Timeline {
     }
 
     assert(0 < timingPointIndex && timingPointIndex < timings.length - 1);
-    Timing leftTimingPoint = timings[timingPointIndex - 1];
-    Timing centerTimingPoint = timings[timingPointIndex];
-    Timing rightTimingPoint = timings[timingPointIndex + 1];
+    TimingPoint leftTimingPoint = timings[timingPointIndex - 1];
+    TimingPoint centerTimingPoint = timings[timingPointIndex];
+    TimingPoint rightTimingPoint = timings[timingPointIndex + 1];
 
     if (seekPosition <= leftTimingPoint.seekPosition || rightTimingPoint.seekPosition <= seekPosition) {
       throw TimingException("The seek position is out of the valid range.");
@@ -407,12 +407,12 @@ class Timeline {
     if (seekPosition < centerTimingPoint.seekPosition) {
       timings.insert(
         timingPointIndex,
-        Timing(charPosition, seekPosition),
+        TimingPoint(charPosition, seekPosition),
       );
     } else {
       timings.insert(
         timingPointIndex + 1,
-        Timing(charPosition, seekPosition),
+        TimingPoint(charPosition, seekPosition),
       );
     }
 
@@ -421,7 +421,7 @@ class Timeline {
   }
 
   Timeline deleteTiming(InsertionPosition charPosition, Option option) {
-    List<Timing> timingPoints = timingList.list;
+    List<TimingPoint> timingPoints = timingList.list;
     int index = timingPoints.indexWhere((timingPoint) => timingPoint.insertionPosition == charPosition);
     if (index == -1) {
       throw TimingException("There is not the specified timing point.");

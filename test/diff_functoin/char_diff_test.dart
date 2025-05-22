@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyric_editor/diff_function/word_diff.dart';
+import 'package:lyric_editor/diff_function/diff_segment.dart';
 import 'package:lyric_editor/diff_function/char_diff.dart';
 
 void main() {
@@ -11,8 +11,8 @@ void main() {
       const String afterStr = "abcdefgh";
       final CharDiff diff = CharDiff(beforeStr, afterStr);
 
-      final List<WordDiff> expected = [
-        WordDiff("abcdefgh", "abcdefgh"),
+      final List<DiffSegment> expected = [
+        DiffSegment("abcdefgh", "abcdefgh"),
       ];
 
       expect(diff.getDiffSegments(), equals(expected));
@@ -23,10 +23,10 @@ void main() {
       const String afterStr = "abcdxxfgh";
       final CharDiff diff = CharDiff(beforeStr, afterStr);
 
-      final List<WordDiff> expected = [
-        WordDiff("abcd", "abcd"),
-        WordDiff("e", "xx"),
-        WordDiff("fgh", "fgh"),
+      final List<DiffSegment> expected = [
+        DiffSegment("abcd", "abcd"),
+        DiffSegment("e", "xx"),
+        DiffSegment("fgh", "fgh"),
       ];
 
       expect(diff.getDiffSegments(), equals(expected));
@@ -37,10 +37,10 @@ void main() {
       const String afterStr = "abcdfgh";
       final CharDiff diff = CharDiff(beforeStr, afterStr);
 
-      final List<WordDiff> expected = [
-        WordDiff("abcd", "abcd"),
-        WordDiff("e", ""),
-        WordDiff("fgh", "fgh"),
+      final List<DiffSegment> expected = [
+        DiffSegment("abcd", "abcd"),
+        DiffSegment("e", ""),
+        DiffSegment("fgh", "fgh"),
       ];
 
       expect(diff.getDiffSegments(), equals(expected));
@@ -51,10 +51,10 @@ void main() {
       const String afterStr = "abcdexxfgh";
       final CharDiff diff = CharDiff(beforeStr, afterStr);
 
-      final List<WordDiff> expected = [
-        WordDiff("abcde", "abcde"),
-        WordDiff("", "xx"),
-        WordDiff("fgh", "fgh"),
+      final List<DiffSegment> expected = [
+        DiffSegment("abcde", "abcde"),
+        DiffSegment("", "xx"),
+        DiffSegment("fgh", "fgh"),
       ];
 
       expect(diff.getDiffSegments(), equals(expected));
@@ -65,12 +65,12 @@ void main() {
       const String afterStr = "abxxcdeh";
       final CharDiff diff = CharDiff(beforeStr, afterStr);
 
-      final List<WordDiff> expected = [
-        WordDiff("ab", "ab"),
-        WordDiff("", "xx"),
-        WordDiff("cde", "cde"),
-        WordDiff("fg", ""),
-        WordDiff("h", "h"),
+      final List<DiffSegment> expected = [
+        DiffSegment("ab", "ab"),
+        DiffSegment("", "xx"),
+        DiffSegment("cde", "cde"),
+        DiffSegment("fg", ""),
+        DiffSegment("h", "h"),
       ];
 
       expect(diff.getDiffSegments(), equals(expected));
@@ -81,9 +81,9 @@ void main() {
       const String afterStr = "xxcdefgh";
       final CharDiff diff = CharDiff(beforeStr, afterStr);
 
-      final List<WordDiff> expected = [
-        WordDiff("ab", "xx"),
-        WordDiff("cdefgh", "cdefgh"),
+      final List<DiffSegment> expected = [
+        DiffSegment("ab", "xx"),
+        DiffSegment("cdefgh", "cdefgh"),
       ];
 
       expect(diff.getDiffSegments(), equals(expected));
@@ -94,9 +94,9 @@ void main() {
       const String afterStr = "abcdefxx";
       final CharDiff diff = CharDiff(beforeStr, afterStr);
 
-      final List<WordDiff> expected = [
-        WordDiff("abcdef", "abcdef"),
-        WordDiff("gh", "xx"),
+      final List<DiffSegment> expected = [
+        DiffSegment("abcdef", "abcdef"),
+        DiffSegment("gh", "xx"),
       ];
 
       print(diff);
@@ -109,10 +109,10 @@ void main() {
       const String afterStr = "Welcometime";
       final CharDiff diff = CharDiff(beforeStr, afterStr);
 
-      final List<WordDiff> expected = [
-        WordDiff("Welcome", "Welcome"),
-        WordDiff("tea", ""),
-        WordDiff("time", "time"),
+      final List<DiffSegment> expected = [
+        DiffSegment("Welcome", "Welcome"),
+        DiffSegment("tea", ""),
+        DiffSegment("time", "time"),
       ];
 
       print(diff);

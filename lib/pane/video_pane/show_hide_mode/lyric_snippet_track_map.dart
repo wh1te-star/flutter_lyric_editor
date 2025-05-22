@@ -1,4 +1,4 @@
-import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
+import 'package:lyric_editor/sentence/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
@@ -6,7 +6,7 @@ import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
 import 'package:lyric_editor/pane/video_pane/show_hide_mode/show_hide_track.dart';
 
 class ShowHideTrackMap {
-  late Map<SentenceID, ShowHideTrack> _map;
+  late Map<LyricSnippetID, ShowHideTrack> _map;
 
   ShowHideTrackMap({
     required SentenceMap lyricSnippetMap,
@@ -15,45 +15,45 @@ class ShowHideTrackMap {
     VocalistID? vocalistID,
   }) {
     _map = constructTrackNumberMap(
-      sentenceMap: lyricSnippetMap,
+      lyricSnippetMap: lyricSnippetMap,
       startBulge: startBulge,
       endBulge: endBulge,
       vocalistID: vocalistID,
     );
   }
 
-  Map<SentenceID, ShowHideTrack> get map => _map;
+  Map<LyricSnippetID, ShowHideTrack> get map => _map;
 
   static ShowHideTrackMap get empty => ShowHideTrackMap(lyricSnippetMap: SentenceMap.empty);
   bool get isEmpty => map.isEmpty;
 
   int get length => map.length;
-  ShowHideTrack operator [](SentenceID lyricSnippetID) => map[lyricSnippetID]!;
-  void operator []=(SentenceID key, ShowHideTrack value) {
+  ShowHideTrack operator [](LyricSnippetID lyricSnippetID) => map[lyricSnippetID]!;
+  void operator []=(LyricSnippetID key, ShowHideTrack value) {
     map[key] = value;
   }
 
-  Map<SentenceID, ShowHideTrack> constructTrackNumberMap({
-    required SentenceMap sentenceMap,
+  Map<LyricSnippetID, ShowHideTrack> constructTrackNumberMap({
+    required SentenceMap lyricSnippetMap,
     Duration startBulge = Duration.zero,
     Duration endBulge = Duration.zero,
     VocalistID? vocalistID,
   }) {
     if (vocalistID != null) {
-      sentenceMap = sentenceMap.getSentenceByVocalistID(vocalistID);
+      lyricSnippetMap = lyricSnippetMap.getLyricSnippetByVocalistID(vocalistID);
     }
-    if (sentenceMap.isEmpty) return {};
+    if (lyricSnippetMap.isEmpty) return {};
 
-    Map<SentenceID, ShowHideTrack> snippetTracks = {};
+    Map<LyricSnippetID, ShowHideTrack> snippetTracks = {};
 
     int maxOverlap = 0;
     int currentOverlap = 1;
-    int currentEndTime = sentenceMap.values.first.endTimestamp.position + endBulge.inMilliseconds;
-    snippetTracks[sentenceMap.keys.first] = ShowHideTrack(0);
+    int currentEndTime = lyricSnippetMap.values.first.endTimestamp.position + endBulge.inMilliseconds;
+    snippetTracks[lyricSnippetMap.keys.first] = ShowHideTrack(0);
 
-    for (int index = 1; index < sentenceMap.length; index++) {
-      SentenceID currentSnippetID = sentenceMap.keys.toList()[index];
-      Sentence currentSnippet = sentenceMap.values.toList()[index];
+    for (int index = 1; index < lyricSnippetMap.length; index++) {
+      LyricSnippetID currentSnippetID = lyricSnippetMap.keys.toList()[index];
+      Sentence currentSnippet = lyricSnippetMap.values.toList()[index];
       int start = currentSnippet.startTimestamp.position - startBulge.inMilliseconds;
       int end = currentSnippet.endTimestamp.position + endBulge.inMilliseconds;
       if (start <= currentEndTime) {

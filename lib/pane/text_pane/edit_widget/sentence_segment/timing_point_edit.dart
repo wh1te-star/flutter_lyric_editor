@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:lyric_editor/lyric_data/timing/timing.dart';
+import 'package:lyric_editor/lyric_data/timing_point/timing_point.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 class TimingPointEdit extends StatelessWidget {
   static const String timingPointChar = '🕛';
-  static const String readingExistenceBorderChar = '🔽';
+  static const String annotationExistenceBorderChar = '🔽';
 
   final bool timingPoint;
   final CursorBlinker? cursorBlinker;
@@ -18,7 +18,7 @@ class TimingPointEdit extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String symbolChar = timingPointChar;
-    if (!timingPoint) symbolChar = readingExistenceBorderChar;
+    if (!timingPoint) symbolChar = annotationExistenceBorderChar;
     String withSpace = "\xa0$symbolChar\xa0";
 
     TextStyle textStyle = const TextStyle(

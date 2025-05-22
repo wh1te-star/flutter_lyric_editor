@@ -7,11 +7,11 @@ import 'package:lyric_editor/position/insertion_position_info/insertion_position
 import 'package:lyric_editor/position/insertion_position_info/sentence_segment_insertion_position_info.dart';
 import 'package:lyric_editor/position/insertion_position_info/timing_point_insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
-import 'package:lyric_editor/position/word_index.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/segment_index.dart';
+import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/timeline.dart';
-import 'package:lyric_editor/lyric_data/timing/timing.dart';
+import 'package:lyric_editor/lyric_data/timing_point/timing_point.dart';
 import 'package:lyric_editor/position/timing_point_index.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:tuple/tuple.dart';
@@ -38,40 +38,40 @@ class Sentence {
   SeekPosition get startTimestamp => timeline.startTime;
   SeekPosition get endTimestamp => timeline.endTimestamp;
   List<Word> get sentenceSegments => timeline.wordList.list;
-  List<Timing> get timingPoints => timeline.timingList.list;
+  List<TimingPoint> get timingPoints => timeline.timingList.list;
   int get charLength => timeline.charCount;
   int get segmentLength => timeline.segmentCount;
   WordIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timeline.getSegmentIndexFromSeekPosition(seekPosition);
   InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timeline.getInsertionPositionInfo(insertionPosition);
   double getSegmentProgress(SeekPosition seekPosition) => timeline.getSegmentProgress(seekPosition);
-  WordList getSentenceSegmentList(PhrasePosition segmentRange) => timeline.getSentenceSegmentList(segmentRange);
+  WordList getSentenceSegmentList(Phrase segmentRange) => timeline.getSentenceSegmentList(segmentRange);
   TimingIndex leftTimingPointIndex(WordIndex segmentIndex) => timeline.leftTimingIndex(segmentIndex);
   TimingIndex rightTimingPointIndex(WordIndex segmentIndex) => timeline.rightTimingIndex(segmentIndex);
-  Timing leftTimingPoint(WordIndex segmentIndex) => timeline.leftTiming(segmentIndex);
-  Timing rightTimingPoint(WordIndex segmentIndex) => timeline.rightTiming(segmentIndex);
+  TimingPoint leftTimingPoint(WordIndex segmentIndex) => timeline.leftTiming(segmentIndex);
+  TimingPoint rightTimingPoint(WordIndex segmentIndex) => timeline.rightTiming(segmentIndex);
 
-  MapEntry<PhrasePosition, Reading> getReadingWords(WordIndex index) {
+  MapEntry<Phrase, Reading> getAnnotationWords(WordIndex index) {
     return readingMap.map.entries.firstWhere(
       (entry) => entry.key.startIndex <= index && index <= entry.key.endIndex,
-      orElse: () => MapEntry(PhrasePosition.empty, Reading.empty),
+      orElse: () => MapEntry(Phrase.empty, Reading.empty),
     );
   }
 
-  PhrasePosition getPhraseFromSeekPosition(SeekPosition seekPosition) {
-    for (MapEntry<PhrasePosition, Reading> entry in readingMap.map.entries) {
-      PhrasePosition range = entry.key;
-      Reading reading = entry.value;
+  Phrase getAnnotationRangeFromSeekPosition(SeekPosition seekPosition) {
+    for (MapEntry<Phrase, Reading> entry in readingMap.map.entries) {
+      Phrase range = entry.key;
+      Reading annotation = entry.value;
       SeekPosition startTimestamp = timeline.startTime;
-      List<Timing> timingPoints = timeline.timingList.list;
-      List<Timing> readingTimings = reading.timeline.timingList.list;
-      SeekPosition readingStartSeekPosition = SeekPosition(startTimestamp.position + timingPoints[range.startIndex.index].seekPosition.position);
-      SeekPosition startSeekPosition = SeekPosition(readingStartSeekPosition.position + readingTimings.first.seekPosition.position);
-      SeekPosition endSeekPosition = SeekPosition(readingStartSeekPosition.position + readingTimings.last.seekPosition.position);
+      List<TimingPoint> timingPoints = timeline.timingList.list;
+      List<TimingPoint> annotationTimingPoints = annotation.timeline.timingList.list;
+      SeekPosition annotationStartSeekPosition = SeekPosition(startTimestamp.position + timingPoints[range.startIndex.index].seekPosition.position);
+      SeekPosition startSeekPosition = SeekPosition(annotationStartSeekPosition.position + annotationTimingPoints.first.seekPosition.position);
+      SeekPosition endSeekPosition = SeekPosition(annotationStartSeekPosition.position + annotationTimingPoints.last.seekPosition.position);
       if (startSeekPosition <= seekPosition && seekPosition < endSeekPosition) {
         return range;
       }
     }
-    return PhrasePosition.empty;
+    return Phrase.empty;
   }
 
   Sentence editSentence(String newSentence) {
@@ -81,47 +81,48 @@ class Sentence {
   }
 
   Sentence addTimingPoint(InsertionPosition charPosition, SeekPosition seekPosition) {
-    ReadingMap readingMap = carryUpReadingPhrases(charPosition);
+    ReadingMap annotationMap = carryUpAnnotationSegments(charPosition);
     Timeline timing = this.timeline.addTimingPoint(charPosition, seekPosition);
-    return Sentence(vocalistID: vocalistID, timeline: timing, readingMap: readingMap);
+    return Sentence(vocalistID: vocalistID, timeline: timing, readingMap: annotationMap);
   }
 
   Sentence removeTimingPoint(InsertionPosition charPosition, Option option) {
-    ReadingMap readingMap = carryDownReadingPhrase(charPosition);
+    ReadingMap annotationMap = carryDownAnnotationSegments(charPosition);
     Timeline timing = this.timeline.deleteTiming(charPosition, option);
-    return Sentence(vocalistID: vocalistID, timeline: timing, readingMap: readingMap);
+    return Sentence(vocalistID: vocalistID, timeline: timing, readingMap: annotationMap);
   }
 
-  Sentence addReadingTiming(PhrasePosition segmentRange, InsertionPosition charPosition, SeekPosition seekPosition) {
+  Sentence addAnnotationTimingPoint(Phrase segmentRange, InsertionPosition charPosition, SeekPosition seekPosition) {
     Timeline timing = readingMap[segmentRange]!.timeline.addTimingPoint(charPosition, seekPosition);
     return Sentence(vocalistID: vocalistID, timeline: timing, readingMap: readingMap);
   }
 
-  Sentence removeReadingTiming(PhrasePosition segmentRange, InsertionPosition charPosition, Option option) {
+  Sentence removeAnnotationTimingPoint(Phrase segmentRange, InsertionPosition charPosition, Option option) {
     Timeline timing = readingMap[segmentRange]!.timeline.deleteTiming(charPosition, option);
     return Sentence(vocalistID: vocalistID, timeline: timing, readingMap: readingMap);
   }
 
-  Sentence addReading(PhrasePosition segmentRange, String readingString) {
-    ReadingMap readingMap = this.readingMap;
-    SeekPosition readingStartTime = SeekPosition(startTimestamp.position + timingPoints[segmentRange.startIndex.index].seekPosition.position);
-    SeekPosition readingEndTime = SeekPosition(startTimestamp.position + timingPoints[segmentRange.endIndex.index + 1].seekPosition.position);
-    Duration readingDuration = Duration(milliseconds: readingEndTime.position - readingStartTime.position);
-    Word sentenceSegment = Word(readingString, readingDuration);
+  Sentence addAnnotation(Phrase segmentRange, String annotationString) {
+    ReadingMap annotationMap = this.readingMap;
+    SeekPosition annotationStartTimestamp = SeekPosition(startTimestamp.position + timingPoints[segmentRange.startIndex.index].seekPosition.position);
+    SeekPosition annotationEndTimestamp = SeekPosition(startTimestamp.position + timingPoints[segmentRange.endIndex.index + 1].seekPosition.position);
+    Duration annotationDuration = Duration(milliseconds: annotationEndTimestamp.position - annotationStartTimestamp.position);
+    Word sentenceSegment = Word(annotationString, annotationDuration);
     Timeline timing = Timeline(
-      startTime: readingStartTime,
+      startTime: annotationStartTimestamp,
       wordList: WordList([sentenceSegment]),
     );
-    readingMap.map[segmentRange] = Reading(timeline: timing);
-    return Sentence(vocalistID: vocalistID, timeline: timing, readingMap: readingMap);
+    annotationMap.map[segmentRange] = Reading(timeline: timing);
+    return Sentence(vocalistID: vocalistID, timeline: timing, readingMap: annotationMap);
   }
 
-  Sentence removeReading(PhrasePosition phrase) {
-    readingMap.map.remove(phrase);
-    return Sentence(vocalistID: vocalistID, timeline: timeline, readingMap: readingMap);
+  Sentence removeAnnotation(Phrase range) {
+    ReadingMap annotationMap = this.readingMap;
+    annotationMap.map.remove(range);
+    return Sentence(vocalistID: vocalistID, timeline: timeline, readingMap: annotationMap);
   }
 
-  Sentence manipulateSnippet(SeekPosition seekPosition, SentenceEdge snippetEdge, bool holdLength) {
+  Sentence manipulateSnippet(SeekPosition seekPosition, SnippetEdge snippetEdge, bool holdLength) {
     Timeline newTiming = timeline.copyWith();
     newTiming = newTiming.manipulateTiming(seekPosition, snippetEdge, holdLength);
     return Sentence(vocalistID: vocalistID, timeline: newTiming, readingMap: readingMap);
@@ -156,12 +157,12 @@ class Sentence {
     return Tuple2(snippet1, snippet2);
   }
 
-  ReadingMap carryUpReadingPhrases(InsertionPosition insertionPosition) {
+  ReadingMap carryUpAnnotationSegments(InsertionPosition insertionPosition) {
     InsertionPositionInfo info = timeline.getInsertionPositionInfo(insertionPosition)!;
-    Map<PhrasePosition, Reading> updatedReadings = {};
+    Map<Phrase, Reading> updatedAnnotations = {};
 
-    readingMap.map.forEach((PhrasePosition key, Reading value) {
-      PhrasePosition newKey = key.copyWith();
+    readingMap.map.forEach((Phrase key, Reading value) {
+      Phrase newKey = key.copyWith();
 
       switch (info) {
         case SentenceSegmentInsertionPositionInfo():
@@ -190,15 +191,15 @@ class Sentence {
           assert(false, "An unexpected state occurred for the insertion position info");
       }
 
-      updatedReadings[newKey] = value;
+      updatedAnnotations[newKey] = value;
     });
 
-    return ReadingMap(updatedReadings);
+    return ReadingMap(updatedAnnotations);
   }
 
-  ReadingMap carryDownReadingPhrase(InsertionPosition insertionPosition) {
+  ReadingMap carryDownAnnotationSegments(InsertionPosition insertionPosition) {
     InsertionPositionInfo info = timeline.getInsertionPositionInfo(insertionPosition)!;
-    Map<PhrasePosition, Reading> updatedReadings = {};
+    Map<Phrase, Reading> updatedAnnotations = {};
     int index = -1;
     if (info is SentenceSegmentInsertionPositionInfo) {
       index = info.sentenceSegmentIndex.index;
@@ -208,8 +209,8 @@ class Sentence {
       assert(false, "An unexpected state was occurred for the insertion position");
     }
 
-    readingMap.map.forEach((PhrasePosition key, Reading value) {
-      PhrasePosition newKey = key.copyWith();
+    readingMap.map.forEach((Phrase key, Reading value) {
+      Phrase newKey = key.copyWith();
       int startIndex = key.startIndex.index;
       int endIndex = key.endIndex.index + 1;
       if (index == startIndex && index == endIndex + 1) {
@@ -225,49 +226,49 @@ class Sentence {
       } else if (index < endIndex) {
         newKey.endIndex--;
       }
-      updatedReadings[newKey] = value;
+      updatedAnnotations[newKey] = value;
     });
 
-    return ReadingMap(updatedReadings);
+    return ReadingMap(updatedAnnotations);
   }
 
-  List<Tuple2<PhrasePosition, Reading?>> getReadingExistenceRangeList() {
+  List<Tuple2<Phrase, Reading?>> getAnnotationExistenceRangeList() {
     if (readingMap.isEmpty) {
       WordIndex startIndex = WordIndex(0);
       WordIndex endIndex = WordIndex(sentenceSegments.length - 1);
       return [
         Tuple2(
-          PhrasePosition(startIndex, endIndex),
+          Phrase(startIndex, endIndex),
           null,
         ),
       ];
     }
 
-    List<Tuple2<PhrasePosition, Reading?>> rangeList = [];
+    List<Tuple2<Phrase, Reading?>> rangeList = [];
     int previousEnd = -1;
 
-    for (MapEntry<PhrasePosition, Reading> entry in readingMap.entries) {
-      PhrasePosition phrase = entry.key;
-      Reading reading = entry.value;
+    for (MapEntry<Phrase, Reading> entry in readingMap.entries) {
+      Phrase segmentRange = entry.key;
+      Reading annotation = entry.value;
 
-      if (previousEnd + 1 <= phrase.startIndex.index - 1) {
+      if (previousEnd + 1 <= segmentRange.startIndex.index - 1) {
         WordIndex startIndex = WordIndex(previousEnd + 1);
-        WordIndex endIndex = WordIndex(phrase.startIndex.index - 1);
+        WordIndex endIndex = WordIndex(segmentRange.startIndex.index - 1);
         rangeList.add(
           Tuple2(
-            PhrasePosition(startIndex, endIndex),
+            Phrase(startIndex, endIndex),
             null,
           ),
         );
       }
       rangeList.add(
         Tuple2(
-          phrase,
-          reading,
+          segmentRange,
+          annotation,
         ),
       );
 
-      previousEnd = phrase.endIndex.index;
+      previousEnd = segmentRange.endIndex.index;
     }
 
     if (previousEnd + 1 <= sentenceSegments.length - 1) {
@@ -275,7 +276,7 @@ class Sentence {
       WordIndex endIndex = WordIndex(sentenceSegments.length - 1);
       rangeList.add(
         Tuple2(
-          PhrasePosition(startIndex, endIndex),
+          Phrase(startIndex, endIndex),
           null,
         ),
       );
@@ -287,12 +288,12 @@ class Sentence {
   Sentence copyWith({
     VocalistID? vocalistID,
     Timeline? timing,
-    ReadingMap? readingMap,
+    ReadingMap? annotationMap,
   }) {
     return Sentence(
       vocalistID: vocalistID ?? this.vocalistID,
       timeline: timing ?? this.timeline,
-      readingMap: readingMap ?? this.readingMap,
+      readingMap: annotationMap ?? this.readingMap,
     );
   }
 

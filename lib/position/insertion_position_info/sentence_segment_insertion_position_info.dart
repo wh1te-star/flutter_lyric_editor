@@ -1,5 +1,5 @@
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
-import 'package:lyric_editor/position/word_index.dart';
+import 'package:lyric_editor/position/segment_index.dart';
 
 class SentenceSegmentInsertionPositionInfo implements InsertionPositionInfo {
   WordIndex sentenceSegmentIndex;

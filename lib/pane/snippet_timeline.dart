@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/dialog/sentence_detail_dialog.dart';
-import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
 import 'package:lyric_editor/lyric_data/reading/reading.dart';
+import 'package:lyric_editor/sentence/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
-import 'package:lyric_editor/lyric_data/timing/timing.dart';
+import 'package:lyric_editor/position/segment_range.dart';
+import 'package:lyric_editor/lyric_data/timing_point/timing_point.dart';
 import 'package:lyric_editor/pane/timeline_pane/rectangle_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/triangle_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/timeline_pane.dart';
@@ -27,18 +27,18 @@ class SnippetTimeline extends ConsumerStatefulWidget {
 class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
   double topMargin = 5.0;
   double timingPointIndicatorHeight = 5.0;
-  double readingItemHeight = 15.0;
-  double readingSnippetMargin = 1.0;
+  double annotationItemHeight = 15.0;
+  double annotationSnippetMargin = 1.0;
   double snippetItemHeight = 30.0;
   double bottomMargin = 2.0;
   double get trackHeight {
-    return topMargin + timingPointIndicatorHeight + readingItemHeight + readingSnippetMargin + snippetItemHeight + bottomMargin;
+    return topMargin + timingPointIndicatorHeight + annotationItemHeight + annotationSnippetMargin + snippetItemHeight + bottomMargin;
   }
 
   double timingPointIndicatorWidth = 5.0;
 
   VocalistID vocalistID;
-  Map<SentenceID, int> sentenceTracks = {};
+  Map<LyricSnippetID, int> snippetTracks = {};
 
   _SnippetTimelineState(
     this.vocalistID,
@@ -63,31 +63,31 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     final TimingService timingService = ref.read(timingMasterProvider);
     List<Widget> snippetItemWidgets = [];
     List<Widget> timingPointIndicatorWidgets = [];
-    List<Widget> readingItemWidgets = [];
-    List<Widget> readingTimingPointIndicatorWidgets = [];
+    List<Widget> annotationItemWidgets = [];
+    List<Widget> annotationTimingPointIndicatorWidgets = [];
 
-    Map<SentenceID, Sentence> snippets = timingService.getLyricSnippetByVocalistID(vocalistID).map;
-    sentenceTracks = getTrack(snippets);
-    for (MapEntry<SentenceID, Sentence> entry in snippets.entries) {
-      SentenceID snippetID = entry.key;
+    Map<LyricSnippetID, Sentence> snippets = timingService.getLyricSnippetByVocalistID(vocalistID).map;
+    snippetTracks = getTrack(snippets);
+    for (MapEntry<LyricSnippetID, Sentence> entry in snippets.entries) {
+      LyricSnippetID snippetID = entry.key;
       Sentence snippet = entry.value;
 
       snippetItemWidgets.add(getSnippetItemWidget(snippetID, snippet));
       timingPointIndicatorWidgets += getTimingPointIndicatorWidgets(snippetID, snippet);
-      readingItemWidgets += getReadingItemWidget(snippetID, snippet);
-      readingTimingPointIndicatorWidgets += getReadingTimingIndicatorWidgets(snippetID, snippet);
+      annotationItemWidgets += getAnnotationItemWidget(snippetID, snippet);
+      annotationTimingPointIndicatorWidgets += getAnnotationTimingPointIndicatorWidgets(snippetID, snippet);
     }
     return Stack(
-      children: snippetItemWidgets + timingPointIndicatorWidgets + readingItemWidgets + readingTimingPointIndicatorWidgets,
+      children: snippetItemWidgets + timingPointIndicatorWidgets + annotationItemWidgets + annotationTimingPointIndicatorWidgets,
     );
   }
 
-  Map<SentenceID, int> getTrack(Map<SentenceID, Sentence> sentences) {
-    Map<SentenceID, int> tracks = {};
+  Map<LyricSnippetID, int> getTrack(Map<LyricSnippetID, Sentence> snippets) {
+    Map<LyricSnippetID, int> tracks = {};
     int currentTrack = 0;
     int previousEndtime = 0;
-    for (MapEntry<SentenceID, Sentence> entry in sentences.entries) {
-      SentenceID id = entry.key;
+    for (MapEntry<LyricSnippetID, Sentence> entry in snippets.entries) {
+      LyricSnippetID id = entry.key;
       Sentence snippet = entry.value;
 
       if (snippet.sentence == "") {
@@ -109,38 +109,38 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     return tracks;
   }
 
-  Widget getSnippetItemWidget(SentenceID sentenceID, Sentence sentence) {
+  Widget getSnippetItemWidget(LyricSnippetID snippetID, Sentence snippet) {
     final TimingService timingService = ref.read(timingMasterProvider);
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
 
     final Color vocalistColor = Color(timingService.vocalistColorMap[vocalistID]!.color);
 
     Size itemSize = Size(
-      duration2Length(sentence.endTimestamp.position - sentence.startTimestamp.position),
+      duration2Length(snippet.endTimestamp.position - snippet.startTimestamp.position),
       snippetItemHeight,
     );
     Widget snippetItem = Positioned(
-      left: duration2Length(sentence.startTimestamp.position),
-      top: trackHeight * sentenceTracks[sentenceID]! + topMargin + timingPointIndicatorHeight + readingItemHeight + readingSnippetMargin,
+      left: duration2Length(snippet.startTimestamp.position),
+      top: trackHeight * snippetTracks[snippetID]! + topMargin + timingPointIndicatorHeight + annotationItemHeight + annotationSnippetMargin,
       child: GestureDetector(
         onTap: () {
-          List<SentenceID> selectingSnippets = timelinePaneProvider.selectingSentences;
-          if (selectingSnippets.contains(sentenceID)) {
-            timelinePaneProvider.selectingSentences.remove(sentenceID);
+          List<LyricSnippetID> selectingSnippets = timelinePaneProvider.selectingSnippets;
+          if (selectingSnippets.contains(snippetID)) {
+            timelinePaneProvider.selectingSnippets.remove(snippetID);
           } else {
-            timelinePaneProvider.selectingSentences.add(sentenceID);
+            timelinePaneProvider.selectingSnippets.add(snippetID);
           }
           setState(() {});
         },
         onDoubleTap: () {
-          displaySnippetDetailDialog(context, sentenceID, sentence);
+          displaySnippetDetailDialog(context, snippetID, snippet);
         },
         child: CustomPaint(
           size: itemSize,
           painter: RectanglePainter(
-            sentence: sentence.sentence,
+            sentence: snippet.sentence,
             color: vocalistColor,
-            isSelected: timelinePaneProvider.selectingSentences.contains(sentenceID),
+            isSelected: timelinePaneProvider.selectingSnippets.contains(snippetID),
             borderLineWidth: 2.0,
           ),
         ),
@@ -149,7 +149,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     return snippetItem;
   }
 
-  List<Widget> getReadingItemWidget(SentenceID sentenceID, Sentence sentence) {
+  List<Widget> getAnnotationItemWidget(LyricSnippetID snippetID, Sentence snippet) {
     List<Widget> annotaitonItems = [];
 
     final TimingService timingService = ref.read(timingMasterProvider);
@@ -157,23 +157,23 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
 
     final Color vocalistColor = Color(timingService.vocalistColorMap[vocalistID]!.color);
 
-    for (MapEntry<PhrasePosition, Reading> entry in sentence.readingMap.map.entries) {
-      PhrasePosition range = entry.key;
-      Reading reading = entry.value;
+    for (MapEntry<Phrase, Reading> entry in snippet.readingMap.map.entries) {
+      Phrase range = entry.key;
+      Reading annotation = entry.value;
       Size itemSize = Size(
-        duration2Length(reading.endTime.position - reading.startTime.position),
-        readingItemHeight,
+        duration2Length(annotation.endTimestamp.position - annotation.startTimestamp.position),
+        annotationItemHeight,
       );
-      Widget readingItem = Positioned(
-        left: duration2Length(reading.startTime.position),
-        top: trackHeight * sentenceTracks[sentenceID]! + topMargin + timingPointIndicatorHeight,
+      Widget annotationItem = Positioned(
+        left: duration2Length(annotation.startTimestamp.position),
+        top: trackHeight * snippetTracks[snippetID]! + topMargin + timingPointIndicatorHeight,
         child: GestureDetector(
           onTap: () {
-            List<SentenceID> selectingSnippets = timelinePaneProvider.selectingSentences;
-            if (selectingSnippets.contains(sentenceID)) {
-              timelinePaneProvider.selectingSentences.remove(sentenceID);
+            List<LyricSnippetID> selectingSnippets = timelinePaneProvider.selectingSnippets;
+            if (selectingSnippets.contains(snippetID)) {
+              timelinePaneProvider.selectingSnippets.remove(snippetID);
             } else {
-              timelinePaneProvider.selectingSentences.add(sentenceID);
+              timelinePaneProvider.selectingSnippets.add(snippetID);
             }
             setState(() {});
           },
@@ -182,29 +182,29 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
             painter: RectanglePainter(
               sentence: "",
               color: vocalistColor,
-              isSelected: timelinePaneProvider.selectingSentences.contains(sentenceID),
+              isSelected: timelinePaneProvider.selectingSnippets.contains(snippetID),
               borderLineWidth: 2.0,
             ),
           ),
         ),
       );
-      annotaitonItems.add(readingItem);
+      annotaitonItems.add(annotationItem);
     }
     return annotaitonItems;
   }
 
-  List<Widget> getTimingPointIndicatorWidgets(SentenceID sentenceID, Sentence sentence) {
+  List<Widget> getTimingPointIndicatorWidgets(LyricSnippetID snippetID, Sentence snippet) {
     Size itemSize = Size(
       timingPointIndicatorWidth,
       timingPointIndicatorHeight,
     );
 
     List<Widget> indicatorWidgets = [];
-    for (int index = 0; index < sentence.timingPoints.length; index++) {
-      Timing timingPoint = sentence.timingPoints[index];
+    for (int index = 0; index < snippet.timingPoints.length; index++) {
+      TimingPoint timingPoint = snippet.timingPoints[index];
       Widget indicator = Positioned(
-        left: duration2Length(sentence.startTimestamp.position + timingPoint.seekPosition.position),
-        top: trackHeight * sentenceTracks[sentenceID]! + topMargin + timingPointIndicatorHeight + readingItemHeight + readingSnippetMargin + snippetItemHeight,
+        left: duration2Length(snippet.startTimestamp.position + timingPoint.seekPosition.position),
+        top: trackHeight * snippetTracks[snippetID]! + topMargin + timingPointIndicatorHeight + annotationItemHeight + annotationSnippetMargin + snippetItemHeight,
         child: CustomPaint(
           size: itemSize,
           painter: TrianglePainter(
@@ -220,20 +220,21 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     return indicatorWidgets;
   }
 
-  List<Widget> getReadingTimingIndicatorWidgets(SentenceID sentenceID, Sentence sentence) {
+  List<Widget> getAnnotationTimingPointIndicatorWidgets(LyricSnippetID snippetID, Sentence snippet) {
     Size itemSize = Size(
       timingPointIndicatorWidth,
       timingPointIndicatorHeight,
     );
 
     List<Widget> indicatorWidgets = [];
-    for (MapEntry<PhrasePosition, Reading> entry in sentence.readingMap.map.entries) {
-      Reading reading = entry.value;
-      for (int index = 0; index < reading.timingPoints.length; index++) {
-        Timing timingPoint = reading.timingPoints[index];
+    for (MapEntry<Phrase, Reading> entry in snippet.readingMap.map.entries) {
+      Phrase range = entry.key;
+      Reading annotation = entry.value;
+      for (int index = 0; index < annotation.timingPoints.length; index++) {
+        TimingPoint timingPoint = annotation.timingPoints[index];
         Widget indicator = Positioned(
-          left: duration2Length(reading.startTime.position + timingPoint.seekPosition.position),
-          top: trackHeight * sentenceTracks[sentenceID]! + topMargin,
+          left: duration2Length(annotation.startTimestamp.position + timingPoint.seekPosition.position),
+          top: trackHeight * snippetTracks[snippetID]! + topMargin,
           child: CustomPaint(
             size: itemSize,
             painter: TrianglePainter(

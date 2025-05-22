@@ -1,50 +1,50 @@
 import 'package:collection/collection.dart';
 import 'package:lyric_editor/lyric_data/reading/reading.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/segment_range.dart';
 
 class ReadingMap {
-  Map<PhrasePosition, Reading> readingMap;
+  Map<Phrase, Reading> readingMap;
 
   ReadingMap(this.readingMap);
 
   static ReadingMap get empty => ReadingMap({});
   bool get isEmpty => map.isEmpty;
 
-  Iterable<MapEntry<PhrasePosition, Reading>> get entries => map.entries;
-  Iterable<PhrasePosition> get keys => map.keys;
+  Iterable<MapEntry<Phrase, Reading>> get entries => map.entries;
+  Iterable<Phrase> get keys => map.keys;
   Iterable<Reading> get values => map.values;
   int get length => map.length;
   void clear() => map.clear();
-  bool containsKey(PhrasePosition key) => map.containsKey(key);
-  Reading? operator [](PhrasePosition key) => map[key];
-  void operator []=(PhrasePosition key, Reading value) {
+  bool containsKey(Phrase key) => map.containsKey(key);
+  Reading? operator [](Phrase key) => map[key];
+  void operator []=(Phrase key, Reading value) {
     map[key] = value;
   }
 
-  Map<PhrasePosition, Reading> get map => readingMap;
+  Map<Phrase, Reading> get map => readingMap;
 
   ReadingMap concatenate(int carryUp, ReadingMap other) {
-    Map<PhrasePosition, Reading> newMap = Map<PhrasePosition, Reading>.from(readingMap);
-    for (MapEntry<PhrasePosition, Reading> entry in other.readingMap.entries) {
-      PhrasePosition segmentRange = entry.key;
-      Reading reading = entry.value;
-      PhrasePosition newSegmentRange = PhrasePosition(segmentRange.startIndex + carryUp, segmentRange.endIndex + carryUp);
-      newMap[newSegmentRange] = reading;
+    Map<Phrase, Reading> newMap = Map<Phrase, Reading>.from(readingMap);
+    for (MapEntry<Phrase, Reading> entry in other.readingMap.entries) {
+      Phrase segmentRange = entry.key;
+      Reading annotation = entry.value;
+      Phrase newSegmentRange = Phrase(segmentRange.startIndex + carryUp, segmentRange.endIndex + carryUp);
+      newMap[newSegmentRange] = annotation;
     }
     return ReadingMap(newMap);
   }
 
   ReadingMap copyWith({
-    Map<PhrasePosition, Reading>? readingMap,
+    Map<Phrase, Reading>? annotationMap,
   }) {
     return ReadingMap(
-      readingMap ?? this.readingMap,
+      annotationMap ?? this.readingMap,
     );
   }
 
   @override
   String toString() {
-    return readingMap.entries.map((MapEntry<PhrasePosition, Reading> readingMapEntry) => '${readingMapEntry.key}: ${readingMapEntry.value}').join("\n");
+    return readingMap.entries.map((MapEntry<Phrase, Reading> annotationMapEntry) => '${annotationMapEntry.key}: ${annotationMapEntry.value}').join("\n");
   }
 
   @override

@@ -6,11 +6,11 @@ import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/position/seek_position.dart';
-import 'package:lyric_editor/position/word_index.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/segment_index.dart';
+import 'package:lyric_editor/position/segment_range.dart';
 
 class SegmentSelectionCursor extends TextPaneCursor {
-  PhrasePosition segmentRange;
+  Phrase segmentRange;
   bool isRangeSelection = false;
 
   SegmentSelectionCursor({
@@ -21,7 +21,7 @@ class SegmentSelectionCursor extends TextPaneCursor {
   }) : super(lyricSnippet, seekPosition);
 
   SegmentSelectionCursor._privateConstructor(
-    super.sentence,
+    super.lyricSnippet,
     super.seekPosition,
     this.segmentRange,
     this.isRangeSelection,
@@ -29,7 +29,7 @@ class SegmentSelectionCursor extends TextPaneCursor {
   static final SegmentSelectionCursor _empty = SegmentSelectionCursor._privateConstructor(
     Sentence.empty,
     SeekPosition.empty,
-    PhrasePosition.empty,
+    Phrase.empty,
     false,
   );
   static SegmentSelectionCursor get empty => _empty;
@@ -38,18 +38,18 @@ class SegmentSelectionCursor extends TextPaneCursor {
 
   @override
   SegmentSelectionCursor defaultCursor() {
-    WordIndex segmentIndex = sentence.getSegmentIndexFromSeekPosition(seekPosition);
+    WordIndex segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
     return SegmentSelectionCursor(
-      lyricSnippet: sentence,
+      lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
-      segmentRange: PhrasePosition(segmentIndex, segmentIndex),
+      segmentRange: Phrase(segmentIndex, segmentIndex),
       isRangeSelection: isRangeSelection,
     );
   }
 
   @override
   TextPaneCursor moveLeftCursor() {
-    PhrasePosition nextSegmentRange = segmentRange.copyWith();
+    Phrase nextSegmentRange = segmentRange.copyWith();
 
     if (!isRangeSelection) {
       WordIndex currentIndex = segmentRange.startIndex;
@@ -71,7 +71,7 @@ class SegmentSelectionCursor extends TextPaneCursor {
     }
 
     return SegmentSelectionCursor(
-      lyricSnippet: sentence,
+      lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
       segmentRange: nextSegmentRange,
       isRangeSelection: isRangeSelection,
@@ -80,11 +80,11 @@ class SegmentSelectionCursor extends TextPaneCursor {
 
   @override
   TextPaneCursor moveRightCursor() {
-    PhrasePosition nextSegmentRange = segmentRange.copyWith();
+    Phrase nextSegmentRange = segmentRange.copyWith();
 
     WordIndex currentIndex = segmentRange.endIndex;
     WordIndex nextIndex = currentIndex + 1;
-    if (nextIndex.index >= sentence.sentenceSegments.length) {
+    if (nextIndex.index >= lyricSnippet.sentenceSegments.length) {
       return this;
     }
 
@@ -94,16 +94,16 @@ class SegmentSelectionCursor extends TextPaneCursor {
     }
 
     return SegmentSelectionCursor(
-      lyricSnippet: sentence,
+      lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
       segmentRange: nextSegmentRange,
       isRangeSelection: isRangeSelection,
     );
   }
 
-  TextPaneCursor exitWordSelectionMode() {
+  TextPaneCursor exitSegmentSelectionMode() {
     return SentenceSelectionCursor.defaultCursor(
-      lyricSnippet: sentence,
+      lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
     );
   }
@@ -114,14 +114,14 @@ class SegmentSelectionCursor extends TextPaneCursor {
   }
 
   @override
-  List<TextPaneCursor?> getPhraseDividedCursors(Sentence lyricSnippet, List<PhrasePosition> rangeList) {
+  List<TextPaneCursor?> getRangeDividedCursors(Sentence lyricSnippet, List<Phrase> rangeList) {
     SegmentSelectionCursor cursor = copyWith();
     List<SegmentSelectionCursor?> separatedCursors = List.filled(rangeList.length, null);
 
-    int startRangeIndex = rangeList.indexWhere((PhrasePosition segmentRange) {
+    int startRangeIndex = rangeList.indexWhere((Phrase segmentRange) {
       return segmentRange.isInRange(cursor.segmentRange.startIndex);
     });
-    int endRangeIndex = rangeList.indexWhere((PhrasePosition segmentRange) {
+    int endRangeIndex = rangeList.indexWhere((Phrase segmentRange) {
       return segmentRange.isInRange(cursor.segmentRange.endIndex);
     });
 
@@ -138,7 +138,7 @@ class SegmentSelectionCursor extends TextPaneCursor {
 
       if (startRangeIndex <= index && index <= endRangeIndex) {
         separatedCursors[index] = cursor.copyWith(
-          segmentRange: PhrasePosition(startIndex, endIndex),
+          segmentRange: Phrase(startIndex, endIndex),
         );
       }
       shiftLength += rangeList[index].length;
@@ -148,13 +148,13 @@ class SegmentSelectionCursor extends TextPaneCursor {
   }
 
   @override
-  List<TextPaneCursor?> getWordDividedCursors(WordList sentenceSegmentList) {
+  List<TextPaneCursor?> getSegmentDividedCursors(WordList sentenceSegmentList) {
     SegmentSelectionCursor cursor = copyWith();
     List<SegmentSelectionCursor?> separatedCursors = List.filled(sentenceSegmentList.length, null);
     SegmentSelectionCursor initialCursor = SegmentSelectionCursor(
-      lyricSnippet: sentence,
+      lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
-      segmentRange: PhrasePosition(WordIndex(0), WordIndex(0)),
+      segmentRange: Phrase(WordIndex(0), WordIndex(0)),
       isRangeSelection: isRangeSelection,
     );
     for (int index = 0; index < sentenceSegmentList.length; index++) {
@@ -173,7 +173,7 @@ class SegmentSelectionCursor extends TextPaneCursor {
     }
     WordIndex startIndex = segmentRange.startIndex - sentenceSegmentList.segmentLength;
     WordIndex endIndex = segmentRange.endIndex - sentenceSegmentList.segmentLength;
-    PhrasePosition newRange = PhrasePosition(startIndex, endIndex);
+    Phrase newRange = Phrase(startIndex, endIndex);
     return copyWith(segmentRange: newRange);
   }
 
@@ -184,18 +184,18 @@ class SegmentSelectionCursor extends TextPaneCursor {
     }
     WordIndex startIndex = segmentRange.startIndex - 1;
     WordIndex endIndex = segmentRange.endIndex - 1;
-    PhrasePosition newRange = PhrasePosition(startIndex, endIndex);
+    Phrase newRange = Phrase(startIndex, endIndex);
     return copyWith(segmentRange: newRange);
   }
 
   SegmentSelectionCursor copyWith({
     Sentence? lyricSnippet,
     SeekPosition? seekPosition,
-    PhrasePosition? segmentRange,
+    Phrase? segmentRange,
     bool? isRangeSelection,
   }) {
     return SegmentSelectionCursor(
-      lyricSnippet: lyricSnippet ?? this.sentence,
+      lyricSnippet: lyricSnippet ?? this.lyricSnippet,
       seekPosition: seekPosition ?? this.seekPosition,
       segmentRange: segmentRange ?? this.segmentRange,
       isRangeSelection: isRangeSelection ?? this.isRangeSelection,
@@ -204,7 +204,7 @@ class SegmentSelectionCursor extends TextPaneCursor {
 
   @override
   String toString() {
-    return 'SegmentSelectionCursor(ID: $sentence, segmentIndex: $segmentRange)';
+    return 'SegmentSelectionCursor(ID: $lyricSnippet, segmentIndex: $segmentRange)';
   }
 
   @override
@@ -212,7 +212,7 @@ class SegmentSelectionCursor extends TextPaneCursor {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
     final SegmentSelectionCursor otherSentenceSegments = other as SegmentSelectionCursor;
-    if (sentence != otherSentenceSegments.sentence) return false;
+    if (lyricSnippet != otherSentenceSegments.lyricSnippet) return false;
     if (seekPosition != otherSentenceSegments.seekPosition) return false;
     if (segmentRange != otherSentenceSegments.segmentRange) return false;
     if (isRangeSelection != otherSentenceSegments.isRangeSelection) return false;
@@ -220,5 +220,5 @@ class SegmentSelectionCursor extends TextPaneCursor {
   }
 
   @override
-  int get hashCode => sentence.hashCode ^ seekPosition.hashCode ^ segmentRange.hashCode ^ isRangeSelection.hashCode;
+  int get hashCode => lyricSnippet.hashCode ^ seekPosition.hashCode ^ segmentRange.hashCode ^ isRangeSelection.hashCode;
 }

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
-import 'package:lyric_editor/lyric_data/timing/timing.dart';
+import 'package:lyric_editor/lyric_data/timing_point/timing_point.dart';
 import 'package:lyric_editor/pane/video_pane/colored_text_painter.dart';
 import 'package:lyric_editor/position/seek_position.dart';
-import 'package:lyric_editor/position/word_index.dart';
+import 'package:lyric_editor/position/segment_index.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 
 class ColoredCaption extends StatelessWidget {
