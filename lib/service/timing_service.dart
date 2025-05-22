@@ -2,17 +2,17 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lyric_editor/sentence/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
-import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
+import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/section/section_list.dart';
 import 'package:lyric_editor/position/segment_range.dart';
-import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
-import 'package:lyric_editor/lyric_data/vocalist/vocalist_color_map.dart';
+import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
+import 'package:lyric_editor/lyric_snippet/vocalist/vocalist_color_map.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
-import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/service/xlrc_parser.dart';
 import 'package:lyric_editor/utility/undo_history.dart';
 import 'package:tuple/tuple.dart';
@@ -25,7 +25,7 @@ final timingMasterProvider = ChangeNotifierProvider((ref) {
 class TimingService extends ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
 
-  SentenceMap lyricSnippetMap = SentenceMap({});
+  LyricSnippetMap lyricSnippetMap = LyricSnippetMap({});
   Map<LyricSnippetID, int> snippetTracks = {};
   VocalistColorMap vocalistColorMap = VocalistColorMap({});
   SectionList sectionList = SectionList([]);
@@ -81,15 +81,15 @@ class TimingService extends ChangeNotifier {
   /* * * * * * * * * * * * * * * * * *
    LyricSnippetMap functions
   * * * * * * * * * * * * * * * * * */
-  Sentence getLyricSnippetByID(LyricSnippetID id) {
+  LyricSnippet getLyricSnippetByID(LyricSnippetID id) {
     return lyricSnippetMap.getLyricSnippetByID(id);
   }
 
-  SentenceMap getLyricSnippetByVocalistID(VocalistID vocalistID) {
+  LyricSnippetMap getLyricSnippetByVocalistID(VocalistID vocalistID) {
     return lyricSnippetMap.getLyricSnippetByVocalistID(vocalistID);
   }
 
-  SentenceMap getSnippetsAtSeekPosition({
+  LyricSnippetMap getSnippetsAtSeekPosition({
     SeekPosition? seekPosition,
     VocalistID? vocalistID,
     Duration startBulge = Duration.zero,
@@ -104,7 +104,7 @@ class TimingService extends ChangeNotifier {
     );
   }
 
-  void addLyricSnippet(Sentence lyricSnippet) {
+  void addLyricSnippet(LyricSnippet lyricSnippet) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
     lyricSnippetMap.addLyricSnippet(lyricSnippet);
     notifyListeners();
@@ -122,13 +122,13 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addAnnotation(LyricSnippetID snippetID, Phrase segmentRange, String annotationString) {
+  void addAnnotation(LyricSnippetID snippetID, SegmentRange segmentRange, String annotationString) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
     lyricSnippetMap = lyricSnippetMap.addAnnotation(snippetID, segmentRange, annotationString);
     notifyListeners();
   }
 
-  void removeAnnotation(LyricSnippetID snippetID, Phrase segmentRange) {
+  void removeAnnotation(LyricSnippetID snippetID, SegmentRange segmentRange) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
     lyricSnippetMap = lyricSnippetMap.removeAnnotation(snippetID, segmentRange);
     notifyListeners();
@@ -146,13 +146,13 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addAnnotationTimingPoint(LyricSnippetID snippetID, Phrase segmentRange, InsertionPosition charPosition, SeekPosition seekPosition) {
+  void addAnnotationTimingPoint(LyricSnippetID snippetID, SegmentRange segmentRange, InsertionPosition charPosition, SeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
     lyricSnippetMap = lyricSnippetMap.addAnnotationTimingPoint(snippetID, segmentRange, charPosition, seekPosition);
     notifyListeners();
   }
 
-  void removeAnnotationTimingPoint(LyricSnippetID snippetID, Phrase segmentRange, InsertionPosition charPosition, Option option) {
+  void removeAnnotationTimingPoint(LyricSnippetID snippetID, SegmentRange segmentRange, InsertionPosition charPosition, Option option) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
     lyricSnippetMap = lyricSnippetMap.removeAnnotationTimingPoint(snippetID, segmentRange, charPosition, option);
     notifyListeners();
@@ -160,13 +160,13 @@ class TimingService extends ChangeNotifier {
 
   void manipulateSnippet(LyricSnippetID snippetID, SnippetEdge snippetEdge, bool holdLength) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap = lyricSnippetMap.manipulateSentence(snippetID, musicPlayerProvider.seekPosition, snippetEdge, holdLength);
+    lyricSnippetMap = lyricSnippetMap.manipulateSnippet(snippetID, musicPlayerProvider.seekPosition, snippetEdge, holdLength);
     notifyListeners();
   }
 
   void divideSnippet(LyricSnippetID snippetID, InsertionPosition charPosition, SeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap = lyricSnippetMap.divideSentence(snippetID, charPosition, seekPosition);
+    lyricSnippetMap = lyricSnippetMap.divideSnippet(snippetID, charPosition, seekPosition);
     notifyListeners();
   }
 
@@ -184,7 +184,7 @@ class TimingService extends ChangeNotifier {
     String rawText = await file.readAsString();
 
     XlrcParser parser = XlrcParser();
-    Tuple3<SentenceMap, VocalistColorMap, SectionList> data = parser.deserialize(rawText);
+    Tuple3<LyricSnippetMap, VocalistColorMap, SectionList> data = parser.deserialize(rawText);
     lyricSnippetMap = data.item1;
     vocalistColorMap = data.item2;
     sectionList = data.item3;
@@ -194,7 +194,7 @@ class TimingService extends ChangeNotifier {
 
   void exportLyric(String exportPath) {
     XlrcParser parser = XlrcParser();
-    Tuple3<SentenceMap, VocalistColorMap, SectionList> data = Tuple3<SentenceMap, VocalistColorMap, SectionList>(
+    Tuple3<LyricSnippetMap, VocalistColorMap, SectionList> data = Tuple3<LyricSnippetMap, VocalistColorMap, SectionList>(
       lyricSnippetMap,
       vocalistColorMap,
       sectionList,

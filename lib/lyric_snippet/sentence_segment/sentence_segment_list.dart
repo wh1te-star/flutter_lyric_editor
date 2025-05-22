@@ -1,30 +1,30 @@
 import 'package:collection/collection.dart';
-import 'package:lyric_editor/lyric_data/word/word.dart';
-import 'package:lyric_editor/lyric_data/timing_point/timing_point.dart';
-import 'package:lyric_editor/lyric_data/timing_point/timing_point_list.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
+import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
+import 'package:lyric_editor/lyric_snippet/timing_point/timing_point_list.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 
-class PhraseList {
-  final List<Word> _list;
+class SentenceSegmentList {
+  final List<SentenceSegment> _list;
 
-  PhraseList(this._list) {
+  SentenceSegmentList(this._list) {
     assert(!has2ConseqentEmpty());
   }
 
-  List<Word> get list => _list;
+  List<SentenceSegment> get list => _list;
 
-  static PhraseList get empty => PhraseList([]);
+  static SentenceSegmentList get empty => SentenceSegmentList([]);
   bool get isEmpty => list.isEmpty;
 
   int get length => list.length;
-  Word operator [](int index) => list[index];
-  void operator []=(int index, Word value) {
+  SentenceSegment operator [](int index) => list[index];
+  void operator []=(int index, SentenceSegment value) {
     list[index] = value;
   }
 
   String get sentence {
-    return _list.map((Word segment) {
+    return _list.map((SentenceSegment segment) {
       return segment.word;
     }).join("");
   }
@@ -45,11 +45,11 @@ class PhraseList {
     return false;
   }
 
-  TimingList toTimingPointList() {
+  TimingPointList toTimingPointList() {
     List<TimingPoint> timingPoints = [];
     InsertionPosition insertionPosition = InsertionPosition(0);
     SeekPosition seekPosition = SeekPosition(0);
-    for (Word sentenceSegment in list) {
+    for (SentenceSegment sentenceSegment in list) {
       timingPoints.add(TimingPoint(insertionPosition, seekPosition));
 
       insertionPosition += sentenceSegment.word.length;
@@ -57,14 +57,14 @@ class PhraseList {
     }
     timingPoints.add(TimingPoint(insertionPosition, seekPosition));
 
-    return TimingList(timingPoints);
+    return TimingPointList(timingPoints);
   }
 
-  PhraseList copyWith({
-    PhraseList? sentenceSegmentList,
+  SentenceSegmentList copyWith({
+    SentenceSegmentList? sentenceSegmentList,
   }) {
-    return PhraseList(
-      sentenceSegmentList?._list.map((Word sentenceSegment) => sentenceSegment.copyWith()).toList() ?? _list,
+    return SentenceSegmentList(
+      sentenceSegmentList?._list.map((SentenceSegment sentenceSegment) => sentenceSegment.copyWith()).toList() ?? _list,
     );
   }
 
@@ -73,24 +73,24 @@ class PhraseList {
     return _list.join("\n");
   }
 
-  PhraseList operator +(PhraseList other) {
-    List<Word> combinedList = [..._list, ...other._list];
-    return PhraseList(combinedList);
+  SentenceSegmentList operator +(SentenceSegmentList other) {
+    List<SentenceSegment> combinedList = [..._list, ...other._list];
+    return SentenceSegmentList(combinedList);
   }
 
-  PhraseList addSegment(Word segment) {
-    List<Word> combinedList = [..._list, segment];
-    return PhraseList(combinedList);
+  SentenceSegmentList addSegment(SentenceSegment segment) {
+    List<SentenceSegment> combinedList = [..._list, segment];
+    return SentenceSegmentList(combinedList);
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! PhraseList) return false;
+    if (other is! SentenceSegmentList) return false;
     if (_list.length != other._list.length) return false;
-    return _list.asMap().entries.every((MapEntry<int, Word> entry) {
+    return _list.asMap().entries.every((MapEntry<int, SentenceSegment> entry) {
       int index = entry.key;
-      Word timingPoint = entry.value;
+      SentenceSegment timingPoint = entry.value;
       return timingPoint == other._list[index];
     });
   }

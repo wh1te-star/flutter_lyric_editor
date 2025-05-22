@@ -1,16 +1,16 @@
-class WordIndex implements Comparable<WordIndex> {
+class SentenceSegmentIndex implements Comparable<SentenceSegmentIndex> {
   final int index;
 
-  WordIndex(this.index);
+  SentenceSegmentIndex(this.index);
 
-  WordIndex._privateConstructor(this.index);
-  static final WordIndex _empty = WordIndex._privateConstructor(-1);
-  static WordIndex get empty => _empty;
+  SentenceSegmentIndex._privateConstructor(this.index);
+  static final SentenceSegmentIndex _empty = SentenceSegmentIndex._privateConstructor(-1);
+  static SentenceSegmentIndex get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
-  WordIndex copyWith({int? index}) {
-    return WordIndex(
+  SentenceSegmentIndex copyWith({int? index}) {
+    return SentenceSegmentIndex(
       index ?? this.index,
     );
   }
@@ -25,7 +25,7 @@ class WordIndex implements Comparable<WordIndex> {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! WordIndex) {
+    if (other is! SentenceSegmentIndex) {
       return false;
     }
     return index == other.index;
@@ -34,16 +34,16 @@ class WordIndex implements Comparable<WordIndex> {
   @override
   int get hashCode => index.hashCode;
 
-  WordIndex operator +(int index) => WordIndex(this.index + index);
-  WordIndex operator -(int index) => WordIndex(this.index - index);
+  SentenceSegmentIndex operator +(int index) => SentenceSegmentIndex(this.index + index);
+  SentenceSegmentIndex operator -(int index) => SentenceSegmentIndex(this.index - index);
 
   @override
-  int compareTo(WordIndex other) {
+  int compareTo(SentenceSegmentIndex other) {
     return index.compareTo(other.index);
   }
 
-  bool operator >(WordIndex other) => index > other.index;
-  bool operator <(WordIndex other) => index < other.index;
-  bool operator >=(WordIndex other) => index >= other.index;
-  bool operator <=(WordIndex other) => index <= other.index;
+  bool operator >(SentenceSegmentIndex other) => index > other.index;
+  bool operator <(SentenceSegmentIndex other) => index < other.index;
+  bool operator >=(SentenceSegmentIndex other) => index >= other.index;
+  bool operator <=(SentenceSegmentIndex other) => index <= other.index;
 }

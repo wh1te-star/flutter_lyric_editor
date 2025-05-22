@@ -1,16 +1,16 @@
-import 'package:lyric_editor/lyric_data/reading/reading.dart';
-import 'package:lyric_editor/lyric_data/reading/reading_map.dart';
-import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
-import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
-import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
+import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
+import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
+import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 import 'package:lyric_editor/section/section_list.dart';
-import 'package:lyric_editor/lyric_data/word/word.dart';
-import 'package:lyric_editor/lyric_data/word/word_list.dart';
-import 'package:lyric_editor/lyric_data/timeline.dart';
-import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
-import 'package:lyric_editor/lyric_data/vocalist/vocalist_color_map.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
+import 'package:lyric_editor/lyric_snippet/timing.dart';
+import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
+import 'package:lyric_editor/lyric_snippet/vocalist/vocalist_color_map.dart';
 import 'package:tuple/tuple.dart';
 import 'package:xml/xml.dart';
 
@@ -29,15 +29,15 @@ class XlrcParser {
   static const String sentenceSegmentElement = "WordTimestamp";
   static const String sentenceSegmentDurationAttribute = "time";
 
-  String serialize(Tuple3<SentenceMap, VocalistColorMap, SectionList> data) {
-    SentenceMap lyricSnippetMap = data.item1;
+  String serialize(Tuple3<LyricSnippetMap, VocalistColorMap, SectionList> data) {
+    LyricSnippetMap lyricSnippetMap = data.item1;
     VocalistColorMap vocalistColorMap = data.item2;
     SectionList sectionList = data.item3;
 
     final XmlBuilder builder = XmlBuilder();
     builder.processing('xml', 'version="1.0" encoding="UTF-8"');
     builder.element(rootElement, nest: () {
-      for (Sentence snippet in lyricSnippetMap.values) {
+      for (LyricSnippet snippet in lyricSnippetMap.values) {
         builder.element(lyricSnippetElement, attributes: {
           lyricSnippetVocalistNameAttribute: vocalistColorMap[snippet.vocalistID]!.name,
           lyricSnippetStartTimestampAttribute: formatTimestamp(snippet.startTimestamp.position),
@@ -59,8 +59,8 @@ class XlrcParser {
     return document.toXmlString(pretty: true, indent: '  ');
   }
 
-  Tuple3<SentenceMap, VocalistColorMap, SectionList> deserialize(String rawText) {
-    SentenceMap lyricSnippetMap = SentenceMap.empty;
+  Tuple3<LyricSnippetMap, VocalistColorMap, SectionList> deserialize(String rawText) {
+    LyricSnippetMap lyricSnippetMap = LyricSnippetMap.empty;
     VocalistColorMap vocalistColorMap = VocalistColorMap.empty;
     SectionList sectionList = SectionList.empty;
 
@@ -87,26 +87,26 @@ class XlrcParser {
       final int startTimestamp = parseTimestamp(lineTimestamp.getAttribute(lyricSnippetStartTimestampAttribute)!);
       final String vocalistName = lineTimestamp.getAttribute(lyricSnippetVocalistNameAttribute)!;
       final Iterable<XmlElement> wordTimestamps = lineTimestamp.findElements(sentenceSegmentElement);
-      final WordList sentenceSegmentList = WordList(wordTimestamps.map((XmlElement wordTimestamp) {
+      final SentenceSegmentList sentenceSegmentList = SentenceSegmentList(wordTimestamps.map((XmlElement wordTimestamp) {
         final int duration = parseTimestamp(wordTimestamp.getAttribute(sentenceSegmentDurationAttribute)!);
         final word = wordTimestamp.innerText;
-        return Word(
+        return SentenceSegment(
           word,
           Duration(milliseconds: duration),
         );
       }).toList());
 
       final VocalistID vocalistID = vocalistColorMap.getVocalistIDByName(vocalistName);
-      final Timeline timing = Timeline(startTime: SeekPosition(startTimestamp), wordList: sentenceSegmentList);
+      final Timing timing = Timing(startTimestamp: SeekPosition(startTimestamp), sentenceSegmentList: sentenceSegmentList);
 
-      lyricSnippetMap = lyricSnippetMap.addLyricSnippet(Sentence(
+      lyricSnippetMap = lyricSnippetMap.addLyricSnippet(LyricSnippet(
         vocalistID: vocalistID,
-        timeline: timing,
-        readingMap: ReadingMap({}),
+        timing: timing,
+        annotationMap: AnnotationMap({}),
       ));
     }
 
-    return Tuple3<SentenceMap, VocalistColorMap, SectionList>(
+    return Tuple3<LyricSnippetMap, VocalistColorMap, SectionList>(
       lyricSnippetMap,
       vocalistColorMap,
       sectionList,

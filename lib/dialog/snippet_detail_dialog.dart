@@ -2,17 +2,17 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lyric_editor/sentence/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
-import 'package:lyric_editor/lyric_data/word/word.dart';
-import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
+import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
+import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/diff_function/char_diff.dart';
 import 'package:lyric_editor/diff_function/diff_segment.dart';
-import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 
-Future<void> displaySnippetDetailDialog(BuildContext context, LyricSnippetID snippetID, Sentence snippet) async {
+Future<void> displaySnippetDetailDialog(BuildContext context, LyricSnippetID snippetID, LyricSnippet snippet) async {
   return await showDialog<void>(
     context: context,
     builder: (BuildContext context) {
@@ -23,7 +23,7 @@ Future<void> displaySnippetDetailDialog(BuildContext context, LyricSnippetID sni
 
 class _SnippetDetailDialog extends ConsumerStatefulWidget {
   final LyricSnippetID snippetID;
-  final Sentence snippet;
+  final LyricSnippet snippet;
 
   const _SnippetDetailDialog({required this.snippetID, required this.snippet});
 
@@ -34,7 +34,7 @@ class _SnippetDetailDialog extends ConsumerStatefulWidget {
 class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   late TimingService timingService;
   late final LyricSnippetID snippetID;
-  late final Sentence snippet;
+  late final LyricSnippet snippet;
 
   late final FocusNode startTimestampFocusNode;
   late final FocusNode endTimestampFocusNode;
@@ -119,7 +119,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
     }
 
     for (int i = 0; i < snippet.sentenceSegments.length; i++) {
-      Word segment = snippet.sentenceSegments[i];
+      SentenceSegment segment = snippet.sentenceSegments[i];
       segmentTexts.add(segment.word);
 
       List<Widget> segmentWiseVocalistCheckboxes = [];

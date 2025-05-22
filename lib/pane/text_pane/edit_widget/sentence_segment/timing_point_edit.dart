@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lyric_editor/lyric_data/timing_point/timing_point.dart';
+import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 

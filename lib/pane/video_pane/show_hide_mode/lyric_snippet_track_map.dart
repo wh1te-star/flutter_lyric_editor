@@ -1,15 +1,15 @@
-import 'package:lyric_editor/sentence/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
-import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
-import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
-import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
+import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
+import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
 import 'package:lyric_editor/pane/video_pane/show_hide_mode/show_hide_track.dart';
 
 class ShowHideTrackMap {
   late Map<LyricSnippetID, ShowHideTrack> _map;
 
   ShowHideTrackMap({
-    required SentenceMap lyricSnippetMap,
+    required LyricSnippetMap lyricSnippetMap,
     Duration startBulge = Duration.zero,
     Duration endBulge = Duration.zero,
     VocalistID? vocalistID,
@@ -24,7 +24,7 @@ class ShowHideTrackMap {
 
   Map<LyricSnippetID, ShowHideTrack> get map => _map;
 
-  static ShowHideTrackMap get empty => ShowHideTrackMap(lyricSnippetMap: SentenceMap.empty);
+  static ShowHideTrackMap get empty => ShowHideTrackMap(lyricSnippetMap: LyricSnippetMap.empty);
   bool get isEmpty => map.isEmpty;
 
   int get length => map.length;
@@ -34,7 +34,7 @@ class ShowHideTrackMap {
   }
 
   Map<LyricSnippetID, ShowHideTrack> constructTrackNumberMap({
-    required SentenceMap lyricSnippetMap,
+    required LyricSnippetMap lyricSnippetMap,
     Duration startBulge = Duration.zero,
     Duration endBulge = Duration.zero,
     VocalistID? vocalistID,
@@ -53,7 +53,7 @@ class ShowHideTrackMap {
 
     for (int index = 1; index < lyricSnippetMap.length; index++) {
       LyricSnippetID currentSnippetID = lyricSnippetMap.keys.toList()[index];
-      Sentence currentSnippet = lyricSnippetMap.values.toList()[index];
+      LyricSnippet currentSnippet = lyricSnippetMap.values.toList()[index];
       int start = currentSnippet.startTimestamp.position - startBulge.inMilliseconds;
       int end = currentSnippet.endTimestamp.position + endBulge.inMilliseconds;
       if (start <= currentEndTime) {
@@ -77,7 +77,7 @@ class ShowHideTrackMap {
   }
 
   ShowHideTrackMap copyWith({
-    required SentenceMap lyricSnippetMap,
+    required LyricSnippetMap lyricSnippetMap,
   }) {
     return ShowHideTrackMap(lyricSnippetMap: lyricSnippetMap);
   }

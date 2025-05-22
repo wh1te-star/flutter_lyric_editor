@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
-import 'package:lyric_editor/lyric_data/word/word.dart';
-import 'package:lyric_editor/lyric_data/timing_point/timing_point.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
+import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
 import 'package:lyric_editor/pane/video_pane/colored_text_painter.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_index.dart';
@@ -10,7 +10,7 @@ import 'package:lyric_editor/utility/utility_functions.dart';
 class ColoredCaption extends StatelessWidget {
   static const String fontFamily = "Times New Roman";
   static const double fontSize = 40.0;
-  final Sentence lyricSnippet;
+  final LyricSnippet lyricSnippet;
   final SeekPosition seekPosition;
   final Color color;
 
@@ -28,12 +28,12 @@ class ColoredCaption extends StatelessWidget {
   }
 
   Widget getColoredSentenceSegment(
-    Sentence lyricSnippet,
+    LyricSnippet lyricSnippet,
     SeekPosition seekPosition,
     Color color,
     int index,
   ) {
-    Word sentenceSegment = lyricSnippet.sentenceSegments[index];
+    SentenceSegment sentenceSegment = lyricSnippet.sentenceSegments[index];
     double progress = getProgress(lyricSnippet, index);
     return CustomPaint(
       painter: ColoredTextPainter(
@@ -49,8 +49,8 @@ class ColoredCaption extends StatelessWidget {
     );
   }
 
-  double getProgress(Sentence lyricSnippet, int index) {
-    WordIndex seekSegmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
+  double getProgress(LyricSnippet lyricSnippet, int index) {
+    SentenceSegmentIndex seekSegmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
     if (seekSegmentIndex.isEmpty) {
       if (seekPosition <= lyricSnippet.startTimestamp) {
         return 0.0;

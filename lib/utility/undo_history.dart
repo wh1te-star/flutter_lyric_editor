@@ -1,10 +1,10 @@
-import 'package:lyric_editor/sentence/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
-import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
+import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
 import 'package:lyric_editor/section/section_list.dart';
-import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
-import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
-import 'package:lyric_editor/lyric_data/vocalist/vocalist_color_map.dart';
+import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/vocalist/vocalist_color_map.dart';
 
 enum LyricUndoType {
   lyricSnippet,
@@ -25,9 +25,9 @@ class LyricUndoHistory {
     final dynamic copiedValue;
     switch (type) {
       case LyricUndoType.lyricSnippet:
-        assert(value is SentenceMap);
-        SentenceMap lyricSnippetMap = value;
-        copiedValue = Map<LyricSnippetID, Sentence>.from(lyricSnippetMap.map)..updateAll((key, snippet) => snippet.copyWith());
+        assert(value is LyricSnippetMap);
+        LyricSnippetMap lyricSnippetMap = value;
+        copiedValue = Map<LyricSnippetID, LyricSnippet>.from(lyricSnippetMap.map)..updateAll((key, snippet) => snippet.copyWith());
         break;
       case LyricUndoType.vocalistsColor:
         assert(value is VocalistColorMap);
@@ -54,6 +54,6 @@ class LyricUndoHistory {
   }
 
   void typeValueAssert(LyricUndoType type, dynamic value) {
-    assert((type == LyricUndoType.lyricSnippet && value is Map<LyricSnippetID, Sentence>) || (type == LyricUndoType.vocalistsColor && value is Map<VocalistID, Vocalist>) || (type == LyricUndoType.section && value is List<int>), 'Value type does not match the expected type for the given UndoType');
+    assert((type == LyricUndoType.lyricSnippet && value is Map<LyricSnippetID, LyricSnippet>) || (type == LyricUndoType.vocalistsColor && value is Map<VocalistID, Vocalist>) || (type == LyricUndoType.section && value is List<int>), 'Value type does not match the expected type for the given UndoType');
   }
 }

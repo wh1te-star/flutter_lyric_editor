@@ -1,5 +1,5 @@
-import 'package:lyric_editor/sentence/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
+import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/segment_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/segment_selection_list_cursor.dart';
@@ -9,7 +9,7 @@ import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 class TextPaneCursorController {
-  final SentenceMap lyricSnippetMap;
+  final LyricSnippetMap lyricSnippetMap;
   final LyricSnippetID lyricSnippetID;
   final TextPaneListCursor textPaneListCursor;
   final SeekPosition seekPosition;
@@ -31,7 +31,7 @@ class TextPaneCursorController {
     this.cursorBlinker,
   );
   static final TextPaneCursorController _empty = TextPaneCursorController._privateConstructor(
-    SentenceMap.empty,
+    LyricSnippetMap.empty,
     LyricSnippetID.empty,
     SentenceSelectionListCursor.empty,
     SeekPosition.empty,
@@ -88,7 +88,7 @@ class TextPaneCursorController {
   }
 
   TextPaneCursorController updateCursor(
-    SentenceMap lyricSnippetMap,
+    LyricSnippetMap lyricSnippetMap,
     SeekPosition seekPosition,
   ) {
     TextPaneListCursor nextCursor = textPaneListCursor.updateCursor(lyricSnippetMap, lyricSnippetID, seekPosition);
@@ -96,7 +96,7 @@ class TextPaneCursorController {
   }
 
   TextPaneCursorController copyWith({
-    SentenceMap? lyricSnippetMap,
+    LyricSnippetMap? lyricSnippetMap,
     LyricSnippetID? lyricSnippetID,
     TextPaneListCursor? textPaneListCursor,
     SeekPosition? seekPosition,

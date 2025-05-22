@@ -1,9 +1,9 @@
-import 'package:lyric_editor/lyric_data/reading/reading.dart';
-import 'package:lyric_editor/sentence/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
-import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
-import 'package:lyric_editor/lyric_data/word/word.dart';
-import 'package:lyric_editor/lyric_data/word/word_list.dart';
+import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
+import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
+import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/sentence_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
@@ -16,12 +16,12 @@ import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 class AnnotationSelectionCursor extends TextPaneCursor {
-  Phrase segmentRange;
+  SegmentRange segmentRange;
   InsertionPosition insertionPosition;
   Option option;
 
   AnnotationSelectionCursor({
-    required Sentence lyricSnippet,
+    required LyricSnippet lyricSnippet,
     required SeekPosition seekPosition,
     required this.segmentRange,
     required this.insertionPosition,
@@ -31,7 +31,7 @@ class AnnotationSelectionCursor extends TextPaneCursor {
   }
 
   bool doesSeekPositionPointAnnotation() {
-    Phrase annotationSegmentRange = lyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
+    SegmentRange annotationSegmentRange = lyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
     return annotationSegmentRange.isNotEmpty;
   }
 
@@ -43,9 +43,9 @@ class AnnotationSelectionCursor extends TextPaneCursor {
     this.option,
   );
   static final AnnotationSelectionCursor _empty = AnnotationSelectionCursor._privateConstructor(
-    Sentence.empty,
+    LyricSnippet.empty,
     SeekPosition.empty,
-    Phrase.empty,
+    SegmentRange.empty,
     InsertionPosition.empty,
     Option.former,
   );
@@ -54,18 +54,18 @@ class AnnotationSelectionCursor extends TextPaneCursor {
   bool get isNotEmpty => !identical(this, _empty);
 
   factory AnnotationSelectionCursor.defaultCursor({
-    required Sentence lyricSnippet,
+    required LyricSnippet lyricSnippet,
     required SeekPosition seekPosition,
   }) {
-    Phrase annotationSegmentRange = lyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
-    Reading annotation = lyricSnippet.readingMap[annotationSegmentRange]!;
-    WordIndex segmentIndex = annotation.getSegmentIndexFromSeekPosition(seekPosition);
+    SegmentRange annotationSegmentRange = lyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
+    Annotation annotation = lyricSnippet.annotationMap[annotationSegmentRange]!;
+    SentenceSegmentIndex segmentIndex = annotation.getSegmentIndexFromSeekPosition(seekPosition);
 
     return AnnotationSelectionCursor(
       lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
       segmentRange: annotationSegmentRange,
-      insertionPosition: annotation.timeline.leftTiming(segmentIndex).insertionPosition + 1,
+      insertionPosition: annotation.timing.leftTimingPoint(segmentIndex).insertionPosition + 1,
       option: Option.former,
     );
   }
@@ -81,11 +81,11 @@ class AnnotationSelectionCursor extends TextPaneCursor {
   }
 
   @override
-  List<TextPaneCursor?> getRangeDividedCursors(Sentence lyricSnippet, List<Phrase> rangeList) {
+  List<TextPaneCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
     List<AnnotationSelectionCursor?> separatedCursors = List.filled(rangeList.length, null);
     AnnotationSelectionCursor cursor = copyWith();
     for (int index = 0; index < rangeList.length; index++) {
-      Phrase segmentRange = rangeList[index];
+      SegmentRange segmentRange = rangeList[index];
       if (segmentRange == cursor.segmentRange) {
         separatedCursors[index] = cursor;
         break;
@@ -95,25 +95,25 @@ class AnnotationSelectionCursor extends TextPaneCursor {
   }
 
   @override
-  List<TextPaneCursor?> getSegmentDividedCursors(WordList sentenceSegmentList) {
+  List<TextPaneCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList) {
     List<AnnotationSelectionCursor?> separatedCursors = List.filled(sentenceSegmentList.length, null);
     return separatedCursors;
   }
 
   @override
-  AnnotationSelectionCursor? shiftLeftBySentenceSegmentList(WordList sentenceSegmentList) {
+  AnnotationSelectionCursor? shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {
     return this;
   }
 
   @override
-  AnnotationSelectionCursor? shiftLeftBySentenceSegment(Word sentenceSegment) {
+  AnnotationSelectionCursor? shiftLeftBySentenceSegment(SentenceSegment sentenceSegment) {
     return this;
   }
 
   AnnotationSelectionCursor copyWith({
-    Sentence? lyricSnippet,
+    LyricSnippet? lyricSnippet,
     SeekPosition? seekPosition,
-    Phrase? segmentRange,
+    SegmentRange? segmentRange,
     InsertionPosition? insertionPosition,
     Option? option,
   }) {

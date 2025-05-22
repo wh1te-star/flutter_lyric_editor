@@ -1,17 +1,17 @@
-class Word {
+class SentenceSegment {
   String word;
   Duration duration;
 
-  Word(this.word, this.duration);
+  SentenceSegment(this.word, this.duration);
 
-  Word._privateConstructor(this.word, this.duration);
-  static final Word _empty = Word._privateConstructor("", Duration.zero);
-  static Word get empty => _empty;
+  SentenceSegment._privateConstructor(this.word, this.duration);
+  static final SentenceSegment _empty = SentenceSegment._privateConstructor("", Duration.zero);
+  static SentenceSegment get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
-  Word copyWith({String? word, Duration? duration}) {
-    return Word(
+  SentenceSegment copyWith({String? word, Duration? duration}) {
+    return SentenceSegment(
       word ?? this.word,
       duration ?? this.duration,
     );
@@ -26,7 +26,7 @@ class Word {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final Word otherSentenceSegments = other as Word;
+    final SentenceSegment otherSentenceSegments = other as SentenceSegment;
     return word == otherSentenceSegments.word && duration == otherSentenceSegments.duration;
   }
 
