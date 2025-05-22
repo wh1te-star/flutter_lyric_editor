@@ -1,6 +1,6 @@
-import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
+import 'package:lyric_editor/sentence/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/segment_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/sentence_selection_list_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pane_list_cursor.dart';
@@ -11,10 +11,10 @@ class SegmentSelectionListCursor extends TextPaneListCursor {
   late SegmentSelectionCursor segmentSelectionCursor;
 
   SegmentSelectionListCursor({
-    required LyricSnippetMap lyricSnippetMap,
+    required SentenceMap lyricSnippetMap,
     required LyricSnippetID lyricSnippetID,
     required SeekPosition seekPosition,
-    required SegmentRange segmentRange,
+    required Phrase segmentRange,
     required bool isRangeSelection,
   }) : super(lyricSnippetMap, lyricSnippetID, seekPosition) {
     assert(isIDContained(), "The passed lyricSnippetID does not point to a lyric snippet in lyricSnippetMap.");
@@ -32,7 +32,7 @@ class SegmentSelectionListCursor extends TextPaneListCursor {
     if (lyricSnippetMap.isEmpty) {
       return true;
     }
-    LyricSnippet? lyricSnippet = lyricSnippetMap[lyricSnippetID];
+    Sentence? lyricSnippet = lyricSnippetMap[lyricSnippetID];
     if (lyricSnippet == null) {
       return false;
     }
@@ -45,7 +45,7 @@ class SegmentSelectionListCursor extends TextPaneListCursor {
     super.seekPosition,
   );
   static final SegmentSelectionListCursor _empty = SegmentSelectionListCursor._privateConstructor(
-    LyricSnippetMap.empty,
+    SentenceMap.empty,
     LyricSnippetID.empty,
     SeekPosition.empty,
   );
@@ -129,7 +129,7 @@ class SegmentSelectionListCursor extends TextPaneListCursor {
 
   @override
   TextPaneListCursor updateCursor(
-    LyricSnippetMap lyricSnippetMap,
+    SentenceMap lyricSnippetMap,
     LyricSnippetID lyricSnippetID,
     SeekPosition seekPosition,
   ) {
@@ -144,10 +144,10 @@ class SegmentSelectionListCursor extends TextPaneListCursor {
 
   @override
   SegmentSelectionListCursor copyWith({
-    LyricSnippetMap? lyricSnippetMap,
+    SentenceMap? lyricSnippetMap,
     LyricSnippetID? lyricSnippetID,
     SeekPosition? seekPosition,
-    SegmentRange? segmentRange,
+    Phrase? segmentRange,
     bool? isRangeSelection,
   }) {
     return SegmentSelectionListCursor(

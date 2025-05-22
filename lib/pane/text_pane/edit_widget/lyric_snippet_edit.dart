@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
-import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
+import 'package:lyric_editor/lyric_data/reading/reading.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
+import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/annotation_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/segment_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/sentence_selection_cursor.dart';
@@ -15,7 +15,7 @@ import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:tuple/tuple.dart';
 
 class LyricSnippetEdit extends StatelessWidget {
-  final LyricSnippet lyricSnippet;
+  final Sentence lyricSnippet;
   final SeekPosition seekPosition;
   final TextPaneCursor? textPaneCursor;
   final CursorBlinker cursorBlinker;
@@ -24,8 +24,8 @@ class LyricSnippetEdit extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Widget> annotationExistenceEdits = [];
-    List<Tuple2<SegmentRange, Annotation?>> rangeAnnotationEntry = lyricSnippet.getAnnotationExistenceRangeList();
-    List<SegmentRange> rangeList = rangeAnnotationEntry.map((Tuple2<SegmentRange, Annotation?> entry) {
+    List<Tuple2<Phrase, Reading?>> rangeAnnotationEntry = lyricSnippet.getAnnotationExistenceRangeList();
+    List<Phrase> rangeList = rangeAnnotationEntry.map((Tuple2<Phrase, Reading?> entry) {
       return entry.item1;
     }).toList();
     List<TextPaneCursor?> cursorList = List.filled(rangeList.length, null);
@@ -34,11 +34,11 @@ class LyricSnippetEdit extends StatelessWidget {
     }
 
     for (int index = 0; index < rangeAnnotationEntry.length; index++) {
-      SegmentRange segmentRange = rangeAnnotationEntry[index].item1;
-      Annotation? annotation = rangeAnnotationEntry[index].item2;
+      Phrase segmentRange = rangeAnnotationEntry[index].item1;
+      Reading? annotation = rangeAnnotationEntry[index].item2;
 
-      SentenceSegmentList? sentenceSubList = lyricSnippet.getSentenceSegmentList(segmentRange);
-      SentenceSegmentList? annotationSubList = annotation?.timing.sentenceSegmentList;
+      WordList? sentenceSubList = lyricSnippet.getSentenceSegmentList(segmentRange);
+      WordList? annotationSubList = annotation?.timeline.wordList;
 
       TextPaneCursor? cursor = cursorList[index];
       bool isTimingPointPosition = false;
@@ -97,7 +97,7 @@ class LyricSnippetEdit extends StatelessWidget {
   }
 
   Widget getSentenceEdit(
-    SentenceSegmentList sentenceSegmentList,
+    WordList sentenceSegmentList,
     TextPaneCursor? textPaneCursor,
     CursorBlinker? cursorBlinker,
   ) {
@@ -114,7 +114,7 @@ class LyricSnippetEdit extends StatelessWidget {
   }
 
   Widget getAnnotationEdit(
-    SentenceSegmentList? sentenceSegmentList,
+    WordList? sentenceSegmentList,
     TextPaneCursor? textPaneCursor,
     CursorBlinker? cursorBlinker,
   ) {

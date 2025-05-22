@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lyric_editor/dialog/snippet_detail_dialog.dart';
-import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
-import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/dialog/sentence_detail_dialog.dart';
+import 'package:lyric_editor/lyric_data/reading/reading.dart';
+import 'package:lyric_editor/sentence/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/position/segment_range.dart';
-import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
+import 'package:lyric_editor/lyric_data/timing_point/timing_point.dart';
 import 'package:lyric_editor/pane/timeline_pane/rectangle_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/triangle_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/timeline_pane.dart';
@@ -66,11 +66,11 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     List<Widget> annotationItemWidgets = [];
     List<Widget> annotationTimingPointIndicatorWidgets = [];
 
-    Map<LyricSnippetID, LyricSnippet> snippets = timingService.getLyricSnippetByVocalistID(vocalistID).map;
+    Map<LyricSnippetID, Sentence> snippets = timingService.getLyricSnippetByVocalistID(vocalistID).map;
     snippetTracks = getTrack(snippets);
-    for (MapEntry<LyricSnippetID, LyricSnippet> entry in snippets.entries) {
+    for (MapEntry<LyricSnippetID, Sentence> entry in snippets.entries) {
       LyricSnippetID snippetID = entry.key;
-      LyricSnippet snippet = entry.value;
+      Sentence snippet = entry.value;
 
       snippetItemWidgets.add(getSnippetItemWidget(snippetID, snippet));
       timingPointIndicatorWidgets += getTimingPointIndicatorWidgets(snippetID, snippet);
@@ -82,13 +82,13 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     );
   }
 
-  Map<LyricSnippetID, int> getTrack(Map<LyricSnippetID, LyricSnippet> snippets) {
+  Map<LyricSnippetID, int> getTrack(Map<LyricSnippetID, Sentence> snippets) {
     Map<LyricSnippetID, int> tracks = {};
     int currentTrack = 0;
     int previousEndtime = 0;
-    for (MapEntry<LyricSnippetID, LyricSnippet> entry in snippets.entries) {
+    for (MapEntry<LyricSnippetID, Sentence> entry in snippets.entries) {
       LyricSnippetID id = entry.key;
-      LyricSnippet snippet = entry.value;
+      Sentence snippet = entry.value;
 
       if (snippet.sentence == "") {
         tracks[id] = -1;
@@ -109,7 +109,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     return tracks;
   }
 
-  Widget getSnippetItemWidget(LyricSnippetID snippetID, LyricSnippet snippet) {
+  Widget getSnippetItemWidget(LyricSnippetID snippetID, Sentence snippet) {
     final TimingService timingService = ref.read(timingMasterProvider);
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
 
@@ -149,7 +149,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     return snippetItem;
   }
 
-  List<Widget> getAnnotationItemWidget(LyricSnippetID snippetID, LyricSnippet snippet) {
+  List<Widget> getAnnotationItemWidget(LyricSnippetID snippetID, Sentence snippet) {
     List<Widget> annotaitonItems = [];
 
     final TimingService timingService = ref.read(timingMasterProvider);
@@ -157,9 +157,9 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
 
     final Color vocalistColor = Color(timingService.vocalistColorMap[vocalistID]!.color);
 
-    for (MapEntry<SegmentRange, Annotation> entry in snippet.annotationMap.map.entries) {
-      SegmentRange range = entry.key;
-      Annotation annotation = entry.value;
+    for (MapEntry<Phrase, Reading> entry in snippet.readingMap.map.entries) {
+      Phrase range = entry.key;
+      Reading annotation = entry.value;
       Size itemSize = Size(
         duration2Length(annotation.endTimestamp.position - annotation.startTimestamp.position),
         annotationItemHeight,
@@ -193,7 +193,7 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     return annotaitonItems;
   }
 
-  List<Widget> getTimingPointIndicatorWidgets(LyricSnippetID snippetID, LyricSnippet snippet) {
+  List<Widget> getTimingPointIndicatorWidgets(LyricSnippetID snippetID, Sentence snippet) {
     Size itemSize = Size(
       timingPointIndicatorWidth,
       timingPointIndicatorHeight,
@@ -220,16 +220,16 @@ class _SnippetTimelineState extends ConsumerState<SnippetTimeline> {
     return indicatorWidgets;
   }
 
-  List<Widget> getAnnotationTimingPointIndicatorWidgets(LyricSnippetID snippetID, LyricSnippet snippet) {
+  List<Widget> getAnnotationTimingPointIndicatorWidgets(LyricSnippetID snippetID, Sentence snippet) {
     Size itemSize = Size(
       timingPointIndicatorWidth,
       timingPointIndicatorHeight,
     );
 
     List<Widget> indicatorWidgets = [];
-    for (MapEntry<SegmentRange, Annotation> entry in snippet.annotationMap.map.entries) {
-      SegmentRange range = entry.key;
-      Annotation annotation = entry.value;
+    for (MapEntry<Phrase, Reading> entry in snippet.readingMap.map.entries) {
+      Phrase range = entry.key;
+      Reading annotation = entry.value;
       for (int index = 0; index < annotation.timingPoints.length; index++) {
         TimingPoint timingPoint = annotation.timingPoints[index];
         Widget indicator = Positioned(

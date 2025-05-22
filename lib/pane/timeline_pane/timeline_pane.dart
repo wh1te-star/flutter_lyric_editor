@@ -3,9 +3,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
-import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
-import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
+import 'package:lyric_editor/sentence/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
+import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
 import 'package:lyric_editor/pane/timeline_pane/current_position_indicator_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/rectangle_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/scale_mark.dart';
@@ -18,7 +18,7 @@ import 'package:lyric_editor/utility/utility_functions.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:lyric_editor/dialog/text_field_dialog.dart';
 import 'package:lyric_editor/utility/svg_icon.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 
 final timelinePaneMasterProvider = ChangeNotifierProvider((ref) {
   final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
@@ -30,7 +30,7 @@ class TimelinePaneProvider with ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
   final TimingService timingService;
 
-  Map<VocalistID, Map<LyricSnippetID, LyricSnippet>> snippetsForeachVocalist = {};
+  Map<VocalistID, Map<LyricSnippetID, Sentence>> snippetsForeachVocalist = {};
   LyricSnippetID cursorPosition = LyricSnippetID(0);
   List<LyricSnippetID> selectingSnippets = [];
   List<VocalistID> selectingVocalist = [];
@@ -54,14 +54,14 @@ class TimelinePaneProvider with ChangeNotifier {
       }
     });
     timingService.addListener(() {
-      final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = timingService.lyricSnippetMap.map;
+      final Map<LyricSnippetID, Sentence> lyricSnippetList = timingService.lyricSnippetMap.map;
       snippetsForeachVocalist = groupBy(
         lyricSnippetList.entries,
-        (MapEntry<LyricSnippetID, LyricSnippet> entry) {
+        (MapEntry<LyricSnippetID, Sentence> entry) {
           return entry.value.vocalistID;
         },
       ).map(
-        (VocalistID vocalistID, List<MapEntry<LyricSnippetID, LyricSnippet>> snippets) => MapEntry(
+        (VocalistID vocalistID, List<MapEntry<LyricSnippetID, Sentence>> snippets) => MapEntry(
           vocalistID,
           {for (var entry in snippets) entry.key: entry.value},
         ),
@@ -205,8 +205,8 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     }
   }
 
-  LyricSnippet getSnippetWithID(LyricSnippetID id) {
-    final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetMap.map;
+  Sentence getSnippetWithID(LyricSnippetID id) {
+    final Map<LyricSnippetID, Sentence> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetMap.map;
     return lyricSnippetList[id]!;
   }
 
@@ -438,7 +438,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
       }
     }
 
-    final Map<VocalistID, Map<LyricSnippetID, LyricSnippet>> snippetsForeachVocalist = timelinePaneProvider.snippetsForeachVocalist;
+    final Map<VocalistID, Map<LyricSnippetID, Sentence>> snippetsForeachVocalist = timelinePaneProvider.snippetsForeachVocalist;
     final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
     if (isDragging || snippetsForeachVocalist[vocalistID] == null) {
       return 20;
@@ -587,7 +587,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     return Color.fromARGB(alpha, red, green, blue);
   }
 
-  int getLanes(List<LyricSnippet> lyricSnippetList) {
+  int getLanes(List<Sentence> lyricSnippetList) {
     if (lyricSnippetList.isEmpty) return 1;
     lyricSnippetList.sort((a, b) => a.startTimestamp.compareTo(b.startTimestamp));
 

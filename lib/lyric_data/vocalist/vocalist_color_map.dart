@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
-import 'package:lyric_editor/lyric_snippet/id/vocalist_id_generator.dart';
-import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
+import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
+import 'package:lyric_editor/lyric_data/id/vocalist_id_generator.dart';
+import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
 
 class VocalistColorMap {
   String vocalistNameSeparator = ", ";

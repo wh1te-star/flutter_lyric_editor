@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
-import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
-import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
-import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
-import 'package:lyric_editor/lyric_snippet/timing.dart';
-import 'package:lyric_editor/lyric_snippet/timing_point_exception.dart';
-import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
+import 'package:lyric_editor/lyric_data/reading/reading_map.dart';
+import 'package:lyric_editor/sentence/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
+import 'package:lyric_editor/lyric_data/word/word.dart';
+import 'package:lyric_editor/lyric_data/word/word_list.dart';
+import 'package:lyric_editor/lyric_data/timeline.dart';
+import 'package:lyric_editor/lyric_data/timing_exception.dart';
+import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/annotation_selection_cursor_mover.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/segment_selection_cursor_mover.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/sentence_selection_cursor_mover.dart';
@@ -34,27 +34,27 @@ class PositionTestInfo {
 void main() {
   group('Tests to move to left and right the text pane cursor.', () {
     final LyricSnippetID lyricSnippetID = LyricSnippetID(1);
-    final Timing timingData1 = Timing(
-      startTimestamp: SeekPosition(2000),
-      sentenceSegmentList: SentenceSegmentList([
-        SentenceSegment("abc", const Duration(milliseconds: 400)),
-        SentenceSegment("de", const Duration(milliseconds: 300)),
-        SentenceSegment("fghijkl", const Duration(milliseconds: 700)),
-        SentenceSegment("", const Duration(milliseconds: 100)),
-        SentenceSegment("mnopq", const Duration(milliseconds: 600)),
-        SentenceSegment("rs", const Duration(milliseconds: 200)),
+    final Timeline timingData1 = Timeline(
+      startTime: SeekPosition(2000),
+      wordList: WordList([
+        Word("abc", const Duration(milliseconds: 400)),
+        Word("de", const Duration(milliseconds: 300)),
+        Word("fghijkl", const Duration(milliseconds: 700)),
+        Word("", const Duration(milliseconds: 100)),
+        Word("mnopq", const Duration(milliseconds: 600)),
+        Word("rs", const Duration(milliseconds: 200)),
       ]),
     );
-    final Timing timingData2 = Timing(
-      startTimestamp: SeekPosition(2000),
-      sentenceSegmentList: SentenceSegmentList([
-        SentenceSegment("abcde", const Duration(milliseconds: 1000)),
-        SentenceSegment("", const Duration(milliseconds: 1000)),
-        SentenceSegment("fghij", const Duration(milliseconds: 1000)),
-        SentenceSegment("", const Duration(milliseconds: 1000)),
-        SentenceSegment("klmno", const Duration(milliseconds: 1000)),
-        SentenceSegment("", const Duration(milliseconds: 1000)),
-        SentenceSegment("pqrst", const Duration(milliseconds: 1000)),
+    final Timeline timingData2 = Timeline(
+      startTime: SeekPosition(2000),
+      wordList: WordList([
+        Word("abcde", const Duration(milliseconds: 1000)),
+        Word("", const Duration(milliseconds: 1000)),
+        Word("fghij", const Duration(milliseconds: 1000)),
+        Word("", const Duration(milliseconds: 1000)),
+        Word("klmno", const Duration(milliseconds: 1000)),
+        Word("", const Duration(milliseconds: 1000)),
+        Word("pqrst", const Duration(milliseconds: 1000)),
       ]),
     );
 
@@ -133,10 +133,10 @@ void main() {
     setUp(() {});
 
     test('Test to move left and right the text pane cursor No.1', () {
-      final LyricSnippet lyricSnippet = LyricSnippet(
+      final Sentence lyricSnippet = Sentence(
         vocalistID: VocalistID(1),
-        timing: timingData1,
-        annotationMap: AnnotationMap.empty,
+        timeline: timingData1,
+        readingMap: ReadingMap.empty,
       );
 
       final SentenceSelectionCursor cursor = SentenceSelectionCursor(
@@ -147,7 +147,7 @@ void main() {
       );
 
       final SentenceSelectionCursorMover mover = SentenceSelectionCursorMover(
-        lyricSnippetMap: LyricSnippetMap({lyricSnippetID: lyricSnippet}),
+        lyricSnippetMap: SentenceMap({lyricSnippetID: lyricSnippet}),
         textPaneCursor: cursor,
         cursorBlinker: cursorBlinker,
         seekPosition: SeekPosition(2200),
@@ -169,10 +169,10 @@ void main() {
     });
 
     test('Test to move left and right the text pane cursor No.2', () {
-      final LyricSnippet lyricSnippet = LyricSnippet(
+      final Sentence lyricSnippet = Sentence(
         vocalistID: VocalistID(1),
-        timing: timingData2,
-        annotationMap: AnnotationMap.empty,
+        timeline: timingData2,
+        readingMap: ReadingMap.empty,
       );
 
       final SentenceSelectionCursor cursor = SentenceSelectionCursor(
@@ -183,7 +183,7 @@ void main() {
       );
 
       final SentenceSelectionCursorMover mover = SentenceSelectionCursorMover(
-        lyricSnippetMap: LyricSnippetMap({lyricSnippetID: lyricSnippet}),
+        lyricSnippetMap: SentenceMap({lyricSnippetID: lyricSnippet}),
         textPaneCursor: cursor,
         cursorBlinker: cursorBlinker,
         seekPosition: SeekPosition(6500),

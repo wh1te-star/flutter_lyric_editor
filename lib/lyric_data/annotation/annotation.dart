@@ -1,7 +1,7 @@
-import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
-import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
-import 'package:lyric_editor/lyric_snippet/timing.dart';
-import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
+import 'package:lyric_editor/lyric_data/word/word.dart';
+import 'package:lyric_editor/lyric_data/word/word_list.dart';
+import 'package:lyric_editor/lyric_data/timeline.dart';
+import 'package:lyric_editor/lyric_data/timing_point/timing_point.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
@@ -9,7 +9,7 @@ import 'package:lyric_editor/position/segment_index.dart';
 import 'package:lyric_editor/position/segment_range.dart';
 
 class Annotation {
-  Timing timing;
+  Timeline timing;
 
   Annotation({
     required this.timing,
@@ -17,7 +17,7 @@ class Annotation {
 
   static Annotation get empty {
     return Annotation(
-      timing: Timing.empty,
+      timing: Timeline.empty,
     );
   }
 
@@ -26,16 +26,16 @@ class Annotation {
   }
 
   String get sentence => timing.sentence;
-  SeekPosition get startTimestamp => timing.startTimestamp;
+  SeekPosition get startTimestamp => timing.startTime;
   SeekPosition get endTimestamp => timing.endTimestamp;
-  List<SentenceSegment> get sentenceSegments => timing.sentenceSegmentList.list;
-  List<TimingPoint> get timingPoints => timing.timingPointList.list;
-  SentenceSegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timing.getSegmentIndexFromSeekPosition(seekPosition);
+  List<Word> get sentenceSegments => timing.wordList.list;
+  List<TimingPoint> get timingPoints => timing.timingList.list;
+  WordIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timing.getSegmentIndexFromSeekPosition(seekPosition);
   InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timing.getInsertionPositionInfo(insertionPosition);
-  SentenceSegmentList getSentenceSegmentList(SegmentRange segmentRange) => timing.getSentenceSegmentList(segmentRange);
+  WordList getSentenceSegmentList(Phrase segmentRange) => timing.getSentenceSegmentList(segmentRange);
 
   Annotation copyWith({
-    Timing? timing,
+    Timeline? timing,
   }) {
     return Annotation(
       timing: timing ?? this.timing,

@@ -1,16 +1,16 @@
 import 'package:collection/collection.dart';
-import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
-import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
-import 'package:lyric_editor/lyric_snippet/timing_point/timing_point.dart';
+import 'package:lyric_editor/lyric_data/word/word.dart';
+import 'package:lyric_editor/lyric_data/word/word_list.dart';
+import 'package:lyric_editor/lyric_data/timing_point/timing_point.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 
-class TimingPointList {
+class TimingList {
   static const charPositionDuplicationAllowed = 2;
   static const seekPositionDuplicationAllowed = 1;
   final List<TimingPoint> _list;
 
-  TimingPointList(this._list) {
+  TimingList(this._list) {
     assert(isCharPositionOrdered());
     assert(isSeekPositionOrdered());
     assert(isCharPositionDuplicationAllowed());
@@ -45,7 +45,7 @@ class TimingPointList {
     ).values.every((List<TimingPoint> group) => group.length <= seekPositionDuplicationAllowed);
   }
 
-  static TimingPointList get empty => TimingPointList([]);
+  static TimingList get empty => TimingList([]);
   bool get isEmpty => list.isEmpty;
 
   int get length => list.length;
@@ -54,8 +54,8 @@ class TimingPointList {
     list[index] = value;
   }
 
-  SentenceSegmentList toSentenceSegmentList(String sentence) {
-    List<SentenceSegment> sentenceSegments = [];
+  WordList toWordList(String sentence) {
+    List<Word> sentenceSegments = [];
     List<TimingPoint> timingPoints = list;
     for (int index = 0; index < timingPoints.length - 1; index++) {
       String word = sentence.substring(
@@ -65,16 +65,16 @@ class TimingPointList {
       Duration duration = Duration(
         milliseconds: timingPoints[index + 1].seekPosition.position - timingPoints[index].seekPosition.position,
       );
-      sentenceSegments.add(SentenceSegment(word, duration));
+      sentenceSegments.add(Word(word, duration));
     }
 
-    return SentenceSegmentList(sentenceSegments);
+    return WordList(sentenceSegments);
   }
 
-  TimingPointList copyWith({
-    TimingPointList? timingPointList,
+  TimingList copyWith({
+    TimingList? timingPointList,
   }) {
-    return TimingPointList(
+    return TimingList(
       timingPointList?._list.map((TimingPoint timingPoint) => timingPoint.copyWith()).toList() ?? _list,
     );
   }
@@ -87,7 +87,7 @@ class TimingPointList {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! TimingPointList) return false;
+    if (other is! TimingList) return false;
     if (_list.length != other._list.length) return false;
     return _list.asMap().entries.every((MapEntry<int, TimingPoint> entry) {
       int index = entry.key;

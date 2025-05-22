@@ -1,16 +1,16 @@
-class SentenceSegmentIndex implements Comparable<SentenceSegmentIndex> {
+class WordIndex implements Comparable<WordIndex> {
   final int index;
 
-  SentenceSegmentIndex(this.index);
+  WordIndex(this.index);
 
-  SentenceSegmentIndex._privateConstructor(this.index);
-  static final SentenceSegmentIndex _empty = SentenceSegmentIndex._privateConstructor(-1);
-  static SentenceSegmentIndex get empty => _empty;
+  WordIndex._privateConstructor(this.index);
+  static final WordIndex _empty = WordIndex._privateConstructor(-1);
+  static WordIndex get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
-  SentenceSegmentIndex copyWith({int? index}) {
-    return SentenceSegmentIndex(
+  WordIndex copyWith({int? index}) {
+    return WordIndex(
       index ?? this.index,
     );
   }
@@ -25,7 +25,7 @@ class SentenceSegmentIndex implements Comparable<SentenceSegmentIndex> {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! SentenceSegmentIndex) {
+    if (other is! WordIndex) {
       return false;
     }
     return index == other.index;
@@ -34,16 +34,16 @@ class SentenceSegmentIndex implements Comparable<SentenceSegmentIndex> {
   @override
   int get hashCode => index.hashCode;
 
-  SentenceSegmentIndex operator +(int index) => SentenceSegmentIndex(this.index + index);
-  SentenceSegmentIndex operator -(int index) => SentenceSegmentIndex(this.index - index);
+  WordIndex operator +(int index) => WordIndex(this.index + index);
+  WordIndex operator -(int index) => WordIndex(this.index - index);
 
   @override
-  int compareTo(SentenceSegmentIndex other) {
+  int compareTo(WordIndex other) {
     return index.compareTo(other.index);
   }
 
-  bool operator >(SentenceSegmentIndex other) => index > other.index;
-  bool operator <(SentenceSegmentIndex other) => index < other.index;
-  bool operator >=(SentenceSegmentIndex other) => index >= other.index;
-  bool operator <=(SentenceSegmentIndex other) => index <= other.index;
+  bool operator >(WordIndex other) => index > other.index;
+  bool operator <(WordIndex other) => index < other.index;
+  bool operator >=(WordIndex other) => index >= other.index;
+  bool operator <=(WordIndex other) => index <= other.index;
 }

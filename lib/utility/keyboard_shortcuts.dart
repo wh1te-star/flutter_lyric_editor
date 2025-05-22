@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
-import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_data/reading/reading_map.dart';
+import 'package:lyric_editor/sentence/id/lyric_snippet_id.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/annotation_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/segment_selection_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/sentence_selection_cursor.dart';
@@ -16,14 +16,14 @@ import 'package:lyric_editor/pane/text_pane/text_pane_provider.dart';
 import 'package:lyric_editor/pane/video_pane/video_pane_provider.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/segment_range.dart';
-import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
-import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
-import 'package:lyric_editor/lyric_snippet/timing.dart';
+import 'package:lyric_editor/lyric_data/word/word.dart';
+import 'package:lyric_editor/lyric_data/word/word_list.dart';
+import 'package:lyric_editor/lyric_data/timeline.dart';
 import 'package:lyric_editor/pane/timeline_pane/timeline_pane.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/dialog/text_field_dialog.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 
 final keyboardShortcutsMasterProvider = ChangeNotifierProvider((ref) => KeyboardShortcutsNotifier());
 
@@ -138,16 +138,16 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         AddSnippetIntent: CallbackAction<AddSnippetIntent>(
           onInvoke: (AddSnippetIntent intent) => () {
-            Timing timing = Timing(
-              startTimestamp: musicPlayerProvider.seekPosition,
-              sentenceSegmentList: SentenceSegmentList([
-                SentenceSegment("default sentence", Duration(milliseconds: 3000)),
+            Timeline timing = Timeline(
+              startTime: musicPlayerProvider.seekPosition,
+              wordList: WordList([
+                Word("default sentence", Duration(milliseconds: 3000)),
               ]),
             );
-            LyricSnippet lyricSnippet = LyricSnippet(
+            Sentence lyricSnippet = Sentence(
               vocalistID: timelinePaneProvider.selectingVocalist[0],
-              timing: timing,
-              annotationMap: AnnotationMap.empty,
+              timeline: timing,
+              readingMap: ReadingMap.empty,
             );
             timingService.addLyricSnippet(lyricSnippet);
           }(),
@@ -185,7 +185,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             LyricSnippetID lyricSnippetID = listCursor.lyricSnippetID;
 
             SegmentSelectionCursor cursor = listCursor.textPaneCursor as SegmentSelectionCursor;
-            SegmentRange segmentRange = cursor.segmentRange;
+            Phrase segmentRange = cursor.segmentRange;
 
             String annotationString = (await displayTextFieldDialog(context, [""]))[0];
             if (annotationString != "") {
@@ -207,7 +207,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             }
 
             AnnotationSelectionCursor cursor = listCursor.textPaneCursor as AnnotationSelectionCursor;
-            SegmentRange segmentRange = cursor.segmentRange;
+            Phrase segmentRange = cursor.segmentRange;
             timingService.removeAnnotation(lyricSnippetID, segmentRange);
           }(),
         ),

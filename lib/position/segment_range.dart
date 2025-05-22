@@ -2,30 +2,30 @@ import 'dart:typed_data';
 
 import 'package:lyric_editor/position/segment_index.dart';
 
-class SegmentRange {
-  SentenceSegmentIndex startIndex;
-  SentenceSegmentIndex endIndex;
-  SegmentRange(this.startIndex, this.endIndex) {
+class Phrase {
+  WordIndex startIndex;
+  WordIndex endIndex;
+  Phrase(this.startIndex, this.endIndex) {
     if (!isEmpty) {
-      assert(startIndex >= SentenceSegmentIndex(0));
-      assert(endIndex >= SentenceSegmentIndex(0));
+      assert(startIndex >= WordIndex(0));
+      assert(endIndex >= WordIndex(0));
     }
   }
 
-  SegmentRange._privateConstructor(this.startIndex, this.endIndex);
-  static final SegmentRange _empty = SegmentRange._privateConstructor(SentenceSegmentIndex.empty, SentenceSegmentIndex.empty);
-  static SegmentRange get empty => _empty;
+  Phrase._privateConstructor(this.startIndex, this.endIndex);
+  static final Phrase _empty = Phrase._privateConstructor(WordIndex.empty, WordIndex.empty);
+  static Phrase get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
   int get length => endIndex.index - startIndex.index + 1;
 
-  bool isInRange(SentenceSegmentIndex segmentIndex) {
+  bool isInRange(WordIndex segmentIndex) {
     return startIndex <= segmentIndex && segmentIndex <= endIndex;
   }
 
-  SegmentRange copyWith({SentenceSegmentIndex? startIndex, SentenceSegmentIndex? endIndex}) {
-    return SegmentRange(
+  Phrase copyWith({WordIndex? startIndex, WordIndex? endIndex}) {
+    return Phrase(
       startIndex ?? this.startIndex,
       endIndex ?? this.endIndex,
     );
@@ -41,7 +41,7 @@ class SegmentRange {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! SegmentRange) {
+    if (other is! Phrase) {
       return false;
     }
     return startIndex == other.startIndex && endIndex == other.endIndex;

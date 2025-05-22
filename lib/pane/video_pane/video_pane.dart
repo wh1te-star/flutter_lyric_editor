@@ -2,21 +2,21 @@ import 'dart:ui';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
+import 'package:lyric_editor/sentence/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/pane/text_pane/text_pane_provider.dart';
 import 'package:lyric_editor/pane/video_pane/colored_caption.dart';
 import 'package:lyric_editor/pane/video_pane/show_hide_mode/show_hide_mode_screen.dart';
 import 'package:lyric_editor/pane/video_pane/video_pane_provider.dart';
 import 'package:lyric_editor/position/seek_position.dart';
-import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
+import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
 import 'package:lyric_editor/pane/video_pane/colored_text_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/timeline_pane.dart';
 import 'package:lyric_editor/position/segment_index.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 
 class VideoPane extends ConsumerStatefulWidget {
@@ -87,7 +87,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     return lyricSnippetList.values.toList().reduce(max);
   }
 
-  double getMiddlePoint(LyricSnippet snippet) {
+  double getMiddlePoint(Sentence snippet) {
     return (snippet.startTimestamp.position + snippet.endTimestamp.position) / 2;
   }
 
@@ -97,7 +97,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     double justBeforePosition = 0;
     double justAfterPosition = double.maxFinite;
 
-    final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetMap.map;
+    final Map<LyricSnippetID, Sentence> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetMap.map;
     for (int index = 0; index < lyricSnippetList.length; index++) {
       double currentTime = getMiddlePoint(lyricSnippetList.values.toList()[index]);
       if (currentTime < seekPosition) {
@@ -122,7 +122,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
   double getSeekPositionFromScrollOffset(double scrollOffset) {
     final TimingService timingService = ref.read(timingMasterProvider);
-    final List<LyricSnippet> lyricSnippetList = timingService.lyricSnippetMap.values.toList();
+    final List<Sentence> lyricSnippetList = timingService.lyricSnippetMap.values.toList();
 
     if (scrollOffset < 30) {
       return lyricSnippetList[0].startTimestamp.position.toDouble();
@@ -147,8 +147,8 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     return seekPosition;
   }
 
-  double getAnnotationSizePosition(LyricSnippet snippet, SentenceSegmentIndex segmentIndex) {
-    int startIndex = snippet.annotationMap.map.keys.toList()[segmentIndex.index].startIndex.index;
+  double getAnnotationSizePosition(Sentence snippet, WordIndex segmentIndex) {
+    int startIndex = snippet.readingMap.map.keys.toList()[segmentIndex.index].startIndex.index;
     double sumPosition = 0;
     int index = 0;
     for (index = 0; index < startIndex; index++) {

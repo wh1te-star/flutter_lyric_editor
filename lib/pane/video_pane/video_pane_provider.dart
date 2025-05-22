@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
 import 'package:lyric_editor/pane/video_pane/show_hide_mode/lyric_snippet_track.dart';
 import 'package:lyric_editor/pane/video_pane/show_hide_mode/lyric_snippet_track_map.dart';
 import 'package:lyric_editor/pane/video_pane/video_pane.dart';

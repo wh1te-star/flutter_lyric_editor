@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
-import 'package:lyric_editor/lyric_snippet/vocalist/vocalist_color_map.dart';
+import 'package:lyric_editor/sentence/id/lyric_snippet_id.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
+import 'package:lyric_editor/lyric_data/vocalist/vocalist_color_map.dart';
 import 'package:lyric_editor/pane/video_pane/colored_caption.dart';
 import 'package:lyric_editor/pane/video_pane/show_hide_mode/lyric_snippet_track.dart';
 import 'package:lyric_editor/pane/video_pane/show_hide_mode/lyric_snippet_track_map.dart';
@@ -12,7 +12,7 @@ class ShowHideModeScreen extends StatelessWidget {
   Duration startBulge = const Duration(milliseconds: 1000);
   Duration endBulge = const Duration(milliseconds: 1000);
 
-  LyricSnippetMap lyricSnippetMap;
+  SentenceMap lyricSnippetMap;
   VocalistColorMap vocalistColorMap;
   SeekPosition seekPosition;
   ShowHideModeScreen({
@@ -28,7 +28,7 @@ class ShowHideModeScreen extends StatelessWidget {
       startBulge: startBulge,
       endBulge: endBulge,
     );
-    LyricSnippetMap currentSnippets = lyricSnippetMap.getSnippetsAtSeekPosition(
+    SentenceMap currentSnippets = lyricSnippetMap.getSnippetsAtSeekPosition(
       seekPosition: seekPosition,
       startBulge: startBulge,
       endBulge: endBulge,
@@ -45,7 +45,7 @@ class ShowHideModeScreen extends StatelessWidget {
             orElse: () => LyricSnippetID.empty,
           );
       if (targetSnippetID != LyricSnippetID.empty) {
-        LyricSnippet targetSnippet = lyricSnippetMap[targetSnippetID]!;
+        Sentence targetSnippet = lyricSnippetMap[targetSnippetID]!;
         final Color color = Color(vocalistColorMap[targetSnippet.vocalistID]!.color);
         content[index] = Expanded(
           child: Center(

@@ -1,16 +1,16 @@
-class TimingPointIndex implements Comparable<TimingPointIndex> {
+class TimingIndex implements Comparable<TimingIndex> {
   final int index;
 
-  TimingPointIndex(this.index);
+  TimingIndex(this.index);
 
-  TimingPointIndex._privateConstructor(this.index);
-  static final TimingPointIndex _empty = TimingPointIndex._privateConstructor(-1);
-  static TimingPointIndex get empty => _empty;
+  TimingIndex._privateConstructor(this.index);
+  static final TimingIndex _empty = TimingIndex._privateConstructor(-1);
+  static TimingIndex get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
-  TimingPointIndex copyWith({int? index}) {
-    return TimingPointIndex(
+  TimingIndex copyWith({int? index}) {
+    return TimingIndex(
       index ?? this.index,
     );
   }
@@ -25,7 +25,7 @@ class TimingPointIndex implements Comparable<TimingPointIndex> {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! TimingPointIndex) {
+    if (other is! TimingIndex) {
       return false;
     }
     return index == other.index;
@@ -34,16 +34,16 @@ class TimingPointIndex implements Comparable<TimingPointIndex> {
   @override
   int get hashCode => index.hashCode;
 
-  TimingPointIndex operator +(int index) => TimingPointIndex(this.index + index);
-  TimingPointIndex operator -(int index) => TimingPointIndex(this.index - index);
+  TimingIndex operator +(int index) => TimingIndex(this.index + index);
+  TimingIndex operator -(int index) => TimingIndex(this.index - index);
 
   @override
-  int compareTo(TimingPointIndex other) {
+  int compareTo(TimingIndex other) {
     return index.compareTo(other.index);
   }
 
-  bool operator >(TimingPointIndex other) => index > other.index;
-  bool operator <(TimingPointIndex other) => index < other.index;
-  bool operator >=(TimingPointIndex other) => index >= other.index;
-  bool operator <=(TimingPointIndex other) => index <= other.index;
+  bool operator >(TimingIndex other) => index > other.index;
+  bool operator <(TimingIndex other) => index < other.index;
+  bool operator >=(TimingIndex other) => index >= other.index;
+  bool operator <=(TimingIndex other) => index <= other.index;
 }
