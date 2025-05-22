@@ -1,10 +1,10 @@
 import 'package:lyric_editor/diff_function/backtrack_point.dart';
 import 'package:lyric_editor/diff_function/backtrack_route.dart';
 import 'package:lyric_editor/diff_function/backtract_table.dart';
-import 'package:lyric_editor/diff_function/diff_segment.dart';
+import 'package:lyric_editor/diff_function/word_diff.dart';
 import 'package:lyric_editor/diff_function/lcs_cell.dart';
 import 'package:lyric_editor/diff_function/longest_common_subsequence.dart';
-import 'package:lyric_editor/position/segment_range.dart';
+import 'package:lyric_editor/position/phrase_position.dart';
 
 class CharDiff {
   String beforeStr;

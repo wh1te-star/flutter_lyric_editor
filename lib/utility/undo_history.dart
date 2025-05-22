@@ -1,10 +1,10 @@
-import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
+import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
+import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
 import 'package:lyric_editor/section/section_list.dart';
-import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
-import 'package:lyric_editor/lyric_snippet/vocalist/vocalist_color_map.dart';
+import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
+import 'package:lyric_editor/lyric_data/vocalist/vocalist_color_map.dart';
 
 enum LyricUndoType {
   lyricSnippet,

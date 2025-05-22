@@ -1,7 +1,7 @@
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
-import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
+import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/position/seek_position.dart';
-import 'package:lyric_editor/position/segment_range.dart';
+import 'package:lyric_editor/position/phrase_position.dart';
 
 abstract class TextPaneCursor {
   LyricSnippet lyricSnippet;

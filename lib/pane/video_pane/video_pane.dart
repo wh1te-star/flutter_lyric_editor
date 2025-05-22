@@ -2,21 +2,21 @@ import 'dart:ui';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
+import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
+import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/pane/text_pane/text_pane_provider.dart';
 import 'package:lyric_editor/pane/video_pane/colored_caption.dart';
 import 'package:lyric_editor/pane/video_pane/show_hide_mode/show_hide_mode_screen.dart';
 import 'package:lyric_editor/pane/video_pane/video_pane_provider.dart';
 import 'package:lyric_editor/position/seek_position.dart';
-import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
+import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
 import 'package:lyric_editor/pane/video_pane/colored_text_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/timeline_pane.dart';
-import 'package:lyric_editor/position/segment_index.dart';
+import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 
 class VideoPane extends ConsumerStatefulWidget {

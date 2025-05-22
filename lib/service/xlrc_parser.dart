@@ -1,16 +1,16 @@
-import 'package:lyric_editor/lyric_snippet/annotation/annotation.dart';
-import 'package:lyric_editor/lyric_snippet/annotation/annotation_map.dart';
-import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet_map.dart';
+import 'package:lyric_editor/lyric_data/ruby/ruby.dart';
+import 'package:lyric_editor/lyric_data/ruby/ruby_map.dart';
+import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
 import 'package:lyric_editor/position/seek_position.dart';
-import 'package:lyric_editor/position/segment_range.dart';
+import 'package:lyric_editor/position/phrase_position.dart';
 import 'package:lyric_editor/section/section_list.dart';
-import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment.dart';
-import 'package:lyric_editor/lyric_snippet/sentence_segment/sentence_segment_list.dart';
-import 'package:lyric_editor/lyric_snippet/timing.dart';
-import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
-import 'package:lyric_editor/lyric_snippet/vocalist/vocalist_color_map.dart';
+import 'package:lyric_editor/lyric_data/word/word.dart';
+import 'package:lyric_editor/lyric_data/word/word_list.dart';
+import 'package:lyric_editor/lyric_data/timetable.dart';
+import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
+import 'package:lyric_editor/lyric_data/vocalist/vocalist_color_map.dart';
 import 'package:tuple/tuple.dart';
 import 'package:xml/xml.dart';
 

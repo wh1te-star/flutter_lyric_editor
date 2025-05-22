@@ -3,14 +3,14 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
-import 'package:lyric_editor/lyric_snippet/id/lyric_snippet_id.dart';
-import 'package:lyric_editor/lyric_snippet/id/vocalist_id.dart';
-import 'package:lyric_editor/lyric_snippet/vocalist/vocalist.dart';
+import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
+import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
+import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
 import 'package:lyric_editor/pane/timeline_pane/current_position_indicator_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/rectangle_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/scale_mark.dart';
-import 'package:lyric_editor/pane/snippet_timeline.dart';
-import 'package:lyric_editor/pane/video_pane/show_hide_mode/lyric_snippet_track_map.dart';
+import 'package:lyric_editor/pane/sentence_timetable.dart';
+import 'package:lyric_editor/pane/video_pane/show_hide_mode/sentence_track_map.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
@@ -18,7 +18,7 @@ import 'package:lyric_editor/utility/utility_functions.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:lyric_editor/dialog/text_field_dialog.dart';
 import 'package:lyric_editor/utility/svg_icon.dart';
-import 'package:lyric_editor/lyric_snippet/lyric_snippet/lyric_snippet.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 
 final timelinePaneMasterProvider = ChangeNotifierProvider((ref) {
   final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
