@@ -147,8 +147,8 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     return seekPosition;
   }
 
-  double getAnnotationSizePosition(Sentence sentence, SentenceSegmentIndex segmentIndex) {
-    int startIndex = sentence.annotationMap.map.keys.toList()[segmentIndex.index].startIndex.index;
+  double getRubySizePosition(Sentence sentence, SentenceSegmentIndex segmentIndex) {
+    int startIndex = sentence.rubyMap.map.keys.toList()[segmentIndex.index].startIndex.index;
     double sumPosition = 0;
     int index = 0;
     for (index = 0; index < startIndex; index++) {

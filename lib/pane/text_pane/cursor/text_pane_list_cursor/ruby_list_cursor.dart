@@ -28,7 +28,7 @@ class RubyListCursor extends TextPaneListCursor {
     required Option option,
   }) : super(sentenceMap, sentenceID, seekPosition) {
     assert(isIDContained(), "The passed sentenceID does not point to a sentence in sentenceMap.");
-    assert(doesSeekPositionPointAnnotation(), "The passed seek position does not point to any annotation.");
+    assert(doesSeekPositionPointRuby(), "The passed seek position does not point to any ruby.");
     rubyCursor = RubyCursor(
       sentence: sentenceMap[sentenceID]!,
       seekPosition: seekPosition,
@@ -64,7 +64,7 @@ class RubyListCursor extends TextPaneListCursor {
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
-  bool doesSeekPositionPointAnnotation() {
+  bool doesSeekPositionPointRuby() {
     Sentence sentence = sentenceMap[sentenceID]!;
     PhrasePosition rubyPhrasePosition = sentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
     return rubyPhrasePosition.isNotEmpty;
@@ -77,15 +77,15 @@ class RubyListCursor extends TextPaneListCursor {
   }) {
     Sentence sentence = sentenceMap.getSentenceByID(sentenceID);
     PhrasePosition rubyPhrasePosition = sentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
-    Annotation annotation = sentence.annotationMap[rubyPhrasePosition]!;
-    SentenceSegmentIndex segmentIndex = annotation.getSegmentIndexFromSeekPosition(seekPosition);
+    Ruby ruby = sentence.rubyMap[rubyPhrasePosition]!;
+    SentenceSegmentIndex segmentIndex = ruby.getSegmentIndexFromSeekPosition(seekPosition);
 
     return RubyListCursor(
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
       seekPosition: seekPosition,
       phrasePosition: rubyPhrasePosition,
-      insertionPosition: annotation.timing.leftTimingPoint(segmentIndex).insertionPosition + 1,
+      insertionPosition: ruby.timing.leftTimingPoint(segmentIndex).insertionPosition + 1,
       option: Option.former,
     );
   }

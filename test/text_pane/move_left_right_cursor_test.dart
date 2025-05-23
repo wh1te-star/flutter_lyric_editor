@@ -133,7 +133,7 @@ void main() {
       final Sentence sentence = Sentence(
         vocalistID: VocalistID(1),
         timing: timingData1,
-        annotationMap: AnnotationMap.empty,
+        rubyMap: RubyMap.empty,
       );
 
       final BaseCursor cursor = BaseCursor(
@@ -169,7 +169,7 @@ void main() {
       final Sentence lyricSnippet = Sentence(
         vocalistID: VocalistID(1),
         timing: timingData2,
-        annotationMap: AnnotationMap.empty,
+        rubyMap: RubyMap.empty,
       );
 
       final BaseCursor cursor = BaseCursor(

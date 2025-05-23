@@ -2,58 +2,58 @@ import 'package:collection/collection.dart';
 import 'package:lyric_editor/lyric_data/ruby/ruby.dart';
 import 'package:lyric_editor/position/phrase_position.dart';
 
-class AnnotationMap {
-  Map<PhrasePosition, Annotation> annotationMap;
+class RubyMap {
+  Map<PhrasePosition, Ruby> rubyMap;
 
-  AnnotationMap(this.annotationMap);
+  RubyMap(this.rubyMap);
 
-  static AnnotationMap get empty => AnnotationMap({});
+  static RubyMap get empty => RubyMap({});
   bool get isEmpty => map.isEmpty;
 
-  Iterable<MapEntry<PhrasePosition, Annotation>> get entries => map.entries;
+  Iterable<MapEntry<PhrasePosition, Ruby>> get entries => map.entries;
   Iterable<PhrasePosition> get keys => map.keys;
-  Iterable<Annotation> get values => map.values;
+  Iterable<Ruby> get values => map.values;
   int get length => map.length;
   void clear() => map.clear();
   bool containsKey(PhrasePosition key) => map.containsKey(key);
-  Annotation? operator [](PhrasePosition key) => map[key];
-  void operator []=(PhrasePosition key, Annotation value) {
+  Ruby? operator [](PhrasePosition key) => map[key];
+  void operator []=(PhrasePosition key, Ruby value) {
     map[key] = value;
   }
 
-  Map<PhrasePosition, Annotation> get map => annotationMap;
+  Map<PhrasePosition, Ruby> get map => rubyMap;
 
-  AnnotationMap concatenate(int carryUp, AnnotationMap other) {
-    Map<PhrasePosition, Annotation> newMap = Map<PhrasePosition, Annotation>.from(annotationMap);
-    for (MapEntry<PhrasePosition, Annotation> entry in other.annotationMap.entries) {
+  RubyMap concatenate(int carryUp, RubyMap other) {
+    Map<PhrasePosition, Ruby> newMap = Map<PhrasePosition, Ruby>.from(rubyMap);
+    for (MapEntry<PhrasePosition, Ruby> entry in other.rubyMap.entries) {
       PhrasePosition phrasePosition = entry.key;
-      Annotation annotation = entry.value;
+      Ruby ruby = entry.value;
       PhrasePosition newPhrasePosition = PhrasePosition(phrasePosition.startIndex + carryUp, phrasePosition.endIndex + carryUp);
-      newMap[newPhrasePosition] = annotation;
+      newMap[newPhrasePosition] = ruby;
     }
-    return AnnotationMap(newMap);
+    return RubyMap(newMap);
   }
 
-  AnnotationMap copyWith({
-    Map<PhrasePosition, Annotation>? annotationMap,
+  RubyMap copyWith({
+    Map<PhrasePosition, Ruby>? rubyMap,
   }) {
-    return AnnotationMap(
-      annotationMap ?? this.annotationMap,
+    return RubyMap(
+      rubyMap ?? this.rubyMap,
     );
   }
 
   @override
   String toString() {
-    return annotationMap.entries.map((MapEntry<PhrasePosition, Annotation> annotationMapEntry) => '${annotationMapEntry.key}: ${annotationMapEntry.value}').join("\n");
+    return rubyMap.entries.map((MapEntry<PhrasePosition, Ruby> rubyMapEntry) => '${rubyMapEntry.key}: ${rubyMapEntry.value}').join("\n");
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! AnnotationMap) return false;
-    return const DeepCollectionEquality().equals(annotationMap, other.annotationMap);
+    if (other is! RubyMap) return false;
+    return const DeepCollectionEquality().equals(rubyMap, other.rubyMap);
   }
 
   @override
-  int get hashCode => const DeepCollectionEquality().hash(annotationMap);
+  int get hashCode => const DeepCollectionEquality().hash(rubyMap);
 }

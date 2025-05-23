@@ -8,15 +8,15 @@ import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/phrase_position.dart';
 
-class Annotation {
+class Ruby {
   Timing timing;
 
-  Annotation({
+  Ruby({
     required this.timing,
   });
 
-  static Annotation get empty {
-    return Annotation(
+  static Ruby get empty {
+    return Ruby(
       timing: Timing.empty,
     );
   }
@@ -34,17 +34,17 @@ class Annotation {
   InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timing.getInsertionPositionInfo(insertionPosition);
   SentenceSegmentList getSentenceSegmentList(PhrasePosition phrasePosition) => timing.getSentenceSegmentList(phrasePosition);
 
-  Annotation copyWith({
+  Ruby copyWith({
     Timing? timing,
   }) {
-    return Annotation(
+    return Ruby(
       timing: timing ?? this.timing,
     );
   }
 
   @override
   String toString() {
-    return "Annotation($timing)";
+    return "Ruby($timing)";
   }
 
   @override
@@ -52,7 +52,7 @@ class Annotation {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! Annotation) {
+    if (other is! Ruby) {
       return false;
     }
     if (runtimeType != other.runtimeType) {

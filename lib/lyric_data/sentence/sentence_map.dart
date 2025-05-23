@@ -95,17 +95,17 @@ class SentenceMap {
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  SentenceMap addAnnotation(SentenceID id, PhrasePosition phrasePosition, String annotationString) {
+  SentenceMap addRuby(SentenceID id, PhrasePosition phrasePosition, String rubyString) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
     Sentence sentence = copiedMap[id]!;
-    sentence = sentence.addAnnotation(phrasePosition, annotationString);
+    sentence = sentence.addRuby(phrasePosition, rubyString);
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  SentenceMap removeAnnotation(SentenceID id, PhrasePosition phrasePosition) {
+  SentenceMap removeRuby(SentenceID id, PhrasePosition phrasePosition) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
     Sentence sentence = copiedMap[id]!;
-    sentence = sentence.removeAnnotation(phrasePosition);
+    sentence = sentence.removeRuby(phrasePosition);
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
@@ -120,17 +120,17 @@ class SentenceMap {
     return SentenceMap(map);
   }
 
-  SentenceMap addAnnotationTimingPoint(SentenceID id, PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
+  SentenceMap addRubyTimingPoint(SentenceID id, PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
     Sentence sentence = copiedMap[id]!;
-    sentence = sentence.addAnnotationTimingPoint(phrasePosition, charPosition, seekPosition);
+    sentence = sentence.addRubyTimingPoint(phrasePosition, charPosition, seekPosition);
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  SentenceMap removeAnnotationTimingPoint(SentenceID id, PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
+  SentenceMap removeRubyTimingPoint(SentenceID id, PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
     Sentence sentence = copiedMap[id]!;
-    sentence = sentence.removeAnnotationTimingPoint(phrasePosition, charPosition, option);
+    sentence = sentence.removeRubyTimingPoint(phrasePosition, charPosition, option);
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
@@ -179,7 +179,7 @@ class SentenceMap {
     }
     concatenatedSentenceSegmentList += latterSentence.timing.sentenceSegmentList;
 
-    AnnotationMap concatenatedAnnotationMap = formerSentence.annotationMap.concatenate(indexCarryUp, latterSentence.annotationMap);
+    RubyMap concatenatedRubyMap = formerSentence.rubyMap.concatenate(indexCarryUp, latterSentence.rubyMap);
 
     copiedMap.remove(formerSentenceID);
     copiedMap.remove(latterSentenceID);
@@ -189,7 +189,7 @@ class SentenceMap {
         startTimestamp: formerSentence.startTimestamp,
         sentenceSegmentList: concatenatedSentenceSegmentList,
       ),
-      annotationMap: concatenatedAnnotationMap,
+      rubyMap: concatenatedRubyMap,
     );
 
     return sortSentenceList(SentenceMap(copiedMap));

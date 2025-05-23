@@ -91,7 +91,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyS): AddSentenceIntent(),
         LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyA): EnterWordModeIntent(),
         LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyS): DeleteSentenceIntent(),
-        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyA): DeleteAnnotationIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyA): DeleteRubyIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyC): SentenceStartMoveIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyV): textPaneProvider.textPaneCursorController.textPaneListCursor is WordListCursor ? SwitchExpandModeIntent() : SentenceEndMoveIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowLeft): SpeedDownIntent(),
@@ -116,7 +116,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyE): AddSectionIntent(),
         LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyR): DeleteSectionIntent(),
         LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyD): DisplayModeSwitchIntent(),
-        LogicalKeySet(LogicalKeyboardKey.enter): AddAnnotationIntent(),
+        LogicalKeySet(LogicalKeyboardKey.enter): AddRubyIntent(),
         LogicalKeySet(LogicalKeyboardKey.escape): CancelIntent(),
       };
 
@@ -147,7 +147,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             Sentence sentence = Sentence(
               vocalistID: timelinePaneProvider.selectingVocalist[0],
               timing: timing,
-              annotationMap: AnnotationMap.empty,
+              rubyMap: RubyMap.empty,
             );
             timingService.addSentence(sentence);
           }(),
@@ -162,7 +162,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             if (textPaneProvider.textPaneCursorController.textPaneListCursor is! BaseListCursor) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text("You cannot add an annotation to an annotation."),
+                  content: Text("You cannot add an ruby to an ruby."),
                 ),
               );
             }
@@ -176,10 +176,10 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             setState(() {});
           }(),
         ),
-        AddAnnotationIntent: CallbackAction<AddAnnotationIntent>(
-          onInvoke: (AddAnnotationIntent intent) => () async {
+        AddRubyIntent: CallbackAction<AddRubyIntent>(
+          onInvoke: (AddRubyIntent intent) => () async {
             TextPaneCursorController cursorController = textPaneProvider.textPaneCursorController;
-            assert(cursorController.textPaneListCursor is WordListCursor, "An unintended error occurred when adding an annotation. The cursor type must be segment type.");
+            assert(cursorController.textPaneListCursor is WordListCursor, "An unintended error occurred when adding a ruby. The cursor type must be segment type.");
 
             WordListCursor listCursor = cursorController.textPaneListCursor as WordListCursor;
             SentenceID sentenceID = listCursor.sentenceID;
@@ -187,28 +187,28 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             WordCursor cursor = listCursor.textPaneCursor as WordCursor;
             PhrasePosition phrasePosition = cursor.phrasePosition;
 
-            String annotationString = (await displayTextFieldDialog(context, [""]))[0];
-            if (annotationString != "") {
-              timingService.addAnnotation(sentenceID, phrasePosition, annotationString);
+            String rubyString = (await displayTextFieldDialog(context, [""]))[0];
+            if (rubyString != "") {
+              timingService.addRuby(sentenceID, phrasePosition, rubyString);
             }
             textPaneProvider.exitWordMode();
           }(),
         ),
-        DeleteAnnotationIntent: CallbackAction<DeleteAnnotationIntent>(
-          onInvoke: (DeleteAnnotationIntent intent) => () {
+        DeleteRubyIntent: CallbackAction<DeleteRubyIntent>(
+          onInvoke: (DeleteRubyIntent intent) => () {
             TextPaneListCursor listCursor = textPaneProvider.textPaneCursorController.textPaneListCursor;
             SentenceID sentenceID = listCursor.sentenceID;
             if (listCursor is! RubyListCursor) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text("Cannot determine which annotation should be deleted."),
+                  content: Text("Cannot determine which ruby should be deleted."),
                 ),
               );
             }
 
             RubyCursor cursor = listCursor.textPaneCursor as RubyCursor;
             PhrasePosition phrasePosition = cursor.phrasePosition;
-            timingService.removeAnnotation(sentenceID, phrasePosition);
+            timingService.removeRuby(sentenceID, phrasePosition);
           }(),
         ),
         SentenceStartMoveIntent: CallbackAction<SentenceStartMoveIntent>(
@@ -306,7 +306,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             }
             if (listCursor is RubyListCursor) {
               RubyCursor cursor = listCursor.textPaneCursor as RubyCursor;
-              timingService.addAnnotationTimingPoint(
+              timingService.addRubyTimingPoint(
                 listCursor.sentenceID,
                 cursor.phrasePosition,
                 cursor.insertionPosition,
@@ -329,7 +329,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             }
             if (listCursor is RubyListCursor) {
               RubyCursor cursor = listCursor.textPaneCursor as RubyCursor;
-              timingService.removeAnnotationTimingPoint(
+              timingService.removeRubyTimingPoint(
                 sentenceID,
                 cursor.phrasePosition,
                 cursor.insertionPosition,
@@ -421,9 +421,9 @@ class AddSentenceIntent extends Intent {}
 
 class DeleteSentenceIntent extends Intent {}
 
-class AddAnnotationIntent extends Intent {}
+class AddRubyIntent extends Intent {}
 
-class DeleteAnnotationIntent extends Intent {}
+class DeleteRubyIntent extends Intent {}
 
 class SentenceStartMoveIntent extends Intent {}
 

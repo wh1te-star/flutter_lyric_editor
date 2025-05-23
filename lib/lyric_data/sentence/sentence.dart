@@ -19,18 +19,18 @@ import 'package:tuple/tuple.dart';
 class Sentence {
   final VocalistID vocalistID;
   final Timing timing;
-  final AnnotationMap annotationMap;
+  final RubyMap rubyMap;
 
   Sentence({
     required this.vocalistID,
     required this.timing,
-    required this.annotationMap,
+    required this.rubyMap,
   });
 
   static Sentence get empty => Sentence(
         vocalistID: VocalistID(0),
         timing: Timing.empty,
-        annotationMap: AnnotationMap.empty,
+        rubyMap: RubyMap.empty,
       );
   bool get isEmpty => vocalistID.id == 0 && timing.startTimestamp.isEmpty && timing.isEmpty;
 
@@ -50,23 +50,23 @@ class Sentence {
   TimingPoint leftTimingPoint(SentenceSegmentIndex segmentIndex) => timing.leftTimingPoint(segmentIndex);
   TimingPoint rightTimingPoint(SentenceSegmentIndex segmentIndex) => timing.rightTimingPoint(segmentIndex);
 
-  MapEntry<PhrasePosition, Annotation> getAnnotationWords(SentenceSegmentIndex index) {
-    return annotationMap.map.entries.firstWhere(
+  MapEntry<PhrasePosition, Ruby> getRubyWords(SentenceSegmentIndex index) {
+    return rubyMap.map.entries.firstWhere(
       (entry) => entry.key.startIndex <= index && index <= entry.key.endIndex,
-      orElse: () => MapEntry(PhrasePosition.empty, Annotation.empty),
+      orElse: () => MapEntry(PhrasePosition.empty, Ruby.empty),
     );
   }
 
   PhrasePosition getRubysPhrasePositionFromSeekPosition(SeekPosition seekPosition) {
-    for (MapEntry<PhrasePosition, Annotation> entry in annotationMap.map.entries) {
+    for (MapEntry<PhrasePosition, Ruby> entry in rubyMap.map.entries) {
       PhrasePosition phrasePosition = entry.key;
-      Annotation annotation = entry.value;
+      Ruby ruby = entry.value;
       SeekPosition startTimestamp = timing.startTimestamp;
       List<TimingPoint> timingPoints = timing.timingPointList.list;
-      List<TimingPoint> annotationTimingPoints = annotation.timing.timingPointList.list;
-      SeekPosition annotationStartSeekPosition = SeekPosition(startTimestamp.position + timingPoints[phrasePosition.startIndex.index].seekPosition.position);
-      SeekPosition startSeekPosition = SeekPosition(annotationStartSeekPosition.position + annotationTimingPoints.first.seekPosition.position);
-      SeekPosition endSeekPosition = SeekPosition(annotationStartSeekPosition.position + annotationTimingPoints.last.seekPosition.position);
+      List<TimingPoint> rubyTimingPoints = ruby.timing.timingPointList.list;
+      SeekPosition rubyStartSeekPosition = SeekPosition(startTimestamp.position + timingPoints[phrasePosition.startIndex.index].seekPosition.position);
+      SeekPosition startSeekPosition = SeekPosition(rubyStartSeekPosition.position + rubyTimingPoints.first.seekPosition.position);
+      SeekPosition endSeekPosition = SeekPosition(rubyStartSeekPosition.position + rubyTimingPoints.last.seekPosition.position);
       if (startSeekPosition <= seekPosition && seekPosition < endSeekPosition) {
         return phrasePosition;
       }
@@ -77,55 +77,55 @@ class Sentence {
   Sentence editSentence(String newSentence) {
     Timing copiedTiming = timing.copyWith();
     copiedTiming = copiedTiming.editSentence(newSentence);
-    return Sentence(vocalistID: vocalistID, timing: copiedTiming, annotationMap: annotationMap);
+    return Sentence(vocalistID: vocalistID, timing: copiedTiming, rubyMap: rubyMap);
   }
 
   Sentence addTimingPoint(InsertionPosition charPosition, SeekPosition seekPosition) {
-    AnnotationMap annotationMap = carryUpAnnotationSegments(charPosition);
+    RubyMap rubyMap = carryUpRubySegments(charPosition);
     Timing timing = this.timing.addTimingPoint(charPosition, seekPosition);
-    return Sentence(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
+    return Sentence(vocalistID: vocalistID, timing: timing, rubyMap: rubyMap);
   }
 
   Sentence removeTimingPoint(InsertionPosition charPosition, Option option) {
-    AnnotationMap annotationMap = carryDownAnnotationSegments(charPosition);
+    RubyMap rubyMap = carryDownRubySegments(charPosition);
     Timing timing = this.timing.deleteTimingPoint(charPosition, option);
-    return Sentence(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
+    return Sentence(vocalistID: vocalistID, timing: timing, rubyMap: rubyMap);
   }
 
-  Sentence addAnnotationTimingPoint(PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
-    Timing timing = annotationMap[phrasePosition]!.timing.addTimingPoint(charPosition, seekPosition);
-    return Sentence(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
+  Sentence addRubyTimingPoint(PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
+    Timing timing = rubyMap[phrasePosition]!.timing.addTimingPoint(charPosition, seekPosition);
+    return Sentence(vocalistID: vocalistID, timing: timing, rubyMap: rubyMap);
   }
 
-  Sentence removeAnnotationTimingPoint(PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
-    Timing timing = annotationMap[phrasePosition]!.timing.deleteTimingPoint(charPosition, option);
-    return Sentence(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
+  Sentence removeRubyTimingPoint(PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
+    Timing timing = rubyMap[phrasePosition]!.timing.deleteTimingPoint(charPosition, option);
+    return Sentence(vocalistID: vocalistID, timing: timing, rubyMap: rubyMap);
   }
 
-  Sentence addAnnotation(PhrasePosition phrasePosition, String annotationString) {
-    AnnotationMap annotationMap = this.annotationMap;
-    SeekPosition annotationStartTimestamp = SeekPosition(startTimestamp.position + timingPoints[phrasePosition.startIndex.index].seekPosition.position);
-    SeekPosition annotationEndTimestamp = SeekPosition(startTimestamp.position + timingPoints[phrasePosition.endIndex.index + 1].seekPosition.position);
-    Duration annotationDuration = Duration(milliseconds: annotationEndTimestamp.position - annotationStartTimestamp.position);
-    SentenceSegment sentenceSegment = SentenceSegment(annotationString, annotationDuration);
+  Sentence addRuby(PhrasePosition phrasePosition, String rubyString) {
+    RubyMap rubyMap = this.rubyMap;
+    SeekPosition rubyStartTimestamp = SeekPosition(startTimestamp.position + timingPoints[phrasePosition.startIndex.index].seekPosition.position);
+    SeekPosition rubyEndTimestamp = SeekPosition(startTimestamp.position + timingPoints[phrasePosition.endIndex.index + 1].seekPosition.position);
+    Duration rubyDuration = Duration(milliseconds: rubyEndTimestamp.position - rubyStartTimestamp.position);
+    SentenceSegment sentenceSegment = SentenceSegment(rubyString, rubyDuration);
     Timing timing = Timing(
-      startTimestamp: annotationStartTimestamp,
+      startTimestamp: rubyStartTimestamp,
       sentenceSegmentList: SentenceSegmentList([sentenceSegment]),
     );
-    annotationMap.map[phrasePosition] = Annotation(timing: timing);
-    return Sentence(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
+    rubyMap.map[phrasePosition] = Ruby(timing: timing);
+    return Sentence(vocalistID: vocalistID, timing: timing, rubyMap: rubyMap);
   }
 
-  Sentence removeAnnotation(PhrasePosition phrasePosition) {
-    AnnotationMap annotationMap = this.annotationMap;
-    annotationMap.map.remove(phrasePosition);
-    return Sentence(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
+  Sentence removeRuby(PhrasePosition phrasePosition) {
+    RubyMap rubyMap = this.rubyMap;
+    rubyMap.map.remove(phrasePosition);
+    return Sentence(vocalistID: vocalistID, timing: timing, rubyMap: rubyMap);
   }
 
   Sentence manipulateSentence(SeekPosition seekPosition, SentenceEdge sentenceEdge, bool holdLength) {
     Timing newTiming = timing.copyWith();
     newTiming = newTiming.manipulateTiming(seekPosition, sentenceEdge, holdLength);
-    return Sentence(vocalistID: vocalistID, timing: newTiming, annotationMap: annotationMap);
+    return Sentence(vocalistID: vocalistID, timing: newTiming, rubyMap: rubyMap);
   }
 
   Tuple2<Sentence, Sentence> divideSentence(InsertionPosition charPosition, SeekPosition seekPosition) {
@@ -140,7 +140,7 @@ class Sentence {
       sentence1 = Sentence(
         vocalistID: vocalistID,
         timing: newTiming,
-        annotationMap: annotationMap,
+        rubyMap: rubyMap,
       );
     }
 
@@ -150,18 +150,18 @@ class Sentence {
       sentence2 = Sentence(
         vocalistID: vocalistID,
         timing: newTiming,
-        annotationMap: annotationMap,
+        rubyMap: rubyMap,
       );
     }
 
     return Tuple2(sentence1, sentence2);
   }
 
-  AnnotationMap carryUpAnnotationSegments(InsertionPosition insertionPosition) {
+  RubyMap carryUpRubySegments(InsertionPosition insertionPosition) {
     InsertionPositionInfo info = timing.getInsertionPositionInfo(insertionPosition)!;
-    Map<PhrasePosition, Annotation> updatedAnnotations = {};
+    Map<PhrasePosition, Ruby> updatedRubys = {};
 
-    annotationMap.map.forEach((PhrasePosition key, Annotation value) {
+    rubyMap.map.forEach((PhrasePosition key, Ruby value) {
       PhrasePosition newKey = key.copyWith();
 
       switch (info) {
@@ -191,15 +191,15 @@ class Sentence {
           assert(false, "An unexpected state occurred for the insertion position info");
       }
 
-      updatedAnnotations[newKey] = value;
+      updatedRubys[newKey] = value;
     });
 
-    return AnnotationMap(updatedAnnotations);
+    return RubyMap(updatedRubys);
   }
 
-  AnnotationMap carryDownAnnotationSegments(InsertionPosition insertionPosition) {
+  RubyMap carryDownRubySegments(InsertionPosition insertionPosition) {
     InsertionPositionInfo info = timing.getInsertionPositionInfo(insertionPosition)!;
-    Map<PhrasePosition, Annotation> updatedAnnotations = {};
+    Map<PhrasePosition, Ruby> updatedRubys = {};
     int index = -1;
     if (info is SentenceSegmentInsertionPositionInfo) {
       index = info.sentenceSegmentIndex.index;
@@ -209,7 +209,7 @@ class Sentence {
       assert(false, "An unexpected state was occurred for the insertion position");
     }
 
-    annotationMap.map.forEach((PhrasePosition key, Annotation value) {
+    rubyMap.map.forEach((PhrasePosition key, Ruby value) {
       PhrasePosition newKey = key.copyWith();
       int startIndex = key.startIndex.index;
       int endIndex = key.endIndex.index + 1;
@@ -226,14 +226,14 @@ class Sentence {
       } else if (index < endIndex) {
         newKey.endIndex--;
       }
-      updatedAnnotations[newKey] = value;
+      updatedRubys[newKey] = value;
     });
 
-    return AnnotationMap(updatedAnnotations);
+    return RubyMap(updatedRubys);
   }
 
-  List<Tuple2<PhrasePosition, Annotation?>> getRubysPhrasePositionList() {
-    if (annotationMap.isEmpty) {
+  List<Tuple2<PhrasePosition, Ruby?>> getRubysPhrasePositionList() {
+    if (rubyMap.isEmpty) {
       SentenceSegmentIndex startIndex = SentenceSegmentIndex(0);
       SentenceSegmentIndex endIndex = SentenceSegmentIndex(sentenceSegments.length - 1);
       return [
@@ -244,12 +244,12 @@ class Sentence {
       ];
     }
 
-    List<Tuple2<PhrasePosition, Annotation?>> phrasePositionList = [];
+    List<Tuple2<PhrasePosition, Ruby?>> phrasePositionList = [];
     int previousEnd = -1;
 
-    for (MapEntry<PhrasePosition, Annotation> entry in annotationMap.entries) {
+    for (MapEntry<PhrasePosition, Ruby> entry in rubyMap.entries) {
       PhrasePosition phrasePosition = entry.key;
-      Annotation annotation = entry.value;
+      Ruby ruby = entry.value;
 
       if (previousEnd + 1 <= phrasePosition.startIndex.index - 1) {
         SentenceSegmentIndex startIndex = SentenceSegmentIndex(previousEnd + 1);
@@ -264,7 +264,7 @@ class Sentence {
       phrasePositionList.add(
         Tuple2(
           phrasePosition,
-          annotation,
+          ruby,
         ),
       );
 
@@ -288,12 +288,12 @@ class Sentence {
   Sentence copyWith({
     VocalistID? vocalistID,
     Timing? timing,
-    AnnotationMap? annotationMap,
+    RubyMap? rubyMap,
   }) {
     return Sentence(
       vocalistID: vocalistID ?? this.vocalistID,
       timing: timing ?? this.timing,
-      annotationMap: annotationMap ?? this.annotationMap,
+      rubyMap: rubyMap ?? this.rubyMap,
     );
   }
 
@@ -308,9 +308,9 @@ class Sentence {
     if (runtimeType != other.runtimeType) {
       return false;
     }
-    return vocalistID == other.vocalistID && timing == other.timing && annotationMap == other.annotationMap;
+    return vocalistID == other.vocalistID && timing == other.timing && rubyMap == other.rubyMap;
   }
 
   @override
-  int get hashCode => vocalistID.hashCode ^ timing.hashCode ^ annotationMap.hashCode;
+  int get hashCode => vocalistID.hashCode ^ timing.hashCode ^ rubyMap.hashCode;
 }

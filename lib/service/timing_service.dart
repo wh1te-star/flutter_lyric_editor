@@ -122,15 +122,15 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addAnnotation(SentenceID sentenceID, PhrasePosition phrasePosition, String annotationString) {
+  void addRuby(SentenceID sentenceID, PhrasePosition phrasePosition, String rubyString) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
-    sentenceMap = sentenceMap.addAnnotation(sentenceID, phrasePosition, annotationString);
+    sentenceMap = sentenceMap.addRuby(sentenceID, phrasePosition, rubyString);
     notifyListeners();
   }
 
-  void removeAnnotation(SentenceID sentenceID, PhrasePosition phrasePosition) {
+  void removeRuby(SentenceID sentenceID, PhrasePosition phrasePosition) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
-    sentenceMap = sentenceMap.removeAnnotation(sentenceID, phrasePosition);
+    sentenceMap = sentenceMap.removeRuby(sentenceID, phrasePosition);
     notifyListeners();
   }
 
@@ -146,15 +146,15 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addAnnotationTimingPoint(SentenceID sentenceID, PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
+  void addRubyTimingPoint(SentenceID sentenceID, PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
-    sentenceMap = sentenceMap.addAnnotationTimingPoint(sentenceID, phrasePosition, charPosition, seekPosition);
+    sentenceMap = sentenceMap.addRubyTimingPoint(sentenceID, phrasePosition, charPosition, seekPosition);
     notifyListeners();
   }
 
-  void removeAnnotationTimingPoint(SentenceID sentenceID, PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
+  void removeRubyTimingPoint(SentenceID sentenceID, PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
-    sentenceMap = sentenceMap.removeAnnotationTimingPoint(sentenceID, phrasePosition, charPosition, option);
+    sentenceMap = sentenceMap.removeRubyTimingPoint(sentenceID, phrasePosition, charPosition, option);
     notifyListeners();
   }
 

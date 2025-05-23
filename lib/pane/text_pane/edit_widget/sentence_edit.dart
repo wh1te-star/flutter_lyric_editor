@@ -23,9 +23,9 @@ class SentenceEdit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> annotationExistenceEdits = [];
-    List<Tuple2<PhrasePosition, Annotation?>> rubyPhrasePositionList = sentence.getRubysPhrasePositionList();
-    List<PhrasePosition> phrasePositionList = rubyPhrasePositionList.map((Tuple2<PhrasePosition, Annotation?> entry) {
+    List<Widget> rubyExistenceEdits = [];
+    List<Tuple2<PhrasePosition, Ruby?>> rubyPhrasePositionList = sentence.getRubysPhrasePositionList();
+    List<PhrasePosition> phrasePositionList = rubyPhrasePositionList.map((Tuple2<PhrasePosition, Ruby?> entry) {
       return entry.item1;
     }).toList();
     List<TextPaneCursor?> cursorList = List.filled(phrasePositionList.length, null);
@@ -35,10 +35,10 @@ class SentenceEdit extends StatelessWidget {
 
     for (int index = 0; index < rubyPhrasePositionList.length; index++) {
       PhrasePosition phrasePosition = rubyPhrasePositionList[index].item1;
-      Annotation? annotation = rubyPhrasePositionList[index].item2;
+      Ruby? ruby = rubyPhrasePositionList[index].item2;
 
       SentenceSegmentList? sentenceSubList = sentence.getSentenceSegmentList(phrasePosition);
-      SentenceSegmentList? annotationSubList = annotation?.timing.sentenceSegmentList;
+      SentenceSegmentList? rubySubList = ruby?.timing.sentenceSegmentList;
 
       TextPaneCursor? cursor = cursorList[index];
       bool isTimingPointPosition = false;
@@ -60,7 +60,7 @@ class SentenceEdit extends StatelessWidget {
       }
 
       if (index > 0) {
-        annotationExistenceEdits.add(Column(
+        rubyExistenceEdits.add(Column(
           children: [
             TimingPointEdit(
               timingPoint: false,
@@ -79,20 +79,20 @@ class SentenceEdit extends StatelessWidget {
         sentenceSegmentCursor,
         sentenceSegmentCursorBlinker,
       );
-      Widget annotationEdit = getAnnotationEdit(
-        annotationSubList,
+      Widget rubyEdit = getRubyEdit(
+        rubySubList,
         sentenceSegmentCursor,
         sentenceSegmentCursorBlinker,
       );
-      annotationExistenceEdits.add(Column(children: [
-        annotationEdit,
+      rubyExistenceEdits.add(Column(children: [
+        rubyEdit,
         sentenceEdit,
       ]));
     }
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
-      children: annotationExistenceEdits,
+      children: rubyExistenceEdits,
     );
   }
 
@@ -113,7 +113,7 @@ class SentenceEdit extends StatelessWidget {
     );
   }
 
-  Widget getAnnotationEdit(
+  Widget getRubyEdit(
     SentenceSegmentList? sentenceSegmentList,
     TextPaneCursor? textPaneCursor,
     CursorBlinker? cursorBlinker,
@@ -123,14 +123,14 @@ class SentenceEdit extends StatelessWidget {
       cursorBlinker = null;
     }
 
-    Widget annotationEdit = Container();
+    Widget rubyEdit = Container();
     if (sentenceSegmentList != null) {
-      annotationEdit = SentenceSegmentListEdit(
+      rubyEdit = SentenceSegmentListEdit(
         sentenceSegmentList: sentenceSegmentList,
         textPaneCursor: textPaneCursor,
         cursorBlinker: cursorBlinker,
       );
     }
-    return annotationEdit;
+    return rubyEdit;
   }
 }

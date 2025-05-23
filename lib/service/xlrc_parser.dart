@@ -102,7 +102,7 @@ class XlrcParser {
       sentenceMap = sentenceMap.addSentence(Sentence(
         vocalistID: vocalistID,
         timing: timing,
-        annotationMap: AnnotationMap({}),
+        rubyMap: RubyMap({}),
       ));
     }
 

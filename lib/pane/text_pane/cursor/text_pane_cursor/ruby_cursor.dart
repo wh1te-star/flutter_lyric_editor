@@ -27,10 +27,10 @@ class RubyCursor extends TextPaneCursor {
     required this.insertionPosition,
     required this.option,
   }) : super(sentence, seekPosition) {
-    assert(doesSeekPositionPointAnnotation(), "The passed seek position does not point to any annotation.");
+    assert(doesSeekPositionPointRuby(), "The passed seek position does not point to any ruby.");
   }
 
-  bool doesSeekPositionPointAnnotation() {
+  bool doesSeekPositionPointRuby() {
     PhrasePosition phrasePosition = sentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
     return phrasePosition.isNotEmpty;
   }
@@ -58,14 +58,14 @@ class RubyCursor extends TextPaneCursor {
     required SeekPosition seekPosition,
   }) {
     PhrasePosition phrasePosition = sentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
-    Annotation annotation = sentence.annotationMap[phrasePosition]!;
-    SentenceSegmentIndex segmentIndex = annotation.getSegmentIndexFromSeekPosition(seekPosition);
+    Ruby ruby = sentence.rubyMap[phrasePosition]!;
+    SentenceSegmentIndex segmentIndex = ruby.getSegmentIndexFromSeekPosition(seekPosition);
 
     return RubyCursor(
       sentence: sentence,
       seekPosition: seekPosition,
       phrasePosition: phrasePosition,
-      insertionPosition: annotation.timing.leftTimingPoint(segmentIndex).insertionPosition + 1,
+      insertionPosition: ruby.timing.leftTimingPoint(segmentIndex).insertionPosition + 1,
       option: Option.former,
     );
   }

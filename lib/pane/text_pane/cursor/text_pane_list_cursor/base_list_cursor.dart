@@ -89,8 +89,8 @@ class BaseListCursor extends TextPaneListCursor {
   @override
   TextPaneListCursor moveUpCursor() {
     Sentence sentence = sentenceMap[sentenceID]!;
-    PhrasePosition annotationIndex = sentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
-    if (annotationIndex.isNotEmpty) {
+    PhrasePosition rubyIndex = sentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
+    if (rubyIndex.isNotEmpty) {
       return RubyListCursor.defaultCursor(
         sentenceMap: sentenceMap,
         sentenceID: sentenceID,
@@ -125,8 +125,8 @@ class BaseListCursor extends TextPaneListCursor {
     SentenceID nextSentenceID = sentenceMap.keys.toList()[index + 1];
     Sentence nextSentence = sentenceMap[nextSentenceID]!;
 
-    PhrasePosition annotationIndex = nextSentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
-    if (annotationIndex.isNotEmpty) {
+    PhrasePosition rubyIndex = nextSentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
+    if (rubyIndex.isNotEmpty) {
       return RubyListCursor.defaultCursor(
         sentenceMap: sentenceMap,
         sentenceID: sentenceID,
