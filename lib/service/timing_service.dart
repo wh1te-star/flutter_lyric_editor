@@ -134,27 +134,27 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addTimingPoint(SentenceID sentenceID, InsertionPosition charPosition, SeekPosition seekPosition) {
+  void addTiming(SentenceID sentenceID, InsertionPosition charPosition, SeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
-    sentenceMap = sentenceMap.addTimingPoint(sentenceID, charPosition, seekPosition);
+    sentenceMap = sentenceMap.addTiming(sentenceID, charPosition, seekPosition);
     notifyListeners();
   }
 
-  void removeTimingPoint(SentenceID sentenceID, InsertionPosition charPosition, Option option) {
+  void removeTiming(SentenceID sentenceID, InsertionPosition charPosition, Option option) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
-    sentenceMap = sentenceMap.removeTimingPoint(sentenceID, charPosition, option);
+    sentenceMap = sentenceMap.removeTiming(sentenceID, charPosition, option);
     notifyListeners();
   }
 
-  void addRubyTimingPoint(SentenceID sentenceID, PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
+  void addRubyTiming(SentenceID sentenceID, PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
-    sentenceMap = sentenceMap.addRubyTimingPoint(sentenceID, phrasePosition, charPosition, seekPosition);
+    sentenceMap = sentenceMap.addRubyTiming(sentenceID, phrasePosition, charPosition, seekPosition);
     notifyListeners();
   }
 
-  void removeRubyTimingPoint(SentenceID sentenceID, PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
+  void removeRubyTiming(SentenceID sentenceID, PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
-    sentenceMap = sentenceMap.removeRubyTimingPoint(sentenceID, phrasePosition, charPosition, option);
+    sentenceMap = sentenceMap.removeRubyTiming(sentenceID, phrasePosition, charPosition, option);
     notifyListeners();
   }
 

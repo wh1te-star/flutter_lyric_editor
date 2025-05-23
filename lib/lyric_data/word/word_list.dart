@@ -45,19 +45,19 @@ class WordList {
     return false;
   }
 
-  TimingPointList toTimingPointList() {
-    List<TimingPoint> timingPoints = [];
+  TimingList toTimingList() {
+    List<Timing> timings = [];
     InsertionPosition insertionPosition = InsertionPosition(0);
     SeekPosition seekPosition = SeekPosition(0);
     for (Word word in list) {
-      timingPoints.add(TimingPoint(insertionPosition, seekPosition));
+      timings.add(Timing(insertionPosition, seekPosition));
 
       insertionPosition += word.word.length;
       seekPosition += word.duration;
     }
-    timingPoints.add(TimingPoint(insertionPosition, seekPosition));
+    timings.add(Timing(insertionPosition, seekPosition));
 
-    return TimingPointList(timingPoints);
+    return TimingList(timings);
   }
 
   WordList copyWith({
@@ -90,8 +90,8 @@ class WordList {
     if (_list.length != other._list.length) return false;
     return _list.asMap().entries.every((MapEntry<int, Word> entry) {
       int index = entry.key;
-      Word timingPoint = entry.value;
-      return timingPoint == other._list[index];
+      Word timing = entry.value;
+      return timing == other._list[index];
     });
   }
 

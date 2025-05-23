@@ -85,8 +85,8 @@ class SectionList {
     if (list.length != other.list.length) return false;
     return list.asMap().entries.every((MapEntry<int, Section> entry) {
       int index = entry.key;
-      Section timingPoint = entry.value;
-      return timingPoint == other.list[index];
+      Section timing = entry.value;
+      return timing == other.list[index];
     });
   }
 

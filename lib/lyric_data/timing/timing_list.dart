@@ -5,65 +5,65 @@ import 'package:lyric_editor/lyric_data/timing/timing.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 
-class TimingPointList {
+class TimingList {
   static const charPositionDuplicationAllowed = 2;
   static const seekPositionDuplicationAllowed = 1;
-  final List<TimingPoint> _list;
+  final List<Timing> _list;
 
-  TimingPointList(this._list) {
+  TimingList(this._list) {
     assert(isCharPositionOrdered());
     assert(isSeekPositionOrdered());
     assert(isCharPositionDuplicationAllowed());
     assert(isSeekPositionDuplicationAllowed());
   }
 
-  List<TimingPoint> get list => _list;
+  List<Timing> get list => _list;
 
   bool isCharPositionOrdered() {
-    return _list.map((TimingPoint timingPoint) {
-      return timingPoint.insertionPosition;
+    return _list.map((Timing timing) {
+      return timing.insertionPosition;
     }).isSorted((InsertionPosition left, InsertionPosition right) => left.compareTo(right));
   }
 
   bool isSeekPositionOrdered() {
-    return _list.map((TimingPoint timingPoint) {
-      return timingPoint.seekPosition;
+    return _list.map((Timing timing) {
+      return timing.seekPosition;
     }).isSorted((SeekPosition left, SeekPosition right) => left.compareTo(right));
   }
 
   bool isCharPositionDuplicationAllowed() {
     return groupBy(
       _list,
-      (TimingPoint timingPoint) => timingPoint.insertionPosition,
-    ).values.every((List<TimingPoint> group) => group.length <= charPositionDuplicationAllowed);
+      (Timing timing) => timing.insertionPosition,
+    ).values.every((List<Timing> group) => group.length <= charPositionDuplicationAllowed);
   }
 
   bool isSeekPositionDuplicationAllowed() {
     return groupBy(
       _list,
-      (TimingPoint timingPoint) => timingPoint.seekPosition,
-    ).values.every((List<TimingPoint> group) => group.length <= seekPositionDuplicationAllowed);
+      (Timing timing) => timing.seekPosition,
+    ).values.every((List<Timing> group) => group.length <= seekPositionDuplicationAllowed);
   }
 
-  static TimingPointList get empty => TimingPointList([]);
+  static TimingList get empty => TimingList([]);
   bool get isEmpty => list.isEmpty;
 
   int get length => list.length;
-  TimingPoint operator [](int index) => list[index];
-  void operator []=(int index, TimingPoint value) {
+  Timing operator [](int index) => list[index];
+  void operator []=(int index, Timing value) {
     list[index] = value;
   }
 
   WordList toWordList(String sentence) {
     List<Word> words = [];
-    List<TimingPoint> timingPoints = list;
-    for (int index = 0; index < timingPoints.length - 1; index++) {
+    List<Timing> timings = list;
+    for (int index = 0; index < timings.length - 1; index++) {
       String word = sentence.substring(
-        timingPoints[index].insertionPosition.position,
-        timingPoints[index + 1].insertionPosition.position,
+        timings[index].insertionPosition.position,
+        timings[index + 1].insertionPosition.position,
       );
       Duration duration = Duration(
-        milliseconds: timingPoints[index + 1].seekPosition.position - timingPoints[index].seekPosition.position,
+        milliseconds: timings[index + 1].seekPosition.position - timings[index].seekPosition.position,
       );
       words.add(Word(word, duration));
     }
@@ -71,11 +71,11 @@ class TimingPointList {
     return WordList(words);
   }
 
-  TimingPointList copyWith({
-    TimingPointList? timingPointList,
+  TimingList copyWith({
+    TimingList? timingList,
   }) {
-    return TimingPointList(
-      timingPointList?._list.map((TimingPoint timingPoint) => timingPoint.copyWith()).toList() ?? _list,
+    return TimingList(
+      timingList?._list.map((Timing timing) => timing.copyWith()).toList() ?? _list,
     );
   }
 
@@ -87,12 +87,12 @@ class TimingPointList {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! TimingPointList) return false;
+    if (other is! TimingList) return false;
     if (_list.length != other._list.length) return false;
-    return _list.asMap().entries.every((MapEntry<int, TimingPoint> entry) {
+    return _list.asMap().entries.every((MapEntry<int, Timing> entry) {
       int index = entry.key;
-      TimingPoint timingPoint = entry.value;
-      return timingPoint == other._list[index];
+      Timing timing = entry.value;
+      return timing == other._list[index];
     });
   }
 

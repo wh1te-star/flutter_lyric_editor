@@ -38,17 +38,17 @@ class Sentence {
   SeekPosition get startTimestamp => timetable.startTimestamp;
   SeekPosition get endTimestamp => timetable.endTimestamp;
   List<Word> get words => timetable.wordList.list;
-  List<TimingPoint> get timingPoints => timetable.timingPointList.list;
+  List<Timing> get timings => timetable.timingList.list;
   int get charCount => timetable.charCount;
   int get wordCount => timetable.wordCount;
   WordIndex getWordIndexFromSeekPosition(SeekPosition seekPosition) => timetable.getWordIndexFromSeekPosition(seekPosition);
   InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timetable.getInsertionPositionInfo(insertionPosition);
   double getWordProgress(SeekPosition seekPosition) => timetable.getWordProgress(seekPosition);
   WordList getWordList(PhrasePosition phrasePosition) => timetable.getWordList(phrasePosition);
-  TimingPointIndex leftTimingPointIndex(WordIndex wordIndex) => timetable.leftTimingPointIndex(wordIndex);
-  TimingPointIndex rightTimingPointIndex(WordIndex wordIndex) => timetable.rightTimingPointIndex(wordIndex);
-  TimingPoint leftTimingPoint(WordIndex wordIndex) => timetable.leftTimingPoint(wordIndex);
-  TimingPoint rightTimingPoint(WordIndex wordIndex) => timetable.rightTimingPoint(wordIndex);
+  TimingIndex leftTimingIndex(WordIndex wordIndex) => timetable.leftTimingIndex(wordIndex);
+  TimingIndex rightTimingIndex(WordIndex wordIndex) => timetable.rightTimingIndex(wordIndex);
+  Timing leftTiming(WordIndex wordIndex) => timetable.leftTiming(wordIndex);
+  Timing rightTiming(WordIndex wordIndex) => timetable.rightTiming(wordIndex);
 
   MapEntry<PhrasePosition, Ruby> getRubyWords(WordIndex index) {
     return rubyMap.map.entries.firstWhere(
@@ -62,11 +62,11 @@ class Sentence {
       PhrasePosition phrasePosition = entry.key;
       Ruby ruby = entry.value;
       SeekPosition startTimestamp = timetable.startTimestamp;
-      List<TimingPoint> timingPoints = timetable.timingPointList.list;
-      List<TimingPoint> rubyTimingPoints = ruby.timetable.timingPointList.list;
-      SeekPosition rubyStartSeekPosition = SeekPosition(startTimestamp.position + timingPoints[phrasePosition.startIndex.index].seekPosition.position);
-      SeekPosition startSeekPosition = SeekPosition(rubyStartSeekPosition.position + rubyTimingPoints.first.seekPosition.position);
-      SeekPosition endSeekPosition = SeekPosition(rubyStartSeekPosition.position + rubyTimingPoints.last.seekPosition.position);
+      List<Timing> timings = timetable.timingList.list;
+      List<Timing> rubyTimings = ruby.timetable.timingList.list;
+      SeekPosition rubyStartSeekPosition = SeekPosition(startTimestamp.position + timings[phrasePosition.startIndex.index].seekPosition.position);
+      SeekPosition startSeekPosition = SeekPosition(rubyStartSeekPosition.position + rubyTimings.first.seekPosition.position);
+      SeekPosition endSeekPosition = SeekPosition(rubyStartSeekPosition.position + rubyTimings.last.seekPosition.position);
       if (startSeekPosition <= seekPosition && seekPosition < endSeekPosition) {
         return phrasePosition;
       }
@@ -80,32 +80,32 @@ class Sentence {
     return Sentence(vocalistID: vocalistID, timetable: copiedTimetable, rubyMap: rubyMap);
   }
 
-  Sentence addTimingPoint(InsertionPosition charPosition, SeekPosition seekPosition) {
+  Sentence addTiming(InsertionPosition charPosition, SeekPosition seekPosition) {
     RubyMap rubyMap = carryUpRubyWords(charPosition);
-    Timetable timetable = this.timetable.addTimingPoint(charPosition, seekPosition);
+    Timetable timetable = this.timetable.addTiming(charPosition, seekPosition);
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
-  Sentence removeTimingPoint(InsertionPosition charPosition, Option option) {
+  Sentence removeTiming(InsertionPosition charPosition, Option option) {
     RubyMap rubyMap = carryDownRubyWords(charPosition);
-    Timetable timetable = this.timetable.deleteTimingPoint(charPosition, option);
+    Timetable timetable = this.timetable.deleteTiming(charPosition, option);
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
-  Sentence addRubyTimingPoint(PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
-    Timetable timetable = rubyMap[phrasePosition]!.timetable.addTimingPoint(charPosition, seekPosition);
+  Sentence addRubyTiming(PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
+    Timetable timetable = rubyMap[phrasePosition]!.timetable.addTiming(charPosition, seekPosition);
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
-  Sentence removeRubyTimingPoint(PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
-    Timetable timetable = rubyMap[phrasePosition]!.timetable.deleteTimingPoint(charPosition, option);
+  Sentence removeRubyTiming(PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
+    Timetable timetable = rubyMap[phrasePosition]!.timetable.deleteTiming(charPosition, option);
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
   Sentence addRuby(PhrasePosition phrasePosition, String rubyString) {
     RubyMap rubyMap = this.rubyMap;
-    SeekPosition rubyStartTimestamp = SeekPosition(startTimestamp.position + timingPoints[phrasePosition.startIndex.index].seekPosition.position);
-    SeekPosition rubyEndTimestamp = SeekPosition(startTimestamp.position + timingPoints[phrasePosition.endIndex.index + 1].seekPosition.position);
+    SeekPosition rubyStartTimestamp = SeekPosition(startTimestamp.position + timings[phrasePosition.startIndex.index].seekPosition.position);
+    SeekPosition rubyEndTimestamp = SeekPosition(startTimestamp.position + timings[phrasePosition.endIndex.index + 1].seekPosition.position);
     Duration rubyDuration = Duration(milliseconds: rubyEndTimestamp.position - rubyStartTimestamp.position);
     Word word = Word(rubyString, rubyDuration);
     Timetable timetable = Timetable(
@@ -136,7 +136,7 @@ class Sentence {
 
     if (formerString.isNotEmpty) {
       Timetable newTimetable = timetable.copyWith();
-      newTimetable = newTimetable.addTimingPoint(charPosition, seekPosition);
+      newTimetable = newTimetable.addTiming(charPosition, seekPosition);
       sentence1 = Sentence(
         vocalistID: vocalistID,
         timetable: newTimetable,
@@ -146,7 +146,7 @@ class Sentence {
 
     if (latterString.isNotEmpty) {
       Timetable newTimetable = timetable.copyWith();
-      newTimetable = newTimetable.addTimingPoint(charPosition, seekPosition);
+      newTimetable = newTimetable.addTiming(charPosition, seekPosition);
       sentence2 = Sentence(
         vocalistID: vocalistID,
         timetable: newTimetable,
@@ -175,10 +175,10 @@ class Sentence {
           }
           break;
 
-        case TimingPointInsertionPositionInfo():
-          TimingPointIndex index = info.timingPointIndex;
-          TimingPointIndex startIndex = timetable.leftTimingPointIndex(key.startIndex);
-          TimingPointIndex endIndex = timetable.rightTimingPointIndex(key.endIndex);
+        case TimingInsertionPositionInfo():
+          TimingIndex index = info.timingIndex;
+          TimingIndex startIndex = timetable.leftTimingIndex(key.startIndex);
+          TimingIndex endIndex = timetable.rightTimingIndex(key.endIndex);
           if (index <= startIndex) {
             newKey.startIndex++;
             newKey.endIndex++;
@@ -203,8 +203,8 @@ class Sentence {
     int index = -1;
     if (info is WordInsertionPositionInfo) {
       index = info.wordIndex.index;
-    } else if (info is TimingPointInsertionPositionInfo) {
-      index = info.timingPointIndex.index;
+    } else if (info is TimingInsertionPositionInfo) {
+      index = info.timingIndex.index;
     } else {
       assert(false, "An unexpected state was occurred for the insertion position");
     }
@@ -214,7 +214,7 @@ class Sentence {
       int startIndex = key.startIndex.index;
       int endIndex = key.endIndex.index + 1;
       if (index == startIndex && index == endIndex + 1) {
-        if (info is TimingPointInsertionPositionInfo && info.duplicate) {
+        if (info is TimingInsertionPositionInfo && info.duplicate) {
           newKey.startIndex--;
           newKey.endIndex--;
         } else {

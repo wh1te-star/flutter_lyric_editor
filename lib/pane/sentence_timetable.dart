@@ -26,16 +26,16 @@ class SentenceTimeline extends ConsumerStatefulWidget {
 
 class _SentenceTimelineState extends ConsumerState<SentenceTimeline> {
   double topMargin = 5.0;
-  double timingPointIndicatorHeight = 5.0;
+  double timingIndicatorHeight = 5.0;
   double rubyItemHeight = 15.0;
   double rubySentenceMargin = 1.0;
   double sentenceItemHeight = 30.0;
   double bottomMargin = 2.0;
   double get trackHeight {
-    return topMargin + timingPointIndicatorHeight + rubyItemHeight + rubySentenceMargin + sentenceItemHeight + bottomMargin;
+    return topMargin + timingIndicatorHeight + rubyItemHeight + rubySentenceMargin + sentenceItemHeight + bottomMargin;
   }
 
-  double timingPointIndicatorWidth = 5.0;
+  double timingIndicatorWidth = 5.0;
 
   VocalistID vocalistID;
   Map<SentenceID, int> sentenceTracks = {};
@@ -62,9 +62,9 @@ class _SentenceTimelineState extends ConsumerState<SentenceTimeline> {
   Widget build(BuildContext context) {
     final TimingService timingService = ref.read(timingMasterProvider);
     List<Widget> sentenceItemWidgets = [];
-    List<Widget> timingPointIndicatorWidgets = [];
+    List<Widget> timingIndicatorWidgets = [];
     List<Widget> rubyItemWidgets = [];
-    List<Widget> rubyTimingPointIndicatorWidgets = [];
+    List<Widget> rubyTimingIndicatorWidgets = [];
 
     Map<SentenceID, Sentence> sentences = timingService.getSentencesByVocalistID(vocalistID).map;
     sentenceTracks = getTrack(sentences);
@@ -73,12 +73,12 @@ class _SentenceTimelineState extends ConsumerState<SentenceTimeline> {
       Sentence sentence = entry.value;
 
       sentenceItemWidgets.add(getSentenceItemWidget(sentenceID, sentence));
-      timingPointIndicatorWidgets += getTimingPointIndicatorWidgets(sentenceID, sentence);
+      timingIndicatorWidgets += getTimingIndicatorWidgets(sentenceID, sentence);
       rubyItemWidgets += getRubyItemWidget(sentenceID, sentence);
-      rubyTimingPointIndicatorWidgets += getRubyTimingPointIndicatorWidgets(sentenceID, sentence);
+      rubyTimingIndicatorWidgets += getRubyTimingIndicatorWidgets(sentenceID, sentence);
     }
     return Stack(
-      children: sentenceItemWidgets + timingPointIndicatorWidgets + rubyItemWidgets + rubyTimingPointIndicatorWidgets,
+      children: sentenceItemWidgets + timingIndicatorWidgets + rubyItemWidgets + rubyTimingIndicatorWidgets,
     );
   }
 
@@ -121,7 +121,7 @@ class _SentenceTimelineState extends ConsumerState<SentenceTimeline> {
     );
     Widget sentenceItem = Positioned(
       left: duration2Length(sentence.startTimestamp.position),
-      top: trackHeight * sentenceTracks[sentenceID]! + topMargin + timingPointIndicatorHeight + rubyItemHeight + rubySentenceMargin,
+      top: trackHeight * sentenceTracks[sentenceID]! + topMargin + timingIndicatorHeight + rubyItemHeight + rubySentenceMargin,
       child: GestureDetector(
         onTap: () {
           List<SentenceID> selectingSentences = timelinePaneProvider.selectingSentence;
@@ -166,7 +166,7 @@ class _SentenceTimelineState extends ConsumerState<SentenceTimeline> {
       );
       Widget rubyItem = Positioned(
         left: duration2Length(ruby.startTimestamp.position),
-        top: trackHeight * sentenceTracks[sentenceID]! + topMargin + timingPointIndicatorHeight,
+        top: trackHeight * sentenceTracks[sentenceID]! + topMargin + timingIndicatorHeight,
         child: GestureDetector(
           onTap: () {
             List<SentenceID> selectingSentences = timelinePaneProvider.selectingSentence;
@@ -193,25 +193,25 @@ class _SentenceTimelineState extends ConsumerState<SentenceTimeline> {
     return annotaitonItems;
   }
 
-  List<Widget> getTimingPointIndicatorWidgets(SentenceID sentenceID, Sentence sentence) {
+  List<Widget> getTimingIndicatorWidgets(SentenceID sentenceID, Sentence sentence) {
     Size itemSize = Size(
-      timingPointIndicatorWidth,
-      timingPointIndicatorHeight,
+      timingIndicatorWidth,
+      timingIndicatorHeight,
     );
 
     List<Widget> indicatorWidgets = [];
-    for (int index = 0; index < sentence.timingPoints.length; index++) {
-      TimingPoint timingPoint = sentence.timingPoints[index];
+    for (int index = 0; index < sentence.timings.length; index++) {
+      Timing timing = sentence.timings[index];
       Widget indicator = Positioned(
-        left: duration2Length(sentence.startTimestamp.position + timingPoint.seekPosition.position),
-        top: trackHeight * sentenceTracks[sentenceID]! + topMargin + timingPointIndicatorHeight + rubyItemHeight + rubySentenceMargin + sentenceItemHeight,
+        left: duration2Length(sentence.startTimestamp.position + timing.seekPosition.position),
+        top: trackHeight * sentenceTracks[sentenceID]! + topMargin + timingIndicatorHeight + rubyItemHeight + rubySentenceMargin + sentenceItemHeight,
         child: CustomPaint(
           size: itemSize,
           painter: TrianglePainter(
             x: 0.0,
             y: 0.0,
-            width: timingPointIndicatorWidth,
-            height: -timingPointIndicatorHeight,
+            width: timingIndicatorWidth,
+            height: -timingIndicatorHeight,
           ),
         ),
       );
@@ -220,28 +220,28 @@ class _SentenceTimelineState extends ConsumerState<SentenceTimeline> {
     return indicatorWidgets;
   }
 
-  List<Widget> getRubyTimingPointIndicatorWidgets(SentenceID sentenceID, Sentence sentence) {
+  List<Widget> getRubyTimingIndicatorWidgets(SentenceID sentenceID, Sentence sentence) {
     Size itemSize = Size(
-      timingPointIndicatorWidth,
-      timingPointIndicatorHeight,
+      timingIndicatorWidth,
+      timingIndicatorHeight,
     );
 
     List<Widget> indicatorWidgets = [];
     for (MapEntry<PhrasePosition, Ruby> entry in sentence.rubyMap.map.entries) {
       PhrasePosition phrasePosition = entry.key;
       Ruby ruby = entry.value;
-      for (int index = 0; index < ruby.timingPoints.length; index++) {
-        TimingPoint timingPoint = ruby.timingPoints[index];
+      for (int index = 0; index < ruby.timings.length; index++) {
+        Timing timing = ruby.timings[index];
         Widget indicator = Positioned(
-          left: duration2Length(ruby.startTimestamp.position + timingPoint.seekPosition.position),
+          left: duration2Length(ruby.startTimestamp.position + timing.seekPosition.position),
           top: trackHeight * sentenceTracks[sentenceID]! + topMargin,
           child: CustomPaint(
             size: itemSize,
             painter: TrianglePainter(
               x: 0.0,
-              y: timingPointIndicatorHeight,
-              width: timingPointIndicatorWidth,
-              height: timingPointIndicatorHeight,
+              y: timingIndicatorHeight,
+              width: timingIndicatorWidth,
+              height: timingIndicatorHeight,
             ),
           ),
         );

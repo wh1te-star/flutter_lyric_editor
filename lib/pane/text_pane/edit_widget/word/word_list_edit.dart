@@ -31,21 +31,21 @@ class WordListEdit extends StatelessWidget {
       Word word = words[index];
       TextPaneCursor? wordCursor = cursorList[index];
 
-      bool isTimingPointPosition = false;
+      bool isTimingPosition = false;
       if (wordCursor is BaseCursor && wordCursor.insertionPosition.position == 0) {
-        isTimingPointPosition = true;
+        isTimingPosition = true;
       }
 
       if (index > 0) {
-        editWidgets.add(TimingPointEdit(
-          cursorBlinker: isTimingPointPosition ? cursorBlinker : null,
+        editWidgets.add(TimingEdit(
+          cursorBlinker: isTimingPosition ? cursorBlinker : null,
         ));
       }
 
       editWidgets.add(
         WordEdit(
           word: word,
-          textPaneCursor: !isTimingPointPosition ? wordCursor : null,
+          textPaneCursor: !isTimingPosition ? wordCursor : null,
           cursorBlinker: cursorBlinker,
         ),
       );

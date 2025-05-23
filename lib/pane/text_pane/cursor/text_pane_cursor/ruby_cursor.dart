@@ -65,7 +65,7 @@ class RubyCursor extends TextPaneCursor {
       sentence: sentence,
       seekPosition: seekPosition,
       phrasePosition: phrasePosition,
-      insertionPosition: ruby.timetable.leftTimingPoint(wordIndex).insertionPosition + 1,
+      insertionPosition: ruby.timetable.leftTiming(wordIndex).insertionPosition + 1,
       option: Option.former,
     );
   }

@@ -48,7 +48,7 @@ void main() {
         Word("pqrst", const Duration(milliseconds: 600)),
       ]);
 
-      target = target.addTimingPoint(characterPosition, seekPosition);
+      target = target.addTiming(characterPosition, seekPosition);
 
       expect(target.wordList, expected);
     });
@@ -66,7 +66,7 @@ void main() {
         Word("pqrst", const Duration(milliseconds: 600)),
       ]);
 
-      target = target.addTimingPoint(characterPosition, seekPosition);
+      target = target.addTiming(characterPosition, seekPosition);
 
       expect(target.wordList, expected);
     });
@@ -77,9 +77,9 @@ void main() {
       final SeekPosition seekPosition = SeekPosition(2300);
 
       expect(
-        () => target.addTimingPoint(characterPosition, seekPosition),
+        () => target.addTiming(characterPosition, seekPosition),
         throwsA(predicate(
-          (e) => e is TimingPointException && e.message == "The seek position is out of the valid range.",
+          (e) => e is TimingException && e.message == "The seek position is out of the valid range.",
         )),
       );
     });
@@ -97,7 +97,7 @@ void main() {
         Word("pqrst", const Duration(milliseconds: 600)),
       ]);
 
-      target = target.addTimingPoint(characterPosition, seekPosition);
+      target = target.addTiming(characterPosition, seekPosition);
 
       expect(target.wordList, expected);
     });
@@ -115,7 +115,7 @@ void main() {
         Word("pqrst", const Duration(milliseconds: 600)),
       ]);
 
-      target = target.addTimingPoint(characterPosition, seekPosition);
+      target = target.addTiming(characterPosition, seekPosition);
 
       expect(target.wordList, expected);
     });
@@ -134,7 +134,7 @@ void main() {
         Word("rs", const Duration(milliseconds: 200)),
       ]);
 
-      target = target.addTimingPoint(characterPosition, seekPosition);
+      target = target.addTiming(characterPosition, seekPosition);
 
       expect(target.wordList, expected);
     });
@@ -153,7 +153,7 @@ void main() {
         Word("s", const Duration(milliseconds: 100)),
       ]);
 
-      target = target.addTimingPoint(characterPosition, seekPosition);
+      target = target.addTiming(characterPosition, seekPosition);
 
       expect(target.wordList, expected);
     });
@@ -172,7 +172,7 @@ void main() {
         Word("rs", const Duration(milliseconds: 200)),
       ]);
 
-      target = target.addTimingPoint(characterPosition, seekPosition);
+      target = target.addTiming(characterPosition, seekPosition);
 
       expect(target.wordList, expected);
     });
@@ -191,20 +191,20 @@ void main() {
         Word("rs", const Duration(milliseconds: 200)),
       ]);
 
-      target = target.addTimingPoint(characterPosition, seekPosition);
+      target = target.addTiming(characterPosition, seekPosition);
 
       expect(target.wordList, expected);
     });
 
-    test('Test to throw TimingPointException when tring to add a timing point third time at the same insertion position. No.1', () {
+    test('Test to throw TimingException when tring to add a timing point third time at the same insertion position. No.1', () {
       Timetable target = dataSet2.copyWith();
       final InsertionPosition characterPosition = InsertionPosition(12);
       final SeekPosition seekPosition = SeekPosition(5800);
 
       expect(
-        () => target.addTimingPoint(characterPosition, seekPosition),
+        () => target.addTiming(characterPosition, seekPosition),
         throwsA(predicate(
-          (e) => e is TimingPointException && e.message == "A timing point cannot be inserted three times or more at the same char position.",
+          (e) => e is TimingException && e.message == "A timing point cannot be inserted three times or more at the same char position.",
         )),
       );
     });
@@ -220,7 +220,7 @@ void main() {
         Word("pqrst", const Duration(milliseconds: 600)),
       ]);
 
-      target = target.deleteTimingPoint(characterPosition, option);
+      target = target.deleteTiming(characterPosition, option);
 
       expect(target.wordList, expected);
     });
@@ -236,7 +236,7 @@ void main() {
         Word("pqrst", const Duration(milliseconds: 600)),
       ]);
 
-      target = target.deleteTimingPoint(characterPosition, option);
+      target = target.deleteTiming(characterPosition, option);
 
       expect(target.wordList, expected);
     });
@@ -247,9 +247,9 @@ void main() {
       const option = Option.former;
 
       expect(
-        () => target.deleteTimingPoint(characterPosition, option),
+        () => target.deleteTiming(characterPosition, option),
         throwsA(predicate(
-          (e) => e is TimingPointException && e.message == "There is not the specified timing point.",
+          (e) => e is TimingException && e.message == "There is not the specified timing point.",
         )),
       );
     });
@@ -266,7 +266,7 @@ void main() {
         Word("rs", const Duration(milliseconds: 200)),
       ]);
 
-      target = target.deleteTimingPoint(characterPosition, option);
+      target = target.deleteTiming(characterPosition, option);
 
       expect(target.wordList, expected);
     });
@@ -283,7 +283,7 @@ void main() {
         Word("mnopqrs", const Duration(milliseconds: 800)),
       ]);
 
-      target = target.deleteTimingPoint(characterPosition, option);
+      target = target.deleteTiming(characterPosition, option);
 
       expect(target.wordList, expected);
     });
@@ -294,9 +294,9 @@ void main() {
       const option = Option.latter;
 
       expect(
-        () => target.deleteTimingPoint(characterPosition, option),
+        () => target.deleteTiming(characterPosition, option),
         throwsA(predicate(
-          (e) => e is TimingPointException && e.message == "There is not the specified timing point.",
+          (e) => e is TimingException && e.message == "There is not the specified timing point.",
         )),
       );
     });
@@ -313,7 +313,7 @@ void main() {
         Word("rs", Duration(milliseconds: 200)),
       ]);
 
-      target = target.deleteTimingPoint(characterPosition, option);
+      target = target.deleteTiming(characterPosition, option);
 
       expect(target.wordList, expected);
     });
@@ -330,7 +330,7 @@ void main() {
         Word("rs", Duration(milliseconds: 200)),
       ]);
 
-      target = target.deleteTimingPoint(characterPosition, option);
+      target = target.deleteTiming(characterPosition, option);
 
       expect(target.wordList, expected);
     });

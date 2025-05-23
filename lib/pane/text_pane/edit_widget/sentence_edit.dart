@@ -41,19 +41,19 @@ class SentenceEdit extends StatelessWidget {
       WordList? rubySubList = ruby?.timetable.wordList;
 
       TextPaneCursor? cursor = cursorList[index];
-      bool isTimingPointPosition = false;
+      bool isTimingPosition = false;
       if (cursor is BaseCursor && cursor.insertionPosition == InsertionPosition(0)) {
-        isTimingPointPosition = true;
+        isTimingPosition = true;
       }
       if (cursor is RubyCursor && cursor.insertionPosition == InsertionPosition(0)) {
-        isTimingPointPosition = true;
+        isTimingPosition = true;
       }
 
-      CursorBlinker? timingPointCursorBlinker;
+      CursorBlinker? timingCursorBlinker;
       CursorBlinker? wordCursorBlinker;
       TextPaneCursor? wordCursor;
-      if (isTimingPointPosition) {
-        timingPointCursorBlinker = cursorBlinker;
+      if (isTimingPosition) {
+        timingCursorBlinker = cursorBlinker;
       } else {
         wordCursorBlinker = cursorBlinker;
         wordCursor = cursor;
@@ -62,13 +62,13 @@ class SentenceEdit extends StatelessWidget {
       if (index > 0) {
         rubyExistenceEdits.add(Column(
           children: [
-            TimingPointEdit(
-              timingPoint: false,
-              cursorBlinker: timingPointCursorBlinker,
+            TimingEdit(
+              timing: false,
+              cursorBlinker: timingCursorBlinker,
             ),
-            TimingPointEdit(
-              timingPoint: false,
-              cursorBlinker: timingPointCursorBlinker,
+            TimingEdit(
+              timing: false,
+              cursorBlinker: timingCursorBlinker,
             ),
           ],
         ));

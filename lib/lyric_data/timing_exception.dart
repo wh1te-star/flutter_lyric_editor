@@ -1,7 +1,7 @@
-class TimingPointException implements Exception {
+class TimingException implements Exception {
   final String message;
-  TimingPointException(this.message);
+  TimingException(this.message);
 
   @override
-  String toString() => 'TimingPointException: $message';
+  String toString() => 'TimingException: $message';
 }

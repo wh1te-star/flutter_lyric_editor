@@ -109,28 +109,28 @@ class SentenceMap {
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  SentenceMap addTimingPoint(SentenceID id, InsertionPosition charPosition, SeekPosition seekPosition) {
-    map[id] = map[id]!.addTimingPoint(charPosition, seekPosition);
+  SentenceMap addTiming(SentenceID id, InsertionPosition charPosition, SeekPosition seekPosition) {
+    map[id] = map[id]!.addTiming(charPosition, seekPosition);
     return SentenceMap(map);
   }
 
-  SentenceMap removeTimingPoint(SentenceID id, InsertionPosition charPosition, Option option) {
+  SentenceMap removeTiming(SentenceID id, InsertionPosition charPosition, Option option) {
     Sentence sentence = map[id]!;
-    sentence = sentence.removeTimingPoint(charPosition, option);
+    sentence = sentence.removeTiming(charPosition, option);
     return SentenceMap(map);
   }
 
-  SentenceMap addRubyTimingPoint(SentenceID id, PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
+  SentenceMap addRubyTiming(SentenceID id, PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
     Sentence sentence = copiedMap[id]!;
-    sentence = sentence.addRubyTimingPoint(phrasePosition, charPosition, seekPosition);
+    sentence = sentence.addRubyTiming(phrasePosition, charPosition, seekPosition);
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  SentenceMap removeRubyTimingPoint(SentenceID id, PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
+  SentenceMap removeRubyTiming(SentenceID id, PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
     Sentence sentence = copiedMap[id]!;
-    sentence = sentence.removeRubyTimingPoint(phrasePosition, charPosition, option);
+    sentence = sentence.removeRubyTiming(phrasePosition, charPosition, option);
     return sortSentenceList(SentenceMap(copiedMap));
   }
 

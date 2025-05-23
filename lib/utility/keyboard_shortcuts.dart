@@ -98,8 +98,8 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         LogicalKeySet(LogicalKeyboardKey.arrowRight): SpeedUpIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowUp): VolumeUpIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowDown): VolumeDownIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyI): TimingPointAddIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyO): TimingPointDeleteIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyI): AddTimingIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyO): DeleteTimingIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyZ): SentenceDivideIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyX): SentenceConcatenateIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyU): UndoIntent(),
@@ -292,13 +292,13 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             timingService.removeSection(seekPosition);
           }(),
         ),
-        TimingPointAddIntent: CallbackAction<TimingPointAddIntent>(
-          onInvoke: (TimingPointAddIntent intent) => () {
+        AddTimingIntent: CallbackAction<AddTimingIntent>(
+          onInvoke: (AddTimingIntent intent) => () {
             SeekPosition seekPosition = musicPlayerProvider.seekPosition;
             TextPaneListCursor listCursor = textPaneProvider.textPaneCursorController.textPaneListCursor;
             if (listCursor is BaseListCursor) {
               BaseCursor cursor = listCursor.textPaneCursor as BaseCursor;
-              timingService.addTimingPoint(
+              timingService.addTiming(
                 listCursor.sentenceID,
                 cursor.insertionPosition,
                 seekPosition,
@@ -306,7 +306,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             }
             if (listCursor is RubyListCursor) {
               RubyCursor cursor = listCursor.textPaneCursor as RubyCursor;
-              timingService.addRubyTimingPoint(
+              timingService.addRubyTiming(
                 listCursor.sentenceID,
                 cursor.phrasePosition,
                 cursor.insertionPosition,
@@ -315,13 +315,13 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             }
           }(),
         ),
-        TimingPointDeleteIntent: CallbackAction<TimingPointDeleteIntent>(
-          onInvoke: (TimingPointDeleteIntent intent) => () {
+        DeleteTimingIntent: CallbackAction<DeleteTimingIntent>(
+          onInvoke: (DeleteTimingIntent intent) => () {
             TextPaneListCursor listCursor = textPaneProvider.textPaneCursorController.textPaneListCursor;
             SentenceID sentenceID = listCursor.sentenceID;
             if (listCursor is BaseListCursor) {
               BaseCursor cursor = listCursor.textPaneCursor as BaseCursor;
-              timingService.removeTimingPoint(
+              timingService.removeTiming(
                 sentenceID,
                 cursor.insertionPosition,
                 cursor.option,
@@ -329,7 +329,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             }
             if (listCursor is RubyListCursor) {
               RubyCursor cursor = listCursor.textPaneCursor as RubyCursor;
-              timingService.removeRubyTimingPoint(
+              timingService.removeRubyTiming(
                 sentenceID,
                 cursor.phrasePosition,
                 cursor.insertionPosition,
@@ -459,9 +459,9 @@ class AddSectionIntent extends Intent {}
 
 class DeleteSectionIntent extends Intent {}
 
-class TimingPointAddIntent extends Intent {}
+class AddTimingIntent extends Intent {}
 
-class TimingPointDeleteIntent extends Intent {}
+class DeleteTimingIntent extends Intent {}
 
 class SentenceDivideIntent extends Intent {}
 

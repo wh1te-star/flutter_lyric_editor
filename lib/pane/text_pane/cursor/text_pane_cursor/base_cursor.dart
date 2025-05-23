@@ -46,7 +46,7 @@ class BaseCursor extends TextPaneCursor {
     required SeekPosition seekPosition,
   }) {
     WordIndex wordIndex = sentence.getWordIndexFromSeekPosition(seekPosition);
-    InsertionPosition insertionPosition = sentence.timetable.leftTimingPoint(wordIndex).insertionPosition + 1;
+    InsertionPosition insertionPosition = sentence.timetable.leftTiming(wordIndex).insertionPosition + 1;
     return BaseCursor(
       sentence: sentence,
       seekPosition: seekPosition,
@@ -71,21 +71,21 @@ class BaseCursor extends TextPaneCursor {
       }
     }
 
-    if (insertionPositionInfo is TimingPointInsertionPositionInfo) {
+    if (insertionPositionInfo is TimingInsertionPositionInfo) {
       if (option == Option.latter) {
         return copyWith(option: Option.former);
       }
 
-      TimingPointIndex rightTimingPointIndex = sentence.timetable.rightTimingPointIndex(highlightWordIndex);
-      TimingPointIndex timingPointIndex = insertionPositionInfo.timingPointIndex;
-      if (timingPointIndex == rightTimingPointIndex) {
+      TimingIndex rightTimingIndex = sentence.timetable.rightTimingIndex(highlightWordIndex);
+      TimingIndex timingIndex = insertionPositionInfo.timingIndex;
+      if (timingIndex == rightTimingIndex) {
         nextInsertionPosition = insertionPosition - 1;
       } else {
-        if (timingPointIndex.index - 1 <= 0) {
+        if (timingIndex.index - 1 <= 0) {
           return this;
         }
-        TimingPoint previousTimingPoint = sentence.timingPoints[timingPointIndex.index - 1];
-        nextInsertionPosition = previousTimingPoint.insertionPosition;
+        Timing previousTiming = sentence.timings[timingIndex.index - 1];
+        nextInsertionPosition = previousTiming.insertionPosition;
       }
     }
 
@@ -94,7 +94,7 @@ class BaseCursor extends TextPaneCursor {
     if (nextInsertionPositionInfo is WordInsertionPositionInfo) {
       return copyWith(insertionPosition: nextInsertionPosition, option: Option.word);
     }
-    if (nextInsertionPositionInfo is TimingPointInsertionPositionInfo) {
+    if (nextInsertionPositionInfo is TimingInsertionPositionInfo) {
       Option nextOption = Option.former;
       if (nextInsertionPositionInfo.duplicate) {
         nextOption = Option.latter;
@@ -121,23 +121,23 @@ class BaseCursor extends TextPaneCursor {
       }
     }
 
-    if (insertionPositionInfo is TimingPointInsertionPositionInfo) {
+    if (insertionPositionInfo is TimingInsertionPositionInfo) {
       if (insertionPositionInfo.duplicate && option == Option.former) {
         return copyWith(option: Option.latter);
       }
 
-      TimingPointIndex leftTimingPointIndex = sentence.timetable.leftTimingPointIndex(highlightWordIndex);
-      TimingPointIndex timingPointIndex = insertionPositionInfo.timingPointIndex;
-      if (insertionPositionInfo.duplicate) timingPointIndex = timingPointIndex + 1;
-      if (timingPointIndex == leftTimingPointIndex) {
+      TimingIndex leftTimingIndex = sentence.timetable.leftTimingIndex(highlightWordIndex);
+      TimingIndex timingIndex = insertionPositionInfo.timingIndex;
+      if (insertionPositionInfo.duplicate) timingIndex = timingIndex + 1;
+      if (timingIndex == leftTimingIndex) {
         nextInsertionPosition = insertionPosition + 1;
       } else {
-        TimingPointIndex nextTimingPointIndex = timingPointIndex + 1;
-        if (nextTimingPointIndex.index >= sentence.timingPoints.length - 1) {
+        TimingIndex nextTimingIndex = timingIndex + 1;
+        if (nextTimingIndex.index >= sentence.timings.length - 1) {
           return this;
         }
-        TimingPoint nextTimingPoint = sentence.timingPoints[nextTimingPointIndex.index];
-        nextInsertionPosition = nextTimingPoint.insertionPosition;
+        Timing nextTiming = sentence.timings[nextTimingIndex.index];
+        nextInsertionPosition = nextTiming.insertionPosition;
       }
     }
 
@@ -146,7 +146,7 @@ class BaseCursor extends TextPaneCursor {
     if (nextInsertionPositionInfo is WordInsertionPositionInfo) {
       return copyWith(insertionPosition: nextInsertionPosition, option: Option.word);
     }
-    if (nextInsertionPositionInfo is TimingPointInsertionPositionInfo) {
+    if (nextInsertionPositionInfo is TimingInsertionPositionInfo) {
       return copyWith(insertionPosition: nextInsertionPosition, option: Option.former);
     }
 

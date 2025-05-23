@@ -9,15 +9,15 @@ void main() {
     setUp(() {});
 
     test('Test there is the possibility to make an invalid list if the list class don\'t assert each items while each item itself have the assertion.', skip: true, () {
-      expect(() => TimingPoint(InsertionPosition(-1), SeekPosition(0)), throwsAssertionError);
+      expect(() => Timing(InsertionPosition(-1), SeekPosition(0)), throwsAssertionError);
 
-      TimingPointList list = TimingPointList([
-        TimingPoint(InsertionPosition(-1), SeekPosition(0)),
+      TimingList list = TimingList([
+        Timing(InsertionPosition(-1), SeekPosition(0)),
       ]);
 
       expect(list.list.first.insertionPosition, -1);
 
-      expect(() => TimingPoint(InsertionPosition(-1), SeekPosition(0)), throwsAssertionError);
+      expect(() => Timing(InsertionPosition(-1), SeekPosition(0)), throwsAssertionError);
     });
   });
 }
