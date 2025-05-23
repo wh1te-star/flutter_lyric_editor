@@ -2,14 +2,17 @@ import 'package:lyric_editor/lyric_data/ruby/ruby.dart';
 import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
+import 'package:lyric_editor/lyric_data/timing/timing.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/base_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
+import 'package:lyric_editor/position/insertion_position_info/timing_insertion_position_info.dart';
 import 'package:lyric_editor/position/insertion_position_info/word_insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/timing_index.dart';
 import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/phrase_position.dart';
 import 'package:lyric_editor/service/timing_service.dart';
@@ -72,11 +75,99 @@ class RubyCursor extends TextPaneCursor {
 
   @override
   TextPaneCursor moveLeftCursor() {
+    InsertionPositionInfo? insertionPositionInfo = sentence.getInsertionPositionInfo(insertionPosition);
+    assert(insertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
+
+    WordIndex highlightWordIndex = sentence.getWordIndexFromSeekPosition(seekPosition);
+    InsertionPosition nextInsertionPosition = InsertionPosition.empty;
+    if (insertionPositionInfo is WordInsertionPositionInfo) {
+      WordIndex wordIndex = insertionPositionInfo.wordIndex;
+      assert(wordIndex == highlightWordIndex, "An unexpected state was occurred.");
+      nextInsertionPosition = insertionPosition - 1;
+      if (nextInsertionPosition <= InsertionPosition(0)) {
+        return this;
+      }
+    }
+
+    if (insertionPositionInfo is TimingInsertionPositionInfo) {
+      if (option == Option.latter) {
+        return copyWith(option: Option.former);
+      }
+
+      TimingIndex rightTimingIndex = sentence.timetable.rightTimingIndex(highlightWordIndex);
+      TimingIndex timingIndex = insertionPositionInfo.timingIndex;
+      if (timingIndex == rightTimingIndex) {
+        nextInsertionPosition = insertionPosition - 1;
+      } else {
+        if (timingIndex.index - 1 <= 0) {
+          return this;
+        }
+        Timing previousTiming = sentence.timings[timingIndex.index - 1];
+        nextInsertionPosition = previousTiming.insertionPosition;
+      }
+    }
+
+    InsertionPositionInfo? nextInsertionPositionInfo = sentence.getInsertionPositionInfo(nextInsertionPosition);
+    assert(nextInsertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
+    if (nextInsertionPositionInfo is WordInsertionPositionInfo) {
+      return copyWith(insertionPosition: nextInsertionPosition, option: Option.word);
+    }
+    if (nextInsertionPositionInfo is TimingInsertionPositionInfo) {
+      Option nextOption = Option.former;
+      if (nextInsertionPositionInfo.duplicate) {
+        nextOption = Option.latter;
+      }
+      return copyWith(insertionPosition: nextInsertionPosition, option: nextOption);
+    }
+
     return this;
   }
 
   @override
   TextPaneCursor moveRightCursor() {
+    InsertionPositionInfo? insertionPositionInfo = sentence.getInsertionPositionInfo(insertionPosition);
+    assert(insertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
+
+    WordIndex highlightWordIndex = sentence.getWordIndexFromSeekPosition(seekPosition);
+    InsertionPosition nextInsertionPosition = InsertionPosition.empty;
+    if (insertionPositionInfo is WordInsertionPositionInfo) {
+      WordIndex wordIndex = insertionPositionInfo.wordIndex;
+      assert(wordIndex == highlightWordIndex, "An unexpected state was occurred.");
+      nextInsertionPosition = insertionPosition + 1;
+      if (nextInsertionPosition >= InsertionPosition(sentence.sentence.length)) {
+        return this;
+      }
+    }
+
+    if (insertionPositionInfo is TimingInsertionPositionInfo) {
+      if (insertionPositionInfo.duplicate && option == Option.former) {
+        return copyWith(option: Option.latter);
+      }
+
+      TimingIndex leftTimingIndex = sentence.timetable.leftTimingIndex(highlightWordIndex);
+      TimingIndex timingIndex = insertionPositionInfo.timingIndex;
+      if (insertionPositionInfo.duplicate) timingIndex = timingIndex + 1;
+      if (timingIndex == leftTimingIndex) {
+        nextInsertionPosition = insertionPosition + 1;
+      } else {
+        TimingIndex nextTimingIndex = timingIndex + 1;
+        if (nextTimingIndex.index >= sentence.timings.length - 1) {
+          return this;
+        }
+        Timing nextTiming = sentence.timings[nextTimingIndex.index];
+        nextInsertionPosition = nextTiming.insertionPosition;
+      }
+    }
+
+    InsertionPositionInfo? nextInsertionPositionInfo = sentence.getInsertionPositionInfo(nextInsertionPosition);
+    assert(nextInsertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
+    if (nextInsertionPositionInfo is WordInsertionPositionInfo) {
+      return copyWith(insertionPosition: nextInsertionPosition, option: Option.word);
+    }
+    if (nextInsertionPositionInfo is TimingInsertionPositionInfo) {
+      return copyWith(insertionPosition: nextInsertionPosition, option: Option.former);
+    }
+
     return this;
   }
 

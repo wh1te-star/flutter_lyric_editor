@@ -111,31 +111,37 @@ class RubyListCursor extends TextPaneListCursor {
 
   @override
   TextPaneListCursor moveDownCursor() {
-    int index = sentenceMap.keys.toList().indexWhere((SentenceID id) {
-      return id == sentenceID;
-    });
-
-    int nextIndex = index + 1;
-    if (nextIndex >= sentenceMap.length) {
-      return this;
-    }
-
-    SentenceID nextSentenceID = sentenceMap.keys.toList()[nextIndex];
     return BaseListCursor.defaultCursor(
       sentenceMap: sentenceMap,
-      sentenceID: nextSentenceID,
+      sentenceID: sentenceID,
       seekPosition: seekPosition,
     );
   }
 
   @override
   TextPaneListCursor moveLeftCursor() {
-    return this;
+    RubyCursor nextCursor = rubyCursor.moveLeftCursor() as RubyCursor;
+    return RubyListCursor(
+      sentenceMap: sentenceMap,
+      sentenceID: sentenceID,
+      seekPosition: seekPosition,
+      phrasePosition: nextCursor.phrasePosition,
+      insertionPosition: nextCursor.insertionPosition,
+      option: nextCursor.option,
+    );
   }
 
   @override
   TextPaneListCursor moveRightCursor() {
-    return this;
+    RubyCursor nextCursor = rubyCursor.moveRightCursor() as RubyCursor;
+    return RubyListCursor(
+      sentenceMap: sentenceMap,
+      sentenceID: sentenceID,
+      seekPosition: seekPosition,
+      phrasePosition: nextCursor.phrasePosition,
+      insertionPosition: nextCursor.insertionPosition,
+      option: nextCursor.option,
+    );
   }
 
   @override

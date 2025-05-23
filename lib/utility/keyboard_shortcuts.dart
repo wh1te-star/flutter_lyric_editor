@@ -187,11 +187,11 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             WordCursor cursor = listCursor.textPaneCursor as WordCursor;
             PhrasePosition phrasePosition = cursor.phrasePosition;
 
+            textPaneProvider.exitWordMode();
             String rubyString = (await displayTextFieldDialog(context, [""]))[0];
             if (rubyString != "") {
               timingService.addRuby(sentenceID, phrasePosition, rubyString);
             }
-            textPaneProvider.exitWordMode();
           }(),
         ),
         DeleteRubyIntent: CallbackAction<DeleteRubyIntent>(
