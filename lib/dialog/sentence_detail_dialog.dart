@@ -12,29 +12,29 @@ import 'package:lyric_editor/diff_function/word_diff.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 
-Future<void> displaySnippetDetailDialog(BuildContext context, LyricSnippetID snippetID, LyricSnippet snippet) async {
+Future<void> displaySentenceDetailDialog(BuildContext context, SentenceID sentenceID, Sentence sentence) async {
   return await showDialog<void>(
     context: context,
     builder: (BuildContext context) {
-      return _SnippetDetailDialog(snippetID: snippetID, snippet: snippet);
+      return _SentenceDetailDialog(sentenceID: sentenceID, sentence: sentence);
     },
   );
 }
 
-class _SnippetDetailDialog extends ConsumerStatefulWidget {
-  final LyricSnippetID snippetID;
-  final LyricSnippet snippet;
+class _SentenceDetailDialog extends ConsumerStatefulWidget {
+  final SentenceID sentenceID;
+  final Sentence sentence;
 
-  const _SnippetDetailDialog({required this.snippetID, required this.snippet});
+  const _SentenceDetailDialog({required this.sentenceID, required this.sentence});
 
   @override
-  __SnippetDetailDialogState createState() => __SnippetDetailDialogState();
+  __SentenceDetailDialogState createState() => __SentenceDetailDialogState();
 }
 
-class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
+class __SentenceDetailDialogState extends ConsumerState<_SentenceDetailDialog> {
   late TimingService timingService;
-  late final LyricSnippetID snippetID;
-  late final LyricSnippet snippet;
+  late final SentenceID sentenceID;
+  late final Sentence sentence;
 
   late final FocusNode startTimestampFocusNode;
   late final FocusNode endTimestampFocusNode;
@@ -65,8 +65,8 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
 
     timingService = ref.read(timingMasterProvider);
 
-    snippetID = widget.snippetID;
-    snippet = widget.snippet;
+    sentenceID = widget.sentenceID;
+    sentence = widget.sentence;
 
     startTimestampFocusNode = FocusNode();
     endTimestampFocusNode = FocusNode();
@@ -74,9 +74,9 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
     startTimestampController = TextEditingController();
     endTimestampController = TextEditingController();
     sentenceController = TextEditingController();
-    startTimestampController.text = snippet.startTimestamp.toString();
-    endTimestampController.text = snippet.endTimestamp.toString();
-    sentenceController.text = snippet.sentence;
+    startTimestampController.text = sentence.startTimestamp.toString();
+    endTimestampController.text = sentence.endTimestamp.toString();
+    sentenceController.text = sentence.sentence;
     sentenceController.addListener(() {
       setState(() {});
     });
@@ -87,14 +87,14 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
       return isPowerOf2(id);
     }).map((entry) {
       int singleVocalistID = entry.key.id;
-      int snippetVocalistID = snippet.vocalistID.id;
-      vocalistCheckValues.add(hasBit(snippetVocalistID, singleVocalistID));
+      int sentenceVocalistID = sentence.vocalistID.id;
+      vocalistCheckValues.add(hasBit(sentenceVocalistID, singleVocalistID));
       return entry.value.name;
     }).toList();
 
     Map<VocalistID, Vocalist> headerVocalists = {};
     for (int id = 1; id < pow(2, timingService.vocalistColorMap.length); id *= 2) {
-      VocalistID vocalistID = snippet.vocalistID;
+      VocalistID vocalistID = sentence.vocalistID;
       if ((vocalistID.id & id) != 0) {
         headerVocalists[vocalistID] = (timingService.vocalistColorMap[VocalistID(id)]!);
       }
@@ -115,11 +115,11 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
     for (MapEntry<VocalistID, Vocalist> entry in headerVocalists.entries) {
       VocalistID vocalistID = entry.key;
       Vocalist vocalist = entry.value;
-      segmentWiseVocalistCheckValues[vocalistID] = List.filled(snippet.sentenceSegments.length, true);
+      segmentWiseVocalistCheckValues[vocalistID] = List.filled(sentence.sentenceSegments.length, true);
     }
 
-    for (int i = 0; i < snippet.sentenceSegments.length; i++) {
-      SentenceSegment segment = snippet.sentenceSegments[i];
+    for (int i = 0; i < sentence.sentenceSegments.length; i++) {
+      SentenceSegment segment = sentence.sentenceSegments[i];
       segmentTexts.add(segment.word);
 
       List<Widget> segmentWiseVocalistCheckboxes = [];
@@ -165,7 +165,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
       );
     }
 
-    currentSentence = snippet.sentence;
+    currentSentence = sentence.sentence;
   }
 
   @override
@@ -182,7 +182,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Snippet Details'),
+      title: const Text('Sentence Details'),
       content: SizedBox(
         width: 300,
         child: DefaultTabController(
@@ -222,7 +222,7 @@ class __SnippetDetailDialogState extends ConsumerState<_SnippetDetailDialog> {
           child: const Text('OK'),
           onPressed: () {
             timingService = ref.read(timingMasterProvider);
-            timingService.editSentence(snippetID, sentenceController.text);
+            timingService.editSentence(sentenceID, sentenceController.text);
             Navigator.of(context).pop();
           },
         ),

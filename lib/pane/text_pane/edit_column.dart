@@ -10,27 +10,27 @@ import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 class EditColumn extends StatelessWidget {
-  final LyricSnippetMap lyricSnippetMap;
+  final SentenceMap sentenceMap;
   final SeekPosition seekPosition;
   final TextPaneCursorController textPaneCursorController;
   final CursorBlinker cursorBlinker;
 
-  const EditColumn(this.lyricSnippetMap, this.seekPosition, this.textPaneCursorController, this.cursorBlinker, {super.key});
+  const EditColumn(this.sentenceMap, this.seekPosition, this.textPaneCursorController, this.cursorBlinker, {super.key});
 
   @override
   Widget build(BuildContext context) {
     List<Widget> elements = [];
     TextPaneListCursor textPaneListCursor = textPaneCursorController.textPaneListCursor;
-    for (MapEntry<LyricSnippetID, LyricSnippet> lyricSnippetEntry in lyricSnippetMap.map.entries) {
-      LyricSnippetID lyricSnippetID = lyricSnippetEntry.key;
-      LyricSnippet lyricSnippet = lyricSnippetEntry.value;
+    for (MapEntry<SentenceID, Sentence> sentenceEntry in sentenceMap.map.entries) {
+      SentenceID sentenceID = sentenceEntry.key;
+      Sentence sentence = sentenceEntry.value;
       TextPaneCursor? textPaneCursor = null;
-      if (lyricSnippetID == textPaneListCursor.lyricSnippetID) {
+      if (sentenceID == textPaneListCursor.sentenceID) {
         textPaneCursor = textPaneListCursor.textPaneCursor;
       }
 
-      Widget widget = LyricSnippetEdit(
-        lyricSnippet,
+      Widget widget = SentenceEdit(
+        sentence,
         seekPosition,
         textPaneCursor,
         cursorBlinker,

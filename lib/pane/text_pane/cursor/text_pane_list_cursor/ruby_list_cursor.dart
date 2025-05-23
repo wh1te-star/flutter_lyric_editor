@@ -20,19 +20,19 @@ class RubyListCursor extends TextPaneListCursor {
   late RubyCursor rubyCursor;
 
   RubyListCursor({
-    required LyricSnippetMap lyricSnippetMap,
-    required LyricSnippetID lyricSnippetID,
+    required SentenceMap sentenceMap,
+    required SentenceID sentenceID,
     required SeekPosition seekPosition,
-    required SegmentRange segmentRange,
+    required PhrasePosition phrasePosition,
     required InsertionPosition insertionPosition,
     required Option option,
-  }) : super(lyricSnippetMap, lyricSnippetID, seekPosition) {
-    assert(isIDContained(), "The passed lyricSnippetID does not point to a lyric snippet in lyricSnippetMap.");
+  }) : super(sentenceMap, sentenceID, seekPosition) {
+    assert(isIDContained(), "The passed sentenceID does not point to a sentence in sentenceMap.");
     assert(doesSeekPositionPointAnnotation(), "The passed seek position does not point to any annotation.");
     rubyCursor = RubyCursor(
-      lyricSnippet: lyricSnippetMap[lyricSnippetID]!,
+      sentence: sentenceMap[sentenceID]!,
       seekPosition: seekPosition,
-      segmentRange: segmentRange,
+      phrasePosition: phrasePosition,
       insertionPosition: insertionPosition,
       option: option,
     );
@@ -40,24 +40,24 @@ class RubyListCursor extends TextPaneListCursor {
   }
 
   bool isIDContained() {
-    if (lyricSnippetMap.isEmpty) {
+    if (sentenceMap.isEmpty) {
       return true;
     }
-    LyricSnippet? lyricSnippet = lyricSnippetMap[lyricSnippetID];
-    if (lyricSnippet == null) {
+    Sentence? sentence = sentenceMap[sentenceID];
+    if (sentence == null) {
       return false;
     }
     return true;
   }
 
   RubyListCursor._privateConstructor(
-    super.lyricSnippetMap,
-    super.lyricSnippetID,
+    super.sentenceMap,
+    super.sentenceID,
     super.seekPosition,
   );
   static final RubyListCursor _empty = RubyListCursor._privateConstructor(
-    LyricSnippetMap.empty,
-    LyricSnippetID.empty,
+    SentenceMap.empty,
+    SentenceID.empty,
     SeekPosition.empty,
   );
   static RubyListCursor get empty => _empty;
@@ -65,26 +65,26 @@ class RubyListCursor extends TextPaneListCursor {
   bool get isNotEmpty => !identical(this, _empty);
 
   bool doesSeekPositionPointAnnotation() {
-    LyricSnippet lyricSnippet = lyricSnippetMap[lyricSnippetID]!;
-    SegmentRange annotationSegmentRange = lyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
-    return annotationSegmentRange.isNotEmpty;
+    Sentence sentence = sentenceMap[sentenceID]!;
+    PhrasePosition rubyPhrasePosition = sentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
+    return rubyPhrasePosition.isNotEmpty;
   }
 
   factory RubyListCursor.defaultCursor({
-    required LyricSnippetMap lyricSnippetMap,
-    required LyricSnippetID lyricSnippetID,
+    required SentenceMap sentenceMap,
+    required SentenceID sentenceID,
     required SeekPosition seekPosition,
   }) {
-    LyricSnippet lyricSnippet = lyricSnippetMap.getLyricSnippetByID(lyricSnippetID);
-    SegmentRange annotationSegmentRange = lyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
-    Annotation annotation = lyricSnippet.annotationMap[annotationSegmentRange]!;
+    Sentence sentence = sentenceMap.getSentenceByID(sentenceID);
+    PhrasePosition rubyPhrasePosition = sentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
+    Annotation annotation = sentence.annotationMap[rubyPhrasePosition]!;
     SentenceSegmentIndex segmentIndex = annotation.getSegmentIndexFromSeekPosition(seekPosition);
 
     return RubyListCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      sentenceMap: sentenceMap,
+      sentenceID: sentenceID,
       seekPosition: seekPosition,
-      segmentRange: annotationSegmentRange,
+      phrasePosition: rubyPhrasePosition,
       insertionPosition: annotation.timing.leftTimingPoint(segmentIndex).insertionPosition + 1,
       option: Option.former,
     );
@@ -92,8 +92,8 @@ class RubyListCursor extends TextPaneListCursor {
 
   @override
   TextPaneListCursor moveUpCursor() {
-    int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
-      return id == lyricSnippetID;
+    int index = sentenceMap.keys.toList().indexWhere((SentenceID id) {
+      return id == sentenceID;
     });
 
     int nextIndex = index - 1;
@@ -101,29 +101,29 @@ class RubyListCursor extends TextPaneListCursor {
       return this;
     }
 
-    LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[nextIndex];
+    SentenceID nextSentenceID = sentenceMap.keys.toList()[nextIndex];
     return BaseListCursor.defaultCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: nextLyricSnippetID,
+      sentenceMap: sentenceMap,
+      sentenceID: nextSentenceID,
       seekPosition: seekPosition,
     );
   }
 
   @override
   TextPaneListCursor moveDownCursor() {
-    int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
-      return id == lyricSnippetID;
+    int index = sentenceMap.keys.toList().indexWhere((SentenceID id) {
+      return id == sentenceID;
     });
 
     int nextIndex = index + 1;
-    if (nextIndex >= lyricSnippetMap.length) {
+    if (nextIndex >= sentenceMap.length) {
       return this;
     }
 
-    LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[nextIndex];
+    SentenceID nextSentenceID = sentenceMap.keys.toList()[nextIndex];
     return BaseListCursor.defaultCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: nextLyricSnippetID,
+      sentenceMap: sentenceMap,
+      sentenceID: nextSentenceID,
       seekPosition: seekPosition,
     );
   }
@@ -140,35 +140,35 @@ class RubyListCursor extends TextPaneListCursor {
 
   @override
   TextPaneListCursor updateCursor(
-    LyricSnippetMap lyricSnippetMap,
-    LyricSnippetID lyricSnippetID,
+    SentenceMap sentenceMap,
+    SentenceID sentenceID,
     SeekPosition seekPosition,
   ) {
-    if (lyricSnippetMap.isEmpty) {
+    if (sentenceMap.isEmpty) {
       return RubyListCursor(
-        lyricSnippetMap: LyricSnippetMap.empty,
-        lyricSnippetID: LyricSnippetID.empty,
+        sentenceMap: SentenceMap.empty,
+        sentenceID: SentenceID.empty,
         seekPosition: seekPosition,
-        segmentRange: SegmentRange.empty,
+        phrasePosition: PhrasePosition.empty,
         insertionPosition: InsertionPosition.empty,
         option: Option.former,
       );
     }
 
-    LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.first;
-    LyricSnippet lyricSnippet = lyricSnippetMap.values.first;
-    if (lyricSnippetMap.containsKey(nextLyricSnippetID)) {
-      nextLyricSnippetID = lyricSnippetID;
-      lyricSnippet = lyricSnippetMap[nextLyricSnippetID]!;
+    SentenceID nextSentenceID = sentenceMap.keys.first;
+    Sentence sentence = sentenceMap.values.first;
+    if (sentenceMap.containsKey(nextSentenceID)) {
+      nextSentenceID = sentenceID;
+      sentence = sentenceMap[nextSentenceID]!;
     }
 
-    SentenceSegmentIndex currentSeekSegmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
-    InsertionPositionInfo? nextSnippetPositionInfo = lyricSnippet.getInsertionPositionInfo(rubyCursor.insertionPosition);
+    SentenceSegmentIndex currentSeekSegmentIndex = sentence.getSegmentIndexFromSeekPosition(seekPosition);
+    InsertionPositionInfo? nextSentencePositionInfo = sentence.getInsertionPositionInfo(rubyCursor.insertionPosition);
 
-    if (nextSnippetPositionInfo == null || nextSnippetPositionInfo is SentenceSegmentInsertionPositionInfo && nextSnippetPositionInfo.sentenceSegmentIndex != currentSeekSegmentIndex) {
+    if (nextSentencePositionInfo == null || nextSentencePositionInfo is SentenceSegmentInsertionPositionInfo && nextSentencePositionInfo.sentenceSegmentIndex != currentSeekSegmentIndex) {
       return RubyListCursor.defaultCursor(
-        lyricSnippetMap: lyricSnippetMap,
-        lyricSnippetID: nextLyricSnippetID,
+        sentenceMap: sentenceMap,
+        sentenceID: nextSentenceID,
         seekPosition: seekPosition,
       );
     }
@@ -177,18 +177,18 @@ class RubyListCursor extends TextPaneListCursor {
   }
 
   RubyListCursor copyWith({
-    LyricSnippetMap? lyricSnippetMap,
-    LyricSnippetID? lyricSnippetID,
+    SentenceMap? sentenceMap,
+    SentenceID? sentenceID,
     SeekPosition? seekPosition,
-    SegmentRange? segmentRange,
+    PhrasePosition? phrasePosition,
     InsertionPosition? insertionPosition,
     Option? option,
   }) {
     return RubyListCursor(
-      lyricSnippetMap: lyricSnippetMap ?? this.lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID ?? this.lyricSnippetID,
+      sentenceMap: sentenceMap ?? this.sentenceMap,
+      sentenceID: sentenceID ?? this.sentenceID,
       seekPosition: seekPosition ?? this.seekPosition,
-      segmentRange: segmentRange ?? rubyCursor.segmentRange,
+      phrasePosition: phrasePosition ?? rubyCursor.phrasePosition,
       insertionPosition: insertionPosition ?? rubyCursor.insertionPosition,
       option: option ?? rubyCursor.option,
     );
@@ -196,7 +196,7 @@ class RubyListCursor extends TextPaneListCursor {
 
   @override
   String toString() {
-    return 'RubyListCursor(ID: ${lyricSnippetID.id}, $rubyCursor';
+    return 'RubyListCursor(ID: ${sentenceID.id}, $rubyCursor';
   }
 
   @override
@@ -204,13 +204,13 @@ class RubyListCursor extends TextPaneListCursor {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
     final RubyListCursor otherSentenceSegments = other as RubyListCursor;
-    if (lyricSnippetMap != otherSentenceSegments.lyricSnippetMap) return false;
-    if (lyricSnippetID != otherSentenceSegments.lyricSnippetID) return false;
+    if (sentenceMap != otherSentenceSegments.sentenceMap) return false;
+    if (sentenceID != otherSentenceSegments.sentenceID) return false;
     if (seekPosition != otherSentenceSegments.seekPosition) return false;
     if (rubyCursor != otherSentenceSegments.rubyCursor) return false;
     return true;
   }
 
   @override
-  int get hashCode => lyricSnippetMap.hashCode ^ lyricSnippetID.hashCode ^ seekPosition.hashCode ^ rubyCursor.hashCode;
+  int get hashCode => sentenceMap.hashCode ^ sentenceID.hashCode ^ seekPosition.hashCode ^ rubyCursor.hashCode;
 }

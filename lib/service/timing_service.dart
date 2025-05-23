@@ -25,8 +25,8 @@ final timingMasterProvider = ChangeNotifierProvider((ref) {
 class TimingService extends ChangeNotifier {
   final MusicPlayerService musicPlayerProvider;
 
-  LyricSnippetMap lyricSnippetMap = LyricSnippetMap({});
-  Map<LyricSnippetID, int> snippetTracks = {};
+  SentenceMap sentenceMap = SentenceMap({});
+  Map<SentenceID, int> sentenceTracks = {};
   VocalistColorMap vocalistColorMap = VocalistColorMap({});
   SectionList sectionList = SectionList([]);
 
@@ -79,24 +79,24 @@ class TimingService extends ChangeNotifier {
   }
 
   /* * * * * * * * * * * * * * * * * *
-   LyricSnippetMap functions
+   SentenceMap functions
   * * * * * * * * * * * * * * * * * */
-  LyricSnippet getLyricSnippetByID(LyricSnippetID id) {
-    return lyricSnippetMap.getLyricSnippetByID(id);
+  Sentence getSentenceByID(SentenceID id) {
+    return sentenceMap.getSentenceByID(id);
   }
 
-  LyricSnippetMap getLyricSnippetByVocalistID(VocalistID vocalistID) {
-    return lyricSnippetMap.getLyricSnippetByVocalistID(vocalistID);
+  SentenceMap getSentencesByVocalistID(VocalistID vocalistID) {
+    return sentenceMap.getSentenceByVocalistID(vocalistID);
   }
 
-  LyricSnippetMap getSnippetsAtSeekPosition({
+  SentenceMap getSentencesAtSeekPosition({
     SeekPosition? seekPosition,
     VocalistID? vocalistID,
     Duration startBulge = Duration.zero,
     Duration endBulge = Duration.zero,
   }) {
     seekPosition ??= musicPlayerProvider.seekPosition;
-    return lyricSnippetMap.getSnippetsAtSeekPosition(
+    return sentenceMap.getSentencesAtSeekPosition(
       seekPosition: seekPosition,
       vocalistID: vocalistID,
       startBulge: startBulge,
@@ -104,75 +104,75 @@ class TimingService extends ChangeNotifier {
     );
   }
 
-  void addLyricSnippet(LyricSnippet lyricSnippet) {
-    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap.addLyricSnippet(lyricSnippet);
+  void addSentence(Sentence sentence) {
+    undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
+    sentenceMap.addSentence(sentence);
     notifyListeners();
   }
 
-  void removeLyricSnippet(LyricSnippetID snippetID) {
-    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap.removeLyricSnippetByID(snippetID);
+  void removeSentence(SentenceID sentenceID) {
+    undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
+    sentenceMap.removeSentenceByID(sentenceID);
     notifyListeners();
   }
 
-  void editSentence(LyricSnippetID snippetID, String newSentence) {
-    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap = lyricSnippetMap.editSentence(snippetID, newSentence);
+  void editSentence(SentenceID sentenceID, String newSentence) {
+    undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
+    sentenceMap = sentenceMap.editSentence(sentenceID, newSentence);
     notifyListeners();
   }
 
-  void addAnnotation(LyricSnippetID snippetID, SegmentRange segmentRange, String annotationString) {
-    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap = lyricSnippetMap.addAnnotation(snippetID, segmentRange, annotationString);
+  void addAnnotation(SentenceID sentenceID, PhrasePosition phrasePosition, String annotationString) {
+    undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
+    sentenceMap = sentenceMap.addAnnotation(sentenceID, phrasePosition, annotationString);
     notifyListeners();
   }
 
-  void removeAnnotation(LyricSnippetID snippetID, SegmentRange segmentRange) {
-    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap = lyricSnippetMap.removeAnnotation(snippetID, segmentRange);
+  void removeAnnotation(SentenceID sentenceID, PhrasePosition phrasePosition) {
+    undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
+    sentenceMap = sentenceMap.removeAnnotation(sentenceID, phrasePosition);
     notifyListeners();
   }
 
-  void addTimingPoint(LyricSnippetID snippetID, InsertionPosition charPosition, SeekPosition seekPosition) {
-    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap = lyricSnippetMap.addTimingPoint(snippetID, charPosition, seekPosition);
+  void addTimingPoint(SentenceID sentenceID, InsertionPosition charPosition, SeekPosition seekPosition) {
+    undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
+    sentenceMap = sentenceMap.addTimingPoint(sentenceID, charPosition, seekPosition);
     notifyListeners();
   }
 
-  void removeTimingPoint(LyricSnippetID snippetID, InsertionPosition charPosition, Option option) {
-    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap = lyricSnippetMap.removeTimingPoint(snippetID, charPosition, option);
+  void removeTimingPoint(SentenceID sentenceID, InsertionPosition charPosition, Option option) {
+    undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
+    sentenceMap = sentenceMap.removeTimingPoint(sentenceID, charPosition, option);
     notifyListeners();
   }
 
-  void addAnnotationTimingPoint(LyricSnippetID snippetID, SegmentRange segmentRange, InsertionPosition charPosition, SeekPosition seekPosition) {
-    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap = lyricSnippetMap.addAnnotationTimingPoint(snippetID, segmentRange, charPosition, seekPosition);
+  void addAnnotationTimingPoint(SentenceID sentenceID, PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
+    undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
+    sentenceMap = sentenceMap.addAnnotationTimingPoint(sentenceID, phrasePosition, charPosition, seekPosition);
     notifyListeners();
   }
 
-  void removeAnnotationTimingPoint(LyricSnippetID snippetID, SegmentRange segmentRange, InsertionPosition charPosition, Option option) {
-    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap = lyricSnippetMap.removeAnnotationTimingPoint(snippetID, segmentRange, charPosition, option);
+  void removeAnnotationTimingPoint(SentenceID sentenceID, PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
+    undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
+    sentenceMap = sentenceMap.removeAnnotationTimingPoint(sentenceID, phrasePosition, charPosition, option);
     notifyListeners();
   }
 
-  void manipulateSnippet(LyricSnippetID snippetID, SnippetEdge snippetEdge, bool holdLength) {
-    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap = lyricSnippetMap.manipulateSnippet(snippetID, musicPlayerProvider.seekPosition, snippetEdge, holdLength);
+  void manipulateSentence(SentenceID sentenceID, SentenceEdge sentenceEdge, bool holdLength) {
+    undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
+    sentenceMap = sentenceMap.manipulateSentence(sentenceID, musicPlayerProvider.seekPosition, sentenceEdge, holdLength);
     notifyListeners();
   }
 
-  void divideSnippet(LyricSnippetID snippetID, InsertionPosition charPosition, SeekPosition seekPosition) {
-    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap = lyricSnippetMap.divideSnippet(snippetID, charPosition, seekPosition);
+  void divideSentence(SentenceID sentenceID, InsertionPosition charPosition, SeekPosition seekPosition) {
+    undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
+    sentenceMap = sentenceMap.divideSentence(sentenceID, charPosition, seekPosition);
     notifyListeners();
   }
 
-  void concatenateSnippets(LyricSnippetID firstLyricSnippetID, LyricSnippetID secondLyricSnippetID) {
-    undoHistory.pushUndoHistory(LyricUndoType.lyricSnippet, lyricSnippetMap);
-    lyricSnippetMap = lyricSnippetMap.concatenateSnippets(firstLyricSnippetID, secondLyricSnippetID);
+  void concatenateSentences(SentenceID firstSentenceID, SentenceID secondSentenceID) {
+    undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
+    sentenceMap = sentenceMap.concatenateSentences(firstSentenceID, secondSentenceID);
     notifyListeners();
   }
 
@@ -184,8 +184,8 @@ class TimingService extends ChangeNotifier {
     String rawText = await file.readAsString();
 
     XlrcParser parser = XlrcParser();
-    Tuple3<LyricSnippetMap, VocalistColorMap, SectionList> data = parser.deserialize(rawText);
-    lyricSnippetMap = data.item1;
+    Tuple3<SentenceMap, VocalistColorMap, SectionList> data = parser.deserialize(rawText);
+    sentenceMap = data.item1;
     vocalistColorMap = data.item2;
     sectionList = data.item3;
 
@@ -194,8 +194,8 @@ class TimingService extends ChangeNotifier {
 
   void exportLyric(String exportPath) {
     XlrcParser parser = XlrcParser();
-    Tuple3<LyricSnippetMap, VocalistColorMap, SectionList> data = Tuple3<LyricSnippetMap, VocalistColorMap, SectionList>(
-      lyricSnippetMap,
+    Tuple3<SentenceMap, VocalistColorMap, SectionList> data = Tuple3<SentenceMap, VocalistColorMap, SectionList>(
+      sentenceMap,
       vocalistColorMap,
       sectionList,
     );
@@ -211,8 +211,8 @@ class TimingService extends ChangeNotifier {
       LyricUndoType type = action.type;
       dynamic value = action.value;
 
-      if (type == LyricUndoType.lyricSnippet) {
-        lyricSnippetMap = value;
+      if (type == LyricUndoType.sentence) {
+        sentenceMap = value;
       } else if (type == LyricUndoType.vocalistsColor) {
         vocalistColorMap = value;
       } else {
@@ -230,7 +230,7 @@ enum Option {
   latter,
 }
 
-enum SnippetEdge {
+enum SentenceEdge {
   start,
   end,
 }

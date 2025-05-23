@@ -16,36 +16,36 @@ import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 class RubyCursor extends TextPaneCursor {
-  SegmentRange segmentRange;
+  PhrasePosition phrasePosition;
   InsertionPosition insertionPosition;
   Option option;
 
   RubyCursor({
-    required LyricSnippet lyricSnippet,
+    required Sentence sentence,
     required SeekPosition seekPosition,
-    required this.segmentRange,
+    required this.phrasePosition,
     required this.insertionPosition,
     required this.option,
-  }) : super(lyricSnippet, seekPosition) {
+  }) : super(sentence, seekPosition) {
     assert(doesSeekPositionPointAnnotation(), "The passed seek position does not point to any annotation.");
   }
 
   bool doesSeekPositionPointAnnotation() {
-    SegmentRange annotationSegmentRange = lyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
-    return annotationSegmentRange.isNotEmpty;
+    PhrasePosition phrasePosition = sentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
+    return phrasePosition.isNotEmpty;
   }
 
   RubyCursor._privateConstructor(
-    super.lyricSnippet,
+    super.sentence,
     super.seekPosition,
-    this.segmentRange,
+    this.phrasePosition,
     this.insertionPosition,
     this.option,
   );
   static final RubyCursor _empty = RubyCursor._privateConstructor(
-    LyricSnippet.empty,
+    Sentence.empty,
     SeekPosition.empty,
-    SegmentRange.empty,
+    PhrasePosition.empty,
     InsertionPosition.empty,
     Option.former,
   );
@@ -54,17 +54,17 @@ class RubyCursor extends TextPaneCursor {
   bool get isNotEmpty => !identical(this, _empty);
 
   factory RubyCursor.defaultCursor({
-    required LyricSnippet lyricSnippet,
+    required Sentence sentence,
     required SeekPosition seekPosition,
   }) {
-    SegmentRange annotationSegmentRange = lyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
-    Annotation annotation = lyricSnippet.annotationMap[annotationSegmentRange]!;
+    PhrasePosition phrasePosition = sentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
+    Annotation annotation = sentence.annotationMap[phrasePosition]!;
     SentenceSegmentIndex segmentIndex = annotation.getSegmentIndexFromSeekPosition(seekPosition);
 
     return RubyCursor(
-      lyricSnippet: lyricSnippet,
+      sentence: sentence,
       seekPosition: seekPosition,
-      segmentRange: annotationSegmentRange,
+      phrasePosition: phrasePosition,
       insertionPosition: annotation.timing.leftTimingPoint(segmentIndex).insertionPosition + 1,
       option: Option.former,
     );
@@ -81,12 +81,12 @@ class RubyCursor extends TextPaneCursor {
   }
 
   @override
-  List<TextPaneCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
-    List<RubyCursor?> separatedCursors = List.filled(rangeList.length, null);
+  List<TextPaneCursor?> getPhrasePositionDividedCursors(Sentence sentence, List<PhrasePosition> phrasePositionList) {
+    List<RubyCursor?> separatedCursors = List.filled(phrasePositionList.length, null);
     RubyCursor cursor = copyWith();
-    for (int index = 0; index < rangeList.length; index++) {
-      SegmentRange segmentRange = rangeList[index];
-      if (segmentRange == cursor.segmentRange) {
+    for (int index = 0; index < phrasePositionList.length; index++) {
+      PhrasePosition phrasePosition = phrasePositionList[index];
+      if (phrasePosition == cursor.phrasePosition) {
         separatedCursors[index] = cursor;
         break;
       }
@@ -111,16 +111,16 @@ class RubyCursor extends TextPaneCursor {
   }
 
   RubyCursor copyWith({
-    LyricSnippet? lyricSnippet,
+    Sentence? sentence,
     SeekPosition? seekPosition,
-    SegmentRange? segmentRange,
+    PhrasePosition? phrasePosition,
     InsertionPosition? insertionPosition,
     Option? option,
   }) {
     return RubyCursor(
-      lyricSnippet: lyricSnippet ?? this.lyricSnippet,
+      sentence: sentence ?? this.sentence,
       seekPosition: seekPosition ?? this.seekPosition,
-      segmentRange: segmentRange ?? this.segmentRange,
+      phrasePosition: phrasePosition ?? this.phrasePosition,
       insertionPosition: insertionPosition ?? this.insertionPosition,
       option: option ?? this.option,
     );
@@ -128,7 +128,7 @@ class RubyCursor extends TextPaneCursor {
 
   @override
   String toString() {
-    return 'RubyCursor($lyricSnippet, segmentRange: $segmentRange, position: ${insertionPosition.position}, option: $option)';
+    return 'RubyCursor($sentence, phrasePosition: $phrasePosition, position: ${insertionPosition.position}, option: $option)';
   }
 
   @override
@@ -136,14 +136,14 @@ class RubyCursor extends TextPaneCursor {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
     final RubyCursor otherSentenceSegments = other as RubyCursor;
-    if (lyricSnippet != otherSentenceSegments.lyricSnippet) return false;
+    if (sentence != otherSentenceSegments.sentence) return false;
     if (seekPosition != otherSentenceSegments.seekPosition) return false;
-    if (segmentRange != otherSentenceSegments.segmentRange) return false;
+    if (phrasePosition != otherSentenceSegments.phrasePosition) return false;
     if (insertionPosition != otherSentenceSegments.insertionPosition) return false;
     if (option != otherSentenceSegments.option) return false;
     return true;
   }
 
   @override
-  int get hashCode => lyricSnippet.hashCode ^ seekPosition.hashCode ^ segmentRange.hashCode ^ insertionPosition.hashCode ^ option.hashCode;
+  int get hashCode => sentence.hashCode ^ seekPosition.hashCode ^ phrasePosition.hashCode ^ insertionPosition.hashCode ^ option.hashCode;
 }

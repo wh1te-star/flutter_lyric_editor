@@ -4,14 +4,14 @@ import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/phrase_position.dart';
 
 abstract class TextPaneCursor {
-  LyricSnippet lyricSnippet;
+  Sentence sentence;
   SeekPosition seekPosition;
 
-  TextPaneCursor(this.lyricSnippet, this.seekPosition);
+  TextPaneCursor(this.sentence, this.seekPosition);
 
   TextPaneCursor moveLeftCursor();
   TextPaneCursor moveRightCursor();
 
-  List<TextPaneCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList);
+  List<TextPaneCursor?> getPhrasePositionDividedCursors(Sentence sentence, List<PhrasePosition> phrasePositionList);
   List<TextPaneCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList);
 }

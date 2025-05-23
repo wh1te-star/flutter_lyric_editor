@@ -1,26 +1,26 @@
-class LyricSnippetTrack implements Comparable<LyricSnippetTrack> {
+class SentenceTrack implements Comparable<SentenceTrack> {
   int track;
 
-  LyricSnippetTrack(this.track) {
+  SentenceTrack(this.track) {
     if (!isEmpty) {
       assert(track >= 0);
     }
   }
 
-  static final LyricSnippetTrack _empty = LyricSnippetTrack._privateConstructor(-1);
-  static LyricSnippetTrack get empty => _empty;
+  static final SentenceTrack _empty = SentenceTrack._privateConstructor(-1);
+  static SentenceTrack get empty => _empty;
   bool get isEmpty => identical(this, _empty);
-  LyricSnippetTrack._privateConstructor(this.track);
+  SentenceTrack._privateConstructor(this.track);
 
-  LyricSnippetTrack copyWith({int? track}) {
-    return LyricSnippetTrack(
+  SentenceTrack copyWith({int? track}) {
+    return SentenceTrack(
       track ?? this.track,
     );
   }
 
   @override
   String toString() {
-    return "LyricSnippetTrack: $track";
+    return "SentenceTrack: $track";
   }
 
   @override
@@ -28,7 +28,7 @@ class LyricSnippetTrack implements Comparable<LyricSnippetTrack> {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! LyricSnippetTrack) {
+    if (other is! SentenceTrack) {
       return false;
     }
     return track == other.track;
@@ -37,16 +37,16 @@ class LyricSnippetTrack implements Comparable<LyricSnippetTrack> {
   @override
   int get hashCode => track.hashCode;
 
-  LyricSnippetTrack operator +(int shift) => LyricSnippetTrack(track + shift);
-  LyricSnippetTrack operator -(int shift) => LyricSnippetTrack(track - shift);
+  SentenceTrack operator +(int shift) => SentenceTrack(track + shift);
+  SentenceTrack operator -(int shift) => SentenceTrack(track - shift);
 
   @override
-  int compareTo(LyricSnippetTrack other) {
+  int compareTo(SentenceTrack other) {
     return track.compareTo(other.track);
   }
 
-  bool operator >(LyricSnippetTrack other) => track > other.track;
-  bool operator <(LyricSnippetTrack other) => track < other.track;
-  bool operator >=(LyricSnippetTrack other) => track >= other.track;
-  bool operator <=(LyricSnippetTrack other) => track <= other.track;
+  bool operator >(SentenceTrack other) => track > other.track;
+  bool operator <(SentenceTrack other) => track < other.track;
+  bool operator >=(SentenceTrack other) => track >= other.track;
+  bool operator <=(SentenceTrack other) => track <= other.track;
 }

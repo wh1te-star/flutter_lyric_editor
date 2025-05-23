@@ -33,25 +33,25 @@ class TextPaneProvider with ChangeNotifier {
       },
     );
     textPaneCursorController = TextPaneCursorController(
-      lyricSnippetMap: LyricSnippetMap.empty,
-      lyricSnippetID: LyricSnippetID.empty,
+      sentenceMap: SentenceMap.empty,
+      sentenceID: SentenceID.empty,
       textPaneListCursor: BaseListCursor.empty,
       seekPosition: musicPlayerProvider.seekPosition,
       cursorBlinker: cursorBlinker,
     );
 
     musicPlayerProvider.addListener(() {
-      LyricSnippetMap lyricSnippetMap = timingService.getSnippetsAtSeekPosition();
+      SentenceMap sentenceMap = timingService.getSentencesAtSeekPosition();
       SeekPosition seekPosition = musicPlayerProvider.seekPosition;
-      textPaneCursorController = textPaneCursorController.updateCursor(lyricSnippetMap, seekPosition);
+      textPaneCursorController = textPaneCursorController.updateCursor(sentenceMap, seekPosition);
 
       notifyListeners();
     });
 
     timingService.addListener(() {
-      LyricSnippetMap lyricSnippetMap = timingService.getSnippetsAtSeekPosition();
+      SentenceMap sentenceMap = timingService.getSentencesAtSeekPosition();
       SeekPosition seekPosition = musicPlayerProvider.seekPosition;
-      textPaneCursorController = textPaneCursorController.updateCursor(lyricSnippetMap, seekPosition);
+      textPaneCursorController = textPaneCursorController.updateCursor(sentenceMap, seekPosition);
 
       notifyListeners();
     });

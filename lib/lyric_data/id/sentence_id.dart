@@ -1,21 +1,21 @@
-class LyricSnippetID {
+class SentenceID {
   int id;
-  LyricSnippetID(this.id);
+  SentenceID(this.id);
 
-  static LyricSnippetID get empty => LyricSnippetID(0);
+  static SentenceID get empty => SentenceID(0);
 
   bool get isEmpty => id == 0;
 
-  LyricSnippetID copyWith({int? id}) {
-    return LyricSnippetID(id ?? this.id);
+  SentenceID copyWith({int? id}) {
+    return SentenceID(id ?? this.id);
   }
 
   @override
-  String toString() => 'SnippetID($id)';
+  String toString() => 'SentenceID($id)';
 
   @override
   bool operator ==(Object other) {
-    if (other is LyricSnippetID) {
+    if (other is SentenceID) {
       return id == other.id;
     } else {
       return false;

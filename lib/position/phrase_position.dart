@@ -2,19 +2,19 @@ import 'dart:typed_data';
 
 import 'package:lyric_editor/position/word_index.dart';
 
-class SegmentRange {
+class PhrasePosition {
   SentenceSegmentIndex startIndex;
   SentenceSegmentIndex endIndex;
-  SegmentRange(this.startIndex, this.endIndex) {
+  PhrasePosition(this.startIndex, this.endIndex) {
     if (!isEmpty) {
       assert(startIndex >= SentenceSegmentIndex(0));
       assert(endIndex >= SentenceSegmentIndex(0));
     }
   }
 
-  SegmentRange._privateConstructor(this.startIndex, this.endIndex);
-  static final SegmentRange _empty = SegmentRange._privateConstructor(SentenceSegmentIndex.empty, SentenceSegmentIndex.empty);
-  static SegmentRange get empty => _empty;
+  PhrasePosition._privateConstructor(this.startIndex, this.endIndex);
+  static final PhrasePosition _empty = PhrasePosition._privateConstructor(SentenceSegmentIndex.empty, SentenceSegmentIndex.empty);
+  static PhrasePosition get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
@@ -24,8 +24,8 @@ class SegmentRange {
     return startIndex <= segmentIndex && segmentIndex <= endIndex;
   }
 
-  SegmentRange copyWith({SentenceSegmentIndex? startIndex, SentenceSegmentIndex? endIndex}) {
-    return SegmentRange(
+  PhrasePosition copyWith({SentenceSegmentIndex? startIndex, SentenceSegmentIndex? endIndex}) {
+    return PhrasePosition(
       startIndex ?? this.startIndex,
       endIndex ?? this.endIndex,
     );
@@ -41,7 +41,7 @@ class SegmentRange {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! SegmentRange) {
+    if (other is! PhrasePosition) {
       return false;
     }
     return startIndex == other.startIndex && endIndex == other.endIndex;

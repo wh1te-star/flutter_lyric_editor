@@ -10,17 +10,17 @@ import 'package:lyric_editor/utility/utility_functions.dart';
 class ColoredCaption extends StatelessWidget {
   static const String fontFamily = "Times New Roman";
   static const double fontSize = 40.0;
-  final LyricSnippet lyricSnippet;
+  final Sentence sentence;
   final SeekPosition seekPosition;
   final Color color;
 
-  const ColoredCaption(this.lyricSnippet, this.seekPosition, this.color, {super.key});
+  const ColoredCaption(this.sentence, this.seekPosition, this.color, {super.key});
 
   @override
   Widget build(BuildContext context) {
     List<Widget> coloredSentenceSegments = [];
-    for (int index = 0; index < lyricSnippet.sentenceSegments.length; index++) {
-      coloredSentenceSegments.add(getColoredSentenceSegment(lyricSnippet, seekPosition, color, index));
+    for (int index = 0; index < sentence.sentenceSegments.length; index++) {
+      coloredSentenceSegments.add(getColoredSentenceSegment(sentence, seekPosition, color, index));
     }
     return Wrap(
       children: coloredSentenceSegments,
@@ -28,13 +28,13 @@ class ColoredCaption extends StatelessWidget {
   }
 
   Widget getColoredSentenceSegment(
-    LyricSnippet lyricSnippet,
+    Sentence sentence,
     SeekPosition seekPosition,
     Color color,
     int index,
   ) {
-    SentenceSegment sentenceSegment = lyricSnippet.sentenceSegments[index];
-    double progress = getProgress(lyricSnippet, index);
+    SentenceSegment sentenceSegment = sentence.sentenceSegments[index];
+    double progress = getProgress(sentence, index);
     return CustomPaint(
       painter: ColoredTextPainter(
         text: sentenceSegment.word,
@@ -49,20 +49,20 @@ class ColoredCaption extends StatelessWidget {
     );
   }
 
-  double getProgress(LyricSnippet lyricSnippet, int index) {
-    SentenceSegmentIndex seekSegmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
+  double getProgress(Sentence sentence, int index) {
+    SentenceSegmentIndex seekSegmentIndex = sentence.getSegmentIndexFromSeekPosition(seekPosition);
     if (seekSegmentIndex.isEmpty) {
-      if (seekPosition <= lyricSnippet.startTimestamp) {
+      if (seekPosition <= sentence.startTimestamp) {
         return 0.0;
       }
-      if (lyricSnippet.endTimestamp <= seekPosition) {
+      if (sentence.endTimestamp <= seekPosition) {
         return 1.0;
       }
       assert(false);
     }
 
     if (index == seekSegmentIndex.index) {
-      return lyricSnippet.getSegmentProgress(seekPosition);
+      return sentence.getSegmentProgress(seekPosition);
     }
     if (index < seekSegmentIndex.index) {
       return 1.0;

@@ -5,11 +5,11 @@ import 'package:lyric_editor/position/seek_position.dart';
 
 abstract class TextPaneListCursor {
   late TextPaneCursor textPaneCursor;
-  LyricSnippetMap lyricSnippetMap;
-  LyricSnippetID lyricSnippetID;
+  SentenceMap sentenceMap;
+  SentenceID sentenceID;
   SeekPosition seekPosition;
 
-  TextPaneListCursor(this.lyricSnippetMap, this.lyricSnippetID, this.seekPosition);
+  TextPaneListCursor(this.sentenceMap, this.sentenceID, this.seekPosition);
 
   TextPaneListCursor moveUpCursor();
   TextPaneListCursor moveDownCursor();
@@ -17,8 +17,8 @@ abstract class TextPaneListCursor {
   TextPaneListCursor moveRightCursor();
 
   TextPaneListCursor updateCursor(
-    LyricSnippetMap lyricSnippetMap,
-    LyricSnippetID lyricSnippetID,
+    SentenceMap sentenceMap,
+    SentenceID sentenceID,
     SeekPosition seekPosition,
   );
 }

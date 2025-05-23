@@ -88,20 +88,20 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         LogicalKeySet(LogicalKeyboardKey.space): PlayPauseIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyN): RewindIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyM): ForwardIntent(),
-        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyS): AddSnippetIntent(),
+        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyS): AddSentenceIntent(),
         LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyA): EnterWordModeIntent(),
-        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyS): DeleteSnippetIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyS): DeleteSentenceIntent(),
         LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyA): DeleteAnnotationIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyC): SnippetStartMoveIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyV): textPaneProvider.textPaneCursorController.textPaneListCursor is WordListCursor ? SegmentRangeSelectIntent() : SnippetEndMoveIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyC): SentenceStartMoveIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyV): textPaneProvider.textPaneCursorController.textPaneListCursor is WordListCursor ? SwitchExpandModeIntent() : SentenceEndMoveIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowLeft): SpeedDownIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowRight): SpeedUpIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowUp): VolumeUpIntent(),
         LogicalKeySet(LogicalKeyboardKey.arrowDown): VolumeDownIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyI): TimingPointAddIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyO): TimingPointDeleteIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyZ): SnippetDivideIntent(),
-        LogicalKeySet(LogicalKeyboardKey.keyX): SnippetConcatenateIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyZ): SentenceDivideIntent(),
+        LogicalKeySet(LogicalKeyboardKey.keyX): SentenceConcatenateIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyU): UndoIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyH): TextPaneCursorMoveLeftIntent(),
         LogicalKeySet(LogicalKeyboardKey.keyJ): TextPaneCursorMoveDownIntent(),
@@ -136,25 +136,25 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             musicPlayerProvider.forward(1000);
           }(),
         ),
-        AddSnippetIntent: CallbackAction<AddSnippetIntent>(
-          onInvoke: (AddSnippetIntent intent) => () {
+        AddSentenceIntent: CallbackAction<AddSentenceIntent>(
+          onInvoke: (AddSentenceIntent intent) => () {
             Timing timing = Timing(
               startTimestamp: musicPlayerProvider.seekPosition,
               sentenceSegmentList: SentenceSegmentList([
                 SentenceSegment("default sentence", Duration(milliseconds: 3000)),
               ]),
             );
-            LyricSnippet lyricSnippet = LyricSnippet(
+            Sentence sentence = Sentence(
               vocalistID: timelinePaneProvider.selectingVocalist[0],
               timing: timing,
               annotationMap: AnnotationMap.empty,
             );
-            timingService.addLyricSnippet(lyricSnippet);
+            timingService.addSentence(sentence);
           }(),
         ),
-        DeleteSnippetIntent: CallbackAction<DeleteSnippetIntent>(
-          onInvoke: (DeleteSnippetIntent intent) => () {
-            timingService.removeLyricSnippet(timelinePaneProvider.selectingSnippets[0]);
+        DeleteSentenceIntent: CallbackAction<DeleteSentenceIntent>(
+          onInvoke: (DeleteSentenceIntent intent) => () {
+            timingService.removeSentence(timelinePaneProvider.selectingSentence[0]);
           }(),
         ),
         EnterWordModeIntent: CallbackAction<EnterWordModeIntent>(
@@ -170,8 +170,8 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             setState(() {});
           }(),
         ),
-        SegmentRangeSelectIntent: CallbackAction<SegmentRangeSelectIntent>(
-          onInvoke: (SegmentRangeSelectIntent intent) => () {
+        SwitchExpandModeIntent: CallbackAction<SwitchExpandModeIntent>(
+          onInvoke: (SwitchExpandModeIntent intent) => () {
             textPaneProvider.switchToExpandMode();
             setState(() {});
           }(),
@@ -182,14 +182,14 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             assert(cursorController.textPaneListCursor is WordListCursor, "An unintended error occurred when adding an annotation. The cursor type must be segment type.");
 
             WordListCursor listCursor = cursorController.textPaneListCursor as WordListCursor;
-            LyricSnippetID lyricSnippetID = listCursor.lyricSnippetID;
+            SentenceID sentenceID = listCursor.sentenceID;
 
             WordCursor cursor = listCursor.textPaneCursor as WordCursor;
-            SegmentRange segmentRange = cursor.segmentRange;
+            PhrasePosition phrasePosition = cursor.phrasePosition;
 
             String annotationString = (await displayTextFieldDialog(context, [""]))[0];
             if (annotationString != "") {
-              timingService.addAnnotation(lyricSnippetID, segmentRange, annotationString);
+              timingService.addAnnotation(sentenceID, phrasePosition, annotationString);
             }
             textPaneProvider.exitWordMode();
           }(),
@@ -197,7 +197,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         DeleteAnnotationIntent: CallbackAction<DeleteAnnotationIntent>(
           onInvoke: (DeleteAnnotationIntent intent) => () {
             TextPaneListCursor listCursor = textPaneProvider.textPaneCursorController.textPaneListCursor;
-            LyricSnippetID lyricSnippetID = listCursor.lyricSnippetID;
+            SentenceID sentenceID = listCursor.sentenceID;
             if (listCursor is! RubyListCursor) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -207,21 +207,21 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             }
 
             RubyCursor cursor = listCursor.textPaneCursor as RubyCursor;
-            SegmentRange segmentRange = cursor.segmentRange;
-            timingService.removeAnnotation(lyricSnippetID, segmentRange);
+            PhrasePosition phrasePosition = cursor.phrasePosition;
+            timingService.removeAnnotation(sentenceID, phrasePosition);
           }(),
         ),
-        SnippetStartMoveIntent: CallbackAction<SnippetStartMoveIntent>(
-          onInvoke: (SnippetStartMoveIntent intent) => () {
-            for (var id in timelinePaneProvider.selectingSnippets) {
-              timingService.manipulateSnippet(id, SnippetEdge.start, false);
+        SentenceStartMoveIntent: CallbackAction<SentenceStartMoveIntent>(
+          onInvoke: (SentenceStartMoveIntent intent) => () {
+            for (var id in timelinePaneProvider.selectingSentence) {
+              timingService.manipulateSentence(id, SentenceEdge.start, false);
             }
           }(),
         ),
-        SnippetEndMoveIntent: CallbackAction<SnippetEndMoveIntent>(
-          onInvoke: (SnippetEndMoveIntent intent) => () {
-            for (var id in timelinePaneProvider.selectingSnippets) {
-              timingService.manipulateSnippet(id, SnippetEdge.end, false);
+        SentenceEndMoveIntent: CallbackAction<SentenceEndMoveIntent>(
+          onInvoke: (SentenceEndMoveIntent intent) => () {
+            for (var id in timelinePaneProvider.selectingSentence) {
+              timingService.manipulateSentence(id, SentenceEdge.end, false);
             }
           }(),
         ),
@@ -299,7 +299,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             if (listCursor is BaseListCursor) {
               BaseCursor cursor = listCursor.textPaneCursor as BaseCursor;
               timingService.addTimingPoint(
-                listCursor.lyricSnippetID,
+                listCursor.sentenceID,
                 cursor.insertionPosition,
                 seekPosition,
               );
@@ -307,8 +307,8 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             if (listCursor is RubyListCursor) {
               RubyCursor cursor = listCursor.textPaneCursor as RubyCursor;
               timingService.addAnnotationTimingPoint(
-                listCursor.lyricSnippetID,
-                cursor.segmentRange,
+                listCursor.sentenceID,
+                cursor.phrasePosition,
                 cursor.insertionPosition,
                 seekPosition,
               );
@@ -318,11 +318,11 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         TimingPointDeleteIntent: CallbackAction<TimingPointDeleteIntent>(
           onInvoke: (TimingPointDeleteIntent intent) => () {
             TextPaneListCursor listCursor = textPaneProvider.textPaneCursorController.textPaneListCursor;
-            LyricSnippetID lyricSnippetID = listCursor.lyricSnippetID;
+            SentenceID sentenceID = listCursor.sentenceID;
             if (listCursor is BaseListCursor) {
               BaseCursor cursor = listCursor.textPaneCursor as BaseCursor;
               timingService.removeTimingPoint(
-                lyricSnippetID,
+                sentenceID,
                 cursor.insertionPosition,
                 cursor.option,
               );
@@ -330,28 +330,28 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             if (listCursor is RubyListCursor) {
               RubyCursor cursor = listCursor.textPaneCursor as RubyCursor;
               timingService.removeAnnotationTimingPoint(
-                lyricSnippetID,
-                cursor.segmentRange,
+                sentenceID,
+                cursor.phrasePosition,
                 cursor.insertionPosition,
                 cursor.option,
               );
             }
           }(),
         ),
-        SnippetDivideIntent: CallbackAction<SnippetDivideIntent>(
-          onInvoke: (SnippetDivideIntent intent) => () {
+        SentenceDivideIntent: CallbackAction<SentenceDivideIntent>(
+          onInvoke: (SentenceDivideIntent intent) => () {
             TextPaneListCursor listCursor = textPaneProvider.textPaneCursorController.textPaneListCursor;
             if (listCursor is BaseListCursor) {
               BaseCursor cursor = listCursor.textPaneCursor as BaseCursor;
-              timingService.divideSnippet(timelinePaneProvider.selectingSnippets[0], cursor.insertionPosition, musicPlayerProvider.seekPosition);
+              timingService.divideSentence(timelinePaneProvider.selectingSentence[0], cursor.insertionPosition, musicPlayerProvider.seekPosition);
             }
           }(),
         ),
-        SnippetConcatenateIntent: CallbackAction<SnippetConcatenateIntent>(
-          onInvoke: (SnippetConcatenateIntent intent) => () {
-            final List<LyricSnippetID> selectingSnippets = timelinePaneProvider.selectingSnippets;
-            if (selectingSnippets.length >= 2) {
-              timingService.concatenateSnippets(selectingSnippets[0], selectingSnippets[1]);
+        SentenceConcatenateIntent: CallbackAction<SentenceConcatenateIntent>(
+          onInvoke: (SentenceConcatenateIntent intent) => () {
+            final List<SentenceID> selectingSentences = timelinePaneProvider.selectingSentence;
+            if (selectingSentences.length >= 2) {
+              timingService.concatenateSentences(selectingSentences[0], selectingSentences[1]);
             }
           }(),
         ),
@@ -417,17 +417,17 @@ class ForwardIntent extends Intent {}
 
 class RewindIntent extends Intent {}
 
-class AddSnippetIntent extends Intent {}
+class AddSentenceIntent extends Intent {}
 
-class DeleteSnippetIntent extends Intent {}
+class DeleteSentenceIntent extends Intent {}
 
 class AddAnnotationIntent extends Intent {}
 
 class DeleteAnnotationIntent extends Intent {}
 
-class SnippetStartMoveIntent extends Intent {}
+class SentenceStartMoveIntent extends Intent {}
 
-class SnippetEndMoveIntent extends Intent {}
+class SentenceEndMoveIntent extends Intent {}
 
 class VolumeUpIntent extends Intent {}
 
@@ -453,7 +453,7 @@ class TimelineZoomOutIntent extends Intent {}
 
 class EnterWordModeIntent extends Intent {}
 
-class SegmentRangeSelectIntent extends Intent {}
+class SwitchExpandModeIntent extends Intent {}
 
 class AddSectionIntent extends Intent {}
 
@@ -463,9 +463,9 @@ class TimingPointAddIntent extends Intent {}
 
 class TimingPointDeleteIntent extends Intent {}
 
-class SnippetDivideIntent extends Intent {}
+class SentenceDivideIntent extends Intent {}
 
-class SnippetConcatenateIntent extends Intent {}
+class SentenceConcatenateIntent extends Intent {}
 
 class DisplayModeSwitchIntent extends Intent {}
 

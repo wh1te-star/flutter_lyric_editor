@@ -17,17 +17,17 @@ import 'package:lyric_editor/service/timing_service.dart';
 class BaseListCursor extends TextPaneListCursor {
   late BaseCursor baseCursor;
   BaseListCursor({
-    required LyricSnippetMap lyricSnippetMap,
-    required LyricSnippetID lyricSnippetID,
+    required SentenceMap sentenceMap,
+    required SentenceID sentenceID,
     required SeekPosition seekPosition,
     required InsertionPosition insertionPosition,
     required Option option,
-  }) : super(lyricSnippetMap, lyricSnippetID, seekPosition) {
-    assert(isIDContained(), "The passed lyricSnippetID does not point to a lyric snippet in lyricSnippetMap.");
+  }) : super(sentenceMap, sentenceID, seekPosition) {
+    assert(isIDContained(), "The passed sentenceID does not point to a sentence in sentenceMap.");
 
-    LyricSnippet lyricSnippet = lyricSnippetMap.containsKey(lyricSnippetID) ? lyricSnippetMap[lyricSnippetID]! : LyricSnippet.empty;
+    Sentence sentence = sentenceMap.containsKey(sentenceID) ? sentenceMap[sentenceID]! : Sentence.empty;
     baseCursor = BaseCursor(
-      lyricSnippet: lyricSnippet,
+      sentence: sentence,
       seekPosition: seekPosition,
       insertionPosition: insertionPosition,
       option: option,
@@ -36,24 +36,24 @@ class BaseListCursor extends TextPaneListCursor {
   }
 
   bool isIDContained() {
-    if (lyricSnippetMap.isEmpty) {
+    if (sentenceMap.isEmpty) {
       return true;
     }
-    LyricSnippet? lyricSnippet = lyricSnippetMap[lyricSnippetID];
-    if (lyricSnippet == null) {
+    Sentence? sentence = sentenceMap[sentenceID];
+    if (sentence == null) {
       return false;
     }
     return true;
   }
 
   BaseListCursor._privateConstructor(
-    super.lyricSnippetMap,
-    super.lyricSnippetID,
+    super.sentenceMap,
+    super.sentenceID,
     super.seekPosition,
   );
   static final BaseListCursor _empty = BaseListCursor._privateConstructor(
-    LyricSnippetMap.empty,
-    LyricSnippetID.empty,
+    SentenceMap.empty,
+    SentenceID.empty,
     SeekPosition.empty,
   );
   static BaseListCursor get empty => _empty;
@@ -61,25 +61,25 @@ class BaseListCursor extends TextPaneListCursor {
   bool get isNotEmpty => !identical(this, _empty);
 
   factory BaseListCursor.defaultCursor({
-    required LyricSnippetMap lyricSnippetMap,
-    required LyricSnippetID lyricSnippetID,
+    required SentenceMap sentenceMap,
+    required SentenceID sentenceID,
     required SeekPosition seekPosition,
   }) {
-    if (lyricSnippetMap.isEmpty) {
+    if (sentenceMap.isEmpty) {
       return BaseListCursor(
-        lyricSnippetMap: LyricSnippetMap.empty,
-        lyricSnippetID: LyricSnippetID.empty,
+        sentenceMap: SentenceMap.empty,
+        sentenceID: SentenceID.empty,
         seekPosition: SeekPosition.empty,
         insertionPosition: InsertionPosition.empty,
         option: Option.former,
       );
     }
-    LyricSnippet lyricSnippet = lyricSnippetMap.getLyricSnippetByID(lyricSnippetID);
-    SentenceSegmentIndex segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
-    InsertionPosition insertionPosition = lyricSnippet.timing.leftTimingPoint(segmentIndex).insertionPosition + 1;
+    Sentence sentence = sentenceMap.getSentenceByID(sentenceID);
+    SentenceSegmentIndex segmentIndex = sentence.getSegmentIndexFromSeekPosition(seekPosition);
+    InsertionPosition insertionPosition = sentence.timing.leftTimingPoint(segmentIndex).insertionPosition + 1;
     return BaseListCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      sentenceMap: sentenceMap,
+      sentenceID: sentenceID,
       seekPosition: seekPosition,
       insertionPosition: insertionPosition,
       option: Option.former,
@@ -88,55 +88,55 @@ class BaseListCursor extends TextPaneListCursor {
 
   @override
   TextPaneListCursor moveUpCursor() {
-    LyricSnippet lyricSnippet = lyricSnippetMap[lyricSnippetID]!;
-    SegmentRange annotationIndex = lyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
+    Sentence sentence = sentenceMap[sentenceID]!;
+    PhrasePosition annotationIndex = sentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
     if (annotationIndex.isNotEmpty) {
       return RubyListCursor.defaultCursor(
-        lyricSnippetMap: lyricSnippetMap,
-        lyricSnippetID: lyricSnippetID,
+        sentenceMap: sentenceMap,
+        sentenceID: sentenceID,
         seekPosition: seekPosition,
       );
     }
 
-    int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
-      return id == lyricSnippetID;
+    int index = sentenceMap.keys.toList().indexWhere((SentenceID id) {
+      return id == sentenceID;
     });
     if (index <= 0) {
       return this;
     }
 
-    LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[index - 1];
+    SentenceID nextSentenceID = sentenceMap.keys.toList()[index - 1];
     return BaseListCursor.defaultCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: nextLyricSnippetID,
+      sentenceMap: sentenceMap,
+      sentenceID: nextSentenceID,
       seekPosition: seekPosition,
     );
   }
 
   @override
   TextPaneListCursor moveDownCursor() {
-    int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
-      return id == lyricSnippetID;
+    int index = sentenceMap.keys.toList().indexWhere((SentenceID id) {
+      return id == sentenceID;
     });
-    if (index >= lyricSnippetMap.length) {
+    if (index >= sentenceMap.length) {
       return this;
     }
 
-    LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[index + 1];
-    LyricSnippet nextLyricSnippet = lyricSnippetMap[nextLyricSnippetID]!;
+    SentenceID nextSentenceID = sentenceMap.keys.toList()[index + 1];
+    Sentence nextSentence = sentenceMap[nextSentenceID]!;
 
-    SegmentRange annotationIndex = nextLyricSnippet.getAnnotationRangeFromSeekPosition(seekPosition);
+    PhrasePosition annotationIndex = nextSentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
     if (annotationIndex.isNotEmpty) {
       return RubyListCursor.defaultCursor(
-        lyricSnippetMap: lyricSnippetMap,
-        lyricSnippetID: lyricSnippetID,
+        sentenceMap: sentenceMap,
+        sentenceID: sentenceID,
         seekPosition: seekPosition,
       );
     }
 
     return BaseListCursor.defaultCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: nextLyricSnippetID,
+      sentenceMap: sentenceMap,
+      sentenceID: nextSentenceID,
       seekPosition: seekPosition,
     );
   }
@@ -145,8 +145,8 @@ class BaseListCursor extends TextPaneListCursor {
   TextPaneListCursor moveLeftCursor() {
     BaseCursor nextCursor = baseCursor.moveLeftCursor() as BaseCursor;
     return BaseListCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      sentenceMap: sentenceMap,
+      sentenceID: sentenceID,
       seekPosition: seekPosition,
       insertionPosition: nextCursor.insertionPosition,
       option: nextCursor.option,
@@ -157,8 +157,8 @@ class BaseListCursor extends TextPaneListCursor {
   TextPaneListCursor moveRightCursor() {
     BaseCursor nextCursor = baseCursor.moveRightCursor() as BaseCursor;
     return BaseListCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      sentenceMap: sentenceMap,
+      sentenceID: sentenceID,
       seekPosition: seekPosition,
       insertionPosition: nextCursor.insertionPosition,
       option: nextCursor.option,
@@ -167,37 +167,37 @@ class BaseListCursor extends TextPaneListCursor {
 
   @override
   TextPaneListCursor updateCursor(
-    LyricSnippetMap lyricSnippetMap,
-    LyricSnippetID lyricSnippetID,
+    SentenceMap sentenceMap,
+    SentenceID sentenceID,
     SeekPosition seekPosition,
   ) {
-    if (lyricSnippetMap.isEmpty) {
+    if (sentenceMap.isEmpty) {
       return BaseListCursor(
-        lyricSnippetMap: LyricSnippetMap.empty,
-        lyricSnippetID: LyricSnippetID.empty,
+        sentenceMap: SentenceMap.empty,
+        sentenceID: SentenceID.empty,
         seekPosition: seekPosition,
         insertionPosition: InsertionPosition.empty,
         option: Option.former,
       );
     }
 
-    if (!lyricSnippetMap.containsKey(lyricSnippetID)) {
-      lyricSnippetID = lyricSnippetMap.keys.first;
+    if (!sentenceMap.containsKey(sentenceID)) {
+      sentenceID = sentenceMap.keys.first;
     }
-    LyricSnippet lyricSnippet = lyricSnippetMap[lyricSnippetID]!;
-    SentenceSegmentIndex currentSeekSegmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
-    InsertionPositionInfo? nextSnippetPositionInfo = lyricSnippet.getInsertionPositionInfo(baseCursor.insertionPosition);
-    if (nextSnippetPositionInfo == null || nextSnippetPositionInfo is SentenceSegmentInsertionPositionInfo && nextSnippetPositionInfo.sentenceSegmentIndex != currentSeekSegmentIndex) {
+    Sentence sentence = sentenceMap[sentenceID]!;
+    SentenceSegmentIndex currentSeekSegmentIndex = sentence.getSegmentIndexFromSeekPosition(seekPosition);
+    InsertionPositionInfo? nextSentencePositionInfo = sentence.getInsertionPositionInfo(baseCursor.insertionPosition);
+    if (nextSentencePositionInfo == null || nextSentencePositionInfo is SentenceSegmentInsertionPositionInfo && nextSentencePositionInfo.sentenceSegmentIndex != currentSeekSegmentIndex) {
       return BaseListCursor.defaultCursor(
-        lyricSnippetMap: lyricSnippetMap,
-        lyricSnippetID: lyricSnippetID,
+        sentenceMap: sentenceMap,
+        sentenceID: sentenceID,
         seekPosition: seekPosition,
       );
     }
 
     return BaseListCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      sentenceMap: sentenceMap,
+      sentenceID: sentenceID,
       seekPosition: seekPosition,
       insertionPosition: baseCursor.insertionPosition,
       option: baseCursor.option,
@@ -207,24 +207,24 @@ class BaseListCursor extends TextPaneListCursor {
   TextPaneListCursor enterWordMode() {
     WordCursor nextCursor = baseCursor.enterWordMode() as WordCursor;
     return WordListCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      sentenceMap: sentenceMap,
+      sentenceID: sentenceID,
       seekPosition: seekPosition,
-      segmentRange: nextCursor.segmentRange,
+      phrasePosition: nextCursor.phrasePosition,
       isExpandMode: nextCursor.isExpandMode,
     );
   }
 
   BaseListCursor copyWith({
-    LyricSnippetMap? lyricSnippetMap,
-    LyricSnippetID? lyricSnippetID,
+    SentenceMap? sentenceMap,
+    SentenceID? sentenceID,
     SeekPosition? seekPosition,
     InsertionPosition? insertionPosition,
     Option? option,
   }) {
     return BaseListCursor(
-      lyricSnippetMap: lyricSnippetMap ?? this.lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID ?? this.lyricSnippetID,
+      sentenceMap: sentenceMap ?? this.sentenceMap,
+      sentenceID: sentenceID ?? this.sentenceID,
       seekPosition: seekPosition ?? this.seekPosition,
       insertionPosition: insertionPosition ?? baseCursor.insertionPosition,
       option: option ?? baseCursor.option,
@@ -233,7 +233,7 @@ class BaseListCursor extends TextPaneListCursor {
 
   @override
   String toString() {
-    return 'BaseListCursor(ID: ${lyricSnippetID.id}, position: $baseCursor)';
+    return 'BaseListCursor(ID: ${sentenceID.id}, position: $baseCursor)';
   }
 
   @override
@@ -241,13 +241,13 @@ class BaseListCursor extends TextPaneListCursor {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
     final BaseListCursor otherSentenceSegments = other as BaseListCursor;
-    if (lyricSnippetMap != otherSentenceSegments.lyricSnippetMap) return false;
-    if (lyricSnippetID != otherSentenceSegments.lyricSnippetID) return false;
+    if (sentenceMap != otherSentenceSegments.sentenceMap) return false;
+    if (sentenceID != otherSentenceSegments.sentenceID) return false;
     if (seekPosition != otherSentenceSegments.seekPosition) return false;
     if (baseCursor != otherSentenceSegments.baseCursor) return false;
     return true;
   }
 
   @override
-  int get hashCode => lyricSnippetMap.hashCode ^ lyricSnippetID.hashCode ^ seekPosition.hashCode ^ baseCursor.hashCode;
+  int get hashCode => sentenceMap.hashCode ^ sentenceID.hashCode ^ seekPosition.hashCode ^ baseCursor.hashCode;
 }

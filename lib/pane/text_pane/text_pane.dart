@@ -56,7 +56,7 @@ class _TextPaneState extends ConsumerState<TextPane> {
         child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
           child: EditColumn(
-            timingService.getSnippetsAtSeekPosition(),
+            timingService.getSentencesAtSeekPosition(),
             musicPlayerService.seekPosition,
             textPaneProvider.textPaneCursorController,
             textPaneProvider.cursorBlinker,

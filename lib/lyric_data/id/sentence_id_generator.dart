@@ -1,10 +1,10 @@
 import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
 
-class LyricSnippetIdGenerator {
+class SentenceIdGenerator {
   int id = 0;
 
-  LyricSnippetID idGen() {
+  SentenceID idGen() {
     id += 1;
-    return LyricSnippetID(id);
+    return SentenceID(id);
   }
 }

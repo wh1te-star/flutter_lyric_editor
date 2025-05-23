@@ -23,26 +23,26 @@ class XlrcParser {
   static const String vocalistColorAttribute = "color";
   static const String vocalistCombinationElement = "Vocalist";
 
-  static const String lyricSnippetElement = "LineTimestamp";
-  static const String lyricSnippetVocalistNameAttribute = "vocalistName";
-  static const String lyricSnippetStartTimestampAttribute = "startTime";
+  static const String sentenceElement = "LineTimestamp";
+  static const String sentenceVocalistNameAttribute = "vocalistName";
+  static const String sentenceStartTimestampAttribute = "startTime";
   static const String sentenceSegmentElement = "WordTimestamp";
   static const String sentenceSegmentDurationAttribute = "time";
 
-  String serialize(Tuple3<LyricSnippetMap, VocalistColorMap, SectionList> data) {
-    LyricSnippetMap lyricSnippetMap = data.item1;
+  String serialize(Tuple3<SentenceMap, VocalistColorMap, SectionList> data) {
+    SentenceMap sentenceMap = data.item1;
     VocalistColorMap vocalistColorMap = data.item2;
     SectionList sectionList = data.item3;
 
     final XmlBuilder builder = XmlBuilder();
     builder.processing('xml', 'version="1.0" encoding="UTF-8"');
     builder.element(rootElement, nest: () {
-      for (LyricSnippet snippet in lyricSnippetMap.values) {
-        builder.element(lyricSnippetElement, attributes: {
-          lyricSnippetVocalistNameAttribute: vocalistColorMap[snippet.vocalistID]!.name,
-          lyricSnippetStartTimestampAttribute: formatTimestamp(snippet.startTimestamp.position),
+      for (Sentence sentence in sentenceMap.values) {
+        builder.element(sentenceElement, attributes: {
+          sentenceVocalistNameAttribute: vocalistColorMap[sentence.vocalistID]!.name,
+          sentenceStartTimestampAttribute: formatTimestamp(sentence.startTimestamp.position),
         }, nest: () {
-          for (var sentenceSegment in snippet.sentenceSegments) {
+          for (var sentenceSegment in sentence.sentenceSegments) {
             builder.element(
               sentenceSegmentElement,
               attributes: {
@@ -59,8 +59,8 @@ class XlrcParser {
     return document.toXmlString(pretty: true, indent: '  ');
   }
 
-  Tuple3<LyricSnippetMap, VocalistColorMap, SectionList> deserialize(String rawText) {
-    LyricSnippetMap lyricSnippetMap = LyricSnippetMap.empty;
+  Tuple3<SentenceMap, VocalistColorMap, SectionList> deserialize(String rawText) {
+    SentenceMap sentenceMap = SentenceMap.empty;
     VocalistColorMap vocalistColorMap = VocalistColorMap.empty;
     SectionList sectionList = SectionList.empty;
 
@@ -82,10 +82,10 @@ class XlrcParser {
       }
     }
 
-    final Iterable<XmlElement> lineTimestamps = document.findAllElements(lyricSnippetElement);
+    final Iterable<XmlElement> lineTimestamps = document.findAllElements(sentenceElement);
     for (XmlElement lineTimestamp in lineTimestamps) {
-      final int startTimestamp = parseTimestamp(lineTimestamp.getAttribute(lyricSnippetStartTimestampAttribute)!);
-      final String vocalistName = lineTimestamp.getAttribute(lyricSnippetVocalistNameAttribute)!;
+      final int startTimestamp = parseTimestamp(lineTimestamp.getAttribute(sentenceStartTimestampAttribute)!);
+      final String vocalistName = lineTimestamp.getAttribute(sentenceVocalistNameAttribute)!;
       final Iterable<XmlElement> wordTimestamps = lineTimestamp.findElements(sentenceSegmentElement);
       final SentenceSegmentList sentenceSegmentList = SentenceSegmentList(wordTimestamps.map((XmlElement wordTimestamp) {
         final int duration = parseTimestamp(wordTimestamp.getAttribute(sentenceSegmentDurationAttribute)!);
@@ -99,15 +99,15 @@ class XlrcParser {
       final VocalistID vocalistID = vocalistColorMap.getVocalistIDByName(vocalistName);
       final Timing timing = Timing(startTimestamp: SeekPosition(startTimestamp), sentenceSegmentList: sentenceSegmentList);
 
-      lyricSnippetMap = lyricSnippetMap.addLyricSnippet(LyricSnippet(
+      sentenceMap = sentenceMap.addSentence(Sentence(
         vocalistID: vocalistID,
         timing: timing,
         annotationMap: AnnotationMap({}),
       ));
     }
 
-    return Tuple3<LyricSnippetMap, VocalistColorMap, SectionList>(
-      lyricSnippetMap,
+    return Tuple3<SentenceMap, VocalistColorMap, SectionList>(
+      sentenceMap,
       vocalistColorMap,
       sectionList,
     );

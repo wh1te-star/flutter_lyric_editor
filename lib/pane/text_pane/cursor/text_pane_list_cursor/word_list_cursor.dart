@@ -11,93 +11,93 @@ class WordListCursor extends TextPaneListCursor {
   late WordCursor wordCursor;
 
   WordListCursor({
-    required LyricSnippetMap lyricSnippetMap,
-    required LyricSnippetID lyricSnippetID,
+    required SentenceMap sentenceMap,
+    required SentenceID sentenceID,
     required SeekPosition seekPosition,
-    required SegmentRange segmentRange,
+    required PhrasePosition phrasePosition,
     required bool isExpandMode,
-  }) : super(lyricSnippetMap, lyricSnippetID, seekPosition) {
-    assert(isIDContained(), "The passed lyricSnippetID does not point to a lyric snippet in lyricSnippetMap.");
+  }) : super(sentenceMap, sentenceID, seekPosition) {
+    assert(isIDContained(), "The passed sentenceID does not point to a sentence in sentenceMap.");
 
     wordCursor = WordCursor(
-      lyricSnippet: lyricSnippetMap[lyricSnippetID]!,
+      sentence: sentenceMap[sentenceID]!,
       seekPosition: seekPosition,
-      segmentRange: segmentRange,
+      phrasePosition: phrasePosition,
       isExpandMode: isExpandMode,
     );
     textPaneCursor = wordCursor;
   }
 
   bool isIDContained() {
-    if (lyricSnippetMap.isEmpty) {
+    if (sentenceMap.isEmpty) {
       return true;
     }
-    LyricSnippet? lyricSnippet = lyricSnippetMap[lyricSnippetID];
-    if (lyricSnippet == null) {
+    Sentence? sentence = sentenceMap[sentenceID];
+    if (sentence == null) {
       return false;
     }
     return true;
   }
 
   WordListCursor._privateConstructor(
-    super.lyricSnippetMap,
-    super.lyricSnippetID,
+    super.sentenceMap,
+    super.sentenceID,
     super.seekPosition,
   );
   static final WordListCursor _empty = WordListCursor._privateConstructor(
-    LyricSnippetMap.empty,
-    LyricSnippetID.empty,
+    SentenceMap.empty,
+    SentenceID.empty,
     SeekPosition.empty,
   );
   static WordListCursor get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
-  WordListCursor defaultCursor(LyricSnippetID lyricSnippetID) {
+  WordListCursor defaultCursor(SentenceID sentenceID) {
     WordCursor defaultCursor = wordCursor.defaultCursor();
     return WordListCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      sentenceMap: sentenceMap,
+      sentenceID: sentenceID,
       seekPosition: seekPosition,
-      segmentRange: defaultCursor.segmentRange,
+      phrasePosition: defaultCursor.phrasePosition,
       isExpandMode: defaultCursor.isExpandMode,
     );
   }
 
   @override
   TextPaneListCursor moveUpCursor() {
-    int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
-      return id == lyricSnippetID;
+    int index = sentenceMap.keys.toList().indexWhere((SentenceID id) {
+      return id == sentenceID;
     });
     if (index <= 0) {
       return this;
     }
 
-    LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[index - 1];
-    return defaultCursor(nextLyricSnippetID);
+    SentenceID nextSentenceID = sentenceMap.keys.toList()[index - 1];
+    return defaultCursor(nextSentenceID);
   }
 
   @override
   TextPaneListCursor moveDownCursor() {
-    int index = lyricSnippetMap.keys.toList().indexWhere((LyricSnippetID id) {
-      return id == lyricSnippetID;
+    int index = sentenceMap.keys.toList().indexWhere((SentenceID id) {
+      return id == sentenceID;
     });
-    if (index + 1 >= lyricSnippetMap.length) {
+    if (index + 1 >= sentenceMap.length) {
       return this;
     }
 
-    LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[index + 1];
-    return defaultCursor(nextLyricSnippetID);
+    SentenceID nextLyricSentenceID = sentenceMap.keys.toList()[index + 1];
+    return defaultCursor(nextLyricSentenceID);
   }
 
   @override
   TextPaneListCursor moveLeftCursor() {
     WordCursor nextCursor = wordCursor.moveLeftCursor() as WordCursor;
     return WordListCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      sentenceMap: sentenceMap,
+      sentenceID: sentenceID,
       seekPosition: seekPosition,
-      segmentRange: nextCursor.segmentRange,
+      phrasePosition: nextCursor.phrasePosition,
       isExpandMode: nextCursor.isExpandMode,
     );
   }
@@ -106,62 +106,62 @@ class WordListCursor extends TextPaneListCursor {
   TextPaneListCursor moveRightCursor() {
     WordCursor nextCursor = wordCursor.moveRightCursor() as WordCursor;
     return WordListCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      sentenceMap: sentenceMap,
+      sentenceID: sentenceID,
       seekPosition: seekPosition,
-      segmentRange: nextCursor.segmentRange,
+      phrasePosition: nextCursor.phrasePosition,
       isExpandMode: nextCursor.isExpandMode,
     );
   }
 
   TextPaneListCursor exitWordMode() {
     return BaseListCursor.defaultCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      sentenceMap: sentenceMap,
+      sentenceID: sentenceID,
       seekPosition: seekPosition,
     );
   }
 
   TextPaneListCursor switchToExpandMode() {
     WordCursor nextCursor = wordCursor.switchToExpandMode() as WordCursor;
-    return copyWith(segmentRange: nextCursor.segmentRange, isExpandMode: nextCursor.isExpandMode);
+    return copyWith(phrasePosition: nextCursor.phrasePosition, isExpandMode: nextCursor.isExpandMode);
   }
 
   @override
   TextPaneListCursor updateCursor(
-    LyricSnippetMap lyricSnippetMap,
-    LyricSnippetID lyricSnippetID,
+    SentenceMap sentenceMap,
+    SentenceID sentenceID,
     SeekPosition seekPosition,
   ) {
     return WordListCursor(
-      lyricSnippetMap: lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID,
+      sentenceMap: sentenceMap,
+      sentenceID: sentenceID,
       seekPosition: seekPosition,
-      segmentRange: wordCursor.segmentRange,
+      phrasePosition: wordCursor.phrasePosition,
       isExpandMode: wordCursor.isExpandMode,
     );
   }
 
   @override
   WordListCursor copyWith({
-    LyricSnippetMap? lyricSnippetMap,
-    LyricSnippetID? lyricSnippetID,
+    SentenceMap? sentenceMap,
+    SentenceID? sentenceID,
     SeekPosition? seekPosition,
-    SegmentRange? segmentRange,
+    PhrasePosition? phrasePosition,
     bool? isExpandMode,
   }) {
     return WordListCursor(
-      lyricSnippetMap: lyricSnippetMap ?? this.lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID ?? this.lyricSnippetID,
+      sentenceMap: sentenceMap ?? this.sentenceMap,
+      sentenceID: sentenceID ?? this.sentenceID,
       seekPosition: seekPosition ?? this.seekPosition,
-      segmentRange: segmentRange ?? wordCursor.segmentRange,
+      phrasePosition: phrasePosition ?? wordCursor.phrasePosition,
       isExpandMode: isExpandMode ?? wordCursor.isExpandMode,
     );
   }
 
   @override
   String toString() {
-    return 'WordCursor(ID: ${lyricSnippetID.id}, segmentIndex: $wordCursor)';
+    return 'WordCursor(ID: ${sentenceID.id}, segmentIndex: $wordCursor)';
   }
 
   @override
@@ -169,13 +169,13 @@ class WordListCursor extends TextPaneListCursor {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
     final WordListCursor otherSentenceSegments = other as WordListCursor;
-    if (lyricSnippetMap != otherSentenceSegments.lyricSnippetMap) return false;
-    if (lyricSnippetID != otherSentenceSegments.lyricSnippetID) return false;
+    if (sentenceMap != otherSentenceSegments.sentenceMap) return false;
+    if (sentenceID != otherSentenceSegments.sentenceID) return false;
     if (seekPosition != otherSentenceSegments.seekPosition) return false;
     if (wordCursor != otherSentenceSegments.wordCursor) return false;
     return true;
   }
 
   @override
-  int get hashCode => lyricSnippetMap.hashCode ^ lyricSnippetID.hashCode ^ seekPosition.hashCode ^ wordCursor.hashCode;
+  int get hashCode => sentenceMap.hashCode ^ sentenceID.hashCode ^ seekPosition.hashCode ^ wordCursor.hashCode;
 }

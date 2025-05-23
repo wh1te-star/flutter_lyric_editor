@@ -7,7 +7,7 @@ import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/lyric_data/vocalist/vocalist_color_map.dart';
 
 enum LyricUndoType {
-  lyricSnippet,
+  sentence,
   vocalistsColor,
   section,
 }
@@ -24,10 +24,10 @@ class LyricUndoHistory {
   void pushUndoHistory(LyricUndoType type, dynamic value) {
     final dynamic copiedValue;
     switch (type) {
-      case LyricUndoType.lyricSnippet:
-        assert(value is LyricSnippetMap);
-        LyricSnippetMap lyricSnippetMap = value;
-        copiedValue = Map<LyricSnippetID, LyricSnippet>.from(lyricSnippetMap.map)..updateAll((key, snippet) => snippet.copyWith());
+      case LyricUndoType.sentence:
+        assert(value is SentenceMap);
+        SentenceMap sentenceMap = value;
+        copiedValue = Map<SentenceID, Sentence>.from(sentenceMap.map)..updateAll((key, sentence) => sentence.copyWith());
         break;
       case LyricUndoType.vocalistsColor:
         assert(value is VocalistColorMap);
@@ -54,6 +54,6 @@ class LyricUndoHistory {
   }
 
   void typeValueAssert(LyricUndoType type, dynamic value) {
-    assert((type == LyricUndoType.lyricSnippet && value is Map<LyricSnippetID, LyricSnippet>) || (type == LyricUndoType.vocalistsColor && value is Map<VocalistID, Vocalist>) || (type == LyricUndoType.section && value is List<int>), 'Value type does not match the expected type for the given UndoType');
+    assert((type == LyricUndoType.sentence && value is Map<SentenceID, Sentence>) || (type == LyricUndoType.vocalistsColor && value is Map<VocalistID, Vocalist>) || (type == LyricUndoType.section && value is List<int>), 'Value type does not match the expected type for the given UndoType');
   }
 }

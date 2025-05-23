@@ -120,7 +120,7 @@ void main() {
       expect(target.sentenceSegmentList, expected);
     });
 
-    test('Test to add a timing point to a snippet that have a char position with 2 timing point. No.1', () {
+    test('Test to add a timing point to a sentence that have a char position with 2 timing point. No.1', () {
       Timing target = dataSet2.copyWith();
       final InsertionPosition characterPosition = InsertionPosition(4);
       final SeekPosition seekPosition = SeekPosition(5450);
@@ -139,7 +139,7 @@ void main() {
       expect(target.sentenceSegmentList, expected);
     });
 
-    test('Test to add a timing point to a snippet that have a char position with 2 timing point. No.2', () {
+    test('Test to add a timing point to a sentence that have a char position with 2 timing point. No.2', () {
       Timing target = dataSet2.copyWith();
       final InsertionPosition characterPosition = InsertionPosition(18);
       final SeekPosition seekPosition = SeekPosition(7200);

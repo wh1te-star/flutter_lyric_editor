@@ -12,11 +12,11 @@ class ShowHideModeScreen extends StatelessWidget {
   Duration startBulge = const Duration(milliseconds: 1000);
   Duration endBulge = const Duration(milliseconds: 1000);
 
-  LyricSnippetMap lyricSnippetMap;
+  SentenceMap sentenceMap;
   VocalistColorMap vocalistColorMap;
   SeekPosition seekPosition;
   ShowHideModeScreen({
-    required this.lyricSnippetMap,
+    required this.sentenceMap,
     required this.vocalistColorMap,
     required this.seekPosition,
   });
@@ -24,11 +24,11 @@ class ShowHideModeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ShowHideTrackMap showHideTrackMap = ShowHideTrackMap(
-      lyricSnippetMap: lyricSnippetMap,
+      sentenceMap: sentenceMap,
       startBulge: startBulge,
       endBulge: endBulge,
     );
-    LyricSnippetMap currentSnippets = lyricSnippetMap.getSnippetsAtSeekPosition(
+    SentenceMap currentSentences = sentenceMap.getSentencesAtSeekPosition(
       seekPosition: seekPosition,
       startBulge: startBulge,
       endBulge: endBulge,
@@ -40,16 +40,16 @@ class ShowHideModeScreen extends StatelessWidget {
     List<Widget> content = List<Widget>.generate(maxLanes, (index) => Container());
 
     for (int index = 0; index < maxLanes; index++) {
-      final LyricSnippetID targetSnippetID = currentSnippets.keys.toList().firstWhere(
-            (LyricSnippetID id) => showHideTrackMap[id].track == index,
-            orElse: () => LyricSnippetID.empty,
+      final SentenceID targetSentenceID = currentSentences.keys.toList().firstWhere(
+            (SentenceID id) => showHideTrackMap[id].track == index,
+            orElse: () => SentenceID.empty,
           );
-      if (targetSnippetID != LyricSnippetID.empty) {
-        LyricSnippet targetSnippet = lyricSnippetMap[targetSnippetID]!;
-        final Color color = Color(vocalistColorMap[targetSnippet.vocalistID]!.color);
+      if (targetSentenceID != SentenceID.empty) {
+        Sentence targetSentence = sentenceMap[targetSentenceID]!;
+        final Color color = Color(vocalistColorMap[targetSentence.vocalistID]!.color);
         content[index] = Expanded(
           child: Center(
-            child: ColoredCaption(targetSnippet, seekPosition, color),
+            child: ColoredCaption(targetSentence, seekPosition, color),
           ),
         );
       } else {

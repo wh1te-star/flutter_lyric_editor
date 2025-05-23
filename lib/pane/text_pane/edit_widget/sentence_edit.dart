@@ -14,30 +14,30 @@ import 'package:lyric_editor/position/phrase_position.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:tuple/tuple.dart';
 
-class LyricSnippetEdit extends StatelessWidget {
-  final LyricSnippet lyricSnippet;
+class SentenceEdit extends StatelessWidget {
+  final Sentence sentence;
   final SeekPosition seekPosition;
   final TextPaneCursor? textPaneCursor;
   final CursorBlinker cursorBlinker;
-  LyricSnippetEdit(this.lyricSnippet, this.seekPosition, this.textPaneCursor, this.cursorBlinker);
+  SentenceEdit(this.sentence, this.seekPosition, this.textPaneCursor, this.cursorBlinker);
 
   @override
   Widget build(BuildContext context) {
     List<Widget> annotationExistenceEdits = [];
-    List<Tuple2<SegmentRange, Annotation?>> rangeAnnotationEntry = lyricSnippet.getAnnotationExistenceRangeList();
-    List<SegmentRange> rangeList = rangeAnnotationEntry.map((Tuple2<SegmentRange, Annotation?> entry) {
+    List<Tuple2<PhrasePosition, Annotation?>> rubyPhrasePositionList = sentence.getRubysPhrasePositionList();
+    List<PhrasePosition> phrasePositionList = rubyPhrasePositionList.map((Tuple2<PhrasePosition, Annotation?> entry) {
       return entry.item1;
     }).toList();
-    List<TextPaneCursor?> cursorList = List.filled(rangeList.length, null);
+    List<TextPaneCursor?> cursorList = List.filled(phrasePositionList.length, null);
     if (textPaneCursor != null) {
-      cursorList = textPaneCursor!.getRangeDividedCursors(lyricSnippet, rangeList);
+      cursorList = textPaneCursor!.getPhrasePositionDividedCursors(sentence, phrasePositionList);
     }
 
-    for (int index = 0; index < rangeAnnotationEntry.length; index++) {
-      SegmentRange segmentRange = rangeAnnotationEntry[index].item1;
-      Annotation? annotation = rangeAnnotationEntry[index].item2;
+    for (int index = 0; index < rubyPhrasePositionList.length; index++) {
+      PhrasePosition phrasePosition = rubyPhrasePositionList[index].item1;
+      Annotation? annotation = rubyPhrasePositionList[index].item2;
 
-      SentenceSegmentList? sentenceSubList = lyricSnippet.getSentenceSegmentList(segmentRange);
+      SentenceSegmentList? sentenceSubList = sentence.getSentenceSegmentList(phrasePosition);
       SentenceSegmentList? annotationSubList = annotation?.timing.sentenceSegmentList;
 
       TextPaneCursor? cursor = cursorList[index];

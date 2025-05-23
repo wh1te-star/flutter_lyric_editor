@@ -83,12 +83,12 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
 
   String defaultText = "Video Pane";
 
-  int getMaxRequiredLanes(Map<LyricSnippetID, int> lyricSnippetList) {
-    return lyricSnippetList.values.toList().reduce(max);
+  int getMaxRequiredLanes(Map<SentenceID, int> sentenceList) {
+    return sentenceList.values.toList().reduce(max);
   }
 
-  double getMiddlePoint(LyricSnippet snippet) {
-    return (snippet.startTimestamp.position + snippet.endTimestamp.position) / 2;
+  double getMiddlePoint(Sentence sentence) {
+    return (sentence.startTimestamp.position + sentence.endTimestamp.position) / 2;
   }
 
   double getScrollOffsetFromSeekPosition(int seekPosition) {
@@ -97,9 +97,9 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     double justBeforePosition = 0;
     double justAfterPosition = double.maxFinite;
 
-    final Map<LyricSnippetID, LyricSnippet> lyricSnippetList = ref.read(timingMasterProvider).lyricSnippetMap.map;
-    for (int index = 0; index < lyricSnippetList.length; index++) {
-      double currentTime = getMiddlePoint(lyricSnippetList.values.toList()[index]);
+    final Map<SentenceID, Sentence> sentenceList = ref.read(timingMasterProvider).sentenceMap.map;
+    for (int index = 0; index < sentenceList.length; index++) {
+      double currentTime = getMiddlePoint(sentenceList.values.toList()[index]);
       if (currentTime < seekPosition) {
         if (justBeforePosition < currentTime) {
           justBeforePosition = currentTime;
@@ -113,49 +113,49 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       }
     }
 
-    double snippetOffset = (justAfterIndex - justBeforeIndex) * 60;
-    double midSnippetOffset = snippetOffset * (seekPosition - justBeforePosition) / (justAfterPosition - justBeforePosition);
-    double scrollOffset = 60.0 * (justBeforeIndex + 1) + midSnippetOffset;
+    double sentenceOffset = (justAfterIndex - justBeforeIndex) * 60;
+    double midSentenceOffset = sentenceOffset * (seekPosition - justBeforePosition) / (justAfterPosition - justBeforePosition);
+    double scrollOffset = 60.0 * (justBeforeIndex + 1) + midSentenceOffset;
 
     return scrollOffset;
   }
 
   double getSeekPositionFromScrollOffset(double scrollOffset) {
     final TimingService timingService = ref.read(timingMasterProvider);
-    final List<LyricSnippet> lyricSnippetList = timingService.lyricSnippetMap.values.toList();
+    final List<Sentence> sentenceList = timingService.sentenceMap.values.toList();
 
     if (scrollOffset < 30) {
-      return lyricSnippetList[0].startTimestamp.position.toDouble();
+      return sentenceList[0].startTimestamp.position.toDouble();
     }
-    int snippetIndex = (scrollOffset - 30) ~/ 60;
-    debugPrint("scroll offset: $scrollOffset, snippetIndex: $snippetIndex");
+    int sentenceIndex = (scrollOffset - 30) ~/ 60;
+    debugPrint("scroll offset: $scrollOffset, sentenceIndex: $sentenceIndex");
     late double startPosition;
     late double endPosition;
     if ((scrollOffset - 30) % 60 < 30) {
-      if (snippetIndex == 0) {
-        startPosition = 2 * getMiddlePoint(lyricSnippetList[snippetIndex]) - getMiddlePoint(lyricSnippetList[snippetIndex + 1]);
+      if (sentenceIndex == 0) {
+        startPosition = 2 * getMiddlePoint(sentenceList[sentenceIndex]) - getMiddlePoint(sentenceList[sentenceIndex + 1]);
       } else {
-        startPosition = getMiddlePoint(lyricSnippetList[snippetIndex - 1]);
+        startPosition = getMiddlePoint(sentenceList[sentenceIndex - 1]);
       }
-      endPosition = getMiddlePoint(lyricSnippetList[snippetIndex]);
+      endPosition = getMiddlePoint(sentenceList[sentenceIndex]);
     } else {
-      startPosition = getMiddlePoint(lyricSnippetList[snippetIndex]);
-      endPosition = getMiddlePoint(lyricSnippetList[snippetIndex + 1]);
+      startPosition = getMiddlePoint(sentenceList[sentenceIndex]);
+      endPosition = getMiddlePoint(sentenceList[sentenceIndex + 1]);
     }
     double scrollExtra = (scrollOffset % 60) / 60;
     double seekPosition = startPosition + (endPosition - startPosition) * scrollExtra;
     return seekPosition;
   }
 
-  double getAnnotationSizePosition(LyricSnippet snippet, SentenceSegmentIndex segmentIndex) {
-    int startIndex = snippet.annotationMap.map.keys.toList()[segmentIndex.index].startIndex.index;
+  double getAnnotationSizePosition(Sentence sentence, SentenceSegmentIndex segmentIndex) {
+    int startIndex = sentence.annotationMap.map.keys.toList()[segmentIndex.index].startIndex.index;
     double sumPosition = 0;
     int index = 0;
     for (index = 0; index < startIndex; index++) {
-      sumPosition += getSizeFromTextStyle(snippet.sentenceSegments[index].word, const TextStyle(fontSize: 40)).width;
+      sumPosition += getSizeFromTextStyle(sentence.sentenceSegments[index].word, const TextStyle(fontSize: 40)).width;
     }
-    sumPosition += getSizeFromTextStyle(snippet.sentenceSegments[index].word, const TextStyle(fontSize: 40)).width / 2;
-    return sumPosition - getSizeFromTextStyle(snippet.sentence, const TextStyle(fontSize: 40)).width / 2;
+    sumPosition += getSizeFromTextStyle(sentence.sentenceSegments[index].word, const TextStyle(fontSize: 40)).width / 2;
+    return sumPosition - getSizeFromTextStyle(sentence.sentence, const TextStyle(fontSize: 40)).width / 2;
   }
 
   @override
@@ -172,7 +172,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
           debugPrint("The video pane is focused");
         },
         child: ShowHideModeScreen(
-          lyricSnippetMap: timingService.lyricSnippetMap,
+          sentenceMap: timingService.sentenceMap,
           vocalistColorMap: timingService.vocalistColorMap,
           seekPosition: musicPlayerService.seekPosition,
         ),
@@ -181,19 +181,19 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     /*
     } else {
       double height = 60;
-      List<Widget> columnSnippets = [];
-      columnSnippets.add(Container(color: const Color.fromARGB(255, 164, 240, 156), height: 200));
-      columnSnippets.add(Container(color: Colors.blueAccent, height: height));
-      for (var snippet in lyricSnippetList.values.toList()) {
+      List<Widget> columnSentences = [];
+      columnSentences.add(Container(color: const Color.fromARGB(255, 164, 240, 156), height: 200));
+      columnSentences.add(Container(color: Colors.blueAccent, height: height));
+      for (var sentence in lyricSentenceList.values.toList()) {
         Color fontColor = const Color(0x00000000);
-        if (vocalistColorList.containsKey(snippet.vocalistID)) {
-          fontColor = Color(vocalistColorList[snippet.vocalistID]!.color);
+        if (vocalistColorList.containsKey(sentence.vocalistID)) {
+          fontColor = Color(vocalistColorList[sentence.vocalistID]!.color);
         }
-        columnSnippets.add(
-          getColorHilightedText(snippet, seekPosition, fontSize, fontFamily, fontColor),
+        columnSentences.add(
+          getColorHilightedText(sentence, seekPosition, fontSize, fontFamily, fontColor),
         );
       }
-      columnSnippets.add(Container(color: const Color.fromARGB(255, 164, 240, 156), height: 1000));
+      columnSentences.add(Container(color: const Color.fromARGB(255, 164, 240, 156), height: 1000));
       return Focus(
         focusNode: focusNode,
         child: GestureDetector(
@@ -208,7 +208,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
             child: SingleChildScrollView(
               controller: scrollController,
               child: Column(
-                children: columnSnippets,
+                children: columnSentences,
               ),
             ),
           ),

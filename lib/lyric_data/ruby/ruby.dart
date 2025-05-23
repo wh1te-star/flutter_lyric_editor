@@ -32,7 +32,7 @@ class Annotation {
   List<TimingPoint> get timingPoints => timing.timingPointList.list;
   SentenceSegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timing.getSegmentIndexFromSeekPosition(seekPosition);
   InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timing.getInsertionPositionInfo(insertionPosition);
-  SentenceSegmentList getSentenceSegmentList(SegmentRange segmentRange) => timing.getSentenceSegmentList(segmentRange);
+  SentenceSegmentList getSentenceSegmentList(PhrasePosition phrasePosition) => timing.getSentenceSegmentList(phrasePosition);
 
   Annotation copyWith({
     Timing? timing,

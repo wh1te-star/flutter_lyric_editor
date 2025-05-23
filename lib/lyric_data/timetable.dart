@@ -188,11 +188,11 @@ class Timing {
     return sentenceSegmentList.list[index].word;
   }
 
-  SentenceSegmentList getSentenceSegmentList(SegmentRange segmentRange) {
+  SentenceSegmentList getSentenceSegmentList(PhrasePosition phrasePosition) {
     return SentenceSegmentList(
       sentenceSegments.sublist(
-        segmentRange.startIndex.index,
-        segmentRange.endIndex.index + 1,
+        phrasePosition.startIndex.index,
+        phrasePosition.endIndex.index + 1,
       ),
     );
   }
@@ -265,9 +265,9 @@ class Timing {
     return SentenceSegmentInsertionPositionInfo.empty;
   }
 
-  Timing manipulateTiming(SeekPosition seekPosition, SnippetEdge snippetEdge, bool holdLength) {
+  Timing manipulateTiming(SeekPosition seekPosition, SentenceEdge sentenceEdge, bool holdLength) {
     if (holdLength) {
-      if (snippetEdge == SnippetEdge.start) {
+      if (sentenceEdge == SentenceEdge.start) {
         Duration shiftDuration = Duration(milliseconds: startTimestamp.position - seekPosition.position);
         return shiftTimingBy(shiftDuration);
       } else {
@@ -276,23 +276,23 @@ class Timing {
       }
     }
 
-    if (snippetEdge == SnippetEdge.start) {
+    if (sentenceEdge == SentenceEdge.start) {
       if (seekPosition < startTimestamp) {
         Duration extendDuration = Duration(milliseconds: startTimestamp.position - seekPosition.position);
-        return extendTimingBy(SnippetEdge.start, extendDuration);
+        return extendTimingBy(SentenceEdge.start, extendDuration);
       }
       if (startTimestamp < seekPosition) {
         Duration shortenDuration = Duration(milliseconds: seekPosition.position - startTimestamp.position);
-        return shortenTimingBy(SnippetEdge.start, shortenDuration);
+        return shortenTimingBy(SentenceEdge.start, shortenDuration);
       }
     } else {
       if (seekPosition < endTimestamp) {
         Duration shortenDuration = Duration(milliseconds: endTimestamp.position - seekPosition.position);
-        return shortenTimingBy(SnippetEdge.start, shortenDuration);
+        return shortenTimingBy(SentenceEdge.start, shortenDuration);
       }
       if (endTimestamp < seekPosition) {
         Duration extendDuration = Duration(milliseconds: seekPosition.position - endTimestamp.position);
-        return extendTimingBy(SnippetEdge.start, extendDuration);
+        return extendTimingBy(SentenceEdge.start, extendDuration);
       }
     }
     return this;
@@ -305,12 +305,12 @@ class Timing {
     );
   }
 
-  Timing extendTimingBy(SnippetEdge snippetEdge, Duration extendDuration) {
+  Timing extendTimingBy(SentenceEdge sentenceEdge, Duration extendDuration) {
     assert(extendDuration >= Duration.zero, "Should be shorten function.");
 
     SeekPosition startTimestamp = this.startTimestamp;
     SentenceSegmentList sentenceSegmentList = this.sentenceSegmentList;
-    if (snippetEdge == SnippetEdge.start) {
+    if (sentenceEdge == SentenceEdge.start) {
       startTimestamp -= extendDuration;
       sentenceSegmentList.list.first.duration += extendDuration;
     } else {
@@ -320,13 +320,13 @@ class Timing {
     return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
   }
 
-  Timing shortenTimingBy(SnippetEdge snippetEdge, Duration shortenDuration) {
+  Timing shortenTimingBy(SentenceEdge sentenceEdge, Duration shortenDuration) {
     assert(shortenDuration >= Duration.zero, "Should be extend function.");
 
     SeekPosition startTimestamp = this.startTimestamp;
     SentenceSegmentList sentenceSegmentList = this.sentenceSegmentList;
     List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
-    if (snippetEdge == SnippetEdge.start) {
+    if (sentenceEdge == SentenceEdge.start) {
       int index = 0;
       Duration rest = shortenDuration;
       while (index < sentenceSegments.length && rest - sentenceSegments[index].duration > Duration.zero) {
@@ -350,20 +350,20 @@ class Timing {
     return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
   }
 
-  Timing addTimingPoint(InsertionPosition charPosition, SeekPosition seekPosition) {
-    if (charPosition.position <= 0 || sentence.length <= charPosition.position) {
-      throw TimingPointException("The char position is out of the valid range.");
+  Timing addTimingPoint(InsertionPosition insertionPosition, SeekPosition seekPosition) {
+    if (insertionPosition.position <= 0 || sentence.length <= insertionPosition.position) {
+      throw TimingPointException("The insertion position is out of the valid range.");
     }
     seekPosition = SeekPosition(seekPosition.position - startTimestamp.position);
 
     int segmentIndex = -1;
     int timingPointIndex = -1;
     for (int index = 0; index < sentenceSegments.length; index++) {
-      if (timingPoints[index].insertionPosition == charPosition) {
+      if (timingPoints[index].insertionPosition == insertionPosition) {
         timingPointIndex = index;
         break;
       }
-      if (timingPoints[index].insertionPosition < charPosition && charPosition < timingPoints[index + 1].insertionPosition) {
+      if (timingPoints[index].insertionPosition < insertionPosition && insertionPosition < timingPoints[index + 1].insertionPosition) {
         segmentIndex = index;
         break;
       }
@@ -379,14 +379,14 @@ class Timing {
 
       timingPoints.insert(
         segmentIndex + 1,
-        TimingPoint(charPosition, seekPosition),
+        TimingPoint(insertionPosition, seekPosition),
       );
       SentenceSegmentList sentenceSegmentList = syncSentenceSegments(TimingPointList(timingPoints));
       return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
     }
 
     int count = timingPoints.where((TimingPoint timingPoint) {
-      return timingPoint.insertionPosition == charPosition;
+      return timingPoint.insertionPosition == insertionPosition;
     }).length;
     if (count >= 2) {
       throw TimingPointException("A timing point cannot be inserted three times or more at the same char position.");
@@ -407,12 +407,12 @@ class Timing {
     if (seekPosition < centerTimingPoint.seekPosition) {
       timingPoints.insert(
         timingPointIndex,
-        TimingPoint(charPosition, seekPosition),
+        TimingPoint(insertionPosition, seekPosition),
       );
     } else {
       timingPoints.insert(
         timingPointIndex + 1,
-        TimingPoint(charPosition, seekPosition),
+        TimingPoint(insertionPosition, seekPosition),
       );
     }
 

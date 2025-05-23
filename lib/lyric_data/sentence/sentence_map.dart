@@ -13,53 +13,53 @@ import 'package:lyric_editor/lyric_data/timetable.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:tuple/tuple.dart';
 
-class LyricSnippetMap {
-  final Map<LyricSnippetID, LyricSnippet> _lyricSnippetMap;
-  static final LyricSnippetIdGenerator idGenerator = LyricSnippetIdGenerator();
+class SentenceMap {
+  final Map<SentenceID, Sentence> _sentenceMap;
+  static final SentenceIdGenerator idGenerator = SentenceIdGenerator();
 
-  LyricSnippetMap(this._lyricSnippetMap) {
-    assert(isLyricSnippetsOrdered());
+  SentenceMap(this._sentenceMap) {
+    assert(isSentencesOrdered());
   }
 
-  Map<LyricSnippetID, LyricSnippet> get map => _lyricSnippetMap;
+  Map<SentenceID, Sentence> get map => _sentenceMap;
 
-  bool isLyricSnippetsOrdered() {
-    return map.values.map((LyricSnippet lyricSnippet) {
-      return lyricSnippet.timing.startTimestamp;
+  bool isSentencesOrdered() {
+    return map.values.map((Sentence sentence) {
+      return sentence.timing.startTimestamp;
     }).isSorted((SeekPosition left, SeekPosition right) => left.compareTo(right));
   }
 
-  static LyricSnippetMap get empty => LyricSnippetMap({});
+  static SentenceMap get empty => SentenceMap({});
   bool get isEmpty => map.isEmpty;
 
-  Iterable<MapEntry<LyricSnippetID, LyricSnippet>> get entries => map.entries;
-  Iterable<LyricSnippetID> get keys => map.keys;
-  Iterable<LyricSnippet> get values => map.values;
+  Iterable<MapEntry<SentenceID, Sentence>> get entries => map.entries;
+  Iterable<SentenceID> get keys => map.keys;
+  Iterable<Sentence> get values => map.values;
   int get length => map.length;
   void clear() => map.clear();
-  bool containsKey(LyricSnippetID key) => map.containsKey(key);
-  LyricSnippet? operator [](LyricSnippetID key) => map[key];
-  void operator []=(LyricSnippetID key, LyricSnippet value) {
+  bool containsKey(SentenceID key) => map.containsKey(key);
+  Sentence? operator [](SentenceID key) => map[key];
+  void operator []=(SentenceID key, Sentence value) {
     map[key] = value;
   }
 
-  LyricSnippet getLyricSnippetByID(LyricSnippetID id) {
+  Sentence getSentenceByID(SentenceID id) {
     if (!map.containsKey(id)) {
-      return LyricSnippet.empty;
+      return Sentence.empty;
     }
     return map[id]!;
   }
 
-  LyricSnippetMap getLyricSnippetByVocalistID(VocalistID vocalistID) {
-    final Iterable<MapEntry<LyricSnippetID, LyricSnippet>> filteredEntries = map.entries.where((MapEntry<LyricSnippetID, LyricSnippet> entry) => entry.value.vocalistID == vocalistID);
-    return LyricSnippetMap(Map.fromEntries(filteredEntries));
+  SentenceMap getSentenceByVocalistID(VocalistID vocalistID) {
+    final Iterable<MapEntry<SentenceID, Sentence>> filteredEntries = map.entries.where((MapEntry<SentenceID, Sentence> entry) => entry.value.vocalistID == vocalistID);
+    return SentenceMap(Map.fromEntries(filteredEntries));
   }
 
-  LyricSnippetMap sortLyricSnippetList(LyricSnippetMap lyricSnippetMap) {
-    return LyricSnippetMap(Map.fromEntries(
-      lyricSnippetMap.map.entries.toList()
+  SentenceMap sortSentenceList(SentenceMap sentenceMap) {
+    return SentenceMap(Map.fromEntries(
+      sentenceMap.map.entries.toList()
         ..sort(
-          (MapEntry<LyricSnippetID, LyricSnippet> left, MapEntry<LyricSnippetID, LyricSnippet> right) {
+          (MapEntry<SentenceID, Sentence> left, MapEntry<SentenceID, Sentence> right) {
             SeekPosition leftStartTimestamp = left.value.startTimestamp;
             SeekPosition rightStartTimestamp = right.value.startTimestamp;
             int compareStartTime = leftStartTimestamp.compareTo(rightStartTimestamp);
@@ -76,150 +76,150 @@ class LyricSnippetMap {
     ));
   }
 
-  LyricSnippetMap addLyricSnippet(LyricSnippet lyricSnippet) {
-    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
-    copiedMap[idGenerator.idGen()] = lyricSnippet;
-    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+  SentenceMap addSentence(Sentence sentence) {
+    final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
+    copiedMap[idGenerator.idGen()] = sentence;
+    return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  LyricSnippetMap removeLyricSnippetByID(LyricSnippetID id) {
-    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
+  SentenceMap removeSentenceByID(SentenceID id) {
+    final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
     copiedMap.remove(id);
-    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+    return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  LyricSnippetMap editSentence(LyricSnippetID id, String newSentence) {
-    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
-    LyricSnippet lyricSnippet = copiedMap[id]!;
-    lyricSnippet = lyricSnippet.editSentence(newSentence);
-    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+  SentenceMap editSentence(SentenceID id, String newSentence) {
+    final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
+    Sentence sentence = copiedMap[id]!;
+    sentence = sentence.editSentence(newSentence);
+    return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  LyricSnippetMap addAnnotation(LyricSnippetID id, SegmentRange segmentRange, String annotationString) {
-    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
-    LyricSnippet lyricSnippet = copiedMap[id]!;
-    lyricSnippet = lyricSnippet.addAnnotation(segmentRange, annotationString);
-    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+  SentenceMap addAnnotation(SentenceID id, PhrasePosition phrasePosition, String annotationString) {
+    final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
+    Sentence sentence = copiedMap[id]!;
+    sentence = sentence.addAnnotation(phrasePosition, annotationString);
+    return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  LyricSnippetMap removeAnnotation(LyricSnippetID id, SegmentRange segmentRange) {
-    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
-    LyricSnippet lyricSnippet = copiedMap[id]!;
-    lyricSnippet = lyricSnippet.removeAnnotation(segmentRange);
-    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+  SentenceMap removeAnnotation(SentenceID id, PhrasePosition phrasePosition) {
+    final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
+    Sentence sentence = copiedMap[id]!;
+    sentence = sentence.removeAnnotation(phrasePosition);
+    return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  LyricSnippetMap addTimingPoint(LyricSnippetID id, InsertionPosition charPosition, SeekPosition seekPosition) {
+  SentenceMap addTimingPoint(SentenceID id, InsertionPosition charPosition, SeekPosition seekPosition) {
     map[id] = map[id]!.addTimingPoint(charPosition, seekPosition);
-    return LyricSnippetMap(map);
+    return SentenceMap(map);
   }
 
-  LyricSnippetMap removeTimingPoint(LyricSnippetID id, InsertionPosition charPosition, Option option) {
-    LyricSnippet lyricSnippet = map[id]!;
-    lyricSnippet = lyricSnippet.removeTimingPoint(charPosition, option);
-    return LyricSnippetMap(map);
+  SentenceMap removeTimingPoint(SentenceID id, InsertionPosition charPosition, Option option) {
+    Sentence sentence = map[id]!;
+    sentence = sentence.removeTimingPoint(charPosition, option);
+    return SentenceMap(map);
   }
 
-  LyricSnippetMap addAnnotationTimingPoint(LyricSnippetID id, SegmentRange segmentRange, InsertionPosition charPosition, SeekPosition seekPosition) {
-    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
-    LyricSnippet lyricSnippet = copiedMap[id]!;
-    lyricSnippet = lyricSnippet.addAnnotationTimingPoint(segmentRange, charPosition, seekPosition);
-    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+  SentenceMap addAnnotationTimingPoint(SentenceID id, PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
+    final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
+    Sentence sentence = copiedMap[id]!;
+    sentence = sentence.addAnnotationTimingPoint(phrasePosition, charPosition, seekPosition);
+    return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  LyricSnippetMap removeAnnotationTimingPoint(LyricSnippetID id, SegmentRange segmentRange, InsertionPosition charPosition, Option option) {
-    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
-    LyricSnippet lyricSnippet = copiedMap[id]!;
-    lyricSnippet = lyricSnippet.removeAnnotationTimingPoint(segmentRange, charPosition, option);
-    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+  SentenceMap removeAnnotationTimingPoint(SentenceID id, PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
+    final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
+    Sentence sentence = copiedMap[id]!;
+    sentence = sentence.removeAnnotationTimingPoint(phrasePosition, charPosition, option);
+    return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  LyricSnippetMap manipulateSnippet(LyricSnippetID id, SeekPosition seekPosition, SnippetEdge snippetEdge, bool holdLength) {
-    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
-    LyricSnippet lyricSnippet = copiedMap[id]!;
-    lyricSnippet = lyricSnippet.manipulateSnippet(seekPosition, snippetEdge, holdLength);
-    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+  SentenceMap manipulateSentence(SentenceID id, SeekPosition seekPosition, SentenceEdge sentenceEdge, bool holdLength) {
+    final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
+    Sentence sentence = copiedMap[id]!;
+    sentence = sentence.manipulateSentence(seekPosition, sentenceEdge, holdLength);
+    return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  LyricSnippetMap divideSnippet(LyricSnippetID id, InsertionPosition charPosition, SeekPosition seekPosition) {
-    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
-    LyricSnippet lyricSnippet = copiedMap[id]!;
-    Tuple2<LyricSnippet, LyricSnippet> dividedLyricSnippets = lyricSnippet.dividSnippet(charPosition, seekPosition);
+  SentenceMap divideSentence(SentenceID id, InsertionPosition charPosition, SeekPosition seekPosition) {
+    final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
+    Sentence sentence = copiedMap[id]!;
+    Tuple2<Sentence, Sentence> dividedSentences = sentence.divideSentence(charPosition, seekPosition);
     copiedMap.remove(id);
-    for (var snippet in [dividedLyricSnippets.item1, dividedLyricSnippets.item2]) {
-      if (!snippet.isEmpty) {
-        copiedMap[idGenerator.idGen()] = snippet;
+    for (var sentence in [dividedSentences.item1, dividedSentences.item2]) {
+      if (!sentence.isEmpty) {
+        copiedMap[idGenerator.idGen()] = sentence;
       }
     }
-    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+    return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  LyricSnippetMap concatenateSnippets(LyricSnippetID firstLyricSnippetID, LyricSnippetID secondLyricSnippetID) {
-    final Map<LyricSnippetID, LyricSnippet> copiedMap = Map<LyricSnippetID, LyricSnippet>.from(map);
+  SentenceMap concatenateSentences(SentenceID firstSentenceID, SentenceID secondSentenceID) {
+    final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
 
-    LyricSnippetID formerSnippetID = firstLyricSnippetID;
-    LyricSnippetID latterSnippetID = secondLyricSnippetID;
-    LyricSnippet formerSnippet = map[formerSnippetID]!;
-    LyricSnippet latterSnippet = map[latterSnippetID]!;
+    SentenceID formerSentenceID = firstSentenceID;
+    SentenceID latterSentenceID = secondSentenceID;
+    Sentence formerSentence = map[formerSentenceID]!;
+    Sentence latterSentence = map[latterSentenceID]!;
 
-    if (formerSnippet.vocalistID != latterSnippet.vocalistID) {
+    if (formerSentence.vocalistID != latterSentence.vocalistID) {
       throw Exception("The vocalist must be the same.");
     }
 
-    if (latterSnippet.startTimestamp < formerSnippet.startTimestamp) {
-      _swap(formerSnippet, latterSnippet);
+    if (latterSentence.startTimestamp < formerSentence.startTimestamp) {
+      _swap(formerSentence, latterSentence);
     }
 
-    SentenceSegmentList concatenatedSentenceSegmentList = formerSnippet.timing.sentenceSegmentList.copyWith();
-    Duration bondPointDuration = Duration(milliseconds: latterSnippet.startTimestamp.position - formerSnippet.endTimestamp.position);
-    int indexCarryUp = formerSnippet.timing.sentenceSegmentList.list.length;
+    SentenceSegmentList concatenatedSentenceSegmentList = formerSentence.timing.sentenceSegmentList.copyWith();
+    Duration bondPointDuration = Duration(milliseconds: latterSentence.startTimestamp.position - formerSentence.endTimestamp.position);
+    int indexCarryUp = formerSentence.timing.sentenceSegmentList.list.length;
     if (bondPointDuration > Duration.zero) {
       concatenatedSentenceSegmentList = concatenatedSentenceSegmentList.addSegment(SentenceSegment("", bondPointDuration));
       indexCarryUp++;
     }
-    concatenatedSentenceSegmentList += latterSnippet.timing.sentenceSegmentList;
+    concatenatedSentenceSegmentList += latterSentence.timing.sentenceSegmentList;
 
-    AnnotationMap concatenatedAnnotationMap = formerSnippet.annotationMap.concatenate(indexCarryUp, latterSnippet.annotationMap);
+    AnnotationMap concatenatedAnnotationMap = formerSentence.annotationMap.concatenate(indexCarryUp, latterSentence.annotationMap);
 
-    copiedMap.remove(formerSnippetID);
-    copiedMap.remove(latterSnippetID);
-    copiedMap[idGenerator.idGen()] = LyricSnippet(
-      vocalistID: formerSnippet.vocalistID,
+    copiedMap.remove(formerSentenceID);
+    copiedMap.remove(latterSentenceID);
+    copiedMap[idGenerator.idGen()] = Sentence(
+      vocalistID: formerSentence.vocalistID,
       timing: Timing(
-        startTimestamp: formerSnippet.startTimestamp,
+        startTimestamp: formerSentence.startTimestamp,
         sentenceSegmentList: concatenatedSentenceSegmentList,
       ),
       annotationMap: concatenatedAnnotationMap,
     );
 
-    return sortLyricSnippetList(LyricSnippetMap(copiedMap));
+    return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  void _swap(LyricSnippet snippet1, LyricSnippet snippet2) {
-    final LyricSnippet temp = snippet1;
-    snippet1 = snippet2;
-    snippet2 = temp;
+  void _swap(Sentence sentence1, Sentence sentence2) {
+    final Sentence temp = sentence1;
+    sentence1 = sentence2;
+    sentence2 = temp;
   }
 
-  LyricSnippetMap getSnippetsAtSeekPosition({
+  SentenceMap getSentencesAtSeekPosition({
     required SeekPosition seekPosition,
     Duration startBulge = Duration.zero,
     Duration endBulge = Duration.zero,
     VocalistID? vocalistID,
   }) {
-    final Iterable<MapEntry<LyricSnippetID, LyricSnippet>> filteredEntries = map.entries.where((MapEntry<LyricSnippetID, LyricSnippet> entry) {
+    final Iterable<MapEntry<SentenceID, Sentence>> filteredEntries = map.entries.where((MapEntry<SentenceID, Sentence> entry) {
       bool isWithinTimestamp = entry.value.startTimestamp.position - startBulge.inMilliseconds <= seekPosition.position && seekPosition.position <= entry.value.endTimestamp.position + endBulge.inMilliseconds;
       bool isMatchingVocalist = vocalistID == null || entry.value.vocalistID == vocalistID;
       return isWithinTimestamp && isMatchingVocalist;
     });
 
-    return LyricSnippetMap(Map.fromEntries(filteredEntries));
+    return SentenceMap(Map.fromEntries(filteredEntries));
   }
 
-  LyricSnippetMap copyWith({
-    Map<LyricSnippetID, LyricSnippet>? lyricSnippetMap,
+  SentenceMap copyWith({
+    Map<SentenceID, Sentence>? sentenceMap,
   }) {
-    return LyricSnippetMap({...(lyricSnippetMap ?? map)}.map((key, value) => MapEntry(key, value.copyWith())));
+    return SentenceMap({...(sentenceMap ?? map)}.map((key, value) => MapEntry(key, value.copyWith())));
   }
 
   @override
@@ -230,7 +230,7 @@ class LyricSnippetMap {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! LyricSnippetMap) return false;
+    if (other is! SentenceMap) return false;
     if (map.length != other.map.length) return false;
     return map.keys.every((key) {
       return map[key] == other.map[key];

@@ -16,18 +16,18 @@ import 'package:lyric_editor/position/timing_index.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:tuple/tuple.dart';
 
-class LyricSnippet {
+class Sentence {
   final VocalistID vocalistID;
   final Timing timing;
   final AnnotationMap annotationMap;
 
-  LyricSnippet({
+  Sentence({
     required this.vocalistID,
     required this.timing,
     required this.annotationMap,
   });
 
-  static LyricSnippet get empty => LyricSnippet(
+  static Sentence get empty => Sentence(
         vocalistID: VocalistID(0),
         timing: Timing.empty,
         annotationMap: AnnotationMap.empty,
@@ -44,100 +44,100 @@ class LyricSnippet {
   SentenceSegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timing.getSegmentIndexFromSeekPosition(seekPosition);
   InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timing.getInsertionPositionInfo(insertionPosition);
   double getSegmentProgress(SeekPosition seekPosition) => timing.getSegmentProgress(seekPosition);
-  SentenceSegmentList getSentenceSegmentList(SegmentRange segmentRange) => timing.getSentenceSegmentList(segmentRange);
+  SentenceSegmentList getSentenceSegmentList(PhrasePosition phrasePosition) => timing.getSentenceSegmentList(phrasePosition);
   TimingPointIndex leftTimingPointIndex(SentenceSegmentIndex segmentIndex) => timing.leftTimingPointIndex(segmentIndex);
   TimingPointIndex rightTimingPointIndex(SentenceSegmentIndex segmentIndex) => timing.rightTimingPointIndex(segmentIndex);
   TimingPoint leftTimingPoint(SentenceSegmentIndex segmentIndex) => timing.leftTimingPoint(segmentIndex);
   TimingPoint rightTimingPoint(SentenceSegmentIndex segmentIndex) => timing.rightTimingPoint(segmentIndex);
 
-  MapEntry<SegmentRange, Annotation> getAnnotationWords(SentenceSegmentIndex index) {
+  MapEntry<PhrasePosition, Annotation> getAnnotationWords(SentenceSegmentIndex index) {
     return annotationMap.map.entries.firstWhere(
       (entry) => entry.key.startIndex <= index && index <= entry.key.endIndex,
-      orElse: () => MapEntry(SegmentRange.empty, Annotation.empty),
+      orElse: () => MapEntry(PhrasePosition.empty, Annotation.empty),
     );
   }
 
-  SegmentRange getAnnotationRangeFromSeekPosition(SeekPosition seekPosition) {
-    for (MapEntry<SegmentRange, Annotation> entry in annotationMap.map.entries) {
-      SegmentRange range = entry.key;
+  PhrasePosition getRubysPhrasePositionFromSeekPosition(SeekPosition seekPosition) {
+    for (MapEntry<PhrasePosition, Annotation> entry in annotationMap.map.entries) {
+      PhrasePosition phrasePosition = entry.key;
       Annotation annotation = entry.value;
       SeekPosition startTimestamp = timing.startTimestamp;
       List<TimingPoint> timingPoints = timing.timingPointList.list;
       List<TimingPoint> annotationTimingPoints = annotation.timing.timingPointList.list;
-      SeekPosition annotationStartSeekPosition = SeekPosition(startTimestamp.position + timingPoints[range.startIndex.index].seekPosition.position);
+      SeekPosition annotationStartSeekPosition = SeekPosition(startTimestamp.position + timingPoints[phrasePosition.startIndex.index].seekPosition.position);
       SeekPosition startSeekPosition = SeekPosition(annotationStartSeekPosition.position + annotationTimingPoints.first.seekPosition.position);
       SeekPosition endSeekPosition = SeekPosition(annotationStartSeekPosition.position + annotationTimingPoints.last.seekPosition.position);
       if (startSeekPosition <= seekPosition && seekPosition < endSeekPosition) {
-        return range;
+        return phrasePosition;
       }
     }
-    return SegmentRange.empty;
+    return PhrasePosition.empty;
   }
 
-  LyricSnippet editSentence(String newSentence) {
+  Sentence editSentence(String newSentence) {
     Timing copiedTiming = timing.copyWith();
     copiedTiming = copiedTiming.editSentence(newSentence);
-    return LyricSnippet(vocalistID: vocalistID, timing: copiedTiming, annotationMap: annotationMap);
+    return Sentence(vocalistID: vocalistID, timing: copiedTiming, annotationMap: annotationMap);
   }
 
-  LyricSnippet addTimingPoint(InsertionPosition charPosition, SeekPosition seekPosition) {
+  Sentence addTimingPoint(InsertionPosition charPosition, SeekPosition seekPosition) {
     AnnotationMap annotationMap = carryUpAnnotationSegments(charPosition);
     Timing timing = this.timing.addTimingPoint(charPosition, seekPosition);
-    return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
+    return Sentence(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
 
-  LyricSnippet removeTimingPoint(InsertionPosition charPosition, Option option) {
+  Sentence removeTimingPoint(InsertionPosition charPosition, Option option) {
     AnnotationMap annotationMap = carryDownAnnotationSegments(charPosition);
     Timing timing = this.timing.deleteTimingPoint(charPosition, option);
-    return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
+    return Sentence(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
 
-  LyricSnippet addAnnotationTimingPoint(SegmentRange segmentRange, InsertionPosition charPosition, SeekPosition seekPosition) {
-    Timing timing = annotationMap[segmentRange]!.timing.addTimingPoint(charPosition, seekPosition);
-    return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
+  Sentence addAnnotationTimingPoint(PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
+    Timing timing = annotationMap[phrasePosition]!.timing.addTimingPoint(charPosition, seekPosition);
+    return Sentence(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
 
-  LyricSnippet removeAnnotationTimingPoint(SegmentRange segmentRange, InsertionPosition charPosition, Option option) {
-    Timing timing = annotationMap[segmentRange]!.timing.deleteTimingPoint(charPosition, option);
-    return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
+  Sentence removeAnnotationTimingPoint(PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
+    Timing timing = annotationMap[phrasePosition]!.timing.deleteTimingPoint(charPosition, option);
+    return Sentence(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
 
-  LyricSnippet addAnnotation(SegmentRange segmentRange, String annotationString) {
+  Sentence addAnnotation(PhrasePosition phrasePosition, String annotationString) {
     AnnotationMap annotationMap = this.annotationMap;
-    SeekPosition annotationStartTimestamp = SeekPosition(startTimestamp.position + timingPoints[segmentRange.startIndex.index].seekPosition.position);
-    SeekPosition annotationEndTimestamp = SeekPosition(startTimestamp.position + timingPoints[segmentRange.endIndex.index + 1].seekPosition.position);
+    SeekPosition annotationStartTimestamp = SeekPosition(startTimestamp.position + timingPoints[phrasePosition.startIndex.index].seekPosition.position);
+    SeekPosition annotationEndTimestamp = SeekPosition(startTimestamp.position + timingPoints[phrasePosition.endIndex.index + 1].seekPosition.position);
     Duration annotationDuration = Duration(milliseconds: annotationEndTimestamp.position - annotationStartTimestamp.position);
     SentenceSegment sentenceSegment = SentenceSegment(annotationString, annotationDuration);
     Timing timing = Timing(
       startTimestamp: annotationStartTimestamp,
       sentenceSegmentList: SentenceSegmentList([sentenceSegment]),
     );
-    annotationMap.map[segmentRange] = Annotation(timing: timing);
-    return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
+    annotationMap.map[phrasePosition] = Annotation(timing: timing);
+    return Sentence(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
 
-  LyricSnippet removeAnnotation(SegmentRange range) {
+  Sentence removeAnnotation(PhrasePosition phrasePosition) {
     AnnotationMap annotationMap = this.annotationMap;
-    annotationMap.map.remove(range);
-    return LyricSnippet(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
+    annotationMap.map.remove(phrasePosition);
+    return Sentence(vocalistID: vocalistID, timing: timing, annotationMap: annotationMap);
   }
 
-  LyricSnippet manipulateSnippet(SeekPosition seekPosition, SnippetEdge snippetEdge, bool holdLength) {
+  Sentence manipulateSentence(SeekPosition seekPosition, SentenceEdge sentenceEdge, bool holdLength) {
     Timing newTiming = timing.copyWith();
-    newTiming = newTiming.manipulateTiming(seekPosition, snippetEdge, holdLength);
-    return LyricSnippet(vocalistID: vocalistID, timing: newTiming, annotationMap: annotationMap);
+    newTiming = newTiming.manipulateTiming(seekPosition, sentenceEdge, holdLength);
+    return Sentence(vocalistID: vocalistID, timing: newTiming, annotationMap: annotationMap);
   }
 
-  Tuple2<LyricSnippet, LyricSnippet> dividSnippet(InsertionPosition charPosition, SeekPosition seekPosition) {
+  Tuple2<Sentence, Sentence> divideSentence(InsertionPosition charPosition, SeekPosition seekPosition) {
     String formerString = sentence.substring(0, charPosition.position);
     String latterString = sentence.substring(charPosition.position);
-    LyricSnippet snippet1 = LyricSnippet.empty;
-    LyricSnippet snippet2 = LyricSnippet.empty;
+    Sentence sentence1 = Sentence.empty;
+    Sentence sentence2 = Sentence.empty;
 
     if (formerString.isNotEmpty) {
       Timing newTiming = timing.copyWith();
       newTiming = newTiming.addTimingPoint(charPosition, seekPosition);
-      snippet1 = LyricSnippet(
+      sentence1 = Sentence(
         vocalistID: vocalistID,
         timing: newTiming,
         annotationMap: annotationMap,
@@ -147,22 +147,22 @@ class LyricSnippet {
     if (latterString.isNotEmpty) {
       Timing newTiming = timing.copyWith();
       newTiming = newTiming.addTimingPoint(charPosition, seekPosition);
-      snippet2 = LyricSnippet(
+      sentence2 = Sentence(
         vocalistID: vocalistID,
         timing: newTiming,
         annotationMap: annotationMap,
       );
     }
 
-    return Tuple2(snippet1, snippet2);
+    return Tuple2(sentence1, sentence2);
   }
 
   AnnotationMap carryUpAnnotationSegments(InsertionPosition insertionPosition) {
     InsertionPositionInfo info = timing.getInsertionPositionInfo(insertionPosition)!;
-    Map<SegmentRange, Annotation> updatedAnnotations = {};
+    Map<PhrasePosition, Annotation> updatedAnnotations = {};
 
-    annotationMap.map.forEach((SegmentRange key, Annotation value) {
-      SegmentRange newKey = key.copyWith();
+    annotationMap.map.forEach((PhrasePosition key, Annotation value) {
+      PhrasePosition newKey = key.copyWith();
 
       switch (info) {
         case SentenceSegmentInsertionPositionInfo():
@@ -199,7 +199,7 @@ class LyricSnippet {
 
   AnnotationMap carryDownAnnotationSegments(InsertionPosition insertionPosition) {
     InsertionPositionInfo info = timing.getInsertionPositionInfo(insertionPosition)!;
-    Map<SegmentRange, Annotation> updatedAnnotations = {};
+    Map<PhrasePosition, Annotation> updatedAnnotations = {};
     int index = -1;
     if (info is SentenceSegmentInsertionPositionInfo) {
       index = info.sentenceSegmentIndex.index;
@@ -209,8 +209,8 @@ class LyricSnippet {
       assert(false, "An unexpected state was occurred for the insertion position");
     }
 
-    annotationMap.map.forEach((SegmentRange key, Annotation value) {
-      SegmentRange newKey = key.copyWith();
+    annotationMap.map.forEach((PhrasePosition key, Annotation value) {
+      PhrasePosition newKey = key.copyWith();
       int startIndex = key.startIndex.index;
       int endIndex = key.endIndex.index + 1;
       if (index == startIndex && index == endIndex + 1) {
@@ -232,65 +232,65 @@ class LyricSnippet {
     return AnnotationMap(updatedAnnotations);
   }
 
-  List<Tuple2<SegmentRange, Annotation?>> getAnnotationExistenceRangeList() {
+  List<Tuple2<PhrasePosition, Annotation?>> getRubysPhrasePositionList() {
     if (annotationMap.isEmpty) {
       SentenceSegmentIndex startIndex = SentenceSegmentIndex(0);
       SentenceSegmentIndex endIndex = SentenceSegmentIndex(sentenceSegments.length - 1);
       return [
         Tuple2(
-          SegmentRange(startIndex, endIndex),
+          PhrasePosition(startIndex, endIndex),
           null,
         ),
       ];
     }
 
-    List<Tuple2<SegmentRange, Annotation?>> rangeList = [];
+    List<Tuple2<PhrasePosition, Annotation?>> phrasePositionList = [];
     int previousEnd = -1;
 
-    for (MapEntry<SegmentRange, Annotation> entry in annotationMap.entries) {
-      SegmentRange segmentRange = entry.key;
+    for (MapEntry<PhrasePosition, Annotation> entry in annotationMap.entries) {
+      PhrasePosition phrasePosition = entry.key;
       Annotation annotation = entry.value;
 
-      if (previousEnd + 1 <= segmentRange.startIndex.index - 1) {
+      if (previousEnd + 1 <= phrasePosition.startIndex.index - 1) {
         SentenceSegmentIndex startIndex = SentenceSegmentIndex(previousEnd + 1);
-        SentenceSegmentIndex endIndex = SentenceSegmentIndex(segmentRange.startIndex.index - 1);
-        rangeList.add(
+        SentenceSegmentIndex endIndex = SentenceSegmentIndex(phrasePosition.startIndex.index - 1);
+        phrasePositionList.add(
           Tuple2(
-            SegmentRange(startIndex, endIndex),
+            PhrasePosition(startIndex, endIndex),
             null,
           ),
         );
       }
-      rangeList.add(
+      phrasePositionList.add(
         Tuple2(
-          segmentRange,
+          phrasePosition,
           annotation,
         ),
       );
 
-      previousEnd = segmentRange.endIndex.index;
+      previousEnd = phrasePosition.endIndex.index;
     }
 
     if (previousEnd + 1 <= sentenceSegments.length - 1) {
       SentenceSegmentIndex startIndex = SentenceSegmentIndex(previousEnd + 1);
       SentenceSegmentIndex endIndex = SentenceSegmentIndex(sentenceSegments.length - 1);
-      rangeList.add(
+      phrasePositionList.add(
         Tuple2(
-          SegmentRange(startIndex, endIndex),
+          PhrasePosition(startIndex, endIndex),
           null,
         ),
       );
     }
 
-    return rangeList;
+    return phrasePositionList;
   }
 
-  LyricSnippet copyWith({
+  Sentence copyWith({
     VocalistID? vocalistID,
     Timing? timing,
     AnnotationMap? annotationMap,
   }) {
-    return LyricSnippet(
+    return Sentence(
       vocalistID: vocalistID ?? this.vocalistID,
       timing: timing ?? this.timing,
       annotationMap: annotationMap ?? this.annotationMap,
@@ -302,7 +302,7 @@ class LyricSnippet {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! LyricSnippet) {
+    if (other is! Sentence) {
       return false;
     }
     if (runtimeType != other.runtimeType) {

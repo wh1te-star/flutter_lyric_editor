@@ -9,30 +9,30 @@ import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 class TextPaneCursorController {
-  final LyricSnippetMap lyricSnippetMap;
-  final LyricSnippetID lyricSnippetID;
+  final SentenceMap sentenceMap;
+  final SentenceID sentenceID;
   final TextPaneListCursor textPaneListCursor;
   final SeekPosition seekPosition;
   final CursorBlinker cursorBlinker;
 
   TextPaneCursorController({
-    required this.lyricSnippetMap,
-    required this.lyricSnippetID,
+    required this.sentenceMap,
+    required this.sentenceID,
     required this.textPaneListCursor,
     required this.seekPosition,
     required this.cursorBlinker,
   });
 
   TextPaneCursorController._privateConstructor(
-    this.lyricSnippetMap,
-    this.lyricSnippetID,
+    this.sentenceMap,
+    this.sentenceID,
     this.textPaneListCursor,
     this.seekPosition,
     this.cursorBlinker,
   );
   static final TextPaneCursorController _empty = TextPaneCursorController._privateConstructor(
-    LyricSnippetMap.empty,
-    LyricSnippetID.empty,
+    SentenceMap.empty,
+    SentenceID.empty,
     BaseListCursor.empty,
     SeekPosition.empty,
     CursorBlinker.empty,
@@ -88,23 +88,23 @@ class TextPaneCursorController {
   }
 
   TextPaneCursorController updateCursor(
-    LyricSnippetMap lyricSnippetMap,
+    SentenceMap sentenceMap,
     SeekPosition seekPosition,
   ) {
-    TextPaneListCursor nextCursor = textPaneListCursor.updateCursor(lyricSnippetMap, lyricSnippetID, seekPosition);
+    TextPaneListCursor nextCursor = textPaneListCursor.updateCursor(sentenceMap, sentenceID, seekPosition);
     return copyWith(textPaneListCursor: nextCursor);
   }
 
   TextPaneCursorController copyWith({
-    LyricSnippetMap? lyricSnippetMap,
-    LyricSnippetID? lyricSnippetID,
+    SentenceMap? sentenceMap,
+    SentenceID? sentenceID,
     TextPaneListCursor? textPaneListCursor,
     SeekPosition? seekPosition,
     CursorBlinker? cursorBlinker,
   }) {
     return TextPaneCursorController(
-      lyricSnippetMap: lyricSnippetMap ?? this.lyricSnippetMap,
-      lyricSnippetID: lyricSnippetID ?? this.lyricSnippetID,
+      sentenceMap: sentenceMap ?? this.sentenceMap,
+      sentenceID: sentenceID ?? this.sentenceID,
       textPaneListCursor: textPaneListCursor ?? this.textPaneListCursor,
       seekPosition: seekPosition ?? this.seekPosition,
       cursorBlinker: cursorBlinker ?? this.cursorBlinker,
@@ -121,8 +121,8 @@ class TextPaneCursorController {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
     final TextPaneCursorController otherSentenceSegments = other as TextPaneCursorController;
-    if (lyricSnippetMap != otherSentenceSegments.lyricSnippetMap) return false;
-    if (lyricSnippetID != otherSentenceSegments.lyricSnippetID) return false;
+    if (sentenceMap != otherSentenceSegments.sentenceMap) return false;
+    if (sentenceID != otherSentenceSegments.sentenceID) return false;
     if (textPaneListCursor != otherSentenceSegments.textPaneListCursor) return false;
     if (seekPosition != otherSentenceSegments.seekPosition) return false;
     if (cursorBlinker != otherSentenceSegments.cursorBlinker) return false;
@@ -130,5 +130,5 @@ class TextPaneCursorController {
   }
 
   @override
-  int get hashCode => lyricSnippetMap.hashCode ^ lyricSnippetID.hashCode ^ textPaneListCursor.hashCode ^ seekPosition.hashCode ^ cursorBlinker.hashCode;
+  int get hashCode => sentenceMap.hashCode ^ sentenceID.hashCode ^ textPaneListCursor.hashCode ^ seekPosition.hashCode ^ cursorBlinker.hashCode;
 }

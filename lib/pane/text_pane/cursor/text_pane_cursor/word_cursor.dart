@@ -10,26 +10,26 @@ import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/phrase_position.dart';
 
 class WordCursor extends TextPaneCursor {
-  SegmentRange segmentRange;
+  PhrasePosition phrasePosition;
   bool isExpandMode = false;
 
   WordCursor({
-    required LyricSnippet lyricSnippet,
+    required Sentence sentence,
     required SeekPosition seekPosition,
-    required this.segmentRange,
+    required this.phrasePosition,
     required this.isExpandMode,
-  }) : super(lyricSnippet, seekPosition);
+  }) : super(sentence, seekPosition);
 
   WordCursor._privateConstructor(
-    super.lyricSnippet,
+    super.sentence,
     super.seekPosition,
-    this.segmentRange,
+    this.phrasePosition,
     this.isExpandMode,
   );
   static final WordCursor _empty = WordCursor._privateConstructor(
-    LyricSnippet.empty,
+    Sentence.empty,
     SeekPosition.empty,
-    SegmentRange.empty,
+    PhrasePosition.empty,
     false,
   );
   static WordCursor get empty => _empty;
@@ -38,72 +38,72 @@ class WordCursor extends TextPaneCursor {
 
   @override
   WordCursor defaultCursor() {
-    SentenceSegmentIndex segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
+    SentenceSegmentIndex segmentIndex = sentence.getSegmentIndexFromSeekPosition(seekPosition);
     return WordCursor(
-      lyricSnippet: lyricSnippet,
+      sentence: sentence,
       seekPosition: seekPosition,
-      segmentRange: SegmentRange(segmentIndex, segmentIndex),
+      phrasePosition: PhrasePosition(segmentIndex, segmentIndex),
       isExpandMode: isExpandMode,
     );
   }
 
   @override
   TextPaneCursor moveLeftCursor() {
-    SegmentRange nextSegmentRange = segmentRange.copyWith();
+    PhrasePosition nextPhrasePosition = phrasePosition.copyWith();
 
     if (!isExpandMode) {
-      SentenceSegmentIndex currentIndex = segmentRange.startIndex;
+      SentenceSegmentIndex currentIndex = phrasePosition.startIndex;
       SentenceSegmentIndex nextIndex = currentIndex - 1;
       if (nextIndex < SentenceSegmentIndex(0)) {
         return this;
       }
-      nextSegmentRange.startIndex = nextIndex;
+      nextPhrasePosition.startIndex = nextIndex;
 
-      nextSegmentRange.endIndex = segmentRange.endIndex - 1;
+      nextPhrasePosition.endIndex = phrasePosition.endIndex - 1;
     } else {
-      SentenceSegmentIndex currentIndex = segmentRange.endIndex;
+      SentenceSegmentIndex currentIndex = phrasePosition.endIndex;
       SentenceSegmentIndex nextIndex = currentIndex - 1;
-      if (nextIndex < segmentRange.startIndex) {
+      if (nextIndex < phrasePosition.startIndex) {
         return this;
       }
-      nextSegmentRange.startIndex = segmentRange.startIndex;
-      nextSegmentRange.endIndex = nextIndex;
+      nextPhrasePosition.startIndex = phrasePosition.startIndex;
+      nextPhrasePosition.endIndex = nextIndex;
     }
 
     return WordCursor(
-      lyricSnippet: lyricSnippet,
+      sentence: sentence,
       seekPosition: seekPosition,
-      segmentRange: nextSegmentRange,
+      phrasePosition: nextPhrasePosition,
       isExpandMode: isExpandMode,
     );
   }
 
   @override
   TextPaneCursor moveRightCursor() {
-    SegmentRange nextSegmentRange = segmentRange.copyWith();
+    PhrasePosition nextPhrasePosition = phrasePosition.copyWith();
 
-    SentenceSegmentIndex currentIndex = segmentRange.endIndex;
+    SentenceSegmentIndex currentIndex = phrasePosition.endIndex;
     SentenceSegmentIndex nextIndex = currentIndex + 1;
-    if (nextIndex.index >= lyricSnippet.sentenceSegments.length) {
+    if (nextIndex.index >= sentence.sentenceSegments.length) {
       return this;
     }
 
-    nextSegmentRange.endIndex = nextIndex;
+    nextPhrasePosition.endIndex = nextIndex;
     if (!isExpandMode) {
-      nextSegmentRange.startIndex = segmentRange.startIndex + 1;
+      nextPhrasePosition.startIndex = phrasePosition.startIndex + 1;
     }
 
     return WordCursor(
-      lyricSnippet: lyricSnippet,
+      sentence: sentence,
       seekPosition: seekPosition,
-      segmentRange: nextSegmentRange,
+      phrasePosition: nextPhrasePosition,
       isExpandMode: isExpandMode,
     );
   }
 
   TextPaneCursor exitWordMode() {
     return BaseCursor.defaultCursor(
-      lyricSnippet: lyricSnippet,
+      sentence: sentence,
       seekPosition: seekPosition,
     );
   }
@@ -114,34 +114,34 @@ class WordCursor extends TextPaneCursor {
   }
 
   @override
-  List<TextPaneCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
+  List<TextPaneCursor?> getPhrasePositionDividedCursors(Sentence sentence, List<PhrasePosition> phrasePositionList) {
     WordCursor cursor = copyWith();
-    List<WordCursor?> separatedCursors = List.filled(rangeList.length, null);
+    List<WordCursor?> separatedCursors = List.filled(phrasePositionList.length, null);
 
-    int startRangeIndex = rangeList.indexWhere((SegmentRange segmentRange) {
-      return segmentRange.isInRange(cursor.segmentRange.startIndex);
+    int startPhrasePositionIndex = phrasePositionList.indexWhere((PhrasePosition phrasePosition) {
+      return phrasePosition.isInRange(cursor.phrasePosition.startIndex);
     });
-    int endRangeIndex = rangeList.indexWhere((SegmentRange segmentRange) {
-      return segmentRange.isInRange(cursor.segmentRange.endIndex);
+    int endPhrasePositionIndex = phrasePositionList.indexWhere((PhrasePosition phrasePosition) {
+      return phrasePosition.isInRange(cursor.phrasePosition.endIndex);
     });
 
     int shiftLength = 0;
-    for (int index = 0; index <= endRangeIndex; index++) {
-      SentenceSegmentIndex startIndex = rangeList[index].startIndex - shiftLength;
-      SentenceSegmentIndex endIndex = rangeList[index].endIndex - shiftLength;
-      if (index == startRangeIndex) {
-        startIndex = cursor.segmentRange.startIndex - shiftLength;
+    for (int index = 0; index <= endPhrasePositionIndex; index++) {
+      SentenceSegmentIndex startIndex = phrasePositionList[index].startIndex - shiftLength;
+      SentenceSegmentIndex endIndex = phrasePositionList[index].endIndex - shiftLength;
+      if (index == startPhrasePositionIndex) {
+        startIndex = cursor.phrasePosition.startIndex - shiftLength;
       }
-      if (index == endRangeIndex) {
-        endIndex = cursor.segmentRange.endIndex - shiftLength;
+      if (index == endPhrasePositionIndex) {
+        endIndex = cursor.phrasePosition.endIndex - shiftLength;
       }
 
-      if (startRangeIndex <= index && index <= endRangeIndex) {
+      if (startPhrasePositionIndex <= index && index <= endPhrasePositionIndex) {
         separatedCursors[index] = cursor.copyWith(
-          segmentRange: SegmentRange(startIndex, endIndex),
+          phrasePosition: PhrasePosition(startIndex, endIndex),
         );
       }
-      shiftLength += rangeList[index].length;
+      shiftLength += phrasePositionList[index].length;
     }
 
     return separatedCursors;
@@ -152,14 +152,14 @@ class WordCursor extends TextPaneCursor {
     WordCursor cursor = copyWith();
     List<WordCursor?> separatedCursors = List.filled(sentenceSegmentList.length, null);
     WordCursor initialCursor = WordCursor(
-      lyricSnippet: lyricSnippet,
+      sentence: sentence,
       seekPosition: seekPosition,
-      segmentRange: SegmentRange(SentenceSegmentIndex(0), SentenceSegmentIndex(0)),
+      phrasePosition: PhrasePosition(SentenceSegmentIndex(0), SentenceSegmentIndex(0)),
       isExpandMode: isExpandMode,
     );
     for (int index = 0; index < sentenceSegmentList.length; index++) {
       SentenceSegmentIndex segmentIndex = SentenceSegmentIndex(index);
-      if (cursor.segmentRange.isInRange(segmentIndex)) {
+      if (cursor.phrasePosition.isInRange(segmentIndex)) {
         separatedCursors[index] = initialCursor.copyWith();
       }
     }
@@ -168,43 +168,43 @@ class WordCursor extends TextPaneCursor {
 
   @override
   WordCursor shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {
-    if (segmentRange.startIndex.index - 1 < 0 || segmentRange.endIndex.index - 1 < 0) {
+    if (phrasePosition.startIndex.index - 1 < 0 || phrasePosition.endIndex.index - 1 < 0) {
       return WordCursor.empty;
     }
-    SentenceSegmentIndex startIndex = segmentRange.startIndex - sentenceSegmentList.segmentLength;
-    SentenceSegmentIndex endIndex = segmentRange.endIndex - sentenceSegmentList.segmentLength;
-    SegmentRange newRange = SegmentRange(startIndex, endIndex);
-    return copyWith(segmentRange: newRange);
+    SentenceSegmentIndex startIndex = phrasePosition.startIndex - sentenceSegmentList.segmentLength;
+    SentenceSegmentIndex endIndex = phrasePosition.endIndex - sentenceSegmentList.segmentLength;
+    PhrasePosition newPhrasePosition = PhrasePosition(startIndex, endIndex);
+    return copyWith(phrasePosition: newPhrasePosition);
   }
 
   @override
   WordCursor shiftLeftBySentenceSegment(SentenceSegment sentenceSegment) {
-    if (segmentRange.startIndex.index - 1 < 0 || segmentRange.endIndex.index - 1 < 0) {
+    if (phrasePosition.startIndex.index - 1 < 0 || phrasePosition.endIndex.index - 1 < 0) {
       return WordCursor.empty;
     }
-    SentenceSegmentIndex startIndex = segmentRange.startIndex - 1;
-    SentenceSegmentIndex endIndex = segmentRange.endIndex - 1;
-    SegmentRange newRange = SegmentRange(startIndex, endIndex);
-    return copyWith(segmentRange: newRange);
+    SentenceSegmentIndex startIndex = phrasePosition.startIndex - 1;
+    SentenceSegmentIndex endIndex = phrasePosition.endIndex - 1;
+    PhrasePosition newPhrasePosition = PhrasePosition(startIndex, endIndex);
+    return copyWith(phrasePosition: newPhrasePosition);
   }
 
   WordCursor copyWith({
-    LyricSnippet? lyricSnippet,
+    Sentence? sentence,
     SeekPosition? seekPosition,
-    SegmentRange? segmentRange,
+    PhrasePosition? phrasePosition,
     bool? isExpandMode,
   }) {
     return WordCursor(
-      lyricSnippet: lyricSnippet ?? this.lyricSnippet,
+      sentence: sentence ?? this.sentence,
       seekPosition: seekPosition ?? this.seekPosition,
-      segmentRange: segmentRange ?? this.segmentRange,
+      phrasePosition: phrasePosition ?? this.phrasePosition,
       isExpandMode: isExpandMode ?? this.isExpandMode,
     );
   }
 
   @override
   String toString() {
-    return 'WordCursor(ID: $lyricSnippet, segmentIndex: $segmentRange)';
+    return 'WordCursor(ID: $sentence, segmentIndex: $phrasePosition)';
   }
 
   @override
@@ -212,13 +212,13 @@ class WordCursor extends TextPaneCursor {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
     final WordCursor otherSentenceSegments = other as WordCursor;
-    if (lyricSnippet != otherSentenceSegments.lyricSnippet) return false;
+    if (sentence != otherSentenceSegments.sentence) return false;
     if (seekPosition != otherSentenceSegments.seekPosition) return false;
-    if (segmentRange != otherSentenceSegments.segmentRange) return false;
+    if (phrasePosition != otherSentenceSegments.phrasePosition) return false;
     if (isExpandMode != otherSentenceSegments.isExpandMode) return false;
     return true;
   }
 
   @override
-  int get hashCode => lyricSnippet.hashCode ^ seekPosition.hashCode ^ segmentRange.hashCode ^ isExpandMode.hashCode;
+  int get hashCode => sentence.hashCode ^ seekPosition.hashCode ^ phrasePosition.hashCode ^ isExpandMode.hashCode;
 }

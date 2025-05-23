@@ -30,7 +30,7 @@ class PositionTestInfo {
 
 void main() {
   group('Tests to move to left and right the text pane cursor.', () {
-    final LyricSnippetID lyricSnippetID = LyricSnippetID(1);
+    final SentenceID sentenceID = SentenceID(1);
     final Timing timingData1 = Timing(
       startTimestamp: SeekPosition(2000),
       sentenceSegmentList: SentenceSegmentList([
@@ -64,7 +64,7 @@ void main() {
 
     BaseCursor constructCursor(PositionTestInfo positionInfo) {
       return BaseCursor(
-        lyricSnippetID,
+        sentenceID,
         cursorBlinker,
         InsertionPosition(positionInfo.charPosition),
         positionInfo.option,
@@ -130,21 +130,21 @@ void main() {
     setUp(() {});
 
     test('Test to move left and right the text pane cursor No.1', () {
-      final LyricSnippet lyricSnippet = LyricSnippet(
+      final Sentence sentence = Sentence(
         vocalistID: VocalistID(1),
         timing: timingData1,
         annotationMap: AnnotationMap.empty,
       );
 
       final BaseCursor cursor = BaseCursor(
-        lyricSnippetID,
+        sentenceID,
         cursorBlinker,
         InsertionPosition(1),
         Option.segment,
       );
 
       final SentenceSelectionCursorMover mover = SentenceSelectionCursorMover(
-        lyricSnippetMap: LyricSnippetMap({lyricSnippetID: lyricSnippet}),
+        lyricSnippetMap: SentenceMap({sentenceID: sentence}),
         textPaneCursor: cursor,
         cursorBlinker: cursorBlinker,
         seekPosition: SeekPosition(2200),
@@ -166,21 +166,21 @@ void main() {
     });
 
     test('Test to move left and right the text pane cursor No.2', () {
-      final LyricSnippet lyricSnippet = LyricSnippet(
+      final Sentence lyricSnippet = Sentence(
         vocalistID: VocalistID(1),
         timing: timingData2,
         annotationMap: AnnotationMap.empty,
       );
 
       final BaseCursor cursor = BaseCursor(
-        lyricSnippetID,
+        sentenceID,
         cursorBlinker,
         InsertionPosition(5),
         Option.former,
       );
 
       final SentenceSelectionCursorMover mover = SentenceSelectionCursorMover(
-        lyricSnippetMap: LyricSnippetMap({lyricSnippetID: lyricSnippet}),
+        lyricSnippetMap: SentenceMap({sentenceID: lyricSnippet}),
         textPaneCursor: cursor,
         cursorBlinker: cursorBlinker,
         seekPosition: SeekPosition(6500),
