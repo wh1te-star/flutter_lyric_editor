@@ -193,17 +193,25 @@ class RubyCursor extends TextPaneCursor {
   @override
   List<TextPaneCursor?> getWordDividedCursors(WordList wordList) {
     List<RubyCursor?> separatedCursors = List.filled(wordList.length, null);
+    RubyCursor shiftedCursor = copyWith();
+    for (int index = 0; index < wordList.length; index++) {
+      Word word = wordList[index];
+      RubyCursor? nextCursor = shiftedCursor.shiftLeftByWord(word);
+      if (nextCursor == null) {
+        separatedCursors[index] = shiftedCursor;
+        break;
+      }
+      shiftedCursor = nextCursor;
+    }
     return separatedCursors;
   }
 
-  @override
-  RubyCursor? shiftLeftByWordList(WordList wordList) {
-    return this;
-  }
-
-  @override
   RubyCursor? shiftLeftByWord(Word word) {
-    return this;
+    if (insertionPosition.position - word.word.length < 0) {
+      return null;
+    }
+    InsertionPosition newInsertionPosition = insertionPosition - word.word.length;
+    return copyWith(insertionPosition: newInsertionPosition);
   }
 
   RubyCursor copyWith({
