@@ -10,9 +10,6 @@ import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/lyric_data/timetable.dart';
 import 'package:lyric_editor/lyric_data/timing_exception.dart';
 import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/annotation_selection_cursor_mover.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/segment_selection_cursor_mover.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/sentence_selection_cursor_mover.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/ruby_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/word_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/base_cursor.dart';
@@ -65,8 +62,8 @@ void main() {
 
     TestWidgetsFlutterBinding.ensureInitialized();
 
-    SentenceSelectionCursor constructCursor(PositionTestInfo positionInfo) {
-      return SentenceSelectionCursor(
+    BaseCursor constructCursor(PositionTestInfo positionInfo) {
+      return BaseCursor(
         lyricSnippetID,
         cursorBlinker,
         InsertionPosition(positionInfo.charPosition),
@@ -75,23 +72,23 @@ void main() {
     }
 
     void failedMessage(int index, TextPaneCursorController actual, TextPaneListCursor expected, bool reverse) {
-      SentenceSelectionCursor resultCursor = actual.textPaneListCursor as SentenceSelectionCursor;
-      SentenceSelectionCursor expectedCursor = expected as SentenceSelectionCursor;
+      BaseCursor resultCursor = actual.textPaneListCursor as BaseCursor;
+      BaseCursor expectedCursor = expected as BaseCursor;
       String order = reverse ? "backward" : "forward";
       debugPrint('Test failed at the $order iteration ${index + 1}:');
       debugPrint('Expected cursor position: ${expectedCursor.insertionPosition}, option: ${expectedCursor.option}');
       debugPrint('But the actual cursor position: ${resultCursor.insertionPosition}, option: ${resultCursor.option}');
     }
 
-    bool cursorMatcher(SentenceSelectionCursorMover result, SentenceSelectionCursor expectedCursor) {
-      if (result.textPaneCursor is! SentenceSelectionCursor) return false;
+    bool cursorMatcher(SentenceSelectionCursorMover result, BaseCursor expectedCursor) {
+      if (result.textPaneCursor is! BaseCursor) return false;
 
-      SentenceSelectionCursor resultCursor = result.textPaneCursor as SentenceSelectionCursor;
+      BaseCursor resultCursor = result.textPaneCursor as BaseCursor;
       return resultCursor == expectedCursor;
     }
 
     bool checkCursor(TextPaneCursorController result, int index, List<PositionTestInfo> expectedMovement, bool reverse) {
-      SentenceSelectionCursor expectedCursor = constructCursor(expectedMovement[index]);
+      BaseCursor expectedCursor = constructCursor(expectedMovement[index]);
       if (reverse) {
         result = result.moveLeftCursor();
       } else {
@@ -104,7 +101,7 @@ void main() {
         return false;
       }
 
-      SentenceSelectionCursor resultCursor = result.textPaneCursor as SentenceSelectionCursor;
+      BaseCursor resultCursor = result.textPaneCursor as BaseCursor;
       debugPrint("movement: pos=${resultCursor.insertionPosition}, option=${resultCursor.option}");
       return true;
     }
@@ -139,7 +136,7 @@ void main() {
         annotationMap: AnnotationMap.empty,
       );
 
-      final SentenceSelectionCursor cursor = SentenceSelectionCursor(
+      final BaseCursor cursor = BaseCursor(
         lyricSnippetID,
         cursorBlinker,
         InsertionPosition(1),
@@ -175,7 +172,7 @@ void main() {
         annotationMap: AnnotationMap.empty,
       );
 
-      final SentenceSelectionCursor cursor = SentenceSelectionCursor(
+      final BaseCursor cursor = BaseCursor(
         lyricSnippetID,
         cursorBlinker,
         InsertionPosition(5),

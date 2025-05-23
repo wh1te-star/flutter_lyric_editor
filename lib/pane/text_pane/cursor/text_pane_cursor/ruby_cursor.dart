@@ -15,12 +15,12 @@ import 'package:lyric_editor/position/phrase_position.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
-class AnnotationSelectionCursor extends TextPaneCursor {
+class RubyCursor extends TextPaneCursor {
   SegmentRange segmentRange;
   InsertionPosition insertionPosition;
   Option option;
 
-  AnnotationSelectionCursor({
+  RubyCursor({
     required LyricSnippet lyricSnippet,
     required SeekPosition seekPosition,
     required this.segmentRange,
@@ -35,25 +35,25 @@ class AnnotationSelectionCursor extends TextPaneCursor {
     return annotationSegmentRange.isNotEmpty;
   }
 
-  AnnotationSelectionCursor._privateConstructor(
+  RubyCursor._privateConstructor(
     super.lyricSnippet,
     super.seekPosition,
     this.segmentRange,
     this.insertionPosition,
     this.option,
   );
-  static final AnnotationSelectionCursor _empty = AnnotationSelectionCursor._privateConstructor(
+  static final RubyCursor _empty = RubyCursor._privateConstructor(
     LyricSnippet.empty,
     SeekPosition.empty,
     SegmentRange.empty,
     InsertionPosition.empty,
     Option.former,
   );
-  static AnnotationSelectionCursor get empty => _empty;
+  static RubyCursor get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
-  factory AnnotationSelectionCursor.defaultCursor({
+  factory RubyCursor.defaultCursor({
     required LyricSnippet lyricSnippet,
     required SeekPosition seekPosition,
   }) {
@@ -61,7 +61,7 @@ class AnnotationSelectionCursor extends TextPaneCursor {
     Annotation annotation = lyricSnippet.annotationMap[annotationSegmentRange]!;
     SentenceSegmentIndex segmentIndex = annotation.getSegmentIndexFromSeekPosition(seekPosition);
 
-    return AnnotationSelectionCursor(
+    return RubyCursor(
       lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
       segmentRange: annotationSegmentRange,
@@ -82,8 +82,8 @@ class AnnotationSelectionCursor extends TextPaneCursor {
 
   @override
   List<TextPaneCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
-    List<AnnotationSelectionCursor?> separatedCursors = List.filled(rangeList.length, null);
-    AnnotationSelectionCursor cursor = copyWith();
+    List<RubyCursor?> separatedCursors = List.filled(rangeList.length, null);
+    RubyCursor cursor = copyWith();
     for (int index = 0; index < rangeList.length; index++) {
       SegmentRange segmentRange = rangeList[index];
       if (segmentRange == cursor.segmentRange) {
@@ -96,28 +96,28 @@ class AnnotationSelectionCursor extends TextPaneCursor {
 
   @override
   List<TextPaneCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList) {
-    List<AnnotationSelectionCursor?> separatedCursors = List.filled(sentenceSegmentList.length, null);
+    List<RubyCursor?> separatedCursors = List.filled(sentenceSegmentList.length, null);
     return separatedCursors;
   }
 
   @override
-  AnnotationSelectionCursor? shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {
+  RubyCursor? shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {
     return this;
   }
 
   @override
-  AnnotationSelectionCursor? shiftLeftBySentenceSegment(SentenceSegment sentenceSegment) {
+  RubyCursor? shiftLeftBySentenceSegment(SentenceSegment sentenceSegment) {
     return this;
   }
 
-  AnnotationSelectionCursor copyWith({
+  RubyCursor copyWith({
     LyricSnippet? lyricSnippet,
     SeekPosition? seekPosition,
     SegmentRange? segmentRange,
     InsertionPosition? insertionPosition,
     Option? option,
   }) {
-    return AnnotationSelectionCursor(
+    return RubyCursor(
       lyricSnippet: lyricSnippet ?? this.lyricSnippet,
       seekPosition: seekPosition ?? this.seekPosition,
       segmentRange: segmentRange ?? this.segmentRange,
@@ -128,14 +128,14 @@ class AnnotationSelectionCursor extends TextPaneCursor {
 
   @override
   String toString() {
-    return 'AnnotationSelectionCursor($lyricSnippet, segmentRange: $segmentRange, position: ${insertionPosition.position}, option: $option)';
+    return 'RubyCursor($lyricSnippet, segmentRange: $segmentRange, position: ${insertionPosition.position}, option: $option)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final AnnotationSelectionCursor otherSentenceSegments = other as AnnotationSelectionCursor;
+    final RubyCursor otherSentenceSegments = other as RubyCursor;
     if (lyricSnippet != otherSentenceSegments.lyricSnippet) return false;
     if (seekPosition != otherSentenceSegments.seekPosition) return false;
     if (segmentRange != otherSentenceSegments.segmentRange) return false;

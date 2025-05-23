@@ -16,10 +16,10 @@ import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/phrase_position.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 
-class AnnotationSelectionListCursor extends TextPaneListCursor {
-  late AnnotationSelectionCursor annotationSelectionCursor;
+class RubyListCursor extends TextPaneListCursor {
+  late RubyCursor rubyCursor;
 
-  AnnotationSelectionListCursor({
+  RubyListCursor({
     required LyricSnippetMap lyricSnippetMap,
     required LyricSnippetID lyricSnippetID,
     required SeekPosition seekPosition,
@@ -29,14 +29,14 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
   }) : super(lyricSnippetMap, lyricSnippetID, seekPosition) {
     assert(isIDContained(), "The passed lyricSnippetID does not point to a lyric snippet in lyricSnippetMap.");
     assert(doesSeekPositionPointAnnotation(), "The passed seek position does not point to any annotation.");
-    annotationSelectionCursor = AnnotationSelectionCursor(
+    rubyCursor = RubyCursor(
       lyricSnippet: lyricSnippetMap[lyricSnippetID]!,
       seekPosition: seekPosition,
       segmentRange: segmentRange,
       insertionPosition: insertionPosition,
       option: option,
     );
-    textPaneCursor = annotationSelectionCursor;
+    textPaneCursor = rubyCursor;
   }
 
   bool isIDContained() {
@@ -50,17 +50,17 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
     return true;
   }
 
-  AnnotationSelectionListCursor._privateConstructor(
+  RubyListCursor._privateConstructor(
     super.lyricSnippetMap,
     super.lyricSnippetID,
     super.seekPosition,
   );
-  static final AnnotationSelectionListCursor _empty = AnnotationSelectionListCursor._privateConstructor(
+  static final RubyListCursor _empty = RubyListCursor._privateConstructor(
     LyricSnippetMap.empty,
     LyricSnippetID.empty,
     SeekPosition.empty,
   );
-  static AnnotationSelectionListCursor get empty => _empty;
+  static RubyListCursor get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
@@ -70,7 +70,7 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
     return annotationSegmentRange.isNotEmpty;
   }
 
-  factory AnnotationSelectionListCursor.defaultCursor({
+  factory RubyListCursor.defaultCursor({
     required LyricSnippetMap lyricSnippetMap,
     required LyricSnippetID lyricSnippetID,
     required SeekPosition seekPosition,
@@ -80,7 +80,7 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
     Annotation annotation = lyricSnippet.annotationMap[annotationSegmentRange]!;
     SentenceSegmentIndex segmentIndex = annotation.getSegmentIndexFromSeekPosition(seekPosition);
 
-    return AnnotationSelectionListCursor(
+    return RubyListCursor(
       lyricSnippetMap: lyricSnippetMap,
       lyricSnippetID: lyricSnippetID,
       seekPosition: seekPosition,
@@ -102,7 +102,7 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
     }
 
     LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[nextIndex];
-    return SentenceSelectionListCursor.defaultCursor(
+    return BaseListCursor.defaultCursor(
       lyricSnippetMap: lyricSnippetMap,
       lyricSnippetID: nextLyricSnippetID,
       seekPosition: seekPosition,
@@ -121,7 +121,7 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
     }
 
     LyricSnippetID nextLyricSnippetID = lyricSnippetMap.keys.toList()[nextIndex];
-    return SentenceSelectionListCursor.defaultCursor(
+    return BaseListCursor.defaultCursor(
       lyricSnippetMap: lyricSnippetMap,
       lyricSnippetID: nextLyricSnippetID,
       seekPosition: seekPosition,
@@ -145,7 +145,7 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
     SeekPosition seekPosition,
   ) {
     if (lyricSnippetMap.isEmpty) {
-      return AnnotationSelectionListCursor(
+      return RubyListCursor(
         lyricSnippetMap: LyricSnippetMap.empty,
         lyricSnippetID: LyricSnippetID.empty,
         seekPosition: seekPosition,
@@ -163,10 +163,10 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
     }
 
     SentenceSegmentIndex currentSeekSegmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
-    InsertionPositionInfo? nextSnippetPositionInfo = lyricSnippet.getInsertionPositionInfo(annotationSelectionCursor.insertionPosition);
+    InsertionPositionInfo? nextSnippetPositionInfo = lyricSnippet.getInsertionPositionInfo(rubyCursor.insertionPosition);
 
     if (nextSnippetPositionInfo == null || nextSnippetPositionInfo is SentenceSegmentInsertionPositionInfo && nextSnippetPositionInfo.sentenceSegmentIndex != currentSeekSegmentIndex) {
-      return AnnotationSelectionListCursor.defaultCursor(
+      return RubyListCursor.defaultCursor(
         lyricSnippetMap: lyricSnippetMap,
         lyricSnippetID: nextLyricSnippetID,
         seekPosition: seekPosition,
@@ -176,7 +176,7 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
     return this;
   }
 
-  AnnotationSelectionListCursor copyWith({
+  RubyListCursor copyWith({
     LyricSnippetMap? lyricSnippetMap,
     LyricSnippetID? lyricSnippetID,
     SeekPosition? seekPosition,
@@ -184,33 +184,33 @@ class AnnotationSelectionListCursor extends TextPaneListCursor {
     InsertionPosition? insertionPosition,
     Option? option,
   }) {
-    return AnnotationSelectionListCursor(
+    return RubyListCursor(
       lyricSnippetMap: lyricSnippetMap ?? this.lyricSnippetMap,
       lyricSnippetID: lyricSnippetID ?? this.lyricSnippetID,
       seekPosition: seekPosition ?? this.seekPosition,
-      segmentRange: segmentRange ?? annotationSelectionCursor.segmentRange,
-      insertionPosition: insertionPosition ?? annotationSelectionCursor.insertionPosition,
-      option: option ?? annotationSelectionCursor.option,
+      segmentRange: segmentRange ?? rubyCursor.segmentRange,
+      insertionPosition: insertionPosition ?? rubyCursor.insertionPosition,
+      option: option ?? rubyCursor.option,
     );
   }
 
   @override
   String toString() {
-    return 'AnnotationSelectionListCursor(ID: ${lyricSnippetID.id}, $annotationSelectionCursor';
+    return 'RubyListCursor(ID: ${lyricSnippetID.id}, $rubyCursor';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final AnnotationSelectionListCursor otherSentenceSegments = other as AnnotationSelectionListCursor;
+    final RubyListCursor otherSentenceSegments = other as RubyListCursor;
     if (lyricSnippetMap != otherSentenceSegments.lyricSnippetMap) return false;
     if (lyricSnippetID != otherSentenceSegments.lyricSnippetID) return false;
     if (seekPosition != otherSentenceSegments.seekPosition) return false;
-    if (annotationSelectionCursor != otherSentenceSegments.annotationSelectionCursor) return false;
+    if (rubyCursor != otherSentenceSegments.rubyCursor) return false;
     return true;
   }
 
   @override
-  int get hashCode => lyricSnippetMap.hashCode ^ lyricSnippetID.hashCode ^ seekPosition.hashCode ^ annotationSelectionCursor.hashCode;
+  int get hashCode => lyricSnippetMap.hashCode ^ lyricSnippetID.hashCode ^ seekPosition.hashCode ^ rubyCursor.hashCode;
 }

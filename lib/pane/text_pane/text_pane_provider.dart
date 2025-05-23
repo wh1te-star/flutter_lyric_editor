@@ -35,7 +35,7 @@ class TextPaneProvider with ChangeNotifier {
     textPaneCursorController = TextPaneCursorController(
       lyricSnippetMap: LyricSnippetMap.empty,
       lyricSnippetID: LyricSnippetID.empty,
-      textPaneListCursor: SentenceSelectionListCursor.empty,
+      textPaneListCursor: BaseListCursor.empty,
       seekPosition: musicPlayerProvider.seekPosition,
       cursorBlinker: cursorBlinker,
     );
@@ -85,15 +85,15 @@ class TextPaneProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void enterSegmentSelectionMode() {
-    textPaneCursorController = textPaneCursorController.enterSegmentSelectionMode();
+  void enterWordMode() {
+    textPaneCursorController = textPaneCursorController.enterWordMode();
   }
 
-  void exitSegmentSelectionMode() {
-    textPaneCursorController = textPaneCursorController.exitSegmentSelectionMode();
+  void exitWordMode() {
+    textPaneCursorController = textPaneCursorController.exitWordMode();
   }
 
-  void switchToRangeSelection() {
-    textPaneCursorController = textPaneCursorController.switchToRangeSelection();
+  void switchToExpandMode() {
+    textPaneCursorController = textPaneCursorController.switchToExpandMode();
   }
 }

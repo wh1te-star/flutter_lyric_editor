@@ -9,41 +9,41 @@ import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/phrase_position.dart';
 
-class SegmentSelectionCursor extends TextPaneCursor {
+class WordCursor extends TextPaneCursor {
   SegmentRange segmentRange;
-  bool isRangeSelection = false;
+  bool isExpandMode = false;
 
-  SegmentSelectionCursor({
+  WordCursor({
     required LyricSnippet lyricSnippet,
     required SeekPosition seekPosition,
     required this.segmentRange,
-    required this.isRangeSelection,
+    required this.isExpandMode,
   }) : super(lyricSnippet, seekPosition);
 
-  SegmentSelectionCursor._privateConstructor(
+  WordCursor._privateConstructor(
     super.lyricSnippet,
     super.seekPosition,
     this.segmentRange,
-    this.isRangeSelection,
+    this.isExpandMode,
   );
-  static final SegmentSelectionCursor _empty = SegmentSelectionCursor._privateConstructor(
+  static final WordCursor _empty = WordCursor._privateConstructor(
     LyricSnippet.empty,
     SeekPosition.empty,
     SegmentRange.empty,
     false,
   );
-  static SegmentSelectionCursor get empty => _empty;
+  static WordCursor get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
   @override
-  SegmentSelectionCursor defaultCursor() {
+  WordCursor defaultCursor() {
     SentenceSegmentIndex segmentIndex = lyricSnippet.getSegmentIndexFromSeekPosition(seekPosition);
-    return SegmentSelectionCursor(
+    return WordCursor(
       lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
       segmentRange: SegmentRange(segmentIndex, segmentIndex),
-      isRangeSelection: isRangeSelection,
+      isExpandMode: isExpandMode,
     );
   }
 
@@ -51,7 +51,7 @@ class SegmentSelectionCursor extends TextPaneCursor {
   TextPaneCursor moveLeftCursor() {
     SegmentRange nextSegmentRange = segmentRange.copyWith();
 
-    if (!isRangeSelection) {
+    if (!isExpandMode) {
       SentenceSegmentIndex currentIndex = segmentRange.startIndex;
       SentenceSegmentIndex nextIndex = currentIndex - 1;
       if (nextIndex < SentenceSegmentIndex(0)) {
@@ -70,11 +70,11 @@ class SegmentSelectionCursor extends TextPaneCursor {
       nextSegmentRange.endIndex = nextIndex;
     }
 
-    return SegmentSelectionCursor(
+    return WordCursor(
       lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
       segmentRange: nextSegmentRange,
-      isRangeSelection: isRangeSelection,
+      isExpandMode: isExpandMode,
     );
   }
 
@@ -89,34 +89,34 @@ class SegmentSelectionCursor extends TextPaneCursor {
     }
 
     nextSegmentRange.endIndex = nextIndex;
-    if (!isRangeSelection) {
+    if (!isExpandMode) {
       nextSegmentRange.startIndex = segmentRange.startIndex + 1;
     }
 
-    return SegmentSelectionCursor(
+    return WordCursor(
       lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
       segmentRange: nextSegmentRange,
-      isRangeSelection: isRangeSelection,
+      isExpandMode: isExpandMode,
     );
   }
 
-  TextPaneCursor exitSegmentSelectionMode() {
-    return SentenceSelectionCursor.defaultCursor(
+  TextPaneCursor exitWordMode() {
+    return BaseCursor.defaultCursor(
       lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
     );
   }
 
-  TextPaneCursor switchToRangeSelection() {
-    bool isRangeSelection = !this.isRangeSelection;
-    return copyWith(isRangeSelection: isRangeSelection);
+  TextPaneCursor switchToExpandMode() {
+    bool isExpandMode = !this.isExpandMode;
+    return copyWith(isExpandMode: isExpandMode);
   }
 
   @override
   List<TextPaneCursor?> getRangeDividedCursors(LyricSnippet lyricSnippet, List<SegmentRange> rangeList) {
-    SegmentSelectionCursor cursor = copyWith();
-    List<SegmentSelectionCursor?> separatedCursors = List.filled(rangeList.length, null);
+    WordCursor cursor = copyWith();
+    List<WordCursor?> separatedCursors = List.filled(rangeList.length, null);
 
     int startRangeIndex = rangeList.indexWhere((SegmentRange segmentRange) {
       return segmentRange.isInRange(cursor.segmentRange.startIndex);
@@ -149,13 +149,13 @@ class SegmentSelectionCursor extends TextPaneCursor {
 
   @override
   List<TextPaneCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList) {
-    SegmentSelectionCursor cursor = copyWith();
-    List<SegmentSelectionCursor?> separatedCursors = List.filled(sentenceSegmentList.length, null);
-    SegmentSelectionCursor initialCursor = SegmentSelectionCursor(
+    WordCursor cursor = copyWith();
+    List<WordCursor?> separatedCursors = List.filled(sentenceSegmentList.length, null);
+    WordCursor initialCursor = WordCursor(
       lyricSnippet: lyricSnippet,
       seekPosition: seekPosition,
       segmentRange: SegmentRange(SentenceSegmentIndex(0), SentenceSegmentIndex(0)),
-      isRangeSelection: isRangeSelection,
+      isExpandMode: isExpandMode,
     );
     for (int index = 0; index < sentenceSegmentList.length; index++) {
       SentenceSegmentIndex segmentIndex = SentenceSegmentIndex(index);
@@ -167,9 +167,9 @@ class SegmentSelectionCursor extends TextPaneCursor {
   }
 
   @override
-  SegmentSelectionCursor shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {
+  WordCursor shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {
     if (segmentRange.startIndex.index - 1 < 0 || segmentRange.endIndex.index - 1 < 0) {
-      return SegmentSelectionCursor.empty;
+      return WordCursor.empty;
     }
     SentenceSegmentIndex startIndex = segmentRange.startIndex - sentenceSegmentList.segmentLength;
     SentenceSegmentIndex endIndex = segmentRange.endIndex - sentenceSegmentList.segmentLength;
@@ -178,9 +178,9 @@ class SegmentSelectionCursor extends TextPaneCursor {
   }
 
   @override
-  SegmentSelectionCursor shiftLeftBySentenceSegment(SentenceSegment sentenceSegment) {
+  WordCursor shiftLeftBySentenceSegment(SentenceSegment sentenceSegment) {
     if (segmentRange.startIndex.index - 1 < 0 || segmentRange.endIndex.index - 1 < 0) {
-      return SegmentSelectionCursor.empty;
+      return WordCursor.empty;
     }
     SentenceSegmentIndex startIndex = segmentRange.startIndex - 1;
     SentenceSegmentIndex endIndex = segmentRange.endIndex - 1;
@@ -188,37 +188,37 @@ class SegmentSelectionCursor extends TextPaneCursor {
     return copyWith(segmentRange: newRange);
   }
 
-  SegmentSelectionCursor copyWith({
+  WordCursor copyWith({
     LyricSnippet? lyricSnippet,
     SeekPosition? seekPosition,
     SegmentRange? segmentRange,
-    bool? isRangeSelection,
+    bool? isExpandMode,
   }) {
-    return SegmentSelectionCursor(
+    return WordCursor(
       lyricSnippet: lyricSnippet ?? this.lyricSnippet,
       seekPosition: seekPosition ?? this.seekPosition,
       segmentRange: segmentRange ?? this.segmentRange,
-      isRangeSelection: isRangeSelection ?? this.isRangeSelection,
+      isExpandMode: isExpandMode ?? this.isExpandMode,
     );
   }
 
   @override
   String toString() {
-    return 'SegmentSelectionCursor(ID: $lyricSnippet, segmentIndex: $segmentRange)';
+    return 'WordCursor(ID: $lyricSnippet, segmentIndex: $segmentRange)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final SegmentSelectionCursor otherSentenceSegments = other as SegmentSelectionCursor;
+    final WordCursor otherSentenceSegments = other as WordCursor;
     if (lyricSnippet != otherSentenceSegments.lyricSnippet) return false;
     if (seekPosition != otherSentenceSegments.seekPosition) return false;
     if (segmentRange != otherSentenceSegments.segmentRange) return false;
-    if (isRangeSelection != otherSentenceSegments.isRangeSelection) return false;
+    if (isExpandMode != otherSentenceSegments.isExpandMode) return false;
     return true;
   }
 
   @override
-  int get hashCode => lyricSnippet.hashCode ^ seekPosition.hashCode ^ segmentRange.hashCode ^ isRangeSelection.hashCode;
+  int get hashCode => lyricSnippet.hashCode ^ seekPosition.hashCode ^ segmentRange.hashCode ^ isExpandMode.hashCode;
 }

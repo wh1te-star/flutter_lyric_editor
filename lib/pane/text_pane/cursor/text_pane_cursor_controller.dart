@@ -33,7 +33,7 @@ class TextPaneCursorController {
   static final TextPaneCursorController _empty = TextPaneCursorController._privateConstructor(
     LyricSnippetMap.empty,
     LyricSnippetID.empty,
-    SentenceSelectionListCursor.empty,
+    BaseListCursor.empty,
     SeekPosition.empty,
     CursorBlinker.empty,
   );
@@ -69,21 +69,21 @@ class TextPaneCursorController {
     return copyWith(textPaneListCursor: nextCursor);
   }
 
-  TextPaneCursorController enterSegmentSelectionMode() {
-    assert(textPaneListCursor is SentenceSelectionListCursor, "This is an unexpected call. The cursor type must be SentenceSelectionCursor, but is ${textPaneListCursor.runtimeType}");
-    TextPaneListCursor cursor = (textPaneListCursor as SentenceSelectionListCursor).enterSegmentSelectionMode();
+  TextPaneCursorController enterWordMode() {
+    assert(textPaneListCursor is BaseListCursor, "This is an unexpected call. The cursor type must be BaseCursor, but is ${textPaneListCursor.runtimeType}");
+    TextPaneListCursor cursor = (textPaneListCursor as BaseListCursor).enterWordMode();
     return copyWith(textPaneListCursor: cursor);
   }
 
-  TextPaneCursorController exitSegmentSelectionMode() {
-    assert(textPaneListCursor is SegmentSelectionListCursor, "This is an unexpected call. The cursor type must be SegmentSelectionCursor, but is ${textPaneListCursor.runtimeType}");
-    TextPaneListCursor cursor = (textPaneListCursor as SegmentSelectionListCursor).exitSegmentSelectionMode();
+  TextPaneCursorController exitWordMode() {
+    assert(textPaneListCursor is WordListCursor, "This is an unexpected call. The cursor type must be WordCursor, but is ${textPaneListCursor.runtimeType}");
+    TextPaneListCursor cursor = (textPaneListCursor as WordListCursor).exitWordMode();
     return copyWith(textPaneListCursor: cursor);
   }
 
-  TextPaneCursorController switchToRangeSelection() {
-    assert(textPaneListCursor is SegmentSelectionListCursor, "This is an unexpected call. The cursor type must be SegmentSelectionCursor, but is ${textPaneListCursor.runtimeType}");
-    TextPaneListCursor cursor = (textPaneListCursor as SegmentSelectionListCursor).switchToRangeSelection();
+  TextPaneCursorController switchToExpandMode() {
+    assert(textPaneListCursor is WordListCursor, "This is an unexpected call. The cursor type must be WordCursor, but is ${textPaneListCursor.runtimeType}");
+    TextPaneListCursor cursor = (textPaneListCursor as WordListCursor).switchToExpandMode();
     return copyWith(textPaneListCursor: cursor);
   }
 

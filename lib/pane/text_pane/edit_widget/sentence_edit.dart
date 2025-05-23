@@ -42,10 +42,10 @@ class LyricSnippetEdit extends StatelessWidget {
 
       TextPaneCursor? cursor = cursorList[index];
       bool isTimingPointPosition = false;
-      if (cursor is SentenceSelectionCursor && cursor.insertionPosition == InsertionPosition(0)) {
+      if (cursor is BaseCursor && cursor.insertionPosition == InsertionPosition(0)) {
         isTimingPointPosition = true;
       }
-      if (cursor is AnnotationSelectionCursor && cursor.insertionPosition == InsertionPosition(0)) {
+      if (cursor is RubyCursor && cursor.insertionPosition == InsertionPosition(0)) {
         isTimingPointPosition = true;
       }
 
@@ -101,7 +101,7 @@ class LyricSnippetEdit extends StatelessWidget {
     TextPaneCursor? textPaneCursor,
     CursorBlinker? cursorBlinker,
   ) {
-    if (textPaneCursor is! SentenceSelectionCursor && textPaneCursor is! SegmentSelectionCursor) {
+    if (textPaneCursor is! BaseCursor && textPaneCursor is! WordCursor) {
       textPaneCursor = null;
       cursorBlinker = null;
     }
@@ -118,7 +118,7 @@ class LyricSnippetEdit extends StatelessWidget {
     TextPaneCursor? textPaneCursor,
     CursorBlinker? cursorBlinker,
   ) {
-    if (textPaneCursor is! AnnotationSelectionCursor) {
+    if (textPaneCursor is! RubyCursor) {
       textPaneCursor = null;
       cursorBlinker = null;
     }

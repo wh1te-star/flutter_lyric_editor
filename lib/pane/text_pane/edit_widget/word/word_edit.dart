@@ -41,8 +41,8 @@ class SentenceSegmentEdit extends StatelessWidget {
 
   Widget cursorWidget() {
     TextStyle textStyle = cursorTextStyle(textPaneCursor != null);
-    if (textPaneCursor is SentenceSelectionCursor && cursorBlinker != null && cursorBlinker!.visible) {
-      SentenceSelectionCursor cursor = textPaneCursor as SentenceSelectionCursor;
+    if (textPaneCursor is BaseCursor && cursorBlinker != null && cursorBlinker!.visible) {
+      BaseCursor cursor = textPaneCursor as BaseCursor;
       double cursorOffset = calculateCursorPosition(
         sentenceSegment.word,
         cursor.insertionPosition.position,
@@ -63,10 +63,10 @@ class SentenceSegmentEdit extends StatelessWidget {
 
   Widget textWidget() {
     TextStyle textStyle = normalTextStyle;
-    if (textPaneCursor != null && textPaneCursor is! SegmentSelectionCursor) {
+    if (textPaneCursor != null && textPaneCursor is! WordCursor) {
       textStyle = underlineTextStyle;
     }
-    if (textPaneCursor is SegmentSelectionCursor && cursorBlinker!.visible) {
+    if (textPaneCursor is WordCursor && cursorBlinker!.visible) {
       textStyle = incursorTextStyle;
     }
     return Text(
