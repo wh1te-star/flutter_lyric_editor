@@ -19,12 +19,12 @@ import 'package:lyric_editor/position/timing_index.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 
-class Timing {
+class Timetable {
   final SeekPosition startTimestamp;
   final SentenceSegmentList sentenceSegmentList;
   late TimingPointList timingPointList;
 
-  Timing({
+  Timetable({
     required this.startTimestamp,
     required this.sentenceSegmentList,
   }) {
@@ -41,7 +41,7 @@ class Timing {
   int get charLength => sentenceSegmentList.charLength;
   int get segmentLength => sentenceSegmentList.segmentLength;
 
-  static Timing get empty => Timing(
+  static Timetable get empty => Timetable(
         startTimestamp: SeekPosition.empty,
         sentenceSegmentList: SentenceSegmentList.empty,
       );
@@ -88,22 +88,22 @@ class Timing {
     return timingPoints[segmentIndex.index + 1];
   }
 
-  Timing editSentence(String newSentence) {
+  Timetable editSentence(String newSentence) {
     List<int> charPositionTranslation = getCharPositionTranslation(sentence, newSentence);
 
     SentenceSegmentList sentenceSegmentList = this.sentenceSegmentList;
     List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
-    Timing timing = Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
+    Timetable timetable = Timetable(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
     for (TimingPoint timingPoint in timingPointList.list) {
       InsertionPosition currentCharPosition = timingPoint.insertionPosition;
       if (charPositionTranslation[currentCharPosition.position] == -1) {
         try {
-          timing = timing.deleteTimingPoint(currentCharPosition, Option.former);
+          timetable = timetable.deleteTimingPoint(currentCharPosition, Option.former);
         } on TimingPointException catch (_, e) {
           debugPrint(e.toString());
         }
         try {
-          timing = timing.deleteTimingPoint(currentCharPosition, Option.latter);
+          timetable = timetable.deleteTimingPoint(currentCharPosition, Option.latter);
         } on TimingPointException catch (_, e) {
           debugPrint(e.toString());
         }
@@ -113,11 +113,11 @@ class Timing {
     for (int index = 0; index < sentenceSegments.length; index++) {
       int leftCharPosition = charPositionTranslation[timingPoints[index].insertionPosition.position];
       int rightCharPosition = charPositionTranslation[timingPoints[index + 1].insertionPosition.position];
-      timing.sentenceSegmentList.list[index].word = newSentence.substring(leftCharPosition, rightCharPosition);
+      timetable.sentenceSegmentList.list[index].word = newSentence.substring(leftCharPosition, rightCharPosition);
     }
-    timing = timing.integrate2OrMoreTimingPoints();
+    timetable = timetable.integrate2OrMoreTimingPoints();
 
-    return timing;
+    return timetable;
   }
 
   List<int> getCharPositionTranslation(String oldSentence, String newSentence) {
@@ -155,7 +155,7 @@ class Timing {
     return indexTranslation;
   }
 
-  Timing integrate2OrMoreTimingPoints() {
+  Timetable integrate2OrMoreTimingPoints() {
     List<SentenceSegment> result = [];
     int accumulatedSum = 0;
 
@@ -181,7 +181,7 @@ class Timing {
       ));
     }
 
-    return Timing(startTimestamp: startTimestamp, sentenceSegmentList: SentenceSegmentList(result));
+    return Timetable(startTimestamp: startTimestamp, sentenceSegmentList: SentenceSegmentList(result));
   }
 
   String getSegmentWord(int index) {
@@ -265,47 +265,47 @@ class Timing {
     return SentenceSegmentInsertionPositionInfo.empty;
   }
 
-  Timing manipulateTiming(SeekPosition seekPosition, SentenceEdge sentenceEdge, bool holdLength) {
+  Timetable manipulateTimetable(SeekPosition seekPosition, SentenceEdge sentenceEdge, bool holdLength) {
     if (holdLength) {
       if (sentenceEdge == SentenceEdge.start) {
         Duration shiftDuration = Duration(milliseconds: startTimestamp.position - seekPosition.position);
-        return shiftTimingBy(shiftDuration);
+        return shiftTimetableBy(shiftDuration);
       } else {
         Duration shiftDuration = Duration(milliseconds: seekPosition.position - endTimestamp.position);
-        return shiftTimingBy(shiftDuration);
+        return shiftTimetableBy(shiftDuration);
       }
     }
 
     if (sentenceEdge == SentenceEdge.start) {
       if (seekPosition < startTimestamp) {
         Duration extendDuration = Duration(milliseconds: startTimestamp.position - seekPosition.position);
-        return extendTimingBy(SentenceEdge.start, extendDuration);
+        return extendTimetableBy(SentenceEdge.start, extendDuration);
       }
       if (startTimestamp < seekPosition) {
         Duration shortenDuration = Duration(milliseconds: seekPosition.position - startTimestamp.position);
-        return shortenTimingBy(SentenceEdge.start, shortenDuration);
+        return shortenTimetableBy(SentenceEdge.start, shortenDuration);
       }
     } else {
       if (seekPosition < endTimestamp) {
         Duration shortenDuration = Duration(milliseconds: endTimestamp.position - seekPosition.position);
-        return shortenTimingBy(SentenceEdge.start, shortenDuration);
+        return shortenTimetableBy(SentenceEdge.start, shortenDuration);
       }
       if (endTimestamp < seekPosition) {
         Duration extendDuration = Duration(milliseconds: seekPosition.position - endTimestamp.position);
-        return extendTimingBy(SentenceEdge.start, extendDuration);
+        return extendTimetableBy(SentenceEdge.start, extendDuration);
       }
     }
     return this;
   }
 
-  Timing shiftTimingBy(Duration shiftDuration) {
-    return Timing(
+  Timetable shiftTimetableBy(Duration shiftDuration) {
+    return Timetable(
       startTimestamp: startTimestamp + shiftDuration,
       sentenceSegmentList: sentenceSegmentList,
     );
   }
 
-  Timing extendTimingBy(SentenceEdge sentenceEdge, Duration extendDuration) {
+  Timetable extendTimetableBy(SentenceEdge sentenceEdge, Duration extendDuration) {
     assert(extendDuration >= Duration.zero, "Should be shorten function.");
 
     SeekPosition startTimestamp = this.startTimestamp;
@@ -317,10 +317,10 @@ class Timing {
       sentenceSegmentList.list.last.duration += extendDuration;
     }
 
-    return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
+    return Timetable(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
   }
 
-  Timing shortenTimingBy(SentenceEdge sentenceEdge, Duration shortenDuration) {
+  Timetable shortenTimetableBy(SentenceEdge sentenceEdge, Duration shortenDuration) {
     assert(shortenDuration >= Duration.zero, "Should be extend function.");
 
     SeekPosition startTimestamp = this.startTimestamp;
@@ -347,10 +347,10 @@ class Timing {
       sentenceSegments.last.duration -= rest;
     }
 
-    return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
+    return Timetable(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
   }
 
-  Timing addTimingPoint(InsertionPosition insertionPosition, SeekPosition seekPosition) {
+  Timetable addTimingPoint(InsertionPosition insertionPosition, SeekPosition seekPosition) {
     if (insertionPosition.position <= 0 || sentence.length <= insertionPosition.position) {
       throw TimingPointException("The insertion position is out of the valid range.");
     }
@@ -382,7 +382,7 @@ class Timing {
         TimingPoint(insertionPosition, seekPosition),
       );
       SentenceSegmentList sentenceSegmentList = syncSentenceSegments(TimingPointList(timingPoints));
-      return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
+      return Timetable(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
     }
 
     int count = timingPoints.where((TimingPoint timingPoint) {
@@ -417,10 +417,10 @@ class Timing {
     }
 
     SentenceSegmentList sentenceSegmentList = syncSentenceSegments(TimingPointList(timingPoints));
-    return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
+    return Timetable(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
   }
 
-  Timing deleteTimingPoint(InsertionPosition charPosition, Option option) {
+  Timetable deleteTimingPoint(InsertionPosition charPosition, Option option) {
     List<TimingPoint> timingPoints = timingPointList.list;
     int index = timingPoints.indexWhere((timingPoint) => timingPoint.insertionPosition == charPosition);
     if (index == -1) {
@@ -433,14 +433,14 @@ class Timing {
     timingPoints.removeAt(index);
 
     SentenceSegmentList sentenceSegmentList = syncSentenceSegments(TimingPointList(timingPoints));
-    return Timing(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
+    return Timetable(startTimestamp: startTimestamp, sentenceSegmentList: sentenceSegmentList);
   }
 
-  Timing copyWith({
+  Timetable copyWith({
     SeekPosition? startTimestamp,
     SentenceSegmentList? sentenceSegmentList,
   }) {
-    return Timing(
+    return Timetable(
       startTimestamp: startTimestamp ?? this.startTimestamp.copyWith(),
       sentenceSegmentList: sentenceSegmentList ?? this.sentenceSegmentList.copyWith(),
     );
@@ -456,7 +456,7 @@ class Timing {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! Timing) {
+    if (other is! Timetable) {
       return false;
     }
     return startTimestamp == other.startTimestamp && sentenceSegmentList == other.sentenceSegmentList;

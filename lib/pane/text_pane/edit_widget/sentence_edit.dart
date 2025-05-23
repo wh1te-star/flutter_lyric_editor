@@ -38,7 +38,7 @@ class SentenceEdit extends StatelessWidget {
       Ruby? ruby = rubyPhrasePositionList[index].item2;
 
       SentenceSegmentList? sentenceSubList = sentence.getSentenceSegmentList(phrasePosition);
-      SentenceSegmentList? rubySubList = ruby?.timing.sentenceSegmentList;
+      SentenceSegmentList? rubySubList = ruby?.timetable.sentenceSegmentList;
 
       TextPaneCursor? cursor = cursorList[index];
       bool isTimingPointPosition = false;

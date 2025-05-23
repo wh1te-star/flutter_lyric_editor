@@ -18,37 +18,37 @@ import 'package:tuple/tuple.dart';
 
 class Sentence {
   final VocalistID vocalistID;
-  final Timing timing;
+  final Timetable timetable;
   final RubyMap rubyMap;
 
   Sentence({
     required this.vocalistID,
-    required this.timing,
+    required this.timetable,
     required this.rubyMap,
   });
 
   static Sentence get empty => Sentence(
         vocalistID: VocalistID(0),
-        timing: Timing.empty,
+        timetable: Timetable.empty,
         rubyMap: RubyMap.empty,
       );
-  bool get isEmpty => vocalistID.id == 0 && timing.startTimestamp.isEmpty && timing.isEmpty;
+  bool get isEmpty => vocalistID.id == 0 && timetable.startTimestamp.isEmpty && timetable.isEmpty;
 
-  String get sentence => timing.sentence;
-  SeekPosition get startTimestamp => timing.startTimestamp;
-  SeekPosition get endTimestamp => timing.endTimestamp;
-  List<SentenceSegment> get sentenceSegments => timing.sentenceSegmentList.list;
-  List<TimingPoint> get timingPoints => timing.timingPointList.list;
-  int get charLength => timing.charLength;
-  int get segmentLength => timing.segmentLength;
-  SentenceSegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timing.getSegmentIndexFromSeekPosition(seekPosition);
-  InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timing.getInsertionPositionInfo(insertionPosition);
-  double getSegmentProgress(SeekPosition seekPosition) => timing.getSegmentProgress(seekPosition);
-  SentenceSegmentList getSentenceSegmentList(PhrasePosition phrasePosition) => timing.getSentenceSegmentList(phrasePosition);
-  TimingPointIndex leftTimingPointIndex(SentenceSegmentIndex segmentIndex) => timing.leftTimingPointIndex(segmentIndex);
-  TimingPointIndex rightTimingPointIndex(SentenceSegmentIndex segmentIndex) => timing.rightTimingPointIndex(segmentIndex);
-  TimingPoint leftTimingPoint(SentenceSegmentIndex segmentIndex) => timing.leftTimingPoint(segmentIndex);
-  TimingPoint rightTimingPoint(SentenceSegmentIndex segmentIndex) => timing.rightTimingPoint(segmentIndex);
+  String get sentence => timetable.sentence;
+  SeekPosition get startTimestamp => timetable.startTimestamp;
+  SeekPosition get endTimestamp => timetable.endTimestamp;
+  List<SentenceSegment> get sentenceSegments => timetable.sentenceSegmentList.list;
+  List<TimingPoint> get timingPoints => timetable.timingPointList.list;
+  int get charLength => timetable.charLength;
+  int get segmentLength => timetable.segmentLength;
+  SentenceSegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timetable.getSegmentIndexFromSeekPosition(seekPosition);
+  InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timetable.getInsertionPositionInfo(insertionPosition);
+  double getSegmentProgress(SeekPosition seekPosition) => timetable.getSegmentProgress(seekPosition);
+  SentenceSegmentList getSentenceSegmentList(PhrasePosition phrasePosition) => timetable.getSentenceSegmentList(phrasePosition);
+  TimingPointIndex leftTimingPointIndex(SentenceSegmentIndex segmentIndex) => timetable.leftTimingPointIndex(segmentIndex);
+  TimingPointIndex rightTimingPointIndex(SentenceSegmentIndex segmentIndex) => timetable.rightTimingPointIndex(segmentIndex);
+  TimingPoint leftTimingPoint(SentenceSegmentIndex segmentIndex) => timetable.leftTimingPoint(segmentIndex);
+  TimingPoint rightTimingPoint(SentenceSegmentIndex segmentIndex) => timetable.rightTimingPoint(segmentIndex);
 
   MapEntry<PhrasePosition, Ruby> getRubyWords(SentenceSegmentIndex index) {
     return rubyMap.map.entries.firstWhere(
@@ -61,9 +61,9 @@ class Sentence {
     for (MapEntry<PhrasePosition, Ruby> entry in rubyMap.map.entries) {
       PhrasePosition phrasePosition = entry.key;
       Ruby ruby = entry.value;
-      SeekPosition startTimestamp = timing.startTimestamp;
-      List<TimingPoint> timingPoints = timing.timingPointList.list;
-      List<TimingPoint> rubyTimingPoints = ruby.timing.timingPointList.list;
+      SeekPosition startTimestamp = timetable.startTimestamp;
+      List<TimingPoint> timingPoints = timetable.timingPointList.list;
+      List<TimingPoint> rubyTimingPoints = ruby.timetable.timingPointList.list;
       SeekPosition rubyStartSeekPosition = SeekPosition(startTimestamp.position + timingPoints[phrasePosition.startIndex.index].seekPosition.position);
       SeekPosition startSeekPosition = SeekPosition(rubyStartSeekPosition.position + rubyTimingPoints.first.seekPosition.position);
       SeekPosition endSeekPosition = SeekPosition(rubyStartSeekPosition.position + rubyTimingPoints.last.seekPosition.position);
@@ -75,31 +75,31 @@ class Sentence {
   }
 
   Sentence editSentence(String newSentence) {
-    Timing copiedTiming = timing.copyWith();
-    copiedTiming = copiedTiming.editSentence(newSentence);
-    return Sentence(vocalistID: vocalistID, timing: copiedTiming, rubyMap: rubyMap);
+    Timetable copiedTimetable = timetable.copyWith();
+    copiedTimetable = copiedTimetable.editSentence(newSentence);
+    return Sentence(vocalistID: vocalistID, timetable: copiedTimetable, rubyMap: rubyMap);
   }
 
   Sentence addTimingPoint(InsertionPosition charPosition, SeekPosition seekPosition) {
     RubyMap rubyMap = carryUpRubySegments(charPosition);
-    Timing timing = this.timing.addTimingPoint(charPosition, seekPosition);
-    return Sentence(vocalistID: vocalistID, timing: timing, rubyMap: rubyMap);
+    Timetable timetable = this.timetable.addTimingPoint(charPosition, seekPosition);
+    return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
   Sentence removeTimingPoint(InsertionPosition charPosition, Option option) {
     RubyMap rubyMap = carryDownRubySegments(charPosition);
-    Timing timing = this.timing.deleteTimingPoint(charPosition, option);
-    return Sentence(vocalistID: vocalistID, timing: timing, rubyMap: rubyMap);
+    Timetable timetable = this.timetable.deleteTimingPoint(charPosition, option);
+    return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
   Sentence addRubyTimingPoint(PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
-    Timing timing = rubyMap[phrasePosition]!.timing.addTimingPoint(charPosition, seekPosition);
-    return Sentence(vocalistID: vocalistID, timing: timing, rubyMap: rubyMap);
+    Timetable timetable = rubyMap[phrasePosition]!.timetable.addTimingPoint(charPosition, seekPosition);
+    return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
   Sentence removeRubyTimingPoint(PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
-    Timing timing = rubyMap[phrasePosition]!.timing.deleteTimingPoint(charPosition, option);
-    return Sentence(vocalistID: vocalistID, timing: timing, rubyMap: rubyMap);
+    Timetable timetable = rubyMap[phrasePosition]!.timetable.deleteTimingPoint(charPosition, option);
+    return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
   Sentence addRuby(PhrasePosition phrasePosition, String rubyString) {
@@ -108,24 +108,24 @@ class Sentence {
     SeekPosition rubyEndTimestamp = SeekPosition(startTimestamp.position + timingPoints[phrasePosition.endIndex.index + 1].seekPosition.position);
     Duration rubyDuration = Duration(milliseconds: rubyEndTimestamp.position - rubyStartTimestamp.position);
     SentenceSegment sentenceSegment = SentenceSegment(rubyString, rubyDuration);
-    Timing timing = Timing(
+    Timetable timetable = Timetable(
       startTimestamp: rubyStartTimestamp,
       sentenceSegmentList: SentenceSegmentList([sentenceSegment]),
     );
-    rubyMap.map[phrasePosition] = Ruby(timing: timing);
-    return Sentence(vocalistID: vocalistID, timing: timing, rubyMap: rubyMap);
+    rubyMap.map[phrasePosition] = Ruby(timetable: timetable);
+    return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
   Sentence removeRuby(PhrasePosition phrasePosition) {
     RubyMap rubyMap = this.rubyMap;
     rubyMap.map.remove(phrasePosition);
-    return Sentence(vocalistID: vocalistID, timing: timing, rubyMap: rubyMap);
+    return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
   Sentence manipulateSentence(SeekPosition seekPosition, SentenceEdge sentenceEdge, bool holdLength) {
-    Timing newTiming = timing.copyWith();
-    newTiming = newTiming.manipulateTiming(seekPosition, sentenceEdge, holdLength);
-    return Sentence(vocalistID: vocalistID, timing: newTiming, rubyMap: rubyMap);
+    Timetable newTimetable = timetable.copyWith();
+    newTimetable = newTimetable.manipulateTimetable(seekPosition, sentenceEdge, holdLength);
+    return Sentence(vocalistID: vocalistID, timetable: newTimetable, rubyMap: rubyMap);
   }
 
   Tuple2<Sentence, Sentence> divideSentence(InsertionPosition charPosition, SeekPosition seekPosition) {
@@ -135,21 +135,21 @@ class Sentence {
     Sentence sentence2 = Sentence.empty;
 
     if (formerString.isNotEmpty) {
-      Timing newTiming = timing.copyWith();
-      newTiming = newTiming.addTimingPoint(charPosition, seekPosition);
+      Timetable newTimetable = timetable.copyWith();
+      newTimetable = newTimetable.addTimingPoint(charPosition, seekPosition);
       sentence1 = Sentence(
         vocalistID: vocalistID,
-        timing: newTiming,
+        timetable: newTimetable,
         rubyMap: rubyMap,
       );
     }
 
     if (latterString.isNotEmpty) {
-      Timing newTiming = timing.copyWith();
-      newTiming = newTiming.addTimingPoint(charPosition, seekPosition);
+      Timetable newTimetable = timetable.copyWith();
+      newTimetable = newTimetable.addTimingPoint(charPosition, seekPosition);
       sentence2 = Sentence(
         vocalistID: vocalistID,
-        timing: newTiming,
+        timetable: newTimetable,
         rubyMap: rubyMap,
       );
     }
@@ -158,7 +158,7 @@ class Sentence {
   }
 
   RubyMap carryUpRubySegments(InsertionPosition insertionPosition) {
-    InsertionPositionInfo info = timing.getInsertionPositionInfo(insertionPosition)!;
+    InsertionPositionInfo info = timetable.getInsertionPositionInfo(insertionPosition)!;
     Map<PhrasePosition, Ruby> updatedRubys = {};
 
     rubyMap.map.forEach((PhrasePosition key, Ruby value) {
@@ -177,8 +177,8 @@ class Sentence {
 
         case TimingPointInsertionPositionInfo():
           TimingPointIndex index = info.timingPointIndex;
-          TimingPointIndex startIndex = timing.leftTimingPointIndex(key.startIndex);
-          TimingPointIndex endIndex = timing.rightTimingPointIndex(key.endIndex);
+          TimingPointIndex startIndex = timetable.leftTimingPointIndex(key.startIndex);
+          TimingPointIndex endIndex = timetable.rightTimingPointIndex(key.endIndex);
           if (index <= startIndex) {
             newKey.startIndex++;
             newKey.endIndex++;
@@ -198,7 +198,7 @@ class Sentence {
   }
 
   RubyMap carryDownRubySegments(InsertionPosition insertionPosition) {
-    InsertionPositionInfo info = timing.getInsertionPositionInfo(insertionPosition)!;
+    InsertionPositionInfo info = timetable.getInsertionPositionInfo(insertionPosition)!;
     Map<PhrasePosition, Ruby> updatedRubys = {};
     int index = -1;
     if (info is SentenceSegmentInsertionPositionInfo) {
@@ -287,12 +287,12 @@ class Sentence {
 
   Sentence copyWith({
     VocalistID? vocalistID,
-    Timing? timing,
+    Timetable? timetable,
     RubyMap? rubyMap,
   }) {
     return Sentence(
       vocalistID: vocalistID ?? this.vocalistID,
-      timing: timing ?? this.timing,
+      timetable: timetable ?? this.timetable,
       rubyMap: rubyMap ?? this.rubyMap,
     );
   }
@@ -308,9 +308,9 @@ class Sentence {
     if (runtimeType != other.runtimeType) {
       return false;
     }
-    return vocalistID == other.vocalistID && timing == other.timing && rubyMap == other.rubyMap;
+    return vocalistID == other.vocalistID && timetable == other.timetable && rubyMap == other.rubyMap;
   }
 
   @override
-  int get hashCode => vocalistID.hashCode ^ timing.hashCode ^ rubyMap.hashCode;
+  int get hashCode => vocalistID.hashCode ^ timetable.hashCode ^ rubyMap.hashCode;
 }

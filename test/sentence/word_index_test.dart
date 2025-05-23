@@ -7,7 +7,7 @@ import 'package:lyric_editor/position/word_index.dart';
 
 void main() {
   group('test', () {
-    Timing testData1 = Timing(
+    Timetable testData1 = Timetable(
       startTimestamp: SeekPosition(2000),
       sentenceSegmentList: SentenceSegmentList([
         SentenceSegment("abcde", Duration(milliseconds: 1000)),

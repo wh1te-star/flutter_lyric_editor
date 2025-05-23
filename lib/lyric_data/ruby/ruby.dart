@@ -9,42 +9,42 @@ import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/phrase_position.dart';
 
 class Ruby {
-  Timing timing;
+  Timetable timetable;
 
   Ruby({
-    required this.timing,
+    required this.timetable,
   });
 
   static Ruby get empty {
     return Ruby(
-      timing: Timing.empty,
+      timetable: Timetable.empty,
     );
   }
 
   bool isEmpty() {
-    return timing.isEmpty;
+    return timetable.isEmpty;
   }
 
-  String get sentence => timing.sentence;
-  SeekPosition get startTimestamp => timing.startTimestamp;
-  SeekPosition get endTimestamp => timing.endTimestamp;
-  List<SentenceSegment> get sentenceSegments => timing.sentenceSegmentList.list;
-  List<TimingPoint> get timingPoints => timing.timingPointList.list;
-  SentenceSegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timing.getSegmentIndexFromSeekPosition(seekPosition);
-  InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timing.getInsertionPositionInfo(insertionPosition);
-  SentenceSegmentList getSentenceSegmentList(PhrasePosition phrasePosition) => timing.getSentenceSegmentList(phrasePosition);
+  String get sentence => timetable.sentence;
+  SeekPosition get startTimestamp => timetable.startTimestamp;
+  SeekPosition get endTimestamp => timetable.endTimestamp;
+  List<SentenceSegment> get sentenceSegments => timetable.sentenceSegmentList.list;
+  List<TimingPoint> get timingPoints => timetable.timingPointList.list;
+  SentenceSegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timetable.getSegmentIndexFromSeekPosition(seekPosition);
+  InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timetable.getInsertionPositionInfo(insertionPosition);
+  SentenceSegmentList getSentenceSegmentList(PhrasePosition phrasePosition) => timetable.getSentenceSegmentList(phrasePosition);
 
   Ruby copyWith({
-    Timing? timing,
+    Timetable? timetable,
   }) {
     return Ruby(
-      timing: timing ?? this.timing,
+      timetable: timetable ?? this.timetable,
     );
   }
 
   @override
   String toString() {
-    return "Ruby($timing)";
+    return "Ruby($timetable)";
   }
 
   @override
@@ -58,9 +58,9 @@ class Ruby {
     if (runtimeType != other.runtimeType) {
       return false;
     }
-    return timing == other.timing;
+    return timetable == other.timetable;
   }
 
   @override
-  int get hashCode => timing.hashCode;
+  int get hashCode => timetable.hashCode;
 }

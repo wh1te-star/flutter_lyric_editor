@@ -46,7 +46,7 @@ class BaseCursor extends TextPaneCursor {
     required SeekPosition seekPosition,
   }) {
     SentenceSegmentIndex segmentIndex = sentence.getSegmentIndexFromSeekPosition(seekPosition);
-    InsertionPosition insertionPosition = sentence.timing.leftTimingPoint(segmentIndex).insertionPosition + 1;
+    InsertionPosition insertionPosition = sentence.timetable.leftTimingPoint(segmentIndex).insertionPosition + 1;
     return BaseCursor(
       sentence: sentence,
       seekPosition: seekPosition,
@@ -76,7 +76,7 @@ class BaseCursor extends TextPaneCursor {
         return copyWith(option: Option.former);
       }
 
-      TimingPointIndex rightTimingPointIndex = sentence.timing.rightTimingPointIndex(highlightSegmentIndex);
+      TimingPointIndex rightTimingPointIndex = sentence.timetable.rightTimingPointIndex(highlightSegmentIndex);
       TimingPointIndex timingPointIndex = insertionPositionInfo.timingPointIndex;
       if (timingPointIndex == rightTimingPointIndex) {
         nextInsertionPosition = insertionPosition - 1;
@@ -126,7 +126,7 @@ class BaseCursor extends TextPaneCursor {
         return copyWith(option: Option.latter);
       }
 
-      TimingPointIndex leftTimingPointIndex = sentence.timing.leftTimingPointIndex(highlightSegmentIndex);
+      TimingPointIndex leftTimingPointIndex = sentence.timetable.leftTimingPointIndex(highlightSegmentIndex);
       TimingPointIndex timingPointIndex = insertionPositionInfo.timingPointIndex;
       if (insertionPositionInfo.duplicate) timingPointIndex = timingPointIndex + 1;
       if (timingPointIndex == leftTimingPointIndex) {

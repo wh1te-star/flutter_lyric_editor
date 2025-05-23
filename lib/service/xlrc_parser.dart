@@ -97,11 +97,11 @@ class XlrcParser {
       }).toList());
 
       final VocalistID vocalistID = vocalistColorMap.getVocalistIDByName(vocalistName);
-      final Timing timing = Timing(startTimestamp: SeekPosition(startTimestamp), sentenceSegmentList: sentenceSegmentList);
+      final Timetable timetable = Timetable(startTimestamp: SeekPosition(startTimestamp), sentenceSegmentList: sentenceSegmentList);
 
       sentenceMap = sentenceMap.addSentence(Sentence(
         vocalistID: vocalistID,
-        timing: timing,
+        timetable: timetable,
         rubyMap: RubyMap({}),
       ));
     }

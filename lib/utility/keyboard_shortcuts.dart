@@ -138,7 +138,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         ),
         AddSentenceIntent: CallbackAction<AddSentenceIntent>(
           onInvoke: (AddSentenceIntent intent) => () {
-            Timing timing = Timing(
+            Timetable timetable = Timetable(
               startTimestamp: musicPlayerProvider.seekPosition,
               sentenceSegmentList: SentenceSegmentList([
                 SentenceSegment("default sentence", Duration(milliseconds: 3000)),
@@ -146,7 +146,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             );
             Sentence sentence = Sentence(
               vocalistID: timelinePaneProvider.selectingVocalist[0],
-              timing: timing,
+              timetable: timetable,
               rubyMap: RubyMap.empty,
             );
             timingService.addSentence(sentence);

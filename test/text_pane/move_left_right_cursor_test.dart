@@ -31,7 +31,7 @@ class PositionTestInfo {
 void main() {
   group('Tests to move to left and right the text pane cursor.', () {
     final SentenceID sentenceID = SentenceID(1);
-    final Timing timingData1 = Timing(
+    final Timetable timetableData1 = Timetable(
       startTimestamp: SeekPosition(2000),
       sentenceSegmentList: SentenceSegmentList([
         SentenceSegment("abc", const Duration(milliseconds: 400)),
@@ -42,7 +42,7 @@ void main() {
         SentenceSegment("rs", const Duration(milliseconds: 200)),
       ]),
     );
-    final Timing timingData2 = Timing(
+    final Timetable timetableData2 = Timetable(
       startTimestamp: SeekPosition(2000),
       sentenceSegmentList: SentenceSegmentList([
         SentenceSegment("abcde", const Duration(milliseconds: 1000)),
@@ -132,7 +132,7 @@ void main() {
     test('Test to move left and right the text pane cursor No.1', () {
       final Sentence sentence = Sentence(
         vocalistID: VocalistID(1),
-        timing: timingData1,
+        timetable: timetableData1,
         rubyMap: RubyMap.empty,
       );
 
@@ -168,7 +168,7 @@ void main() {
     test('Test to move left and right the text pane cursor No.2', () {
       final Sentence lyricSnippet = Sentence(
         vocalistID: VocalistID(1),
-        timing: timingData2,
+        timetable: timetableData2,
         rubyMap: RubyMap.empty,
       );
 

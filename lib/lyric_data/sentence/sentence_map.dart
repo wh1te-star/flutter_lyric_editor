@@ -25,7 +25,7 @@ class SentenceMap {
 
   bool isSentencesOrdered() {
     return map.values.map((Sentence sentence) {
-      return sentence.timing.startTimestamp;
+      return sentence.timetable.startTimestamp;
     }).isSorted((SeekPosition left, SeekPosition right) => left.compareTo(right));
   }
 
@@ -170,14 +170,14 @@ class SentenceMap {
       _swap(formerSentence, latterSentence);
     }
 
-    SentenceSegmentList concatenatedSentenceSegmentList = formerSentence.timing.sentenceSegmentList.copyWith();
+    SentenceSegmentList concatenatedSentenceSegmentList = formerSentence.timetable.sentenceSegmentList.copyWith();
     Duration bondPointDuration = Duration(milliseconds: latterSentence.startTimestamp.position - formerSentence.endTimestamp.position);
-    int indexCarryUp = formerSentence.timing.sentenceSegmentList.list.length;
+    int indexCarryUp = formerSentence.timetable.sentenceSegmentList.list.length;
     if (bondPointDuration > Duration.zero) {
       concatenatedSentenceSegmentList = concatenatedSentenceSegmentList.addSegment(SentenceSegment("", bondPointDuration));
       indexCarryUp++;
     }
-    concatenatedSentenceSegmentList += latterSentence.timing.sentenceSegmentList;
+    concatenatedSentenceSegmentList += latterSentence.timetable.sentenceSegmentList;
 
     RubyMap concatenatedRubyMap = formerSentence.rubyMap.concatenate(indexCarryUp, latterSentence.rubyMap);
 
@@ -185,7 +185,7 @@ class SentenceMap {
     copiedMap.remove(latterSentenceID);
     copiedMap[idGenerator.idGen()] = Sentence(
       vocalistID: formerSentence.vocalistID,
-      timing: Timing(
+      timetable: Timetable(
         startTimestamp: formerSentence.startTimestamp,
         sentenceSegmentList: concatenatedSentenceSegmentList,
       ),

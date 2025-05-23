@@ -76,7 +76,7 @@ class BaseListCursor extends TextPaneListCursor {
     }
     Sentence sentence = sentenceMap.getSentenceByID(sentenceID);
     SentenceSegmentIndex segmentIndex = sentence.getSegmentIndexFromSeekPosition(seekPosition);
-    InsertionPosition insertionPosition = sentence.timing.leftTimingPoint(segmentIndex).insertionPosition + 1;
+    InsertionPosition insertionPosition = sentence.timetable.leftTimingPoint(segmentIndex).insertionPosition + 1;
     return BaseListCursor(
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
