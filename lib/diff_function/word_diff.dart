@@ -1,17 +1,17 @@
-class DiffSegment {
+class WordDiff {
   final String beforeStr;
   final String afterStr;
 
-  DiffSegment(this.beforeStr, this.afterStr) {
+  WordDiff(this.beforeStr, this.afterStr) {
     assert(beforeStr != "" || afterStr != "");
   }
 
-  DiffSegment copyWith({
+  WordDiff copyWith({
     String? beforeStr,
     String? afterStr,
   }) {
     assert((beforeStr ?? beforeStr) != "" || (afterStr ?? afterStr) != "");
-    return DiffSegment(
+    return WordDiff(
       beforeStr ?? this.beforeStr,
       afterStr ?? this.afterStr,
     );
@@ -23,7 +23,7 @@ class DiffSegment {
   }
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is DiffSegment && runtimeType == other.runtimeType && beforeStr == other.beforeStr && afterStr == other.afterStr;
+  bool operator ==(Object other) => identical(this, other) || other is WordDiff && runtimeType == other.runtimeType && beforeStr == other.beforeStr && afterStr == other.afterStr;
 
   @override
   int get hashCode => beforeStr.hashCode ^ afterStr.hashCode;

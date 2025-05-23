@@ -75,8 +75,8 @@ class BaseListCursor extends TextPaneListCursor {
       );
     }
     Sentence sentence = sentenceMap.getSentenceByID(sentenceID);
-    SentenceSegmentIndex segmentIndex = sentence.getSegmentIndexFromSeekPosition(seekPosition);
-    InsertionPosition insertionPosition = sentence.timetable.leftTimingPoint(segmentIndex).insertionPosition + 1;
+    WordIndex wordIndex = sentence.getWordIndexFromSeekPosition(seekPosition);
+    InsertionPosition insertionPosition = sentence.timetable.leftTimingPoint(wordIndex).insertionPosition + 1;
     return BaseListCursor(
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
@@ -185,9 +185,9 @@ class BaseListCursor extends TextPaneListCursor {
       sentenceID = sentenceMap.keys.first;
     }
     Sentence sentence = sentenceMap[sentenceID]!;
-    SentenceSegmentIndex currentSeekSegmentIndex = sentence.getSegmentIndexFromSeekPosition(seekPosition);
+    WordIndex currentSeekWordIndex = sentence.getWordIndexFromSeekPosition(seekPosition);
     InsertionPositionInfo? nextSentencePositionInfo = sentence.getInsertionPositionInfo(baseCursor.insertionPosition);
-    if (nextSentencePositionInfo == null || nextSentencePositionInfo is SentenceSegmentInsertionPositionInfo && nextSentencePositionInfo.sentenceSegmentIndex != currentSeekSegmentIndex) {
+    if (nextSentencePositionInfo == null || nextSentencePositionInfo is WordInsertionPositionInfo && nextSentencePositionInfo.wordIndex != currentSeekWordIndex) {
       return BaseListCursor.defaultCursor(
         sentenceMap: sentenceMap,
         sentenceID: sentenceID,
@@ -240,11 +240,11 @@ class BaseListCursor extends TextPaneListCursor {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final BaseListCursor otherSentenceSegments = other as BaseListCursor;
-    if (sentenceMap != otherSentenceSegments.sentenceMap) return false;
-    if (sentenceID != otherSentenceSegments.sentenceID) return false;
-    if (seekPosition != otherSentenceSegments.seekPosition) return false;
-    if (baseCursor != otherSentenceSegments.baseCursor) return false;
+    final BaseListCursor otherBaseListCursor = other as BaseListCursor;
+    if (sentenceMap != otherBaseListCursor.sentenceMap) return false;
+    if (sentenceID != otherBaseListCursor.sentenceID) return false;
+    if (seekPosition != otherBaseListCursor.seekPosition) return false;
+    if (baseCursor != otherBaseListCursor.baseCursor) return false;
     return true;
   }
 

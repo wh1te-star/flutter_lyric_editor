@@ -51,8 +51,8 @@ class CursorBlinker {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final CursorBlinker otherSentenceSegments = other as CursorBlinker;
-    return blinkIntervalInMillisec == otherSentenceSegments.blinkIntervalInMillisec && onTick == otherSentenceSegments.onTick;
+    final CursorBlinker otherCursorBlinker = other as CursorBlinker;
+    return blinkIntervalInMillisec == otherCursorBlinker.blinkIntervalInMillisec && onTick == otherCursorBlinker.onTick;
   }
 
   @override

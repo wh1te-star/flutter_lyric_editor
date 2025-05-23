@@ -33,25 +33,25 @@ void main() {
     final SentenceID sentenceID = SentenceID(1);
     final Timetable timetableData1 = Timetable(
       startTimestamp: SeekPosition(2000),
-      sentenceSegmentList: SentenceSegmentList([
-        SentenceSegment("abc", const Duration(milliseconds: 400)),
-        SentenceSegment("de", const Duration(milliseconds: 300)),
-        SentenceSegment("fghijkl", const Duration(milliseconds: 700)),
-        SentenceSegment("", const Duration(milliseconds: 100)),
-        SentenceSegment("mnopq", const Duration(milliseconds: 600)),
-        SentenceSegment("rs", const Duration(milliseconds: 200)),
+      wordList: WordList([
+        Word("abc", const Duration(milliseconds: 400)),
+        Word("de", const Duration(milliseconds: 300)),
+        Word("fghijkl", const Duration(milliseconds: 700)),
+        Word("", const Duration(milliseconds: 100)),
+        Word("mnopq", const Duration(milliseconds: 600)),
+        Word("rs", const Duration(milliseconds: 200)),
       ]),
     );
     final Timetable timetableData2 = Timetable(
       startTimestamp: SeekPosition(2000),
-      sentenceSegmentList: SentenceSegmentList([
-        SentenceSegment("abcde", const Duration(milliseconds: 1000)),
-        SentenceSegment("", const Duration(milliseconds: 1000)),
-        SentenceSegment("fghij", const Duration(milliseconds: 1000)),
-        SentenceSegment("", const Duration(milliseconds: 1000)),
-        SentenceSegment("klmno", const Duration(milliseconds: 1000)),
-        SentenceSegment("", const Duration(milliseconds: 1000)),
-        SentenceSegment("pqrst", const Duration(milliseconds: 1000)),
+      wordList: WordList([
+        Word("abcde", const Duration(milliseconds: 1000)),
+        Word("", const Duration(milliseconds: 1000)),
+        Word("fghij", const Duration(milliseconds: 1000)),
+        Word("", const Duration(milliseconds: 1000)),
+        Word("klmno", const Duration(milliseconds: 1000)),
+        Word("", const Duration(milliseconds: 1000)),
+        Word("pqrst", const Duration(milliseconds: 1000)),
       ]),
     );
 
@@ -140,7 +140,7 @@ void main() {
         sentenceID,
         cursorBlinker,
         InsertionPosition(1),
-        Option.segment,
+        Option.word,
       );
 
       final SentenceSelectionCursorMover mover = SentenceSelectionCursorMover(
@@ -153,8 +153,8 @@ void main() {
       SentenceSelectionCursorMover target = mover.copyWith();
 
       List<PositionTestInfo> expectedCursorMovement = [
-        PositionTestInfo(1, Option.segment),
-        PositionTestInfo(2, Option.segment),
+        PositionTestInfo(1, Option.word),
+        PositionTestInfo(2, Option.word),
         PositionTestInfo(3, Option.former),
         PositionTestInfo(5, Option.former),
         PositionTestInfo(12, Option.former),
@@ -193,10 +193,10 @@ void main() {
         PositionTestInfo(5, Option.latter),
         PositionTestInfo(10, Option.former),
         PositionTestInfo(10, Option.latter),
-        PositionTestInfo(11, Option.segment),
-        PositionTestInfo(12, Option.segment),
-        PositionTestInfo(13, Option.segment),
-        PositionTestInfo(14, Option.segment),
+        PositionTestInfo(11, Option.word),
+        PositionTestInfo(12, Option.word),
+        PositionTestInfo(13, Option.word),
+        PositionTestInfo(14, Option.word),
         PositionTestInfo(15, Option.former),
         PositionTestInfo(15, Option.latter),
       ];

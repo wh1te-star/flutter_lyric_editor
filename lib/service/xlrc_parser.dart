@@ -26,8 +26,8 @@ class XlrcParser {
   static const String sentenceElement = "LineTimestamp";
   static const String sentenceVocalistNameAttribute = "vocalistName";
   static const String sentenceStartTimestampAttribute = "startTime";
-  static const String sentenceSegmentElement = "WordTimestamp";
-  static const String sentenceSegmentDurationAttribute = "time";
+  static const String wordElement = "WordTimestamp";
+  static const String wordDurationAttribute = "time";
 
   String serialize(Tuple3<SentenceMap, VocalistColorMap, SectionList> data) {
     SentenceMap sentenceMap = data.item1;
@@ -42,13 +42,13 @@ class XlrcParser {
           sentenceVocalistNameAttribute: vocalistColorMap[sentence.vocalistID]!.name,
           sentenceStartTimestampAttribute: formatTimestamp(sentence.startTimestamp.position),
         }, nest: () {
-          for (var sentenceSegment in sentence.sentenceSegments) {
+          for (var word in sentence.words) {
             builder.element(
-              sentenceSegmentElement,
+              wordElement,
               attributes: {
-                sentenceSegmentDurationAttribute: formatTimestamp(sentenceSegment.duration.inMilliseconds),
+                wordDurationAttribute: formatTimestamp(word.duration.inMilliseconds),
               },
-              nest: sentenceSegment.word,
+              nest: word.word,
             );
           }
         });
@@ -86,18 +86,18 @@ class XlrcParser {
     for (XmlElement lineTimestamp in lineTimestamps) {
       final int startTimestamp = parseTimestamp(lineTimestamp.getAttribute(sentenceStartTimestampAttribute)!);
       final String vocalistName = lineTimestamp.getAttribute(sentenceVocalistNameAttribute)!;
-      final Iterable<XmlElement> wordTimestamps = lineTimestamp.findElements(sentenceSegmentElement);
-      final SentenceSegmentList sentenceSegmentList = SentenceSegmentList(wordTimestamps.map((XmlElement wordTimestamp) {
-        final int duration = parseTimestamp(wordTimestamp.getAttribute(sentenceSegmentDurationAttribute)!);
+      final Iterable<XmlElement> wordTimestamps = lineTimestamp.findElements(wordElement);
+      final WordList wordList = WordList(wordTimestamps.map((XmlElement wordTimestamp) {
+        final int duration = parseTimestamp(wordTimestamp.getAttribute(wordDurationAttribute)!);
         final word = wordTimestamp.innerText;
-        return SentenceSegment(
+        return Word(
           word,
           Duration(milliseconds: duration),
         );
       }).toList());
 
       final VocalistID vocalistID = vocalistColorMap.getVocalistIDByName(vocalistName);
-      final Timetable timetable = Timetable(startTimestamp: SeekPosition(startTimestamp), sentenceSegmentList: sentenceSegmentList);
+      final Timetable timetable = Timetable(startTimestamp: SeekPosition(startTimestamp), wordList: wordList);
 
       sentenceMap = sentenceMap.addSentence(Sentence(
         vocalistID: vocalistID,

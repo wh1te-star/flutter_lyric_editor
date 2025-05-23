@@ -147,14 +147,14 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     return seekPosition;
   }
 
-  double getRubySizePosition(Sentence sentence, SentenceSegmentIndex segmentIndex) {
-    int startIndex = sentence.rubyMap.map.keys.toList()[segmentIndex.index].startIndex.index;
+  double getRubySizePosition(Sentence sentence, WordIndex wordIndex) {
+    int startIndex = sentence.rubyMap.map.keys.toList()[wordIndex.index].startIndex.index;
     double sumPosition = 0;
     int index = 0;
     for (index = 0; index < startIndex; index++) {
-      sumPosition += getSizeFromTextStyle(sentence.sentenceSegments[index].word, const TextStyle(fontSize: 40)).width;
+      sumPosition += getSizeFromTextStyle(sentence.words[index].word, const TextStyle(fontSize: 40)).width;
     }
-    sumPosition += getSizeFromTextStyle(sentence.sentenceSegments[index].word, const TextStyle(fontSize: 40)).width / 2;
+    sumPosition += getSizeFromTextStyle(sentence.words[index].word, const TextStyle(fontSize: 40)).width / 2;
     return sumPosition - getSizeFromTextStyle(sentence.sentence, const TextStyle(fontSize: 40)).width / 2;
   }
 

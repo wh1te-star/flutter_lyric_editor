@@ -38,11 +38,11 @@ class WordCursor extends TextPaneCursor {
 
   @override
   WordCursor defaultCursor() {
-    SentenceSegmentIndex segmentIndex = sentence.getSegmentIndexFromSeekPosition(seekPosition);
+    WordIndex wordIndex = sentence.getWordIndexFromSeekPosition(seekPosition);
     return WordCursor(
       sentence: sentence,
       seekPosition: seekPosition,
-      phrasePosition: PhrasePosition(segmentIndex, segmentIndex),
+      phrasePosition: PhrasePosition(wordIndex, wordIndex),
       isExpandMode: isExpandMode,
     );
   }
@@ -52,17 +52,17 @@ class WordCursor extends TextPaneCursor {
     PhrasePosition nextPhrasePosition = phrasePosition.copyWith();
 
     if (!isExpandMode) {
-      SentenceSegmentIndex currentIndex = phrasePosition.startIndex;
-      SentenceSegmentIndex nextIndex = currentIndex - 1;
-      if (nextIndex < SentenceSegmentIndex(0)) {
+      WordIndex currentIndex = phrasePosition.startIndex;
+      WordIndex nextIndex = currentIndex - 1;
+      if (nextIndex < WordIndex(0)) {
         return this;
       }
       nextPhrasePosition.startIndex = nextIndex;
 
       nextPhrasePosition.endIndex = phrasePosition.endIndex - 1;
     } else {
-      SentenceSegmentIndex currentIndex = phrasePosition.endIndex;
-      SentenceSegmentIndex nextIndex = currentIndex - 1;
+      WordIndex currentIndex = phrasePosition.endIndex;
+      WordIndex nextIndex = currentIndex - 1;
       if (nextIndex < phrasePosition.startIndex) {
         return this;
       }
@@ -82,9 +82,9 @@ class WordCursor extends TextPaneCursor {
   TextPaneCursor moveRightCursor() {
     PhrasePosition nextPhrasePosition = phrasePosition.copyWith();
 
-    SentenceSegmentIndex currentIndex = phrasePosition.endIndex;
-    SentenceSegmentIndex nextIndex = currentIndex + 1;
-    if (nextIndex.index >= sentence.sentenceSegments.length) {
+    WordIndex currentIndex = phrasePosition.endIndex;
+    WordIndex nextIndex = currentIndex + 1;
+    if (nextIndex.index >= sentence.words.length) {
       return this;
     }
 
@@ -127,8 +127,8 @@ class WordCursor extends TextPaneCursor {
 
     int shiftLength = 0;
     for (int index = 0; index <= endPhrasePositionIndex; index++) {
-      SentenceSegmentIndex startIndex = phrasePositionList[index].startIndex - shiftLength;
-      SentenceSegmentIndex endIndex = phrasePositionList[index].endIndex - shiftLength;
+      WordIndex startIndex = phrasePositionList[index].startIndex - shiftLength;
+      WordIndex endIndex = phrasePositionList[index].endIndex - shiftLength;
       if (index == startPhrasePositionIndex) {
         startIndex = cursor.phrasePosition.startIndex - shiftLength;
       }
@@ -148,18 +148,18 @@ class WordCursor extends TextPaneCursor {
   }
 
   @override
-  List<TextPaneCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList) {
+  List<TextPaneCursor?> getWordDividedCursors(WordList wordList) {
     WordCursor cursor = copyWith();
-    List<WordCursor?> separatedCursors = List.filled(sentenceSegmentList.length, null);
+    List<WordCursor?> separatedCursors = List.filled(wordList.length, null);
     WordCursor initialCursor = WordCursor(
       sentence: sentence,
       seekPosition: seekPosition,
-      phrasePosition: PhrasePosition(SentenceSegmentIndex(0), SentenceSegmentIndex(0)),
+      phrasePosition: PhrasePosition(WordIndex(0), WordIndex(0)),
       isExpandMode: isExpandMode,
     );
-    for (int index = 0; index < sentenceSegmentList.length; index++) {
-      SentenceSegmentIndex segmentIndex = SentenceSegmentIndex(index);
-      if (cursor.phrasePosition.isInRange(segmentIndex)) {
+    for (int index = 0; index < wordList.length; index++) {
+      WordIndex wordIndex = WordIndex(index);
+      if (cursor.phrasePosition.isInRange(wordIndex)) {
         separatedCursors[index] = initialCursor.copyWith();
       }
     }
@@ -167,23 +167,23 @@ class WordCursor extends TextPaneCursor {
   }
 
   @override
-  WordCursor shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {
+  WordCursor shiftLeftByWordList(WordList wordList) {
     if (phrasePosition.startIndex.index - 1 < 0 || phrasePosition.endIndex.index - 1 < 0) {
       return WordCursor.empty;
     }
-    SentenceSegmentIndex startIndex = phrasePosition.startIndex - sentenceSegmentList.segmentLength;
-    SentenceSegmentIndex endIndex = phrasePosition.endIndex - sentenceSegmentList.segmentLength;
+    WordIndex startIndex = phrasePosition.startIndex - wordList.wordCount;
+    WordIndex endIndex = phrasePosition.endIndex - wordList.wordCount;
     PhrasePosition newPhrasePosition = PhrasePosition(startIndex, endIndex);
     return copyWith(phrasePosition: newPhrasePosition);
   }
 
   @override
-  WordCursor shiftLeftBySentenceSegment(SentenceSegment sentenceSegment) {
+  WordCursor shiftLeftByWord(Word word) {
     if (phrasePosition.startIndex.index - 1 < 0 || phrasePosition.endIndex.index - 1 < 0) {
       return WordCursor.empty;
     }
-    SentenceSegmentIndex startIndex = phrasePosition.startIndex - 1;
-    SentenceSegmentIndex endIndex = phrasePosition.endIndex - 1;
+    WordIndex startIndex = phrasePosition.startIndex - 1;
+    WordIndex endIndex = phrasePosition.endIndex - 1;
     PhrasePosition newPhrasePosition = PhrasePosition(startIndex, endIndex);
     return copyWith(phrasePosition: newPhrasePosition);
   }
@@ -204,18 +204,18 @@ class WordCursor extends TextPaneCursor {
 
   @override
   String toString() {
-    return 'WordCursor(ID: $sentence, segmentIndex: $phrasePosition)';
+    return 'WordCursor(ID: $sentence, wordIndex: $phrasePosition)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final WordCursor otherSentenceSegments = other as WordCursor;
-    if (sentence != otherSentenceSegments.sentence) return false;
-    if (seekPosition != otherSentenceSegments.seekPosition) return false;
-    if (phrasePosition != otherSentenceSegments.phrasePosition) return false;
-    if (isExpandMode != otherSentenceSegments.isExpandMode) return false;
+    final WordCursor otherWords = other as WordCursor;
+    if (sentence != otherWords.sentence) return false;
+    if (seekPosition != otherWords.seekPosition) return false;
+    if (phrasePosition != otherWords.phrasePosition) return false;
+    if (isExpandMode != otherWords.isExpandMode) return false;
     return true;
   }
 

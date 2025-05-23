@@ -17,19 +17,19 @@ class CharDiff {
     backtrackTable = BacktrackTable(lcs: _lcs);
   }
 
-  List<DiffSegment> translateRouteToSegment(BacktrackRoute route) {
-    final List<DiffSegment> segments = <DiffSegment>[];
+  List<WordDiff> translateRouteToWordDiff(BacktrackRoute route) {
+    final List<WordDiff> words = <WordDiff>[];
     final List<BacktrackPoint> points = route.points;
 
     if (points.isEmpty) {
-      return [DiffSegment(beforeStr, afterStr)];
+      return [WordDiff(beforeStr, afterStr)];
     }
 
     BacktrackPoint start = points.first;
     BacktrackPoint previous = points.first;
 
     if (start.row != 0 || start.column != 0) {
-      segments.add(DiffSegment(
+      words.add(WordDiff(
         beforeStr.substring(0, start.row),
         afterStr.substring(0, start.column),
       ));
@@ -38,11 +38,11 @@ class CharDiff {
       BacktrackPoint current = points[i];
 
       if (previous.row + 1 != current.row || previous.column + 1 != current.column) {
-        segments.add(DiffSegment(
+        words.add(WordDiff(
           beforeStr.substring(start.row, previous.row + 1),
           afterStr.substring(start.column, previous.column + 1),
         ));
-        segments.add(DiffSegment(
+        words.add(WordDiff(
           beforeStr.substring(previous.row + 1, current.row),
           afterStr.substring(previous.column + 1, current.column),
         ));
@@ -51,36 +51,36 @@ class CharDiff {
 
       previous = current;
     }
-    segments.add(DiffSegment(
+    words.add(WordDiff(
       beforeStr.substring(start.row, previous.row + 1),
       afterStr.substring(start.column, previous.column + 1),
     ));
     if (previous.row + 1 != beforeStr.length || previous.column + 1 != afterStr.length) {
-      segments.add(DiffSegment(
+      words.add(WordDiff(
         beforeStr.substring(previous.row + 1),
         afterStr.substring(previous.column + 1),
       ));
     }
-    return segments;
+    return words;
   }
 
-  List<DiffSegment> getDiffSegments() {
+  List<WordDiff> getWordDiffs() {
     BacktrackRoute route = backtrackTable.getCommonIndex().last;
-    return translateRouteToSegment(route);
+    return translateRouteToWordDiff(route);
   }
 
-  List<DiffSegment> getLeastSegmentOne() {
+  List<WordDiff> getLeastWordDiffOne() {
     int INT_MAX = 9223372036854775807;
-    List<DiffSegment> minSegmentRoute = [];
-    int minSegmentCount = INT_MAX;
+    List<WordDiff> minWordDiffRoute = [];
+    int minWordDiffCount = INT_MAX;
     for (BacktrackRoute route in backtrackTable.getCommonIndex()) {
-      List<DiffSegment> segments = translateRouteToSegment(route);
-      if (segments.length < minSegmentCount) {
-        minSegmentRoute = segments;
-        minSegmentCount = segments.length;
+      List<WordDiff> wordDiffs = translateRouteToWordDiff(route);
+      if (wordDiffs.length < minWordDiffCount) {
+        minWordDiffRoute = wordDiffs;
+        minWordDiffCount = wordDiffs.length;
       }
     }
-    return minSegmentRoute;
+    return minWordDiffRoute;
   }
 
   @override

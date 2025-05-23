@@ -7,13 +7,13 @@ import 'package:lyric_editor/pane/text_pane/edit_widget/word/word_edit.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/word/timing_edit.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
-class SentenceSegmentListEdit extends StatelessWidget {
-  final SentenceSegmentList sentenceSegmentList;
+class WordListEdit extends StatelessWidget {
+  final WordList wordList;
   final TextPaneCursor? textPaneCursor;
   final CursorBlinker? cursorBlinker;
 
-  const SentenceSegmentListEdit({
-    required this.sentenceSegmentList,
+  const WordListEdit({
+    required this.wordList,
     this.textPaneCursor,
     this.cursorBlinker,
   });
@@ -21,18 +21,18 @@ class SentenceSegmentListEdit extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Widget> editWidgets = [];
-    List<SentenceSegment> sentenceSegments = sentenceSegmentList.list;
-    List<TextPaneCursor?> cursorList = List.filled(sentenceSegmentList.length, null);
+    List<Word> words = wordList.list;
+    List<TextPaneCursor?> cursorList = List.filled(wordList.length, null);
     if (textPaneCursor != null) {
-      cursorList = textPaneCursor!.getSegmentDividedCursors(sentenceSegmentList);
+      cursorList = textPaneCursor!.getWordDividedCursors(wordList);
     }
 
-    for (int index = 0; index < sentenceSegments.length; index++) {
-      SentenceSegment sentenceSegment = sentenceSegments[index];
-      TextPaneCursor? segmentCursor = cursorList[index];
+    for (int index = 0; index < words.length; index++) {
+      Word word = words[index];
+      TextPaneCursor? wordCursor = cursorList[index];
 
       bool isTimingPointPosition = false;
-      if (segmentCursor is BaseCursor && segmentCursor.insertionPosition.position == 0) {
+      if (wordCursor is BaseCursor && wordCursor.insertionPosition.position == 0) {
         isTimingPointPosition = true;
       }
 
@@ -43,9 +43,9 @@ class SentenceSegmentListEdit extends StatelessWidget {
       }
 
       editWidgets.add(
-        SentenceSegmentEdit(
-          sentenceSegment: sentenceSegment,
-          textPaneCursor: !isTimingPointPosition ? segmentCursor : null,
+        WordEdit(
+          word: word,
+          textPaneCursor: !isTimingPointPosition ? wordCursor : null,
           cursorBlinker: cursorBlinker,
         ),
       );

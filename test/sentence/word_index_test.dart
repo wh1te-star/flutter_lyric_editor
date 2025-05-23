@@ -9,32 +9,32 @@ void main() {
   group('test', () {
     Timetable testData1 = Timetable(
       startTimestamp: SeekPosition(2000),
-      sentenceSegmentList: SentenceSegmentList([
-        SentenceSegment("abcde", Duration(milliseconds: 1000)),
-        SentenceSegment("", Duration(milliseconds: 1000)),
-        SentenceSegment("fghij", Duration(milliseconds: 1000)),
-        SentenceSegment("", Duration(milliseconds: 1000)),
-        SentenceSegment("klmno", Duration(milliseconds: 1000)),
-        SentenceSegment("", Duration(milliseconds: 1000)),
-        SentenceSegment("pqrst", Duration(milliseconds: 1000)),
+      wordList: WordList([
+        Word("abcde", Duration(milliseconds: 1000)),
+        Word("", Duration(milliseconds: 1000)),
+        Word("fghij", Duration(milliseconds: 1000)),
+        Word("", Duration(milliseconds: 1000)),
+        Word("klmno", Duration(milliseconds: 1000)),
+        Word("", Duration(milliseconds: 1000)),
+        Word("pqrst", Duration(milliseconds: 1000)),
       ]),
     );
     setUp(() {});
 
-    test('Test the getSegmentIndexFromSeekPosition() function', () {
-      SentenceSegmentIndex result;
-      result = testData1.getSegmentIndexFromSeekPosition(SeekPosition(1000));
-      expect(result, SentenceSegmentIndex.empty);
-      result = testData1.getSegmentIndexFromSeekPosition(SeekPosition(2500));
-      expect(result, SentenceSegmentIndex(0));
-      result = testData1.getSegmentIndexFromSeekPosition(SeekPosition(3500));
-      expect(result, SentenceSegmentIndex(1));
-      result = testData1.getSegmentIndexFromSeekPosition(SeekPosition(4500));
-      expect(result, SentenceSegmentIndex(2));
-      result = testData1.getSegmentIndexFromSeekPosition(SeekPosition(5500));
-      expect(result, SentenceSegmentIndex(3));
-      result = testData1.getSegmentIndexFromSeekPosition(SeekPosition(6500));
-      expect(result, SentenceSegmentIndex(4));
+    test('Test the getWordIndexFromSeekPosition() function', () {
+      WordIndex result;
+      result = testData1.getWordIndexFromSeekPosition(SeekPosition(1000));
+      expect(result, WordIndex.empty);
+      result = testData1.getWordIndexFromSeekPosition(SeekPosition(2500));
+      expect(result, WordIndex(0));
+      result = testData1.getWordIndexFromSeekPosition(SeekPosition(3500));
+      expect(result, WordIndex(1));
+      result = testData1.getWordIndexFromSeekPosition(SeekPosition(4500));
+      expect(result, WordIndex(2));
+      result = testData1.getWordIndexFromSeekPosition(SeekPosition(5500));
+      expect(result, WordIndex(3));
+      result = testData1.getWordIndexFromSeekPosition(SeekPosition(6500));
+      expect(result, WordIndex(4));
     });
   });
 }

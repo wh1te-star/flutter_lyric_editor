@@ -140,8 +140,8 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
           onInvoke: (AddSentenceIntent intent) => () {
             Timetable timetable = Timetable(
               startTimestamp: musicPlayerProvider.seekPosition,
-              sentenceSegmentList: SentenceSegmentList([
-                SentenceSegment("default sentence", Duration(milliseconds: 3000)),
+              wordList: WordList([
+                Word("default sentence", Duration(milliseconds: 3000)),
               ]),
             );
             Sentence sentence = Sentence(
@@ -179,7 +179,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         AddRubyIntent: CallbackAction<AddRubyIntent>(
           onInvoke: (AddRubyIntent intent) => () async {
             TextPaneCursorController cursorController = textPaneProvider.textPaneCursorController;
-            assert(cursorController.textPaneListCursor is WordListCursor, "An unintended error occurred when adding a ruby. The cursor type must be segment type.");
+            assert(cursorController.textPaneListCursor is WordListCursor, "An unintended error occurred when adding a ruby. The cursor type must be word type.");
 
             WordListCursor listCursor = cursorController.textPaneListCursor as WordListCursor;
             SentenceID sentenceID = listCursor.sentenceID;

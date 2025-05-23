@@ -120,12 +120,12 @@ class TextPaneCursorController {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final TextPaneCursorController otherSentenceSegments = other as TextPaneCursorController;
-    if (sentenceMap != otherSentenceSegments.sentenceMap) return false;
-    if (sentenceID != otherSentenceSegments.sentenceID) return false;
-    if (textPaneListCursor != otherSentenceSegments.textPaneListCursor) return false;
-    if (seekPosition != otherSentenceSegments.seekPosition) return false;
-    if (cursorBlinker != otherSentenceSegments.cursorBlinker) return false;
+    final TextPaneCursorController otherWords = other as TextPaneCursorController;
+    if (sentenceMap != otherWords.sentenceMap) return false;
+    if (sentenceID != otherWords.sentenceID) return false;
+    if (textPaneListCursor != otherWords.textPaneListCursor) return false;
+    if (seekPosition != otherWords.seekPosition) return false;
+    if (cursorBlinker != otherWords.cursorBlinker) return false;
     return true;
   }
 

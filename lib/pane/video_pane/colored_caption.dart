@@ -18,26 +18,26 @@ class ColoredCaption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> coloredSentenceSegments = [];
-    for (int index = 0; index < sentence.sentenceSegments.length; index++) {
-      coloredSentenceSegments.add(getColoredSentenceSegment(sentence, seekPosition, color, index));
+    List<Widget> coloredWords = [];
+    for (int index = 0; index < sentence.words.length; index++) {
+      coloredWords.add(getColoredWord(sentence, seekPosition, color, index));
     }
     return Wrap(
-      children: coloredSentenceSegments,
+      children: coloredWords,
     );
   }
 
-  Widget getColoredSentenceSegment(
+  Widget getColoredWord(
     Sentence sentence,
     SeekPosition seekPosition,
     Color color,
     int index,
   ) {
-    SentenceSegment sentenceSegment = sentence.sentenceSegments[index];
+    Word word = sentence.words[index];
     double progress = getProgress(sentence, index);
     return CustomPaint(
       painter: ColoredTextPainter(
-        text: sentenceSegment.word,
+        text: word.word,
         progress: progress,
         fontBaseColor: color,
         fontFamily: fontFamily,
@@ -45,13 +45,13 @@ class ColoredCaption extends StatelessWidget {
         firstOutlineWidth: 2,
         secondOutlineWidth: 4,
       ),
-      size: getSizeFromFontInfo(sentenceSegment.word, fontSize, fontFamily),
+      size: getSizeFromFontInfo(word.word, fontSize, fontFamily),
     );
   }
 
   double getProgress(Sentence sentence, int index) {
-    SentenceSegmentIndex seekSegmentIndex = sentence.getSegmentIndexFromSeekPosition(seekPosition);
-    if (seekSegmentIndex.isEmpty) {
+    WordIndex seekWordIndex = sentence.getWordIndexFromSeekPosition(seekPosition);
+    if (seekWordIndex.isEmpty) {
       if (seekPosition <= sentence.startTimestamp) {
         return 0.0;
       }
@@ -61,10 +61,10 @@ class ColoredCaption extends StatelessWidget {
       assert(false);
     }
 
-    if (index == seekSegmentIndex.index) {
-      return sentence.getSegmentProgress(seekPosition);
+    if (index == seekWordIndex.index) {
+      return sentence.getWordProgress(seekPosition);
     }
-    if (index < seekSegmentIndex.index) {
+    if (index < seekWordIndex.index) {
       return 1.0;
     }
     return 0.0;

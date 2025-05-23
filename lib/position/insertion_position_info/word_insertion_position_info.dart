@@ -1,27 +1,27 @@
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
 import 'package:lyric_editor/position/word_index.dart';
 
-class SentenceSegmentInsertionPositionInfo implements InsertionPositionInfo {
-  SentenceSegmentIndex sentenceSegmentIndex;
-  SentenceSegmentInsertionPositionInfo(this.sentenceSegmentIndex);
+class WordInsertionPositionInfo implements InsertionPositionInfo {
+  WordIndex wordIndex;
+  WordInsertionPositionInfo(this.wordIndex);
 
-  SentenceSegmentInsertionPositionInfo._privateConstructor(this.sentenceSegmentIndex);
-  static final SentenceSegmentInsertionPositionInfo _empty = SentenceSegmentInsertionPositionInfo._privateConstructor(SentenceSegmentIndex.empty);
-  static SentenceSegmentInsertionPositionInfo get empty => _empty;
+  WordInsertionPositionInfo._privateConstructor(this.wordIndex);
+  static final WordInsertionPositionInfo _empty = WordInsertionPositionInfo._privateConstructor(WordIndex.empty);
+  static WordInsertionPositionInfo get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
-  SentenceSegmentInsertionPositionInfo copyWith({
-    SentenceSegmentIndex? index,
+  WordInsertionPositionInfo copyWith({
+    WordIndex? index,
   }) {
-    return SentenceSegmentInsertionPositionInfo(
-      index ?? this.sentenceSegmentIndex,
+    return WordInsertionPositionInfo(
+      index ?? this.wordIndex,
     );
   }
 
   @override
   String toString() {
-    return "InsertionPositionInfo: SentenceSegment at index $sentenceSegmentIndex";
+    return "InsertionPositionInfo: Word at index $wordIndex";
   }
 
   @override
@@ -29,12 +29,12 @@ class SentenceSegmentInsertionPositionInfo implements InsertionPositionInfo {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! SentenceSegmentInsertionPositionInfo) {
+    if (other is! WordInsertionPositionInfo) {
       return false;
     }
-    return sentenceSegmentIndex == other.sentenceSegmentIndex;
+    return wordIndex == other.wordIndex;
   }
 
   @override
-  int get hashCode => sentenceSegmentIndex.hashCode;
+  int get hashCode => wordIndex.hashCode;
 }

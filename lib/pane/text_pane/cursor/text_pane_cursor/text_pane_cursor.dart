@@ -13,5 +13,5 @@ abstract class TextPaneCursor {
   TextPaneCursor moveRightCursor();
 
   List<TextPaneCursor?> getPhrasePositionDividedCursors(Sentence sentence, List<PhrasePosition> phrasePositionList);
-  List<TextPaneCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList);
+  List<TextPaneCursor?> getWordDividedCursors(WordList wordList);
 }

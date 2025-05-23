@@ -78,14 +78,14 @@ class RubyListCursor extends TextPaneListCursor {
     Sentence sentence = sentenceMap.getSentenceByID(sentenceID);
     PhrasePosition rubyPhrasePosition = sentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
     Ruby ruby = sentence.rubyMap[rubyPhrasePosition]!;
-    SentenceSegmentIndex segmentIndex = ruby.getSegmentIndexFromSeekPosition(seekPosition);
+    WordIndex wordIndex = ruby.getWordIndexFromSeekPosition(seekPosition);
 
     return RubyListCursor(
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
       seekPosition: seekPosition,
       phrasePosition: rubyPhrasePosition,
-      insertionPosition: ruby.timetable.leftTimingPoint(segmentIndex).insertionPosition + 1,
+      insertionPosition: ruby.timetable.leftTimingPoint(wordIndex).insertionPosition + 1,
       option: Option.former,
     );
   }
@@ -162,10 +162,10 @@ class RubyListCursor extends TextPaneListCursor {
       sentence = sentenceMap[nextSentenceID]!;
     }
 
-    SentenceSegmentIndex currentSeekSegmentIndex = sentence.getSegmentIndexFromSeekPosition(seekPosition);
+    WordIndex currentSeekWordIndex = sentence.getWordIndexFromSeekPosition(seekPosition);
     InsertionPositionInfo? nextSentencePositionInfo = sentence.getInsertionPositionInfo(rubyCursor.insertionPosition);
 
-    if (nextSentencePositionInfo == null || nextSentencePositionInfo is SentenceSegmentInsertionPositionInfo && nextSentencePositionInfo.sentenceSegmentIndex != currentSeekSegmentIndex) {
+    if (nextSentencePositionInfo == null || nextSentencePositionInfo is WordInsertionPositionInfo && nextSentencePositionInfo.wordIndex != currentSeekWordIndex) {
       return RubyListCursor.defaultCursor(
         sentenceMap: sentenceMap,
         sentenceID: nextSentenceID,
@@ -203,11 +203,11 @@ class RubyListCursor extends TextPaneListCursor {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final RubyListCursor otherSentenceSegments = other as RubyListCursor;
-    if (sentenceMap != otherSentenceSegments.sentenceMap) return false;
-    if (sentenceID != otherSentenceSegments.sentenceID) return false;
-    if (seekPosition != otherSentenceSegments.seekPosition) return false;
-    if (rubyCursor != otherSentenceSegments.rubyCursor) return false;
+    final RubyListCursor otherRubyListCursor = other as RubyListCursor;
+    if (sentenceMap != otherRubyListCursor.sentenceMap) return false;
+    if (sentenceID != otherRubyListCursor.sentenceID) return false;
+    if (seekPosition != otherRubyListCursor.seekPosition) return false;
+    if (rubyCursor != otherRubyListCursor.rubyCursor) return false;
     return true;
   }
 

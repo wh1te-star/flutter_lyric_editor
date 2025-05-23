@@ -48,14 +48,14 @@ class __SentenceDetailDialogState extends ConsumerState<_SentenceDetailDialog> {
   List<bool> vocalistCheckValues = [];
   List<String> vocalistNameList = [];
 
-  List<String> segmentTexts = [];
+  List<String> wordTexts = [];
   List<Vocalist> vocalists = [];
 
   late TableRow vocalistTabHeader;
   List<TableRow> vocalistTabRows = [];
   double checkboxCellWidth = 0.0;
 
-  Map<VocalistID, List<bool>> segmentWiseVocalistCheckValues = {};
+  Map<VocalistID, List<bool>> wordWiseVocalistCheckValues = {};
 
   late String currentSentence;
 
@@ -115,25 +115,25 @@ class __SentenceDetailDialogState extends ConsumerState<_SentenceDetailDialog> {
     for (MapEntry<VocalistID, Vocalist> entry in headerVocalists.entries) {
       VocalistID vocalistID = entry.key;
       Vocalist vocalist = entry.value;
-      segmentWiseVocalistCheckValues[vocalistID] = List.filled(sentence.sentenceSegments.length, true);
+      wordWiseVocalistCheckValues[vocalistID] = List.filled(sentence.words.length, true);
     }
 
-    for (int i = 0; i < sentence.sentenceSegments.length; i++) {
-      SentenceSegment segment = sentence.sentenceSegments[i];
-      segmentTexts.add(segment.word);
+    for (int i = 0; i < sentence.words.length; i++) {
+      Word word = sentence.words[i];
+      wordTexts.add(word.word);
 
-      List<Widget> segmentWiseVocalistCheckboxes = [];
+      List<Widget> wordWiseVocalistCheckboxes = [];
       for (MapEntry<VocalistID, Vocalist> entry in headerVocalists.entries) {
         VocalistID vocalistID = entry.key;
         Vocalist vocalist = entry.value;
 
-        segmentWiseVocalistCheckboxes.add(StatefulBuilder(
+        wordWiseVocalistCheckboxes.add(StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return Checkbox(
-              value: segmentWiseVocalistCheckValues[vocalistID]![i],
+              value: wordWiseVocalistCheckValues[vocalistID]![i],
               onChanged: (bool? value) {
                 setState(() {
-                  segmentWiseVocalistCheckValues[vocalistID]![i] = value ?? false;
+                  wordWiseVocalistCheckValues[vocalistID]![i] = value ?? false;
                 });
               },
               activeColor: Color(vocalist.color),
@@ -143,7 +143,7 @@ class __SentenceDetailDialogState extends ConsumerState<_SentenceDetailDialog> {
       }
 
       double padding = 4.0;
-      double width = getSizeFromTextStyle(segment.word, textStyle).width + 2 * padding;
+      double width = getSizeFromTextStyle(word.word, textStyle).width + 2 * padding;
       if (width > checkboxCellWidth) {
         checkboxCellWidth = width;
       }
@@ -154,13 +154,13 @@ class __SentenceDetailDialogState extends ConsumerState<_SentenceDetailDialog> {
                 Padding(
                   padding: EdgeInsets.only(left: padding, right: padding),
                   child: Text(
-                    segment.word,
+                    word.word,
                     style: textStyle,
                     textAlign: TextAlign.right,
                   ),
                 )
               ] +
-              segmentWiseVocalistCheckboxes,
+              wordWiseVocalistCheckboxes,
         ),
       );
     }
@@ -314,9 +314,9 @@ class __SentenceDetailDialogState extends ConsumerState<_SentenceDetailDialog> {
 
     CharDiff diff = CharDiff(before, after);
 
-    List<Widget> diffSegmentWidgets = diff.getLeastSegmentOne().map((DiffSegment diffSegment) {
-      String beforeStr = diffSegment.beforeStr;
-      String afterStr = diffSegment.afterStr;
+    List<Widget> wordDiffWidgets = diff.getLeastWordDiffOne().map((WordDiff wordDiff) {
+      String beforeStr = wordDiff.beforeStr;
+      String afterStr = wordDiff.afterStr;
       TextStyle textStyle = plainStyle;
       if (beforeStr == "") {
         textStyle = addStyle;
@@ -326,13 +326,13 @@ class __SentenceDetailDialogState extends ConsumerState<_SentenceDetailDialog> {
         textStyle = editStyle;
       }
       return Column(children: [
-        Text(diffSegment.beforeStr, style: textStyle),
-        Text(diffSegment.afterStr, style: textStyle),
+        Text(wordDiff.beforeStr, style: textStyle),
+        Text(wordDiff.afterStr, style: textStyle),
       ]);
     }).toList();
 
     return Row(
-      children: diffSegmentWidgets,
+      children: wordDiffWidgets,
     );
   }
 

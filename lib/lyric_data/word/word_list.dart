@@ -5,34 +5,34 @@ import 'package:lyric_editor/lyric_data/timing/timing_list.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 
-class SentenceSegmentList {
-  final List<SentenceSegment> _list;
+class WordList {
+  final List<Word> _list;
 
-  SentenceSegmentList(this._list) {
+  WordList(this._list) {
     assert(!has2ConseqentEmpty());
   }
 
-  List<SentenceSegment> get list => _list;
+  List<Word> get list => _list;
 
-  static SentenceSegmentList get empty => SentenceSegmentList([]);
+  static WordList get empty => WordList([]);
   bool get isEmpty => list.isEmpty;
 
   int get length => list.length;
-  SentenceSegment operator [](int index) => list[index];
-  void operator []=(int index, SentenceSegment value) {
+  Word operator [](int index) => list[index];
+  void operator []=(int index, Word value) {
     list[index] = value;
   }
 
   String get sentence {
-    return _list.map((SentenceSegment segment) {
-      return segment.word;
+    return _list.map((Word word) {
+      return word.word;
     }).join("");
   }
 
-  int get segmentLength => list.length;
-  int get charLength {
-    return list.fold(0, (total, sentenceSegment) {
-      return total + sentenceSegment.word.length;
+  int get wordCount => list.length;
+  int get charCount {
+    return list.fold(0, (total, word) {
+      return total + word.word.length;
     });
   }
 
@@ -49,22 +49,22 @@ class SentenceSegmentList {
     List<TimingPoint> timingPoints = [];
     InsertionPosition insertionPosition = InsertionPosition(0);
     SeekPosition seekPosition = SeekPosition(0);
-    for (SentenceSegment sentenceSegment in list) {
+    for (Word word in list) {
       timingPoints.add(TimingPoint(insertionPosition, seekPosition));
 
-      insertionPosition += sentenceSegment.word.length;
-      seekPosition += sentenceSegment.duration;
+      insertionPosition += word.word.length;
+      seekPosition += word.duration;
     }
     timingPoints.add(TimingPoint(insertionPosition, seekPosition));
 
     return TimingPointList(timingPoints);
   }
 
-  SentenceSegmentList copyWith({
-    SentenceSegmentList? sentenceSegmentList,
+  WordList copyWith({
+    WordList? wordList,
   }) {
-    return SentenceSegmentList(
-      sentenceSegmentList?._list.map((SentenceSegment sentenceSegment) => sentenceSegment.copyWith()).toList() ?? _list,
+    return WordList(
+      wordList?._list.map((Word word) => word.copyWith()).toList() ?? _list,
     );
   }
 
@@ -73,24 +73,24 @@ class SentenceSegmentList {
     return _list.join("\n");
   }
 
-  SentenceSegmentList operator +(SentenceSegmentList other) {
-    List<SentenceSegment> combinedList = [..._list, ...other._list];
-    return SentenceSegmentList(combinedList);
+  WordList operator +(WordList other) {
+    List<Word> combinedList = [..._list, ...other._list];
+    return WordList(combinedList);
   }
 
-  SentenceSegmentList addSegment(SentenceSegment segment) {
-    List<SentenceSegment> combinedList = [..._list, segment];
-    return SentenceSegmentList(combinedList);
+  WordList addWord(Word word) {
+    List<Word> combinedList = [..._list, word];
+    return WordList(combinedList);
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! SentenceSegmentList) return false;
+    if (other is! WordList) return false;
     if (_list.length != other._list.length) return false;
-    return _list.asMap().entries.every((MapEntry<int, SentenceSegment> entry) {
+    return _list.asMap().entries.every((MapEntry<int, Word> entry) {
       int index = entry.key;
-      SentenceSegment timingPoint = entry.value;
+      Word timingPoint = entry.value;
       return timingPoint == other._list[index];
     });
   }

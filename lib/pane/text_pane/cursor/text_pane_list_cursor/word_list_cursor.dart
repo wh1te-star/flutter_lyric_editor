@@ -161,18 +161,18 @@ class WordListCursor extends TextPaneListCursor {
 
   @override
   String toString() {
-    return 'WordCursor(ID: ${sentenceID.id}, segmentIndex: $wordCursor)';
+    return 'WordCursor(ID: ${sentenceID.id}, wordIndex: $wordCursor)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final WordListCursor otherSentenceSegments = other as WordListCursor;
-    if (sentenceMap != otherSentenceSegments.sentenceMap) return false;
-    if (sentenceID != otherSentenceSegments.sentenceID) return false;
-    if (seekPosition != otherSentenceSegments.seekPosition) return false;
-    if (wordCursor != otherSentenceSegments.wordCursor) return false;
+    final WordListCursor otherWordListCursor = other as WordListCursor;
+    if (sentenceMap != otherWordListCursor.sentenceMap) return false;
+    if (sentenceID != otherWordListCursor.sentenceID) return false;
+    if (seekPosition != otherWordListCursor.seekPosition) return false;
+    if (wordCursor != otherWordListCursor.wordCursor) return false;
     return true;
   }
 

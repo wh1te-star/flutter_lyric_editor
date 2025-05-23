@@ -37,20 +37,20 @@ class Sentence {
   String get sentence => timetable.sentence;
   SeekPosition get startTimestamp => timetable.startTimestamp;
   SeekPosition get endTimestamp => timetable.endTimestamp;
-  List<SentenceSegment> get sentenceSegments => timetable.sentenceSegmentList.list;
+  List<Word> get words => timetable.wordList.list;
   List<TimingPoint> get timingPoints => timetable.timingPointList.list;
-  int get charLength => timetable.charLength;
-  int get segmentLength => timetable.segmentLength;
-  SentenceSegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timetable.getSegmentIndexFromSeekPosition(seekPosition);
+  int get charCount => timetable.charCount;
+  int get wordCount => timetable.wordCount;
+  WordIndex getWordIndexFromSeekPosition(SeekPosition seekPosition) => timetable.getWordIndexFromSeekPosition(seekPosition);
   InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timetable.getInsertionPositionInfo(insertionPosition);
-  double getSegmentProgress(SeekPosition seekPosition) => timetable.getSegmentProgress(seekPosition);
-  SentenceSegmentList getSentenceSegmentList(PhrasePosition phrasePosition) => timetable.getSentenceSegmentList(phrasePosition);
-  TimingPointIndex leftTimingPointIndex(SentenceSegmentIndex segmentIndex) => timetable.leftTimingPointIndex(segmentIndex);
-  TimingPointIndex rightTimingPointIndex(SentenceSegmentIndex segmentIndex) => timetable.rightTimingPointIndex(segmentIndex);
-  TimingPoint leftTimingPoint(SentenceSegmentIndex segmentIndex) => timetable.leftTimingPoint(segmentIndex);
-  TimingPoint rightTimingPoint(SentenceSegmentIndex segmentIndex) => timetable.rightTimingPoint(segmentIndex);
+  double getWordProgress(SeekPosition seekPosition) => timetable.getWordProgress(seekPosition);
+  WordList getWordList(PhrasePosition phrasePosition) => timetable.getWordList(phrasePosition);
+  TimingPointIndex leftTimingPointIndex(WordIndex wordIndex) => timetable.leftTimingPointIndex(wordIndex);
+  TimingPointIndex rightTimingPointIndex(WordIndex wordIndex) => timetable.rightTimingPointIndex(wordIndex);
+  TimingPoint leftTimingPoint(WordIndex wordIndex) => timetable.leftTimingPoint(wordIndex);
+  TimingPoint rightTimingPoint(WordIndex wordIndex) => timetable.rightTimingPoint(wordIndex);
 
-  MapEntry<PhrasePosition, Ruby> getRubyWords(SentenceSegmentIndex index) {
+  MapEntry<PhrasePosition, Ruby> getRubyWords(WordIndex index) {
     return rubyMap.map.entries.firstWhere(
       (entry) => entry.key.startIndex <= index && index <= entry.key.endIndex,
       orElse: () => MapEntry(PhrasePosition.empty, Ruby.empty),
@@ -81,13 +81,13 @@ class Sentence {
   }
 
   Sentence addTimingPoint(InsertionPosition charPosition, SeekPosition seekPosition) {
-    RubyMap rubyMap = carryUpRubySegments(charPosition);
+    RubyMap rubyMap = carryUpRubyWords(charPosition);
     Timetable timetable = this.timetable.addTimingPoint(charPosition, seekPosition);
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
   Sentence removeTimingPoint(InsertionPosition charPosition, Option option) {
-    RubyMap rubyMap = carryDownRubySegments(charPosition);
+    RubyMap rubyMap = carryDownRubyWords(charPosition);
     Timetable timetable = this.timetable.deleteTimingPoint(charPosition, option);
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
@@ -107,10 +107,10 @@ class Sentence {
     SeekPosition rubyStartTimestamp = SeekPosition(startTimestamp.position + timingPoints[phrasePosition.startIndex.index].seekPosition.position);
     SeekPosition rubyEndTimestamp = SeekPosition(startTimestamp.position + timingPoints[phrasePosition.endIndex.index + 1].seekPosition.position);
     Duration rubyDuration = Duration(milliseconds: rubyEndTimestamp.position - rubyStartTimestamp.position);
-    SentenceSegment sentenceSegment = SentenceSegment(rubyString, rubyDuration);
+    Word word = Word(rubyString, rubyDuration);
     Timetable timetable = Timetable(
       startTimestamp: rubyStartTimestamp,
-      sentenceSegmentList: SentenceSegmentList([sentenceSegment]),
+      wordList: WordList([word]),
     );
     rubyMap.map[phrasePosition] = Ruby(timetable: timetable);
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
@@ -157,7 +157,7 @@ class Sentence {
     return Tuple2(sentence1, sentence2);
   }
 
-  RubyMap carryUpRubySegments(InsertionPosition insertionPosition) {
+  RubyMap carryUpRubyWords(InsertionPosition insertionPosition) {
     InsertionPositionInfo info = timetable.getInsertionPositionInfo(insertionPosition)!;
     Map<PhrasePosition, Ruby> updatedRubys = {};
 
@@ -165,8 +165,8 @@ class Sentence {
       PhrasePosition newKey = key.copyWith();
 
       switch (info) {
-        case SentenceSegmentInsertionPositionInfo():
-          SentenceSegmentIndex index = info.sentenceSegmentIndex;
+        case WordInsertionPositionInfo():
+          WordIndex index = info.wordIndex;
           if (index < key.startIndex) {
             newKey.startIndex++;
             newKey.endIndex++;
@@ -197,12 +197,12 @@ class Sentence {
     return RubyMap(updatedRubys);
   }
 
-  RubyMap carryDownRubySegments(InsertionPosition insertionPosition) {
+  RubyMap carryDownRubyWords(InsertionPosition insertionPosition) {
     InsertionPositionInfo info = timetable.getInsertionPositionInfo(insertionPosition)!;
     Map<PhrasePosition, Ruby> updatedRubys = {};
     int index = -1;
-    if (info is SentenceSegmentInsertionPositionInfo) {
-      index = info.sentenceSegmentIndex.index;
+    if (info is WordInsertionPositionInfo) {
+      index = info.wordIndex.index;
     } else if (info is TimingPointInsertionPositionInfo) {
       index = info.timingPointIndex.index;
     } else {
@@ -234,8 +234,8 @@ class Sentence {
 
   List<Tuple2<PhrasePosition, Ruby?>> getRubysPhrasePositionList() {
     if (rubyMap.isEmpty) {
-      SentenceSegmentIndex startIndex = SentenceSegmentIndex(0);
-      SentenceSegmentIndex endIndex = SentenceSegmentIndex(sentenceSegments.length - 1);
+      WordIndex startIndex = WordIndex(0);
+      WordIndex endIndex = WordIndex(words.length - 1);
       return [
         Tuple2(
           PhrasePosition(startIndex, endIndex),
@@ -252,8 +252,8 @@ class Sentence {
       Ruby ruby = entry.value;
 
       if (previousEnd + 1 <= phrasePosition.startIndex.index - 1) {
-        SentenceSegmentIndex startIndex = SentenceSegmentIndex(previousEnd + 1);
-        SentenceSegmentIndex endIndex = SentenceSegmentIndex(phrasePosition.startIndex.index - 1);
+        WordIndex startIndex = WordIndex(previousEnd + 1);
+        WordIndex endIndex = WordIndex(phrasePosition.startIndex.index - 1);
         phrasePositionList.add(
           Tuple2(
             PhrasePosition(startIndex, endIndex),
@@ -271,9 +271,9 @@ class Sentence {
       previousEnd = phrasePosition.endIndex.index;
     }
 
-    if (previousEnd + 1 <= sentenceSegments.length - 1) {
-      SentenceSegmentIndex startIndex = SentenceSegmentIndex(previousEnd + 1);
-      SentenceSegmentIndex endIndex = SentenceSegmentIndex(sentenceSegments.length - 1);
+    if (previousEnd + 1 <= words.length - 1) {
+      WordIndex startIndex = WordIndex(previousEnd + 1);
+      WordIndex endIndex = WordIndex(words.length - 1);
       phrasePositionList.add(
         Tuple2(
           PhrasePosition(startIndex, endIndex),

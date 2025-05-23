@@ -37,8 +37,8 @@ class SentenceEdit extends StatelessWidget {
       PhrasePosition phrasePosition = rubyPhrasePositionList[index].item1;
       Ruby? ruby = rubyPhrasePositionList[index].item2;
 
-      SentenceSegmentList? sentenceSubList = sentence.getSentenceSegmentList(phrasePosition);
-      SentenceSegmentList? rubySubList = ruby?.timetable.sentenceSegmentList;
+      WordList? sentenceSubList = sentence.getWordList(phrasePosition);
+      WordList? rubySubList = ruby?.timetable.wordList;
 
       TextPaneCursor? cursor = cursorList[index];
       bool isTimingPointPosition = false;
@@ -50,13 +50,13 @@ class SentenceEdit extends StatelessWidget {
       }
 
       CursorBlinker? timingPointCursorBlinker;
-      CursorBlinker? sentenceSegmentCursorBlinker;
-      TextPaneCursor? sentenceSegmentCursor;
+      CursorBlinker? wordCursorBlinker;
+      TextPaneCursor? wordCursor;
       if (isTimingPointPosition) {
         timingPointCursorBlinker = cursorBlinker;
       } else {
-        sentenceSegmentCursorBlinker = cursorBlinker;
-        sentenceSegmentCursor = cursor;
+        wordCursorBlinker = cursorBlinker;
+        wordCursor = cursor;
       }
 
       if (index > 0) {
@@ -76,13 +76,13 @@ class SentenceEdit extends StatelessWidget {
 
       Widget sentenceEdit = getSentenceEdit(
         sentenceSubList,
-        sentenceSegmentCursor,
-        sentenceSegmentCursorBlinker,
+        wordCursor,
+        wordCursorBlinker,
       );
       Widget rubyEdit = getRubyEdit(
         rubySubList,
-        sentenceSegmentCursor,
-        sentenceSegmentCursorBlinker,
+        wordCursor,
+        wordCursorBlinker,
       );
       rubyExistenceEdits.add(Column(children: [
         rubyEdit,
@@ -97,7 +97,7 @@ class SentenceEdit extends StatelessWidget {
   }
 
   Widget getSentenceEdit(
-    SentenceSegmentList sentenceSegmentList,
+    WordList wordList,
     TextPaneCursor? textPaneCursor,
     CursorBlinker? cursorBlinker,
   ) {
@@ -106,15 +106,15 @@ class SentenceEdit extends StatelessWidget {
       cursorBlinker = null;
     }
 
-    return SentenceSegmentListEdit(
-      sentenceSegmentList: sentenceSegmentList,
+    return WordListEdit(
+      wordList: wordList,
       textPaneCursor: textPaneCursor,
       cursorBlinker: cursorBlinker,
     );
   }
 
   Widget getRubyEdit(
-    SentenceSegmentList? sentenceSegmentList,
+    WordList? wordList,
     TextPaneCursor? textPaneCursor,
     CursorBlinker? cursorBlinker,
   ) {
@@ -124,9 +124,9 @@ class SentenceEdit extends StatelessWidget {
     }
 
     Widget rubyEdit = Container();
-    if (sentenceSegmentList != null) {
-      rubyEdit = SentenceSegmentListEdit(
-        sentenceSegmentList: sentenceSegmentList,
+    if (wordList != null) {
+      rubyEdit = WordListEdit(
+        wordList: wordList,
         textPaneCursor: textPaneCursor,
         cursorBlinker: cursorBlinker,
       );

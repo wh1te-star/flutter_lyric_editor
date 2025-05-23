@@ -59,13 +59,13 @@ class RubyCursor extends TextPaneCursor {
   }) {
     PhrasePosition phrasePosition = sentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
     Ruby ruby = sentence.rubyMap[phrasePosition]!;
-    SentenceSegmentIndex segmentIndex = ruby.getSegmentIndexFromSeekPosition(seekPosition);
+    WordIndex wordIndex = ruby.getWordIndexFromSeekPosition(seekPosition);
 
     return RubyCursor(
       sentence: sentence,
       seekPosition: seekPosition,
       phrasePosition: phrasePosition,
-      insertionPosition: ruby.timetable.leftTimingPoint(segmentIndex).insertionPosition + 1,
+      insertionPosition: ruby.timetable.leftTimingPoint(wordIndex).insertionPosition + 1,
       option: Option.former,
     );
   }
@@ -95,18 +95,18 @@ class RubyCursor extends TextPaneCursor {
   }
 
   @override
-  List<TextPaneCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList) {
-    List<RubyCursor?> separatedCursors = List.filled(sentenceSegmentList.length, null);
+  List<TextPaneCursor?> getWordDividedCursors(WordList wordList) {
+    List<RubyCursor?> separatedCursors = List.filled(wordList.length, null);
     return separatedCursors;
   }
 
   @override
-  RubyCursor? shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {
+  RubyCursor? shiftLeftByWordList(WordList wordList) {
     return this;
   }
 
   @override
-  RubyCursor? shiftLeftBySentenceSegment(SentenceSegment sentenceSegment) {
+  RubyCursor? shiftLeftByWord(Word word) {
     return this;
   }
 
@@ -135,12 +135,12 @@ class RubyCursor extends TextPaneCursor {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final RubyCursor otherSentenceSegments = other as RubyCursor;
-    if (sentence != otherSentenceSegments.sentence) return false;
-    if (seekPosition != otherSentenceSegments.seekPosition) return false;
-    if (phrasePosition != otherSentenceSegments.phrasePosition) return false;
-    if (insertionPosition != otherSentenceSegments.insertionPosition) return false;
-    if (option != otherSentenceSegments.option) return false;
+    final RubyCursor otherWords = other as RubyCursor;
+    if (sentence != otherWords.sentence) return false;
+    if (seekPosition != otherWords.seekPosition) return false;
+    if (phrasePosition != otherWords.phrasePosition) return false;
+    if (insertionPosition != otherWords.insertionPosition) return false;
+    if (option != otherWords.option) return false;
     return true;
   }
 

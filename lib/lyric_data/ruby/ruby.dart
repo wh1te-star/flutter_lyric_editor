@@ -28,11 +28,11 @@ class Ruby {
   String get sentence => timetable.sentence;
   SeekPosition get startTimestamp => timetable.startTimestamp;
   SeekPosition get endTimestamp => timetable.endTimestamp;
-  List<SentenceSegment> get sentenceSegments => timetable.sentenceSegmentList.list;
+  List<Word> get words => timetable.wordList.list;
   List<TimingPoint> get timingPoints => timetable.timingPointList.list;
-  SentenceSegmentIndex getSegmentIndexFromSeekPosition(SeekPosition seekPosition) => timetable.getSegmentIndexFromSeekPosition(seekPosition);
+  WordIndex getWordIndexFromSeekPosition(SeekPosition seekPosition) => timetable.getWordIndexFromSeekPosition(seekPosition);
   InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timetable.getInsertionPositionInfo(insertionPosition);
-  SentenceSegmentList getSentenceSegmentList(PhrasePosition phrasePosition) => timetable.getSentenceSegmentList(phrasePosition);
+  WordList getWordList(PhrasePosition phrasePosition) => timetable.getWordList(phrasePosition);
 
   Ruby copyWith({
     Timetable? timetable,

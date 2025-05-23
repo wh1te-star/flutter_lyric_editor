@@ -45,8 +45,8 @@ class BaseCursor extends TextPaneCursor {
     required Sentence sentence,
     required SeekPosition seekPosition,
   }) {
-    SentenceSegmentIndex segmentIndex = sentence.getSegmentIndexFromSeekPosition(seekPosition);
-    InsertionPosition insertionPosition = sentence.timetable.leftTimingPoint(segmentIndex).insertionPosition + 1;
+    WordIndex wordIndex = sentence.getWordIndexFromSeekPosition(seekPosition);
+    InsertionPosition insertionPosition = sentence.timetable.leftTimingPoint(wordIndex).insertionPosition + 1;
     return BaseCursor(
       sentence: sentence,
       seekPosition: seekPosition,
@@ -60,11 +60,11 @@ class BaseCursor extends TextPaneCursor {
     InsertionPositionInfo? insertionPositionInfo = sentence.getInsertionPositionInfo(insertionPosition);
     assert(insertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
 
-    SentenceSegmentIndex highlightSegmentIndex = sentence.getSegmentIndexFromSeekPosition(seekPosition);
+    WordIndex highlightWordIndex = sentence.getWordIndexFromSeekPosition(seekPosition);
     InsertionPosition nextInsertionPosition = InsertionPosition.empty;
-    if (insertionPositionInfo is SentenceSegmentInsertionPositionInfo) {
-      SentenceSegmentIndex segmentIndex = insertionPositionInfo.sentenceSegmentIndex;
-      assert(segmentIndex == highlightSegmentIndex, "An unexpected state was occurred.");
+    if (insertionPositionInfo is WordInsertionPositionInfo) {
+      WordIndex wordIndex = insertionPositionInfo.wordIndex;
+      assert(wordIndex == highlightWordIndex, "An unexpected state was occurred.");
       nextInsertionPosition = insertionPosition - 1;
       if (nextInsertionPosition <= InsertionPosition(0)) {
         return this;
@@ -76,7 +76,7 @@ class BaseCursor extends TextPaneCursor {
         return copyWith(option: Option.former);
       }
 
-      TimingPointIndex rightTimingPointIndex = sentence.timetable.rightTimingPointIndex(highlightSegmentIndex);
+      TimingPointIndex rightTimingPointIndex = sentence.timetable.rightTimingPointIndex(highlightWordIndex);
       TimingPointIndex timingPointIndex = insertionPositionInfo.timingPointIndex;
       if (timingPointIndex == rightTimingPointIndex) {
         nextInsertionPosition = insertionPosition - 1;
@@ -91,8 +91,8 @@ class BaseCursor extends TextPaneCursor {
 
     InsertionPositionInfo? nextInsertionPositionInfo = sentence.getInsertionPositionInfo(nextInsertionPosition);
     assert(nextInsertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
-    if (nextInsertionPositionInfo is SentenceSegmentInsertionPositionInfo) {
-      return copyWith(insertionPosition: nextInsertionPosition, option: Option.segment);
+    if (nextInsertionPositionInfo is WordInsertionPositionInfo) {
+      return copyWith(insertionPosition: nextInsertionPosition, option: Option.word);
     }
     if (nextInsertionPositionInfo is TimingPointInsertionPositionInfo) {
       Option nextOption = Option.former;
@@ -110,11 +110,11 @@ class BaseCursor extends TextPaneCursor {
     InsertionPositionInfo? insertionPositionInfo = sentence.getInsertionPositionInfo(insertionPosition);
     assert(insertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
 
-    SentenceSegmentIndex highlightSegmentIndex = sentence.getSegmentIndexFromSeekPosition(seekPosition);
+    WordIndex highlightWordIndex = sentence.getWordIndexFromSeekPosition(seekPosition);
     InsertionPosition nextInsertionPosition = InsertionPosition.empty;
-    if (insertionPositionInfo is SentenceSegmentInsertionPositionInfo) {
-      SentenceSegmentIndex segmentIndex = insertionPositionInfo.sentenceSegmentIndex;
-      assert(segmentIndex == highlightSegmentIndex, "An unexpected state was occurred.");
+    if (insertionPositionInfo is WordInsertionPositionInfo) {
+      WordIndex wordIndex = insertionPositionInfo.wordIndex;
+      assert(wordIndex == highlightWordIndex, "An unexpected state was occurred.");
       nextInsertionPosition = insertionPosition + 1;
       if (nextInsertionPosition >= InsertionPosition(sentence.sentence.length)) {
         return this;
@@ -126,7 +126,7 @@ class BaseCursor extends TextPaneCursor {
         return copyWith(option: Option.latter);
       }
 
-      TimingPointIndex leftTimingPointIndex = sentence.timetable.leftTimingPointIndex(highlightSegmentIndex);
+      TimingPointIndex leftTimingPointIndex = sentence.timetable.leftTimingPointIndex(highlightWordIndex);
       TimingPointIndex timingPointIndex = insertionPositionInfo.timingPointIndex;
       if (insertionPositionInfo.duplicate) timingPointIndex = timingPointIndex + 1;
       if (timingPointIndex == leftTimingPointIndex) {
@@ -143,8 +143,8 @@ class BaseCursor extends TextPaneCursor {
 
     InsertionPositionInfo? nextInsertionPositionInfo = sentence.getInsertionPositionInfo(nextInsertionPosition);
     assert(nextInsertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
-    if (nextInsertionPositionInfo is SentenceSegmentInsertionPositionInfo) {
-      return copyWith(insertionPosition: nextInsertionPosition, option: Option.segment);
+    if (nextInsertionPositionInfo is WordInsertionPositionInfo) {
+      return copyWith(insertionPosition: nextInsertionPosition, option: Option.word);
     }
     if (nextInsertionPositionInfo is TimingPointInsertionPositionInfo) {
       return copyWith(insertionPosition: nextInsertionPosition, option: Option.former);
@@ -157,7 +157,7 @@ class BaseCursor extends TextPaneCursor {
     return WordCursor(
       sentence: sentence,
       seekPosition: seekPosition,
-      phrasePosition: PhrasePosition(SentenceSegmentIndex(0), SentenceSegmentIndex(0)),
+      phrasePosition: PhrasePosition(WordIndex(0), WordIndex(0)),
       isExpandMode: false,
     );
   }
@@ -168,8 +168,8 @@ class BaseCursor extends TextPaneCursor {
     BaseCursor shiftedCursor = copyWith();
     for (int index = 0; index < phrasePositionList.length; index++) {
       PhrasePosition phrasePosition = phrasePositionList[index];
-      SentenceSegmentList? sentenceSubList = sentence.getSentenceSegmentList(phrasePosition);
-      BaseCursor? nextCursor = shiftedCursor.shiftLeftBySentenceSegmentList(sentenceSubList);
+      WordList? sentenceSubList = sentence.getWordList(phrasePosition);
+      BaseCursor? nextCursor = shiftedCursor.shiftLeftByWordList(sentenceSubList);
       if (nextCursor == null) {
         separatedCursors[index] = shiftedCursor;
         break;
@@ -180,12 +180,12 @@ class BaseCursor extends TextPaneCursor {
   }
 
   @override
-  List<TextPaneCursor?> getSegmentDividedCursors(SentenceSegmentList sentenceSegmentList) {
-    List<BaseCursor?> separatedCursors = List.filled(sentenceSegmentList.length, null);
+  List<TextPaneCursor?> getWordDividedCursors(WordList wordList) {
+    List<BaseCursor?> separatedCursors = List.filled(wordList.length, null);
     BaseCursor shiftedCursor = copyWith();
-    for (int index = 0; index < sentenceSegmentList.length; index++) {
-      SentenceSegment sentenceSegment = sentenceSegmentList[index];
-      BaseCursor? nextCursor = shiftedCursor.shiftLeftBySentenceSegment(sentenceSegment);
+    for (int index = 0; index < wordList.length; index++) {
+      Word word = wordList[index];
+      BaseCursor? nextCursor = shiftedCursor.shiftLeftByWord(word);
       if (nextCursor == null) {
         separatedCursors[index] = shiftedCursor;
         break;
@@ -196,20 +196,20 @@ class BaseCursor extends TextPaneCursor {
   }
 
   @override
-  BaseCursor? shiftLeftBySentenceSegmentList(SentenceSegmentList sentenceSegmentList) {
-    if (insertionPosition.position - sentenceSegmentList.charLength < 0) {
+  BaseCursor? shiftLeftByWordList(WordList wordList) {
+    if (insertionPosition.position - wordList.charCount < 0) {
       return null;
     }
-    InsertionPosition newInsertionPosition = insertionPosition - sentenceSegmentList.charLength;
+    InsertionPosition newInsertionPosition = insertionPosition - wordList.charCount;
     return copyWith(insertionPosition: newInsertionPosition);
   }
 
   @override
-  BaseCursor? shiftLeftBySentenceSegment(SentenceSegment sentenceSegment) {
-    if (insertionPosition.position - sentenceSegment.word.length < 0) {
+  BaseCursor? shiftLeftByWord(Word word) {
+    if (insertionPosition.position - word.word.length < 0) {
       return null;
     }
-    InsertionPosition newInsertionPosition = insertionPosition - sentenceSegment.word.length;
+    InsertionPosition newInsertionPosition = insertionPosition - word.word.length;
     return copyWith(insertionPosition: newInsertionPosition);
   }
 
@@ -236,11 +236,11 @@ class BaseCursor extends TextPaneCursor {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final BaseCursor otherSentenceSegments = other as BaseCursor;
-    if (sentence != otherSentenceSegments.sentence) return false;
-    if (seekPosition != otherSentenceSegments.seekPosition) return false;
-    if (insertionPosition != otherSentenceSegments.insertionPosition) return false;
-    if (option != otherSentenceSegments.option) return false;
+    final BaseCursor otherWords = other as BaseCursor;
+    if (sentence != otherWords.sentence) return false;
+    if (seekPosition != otherWords.seekPosition) return false;
+    if (insertionPosition != otherWords.insertionPosition) return false;
+    if (option != otherWords.option) return false;
     return true;
   }
 

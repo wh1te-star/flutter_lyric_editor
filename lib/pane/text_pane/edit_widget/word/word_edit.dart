@@ -5,8 +5,8 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/base_cursor.
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
-class SentenceSegmentEdit extends StatelessWidget {
-  final SentenceSegment sentenceSegment;
+class WordEdit extends StatelessWidget {
+  final Word word;
   final TextPaneCursor? textPaneCursor;
   final CursorBlinker? cursorBlinker;
 
@@ -25,8 +25,8 @@ class SentenceSegmentEdit extends StatelessWidget {
     background: (Paint()..color = Colors.black),
   );
 
-  SentenceSegmentEdit({
-    required this.sentenceSegment,
+  WordEdit({
+    required this.word,
     this.textPaneCursor,
     this.cursorBlinker,
   });
@@ -44,7 +44,7 @@ class SentenceSegmentEdit extends StatelessWidget {
     if (textPaneCursor is BaseCursor && cursorBlinker != null && cursorBlinker!.visible) {
       BaseCursor cursor = textPaneCursor as BaseCursor;
       double cursorOffset = calculateCursorPosition(
-        sentenceSegment.word,
+        word.word,
         cursor.insertionPosition.position,
         textStyle,
       );
@@ -70,7 +70,7 @@ class SentenceSegmentEdit extends StatelessWidget {
       textStyle = incursorTextStyle;
     }
     return Text(
-      sentenceSegment.word,
+      word.word,
       style: textStyle,
     );
   }

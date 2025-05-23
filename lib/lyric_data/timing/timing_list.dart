@@ -54,8 +54,8 @@ class TimingPointList {
     list[index] = value;
   }
 
-  SentenceSegmentList toSentenceSegmentList(String sentence) {
-    List<SentenceSegment> sentenceSegments = [];
+  WordList toWordList(String sentence) {
+    List<Word> words = [];
     List<TimingPoint> timingPoints = list;
     for (int index = 0; index < timingPoints.length - 1; index++) {
       String word = sentence.substring(
@@ -65,10 +65,10 @@ class TimingPointList {
       Duration duration = Duration(
         milliseconds: timingPoints[index + 1].seekPosition.position - timingPoints[index].seekPosition.position,
       );
-      sentenceSegments.add(SentenceSegment(word, duration));
+      words.add(Word(word, duration));
     }
 
-    return SentenceSegmentList(sentenceSegments);
+    return WordList(words);
   }
 
   TimingPointList copyWith({

@@ -29,8 +29,8 @@ class TimingPoint {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final TimingPoint otherSentenceSegments = other as TimingPoint;
-    return insertionPosition == otherSentenceSegments.insertionPosition && seekPosition == otherSentenceSegments.seekPosition;
+    final TimingPoint otherWords = other as TimingPoint;
+    return insertionPosition == otherWords.insertionPosition && seekPosition == otherWords.seekPosition;
   }
 
   @override

@@ -11,11 +11,11 @@ void main() {
       const String afterStr = "abcdefgh";
       final CharDiff diff = CharDiff(beforeStr, afterStr);
 
-      final List<DiffSegment> expected = [
-        DiffSegment("abcdefgh", "abcdefgh"),
+      final List<WordDiff> expected = [
+        WordDiff("abcdefgh", "abcdefgh"),
       ];
 
-      expect(diff.getDiffSegments(), equals(expected));
+      expect(diff.getWordDiffs(), equals(expected));
     });
 
     test('When editting a part of the before string. (e -> xx)', () {
@@ -23,13 +23,13 @@ void main() {
       const String afterStr = "abcdxxfgh";
       final CharDiff diff = CharDiff(beforeStr, afterStr);
 
-      final List<DiffSegment> expected = [
-        DiffSegment("abcd", "abcd"),
-        DiffSegment("e", "xx"),
-        DiffSegment("fgh", "fgh"),
+      final List<WordDiff> expected = [
+        WordDiff("abcd", "abcd"),
+        WordDiff("e", "xx"),
+        WordDiff("fgh", "fgh"),
       ];
 
-      expect(diff.getDiffSegments(), equals(expected));
+      expect(diff.getWordDiffs(), equals(expected));
     });
 
     test('When deleting a part of the before string. (delete e)', () {
@@ -37,13 +37,13 @@ void main() {
       const String afterStr = "abcdfgh";
       final CharDiff diff = CharDiff(beforeStr, afterStr);
 
-      final List<DiffSegment> expected = [
-        DiffSegment("abcd", "abcd"),
-        DiffSegment("e", ""),
-        DiffSegment("fgh", "fgh"),
+      final List<WordDiff> expected = [
+        WordDiff("abcd", "abcd"),
+        WordDiff("e", ""),
+        WordDiff("fgh", "fgh"),
       ];
 
-      expect(diff.getDiffSegments(), equals(expected));
+      expect(diff.getWordDiffs(), equals(expected));
     });
 
     test('When adding a part of the before string. (add xx)', () {
@@ -51,13 +51,13 @@ void main() {
       const String afterStr = "abcdexxfgh";
       final CharDiff diff = CharDiff(beforeStr, afterStr);
 
-      final List<DiffSegment> expected = [
-        DiffSegment("abcde", "abcde"),
-        DiffSegment("", "xx"),
-        DiffSegment("fgh", "fgh"),
+      final List<WordDiff> expected = [
+        WordDiff("abcde", "abcde"),
+        WordDiff("", "xx"),
+        WordDiff("fgh", "fgh"),
       ];
 
-      expect(diff.getDiffSegments(), equals(expected));
+      expect(diff.getWordDiffs(), equals(expected));
     });
 
     test('When editting 2 parts of the before string. (add xx and delete fg)', () {
@@ -65,15 +65,15 @@ void main() {
       const String afterStr = "abxxcdeh";
       final CharDiff diff = CharDiff(beforeStr, afterStr);
 
-      final List<DiffSegment> expected = [
-        DiffSegment("ab", "ab"),
-        DiffSegment("", "xx"),
-        DiffSegment("cde", "cde"),
-        DiffSegment("fg", ""),
-        DiffSegment("h", "h"),
+      final List<WordDiff> expected = [
+        WordDiff("ab", "ab"),
+        WordDiff("", "xx"),
+        WordDiff("cde", "cde"),
+        WordDiff("fg", ""),
+        WordDiff("h", "h"),
       ];
 
-      expect(diff.getDiffSegments(), equals(expected));
+      expect(diff.getWordDiffs(), equals(expected));
     });
 
     test('Edit the first part', () {
@@ -81,12 +81,12 @@ void main() {
       const String afterStr = "xxcdefgh";
       final CharDiff diff = CharDiff(beforeStr, afterStr);
 
-      final List<DiffSegment> expected = [
-        DiffSegment("ab", "xx"),
-        DiffSegment("cdefgh", "cdefgh"),
+      final List<WordDiff> expected = [
+        WordDiff("ab", "xx"),
+        WordDiff("cdefgh", "cdefgh"),
       ];
 
-      expect(diff.getDiffSegments(), equals(expected));
+      expect(diff.getWordDiffs(), equals(expected));
     });
 
     test('Edit the end part', () {
@@ -94,14 +94,14 @@ void main() {
       const String afterStr = "abcdefxx";
       final CharDiff diff = CharDiff(beforeStr, afterStr);
 
-      final List<DiffSegment> expected = [
-        DiffSegment("abcdef", "abcdef"),
-        DiffSegment("gh", "xx"),
+      final List<WordDiff> expected = [
+        WordDiff("abcdef", "abcdef"),
+        WordDiff("gh", "xx"),
       ];
 
       print(diff);
 
-      expect(diff.getDiffSegments(), equals(expected));
+      expect(diff.getWordDiffs(), equals(expected));
     });
 
     test('The diff should have has at least 2 routes but only one route was found.', skip: true, () {
@@ -109,15 +109,15 @@ void main() {
       const String afterStr = "Welcometime";
       final CharDiff diff = CharDiff(beforeStr, afterStr);
 
-      final List<DiffSegment> expected = [
-        DiffSegment("Welcome", "Welcome"),
-        DiffSegment("tea", ""),
-        DiffSegment("time", "time"),
+      final List<WordDiff> expected = [
+        WordDiff("Welcome", "Welcome"),
+        WordDiff("tea", ""),
+        WordDiff("time", "time"),
       ];
 
       print(diff);
 
-      expect(diff.getLeastSegmentOne(), equals(expected));
+      expect(diff.getLeastWordDiffOne(), equals(expected));
     });
   });
 }
