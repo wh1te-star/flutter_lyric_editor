@@ -6,10 +6,10 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/base_cursor.
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/ruby_list_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/word_list_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pane_list_cursor.dart';
-import 'package:lyric_editor/position/insertion_position.dart';
-import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
-import 'package:lyric_editor/position/insertion_position_info/invalid_insertion_position_info.dart';
-import 'package:lyric_editor/position/insertion_position_info/word_insertion_position_info.dart';
+import 'package:lyric_editor/position/caret_position.dart';
+import 'package:lyric_editor/position/caret_position_info/caret_position_info.dart';
+import 'package:lyric_editor/position/caret_position_info/invalid_caret_position_info.dart';
+import 'package:lyric_editor/position/caret_position_info/word_caret_position_info.dart';
 import 'package:lyric_editor/position/option_enum.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/word_index.dart';
@@ -22,7 +22,7 @@ class BaseListCursor extends TextPaneListCursor {
     required SentenceMap sentenceMap,
     required SentenceID sentenceID,
     required SeekPosition seekPosition,
-    required InsertionPosition insertionPosition,
+    required CaretPosition caretPosition,
     required Option option,
   }) : super(sentenceMap, sentenceID, seekPosition) {
     assert(isIDContained(), "The passed sentenceID does not point to a sentence in sentenceMap.");
@@ -31,7 +31,7 @@ class BaseListCursor extends TextPaneListCursor {
     baseCursor = BaseCursor(
       sentence: sentence,
       seekPosition: seekPosition,
-      insertionPosition: insertionPosition,
+      caretPosition: caretPosition,
       option: option,
     );
     textPaneCursor = baseCursor;
@@ -72,18 +72,18 @@ class BaseListCursor extends TextPaneListCursor {
         sentenceMap: SentenceMap.empty,
         sentenceID: SentenceID.empty,
         seekPosition: SeekPosition.empty,
-        insertionPosition: InsertionPosition.empty,
+        caretPosition: CaretPosition.empty,
         option: Option.former,
       );
     }
     Sentence sentence = sentenceMap.getSentenceByID(sentenceID);
     WordIndex wordIndex = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
-    InsertionPosition insertionPosition = sentence.timetable.getLeftTiming(wordIndex).insertionPosition + 1;
+    CaretPosition caretPosition = sentence.timetable.getLeftTiming(wordIndex).caretPosition + 1;
     return BaseListCursor(
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
       seekPosition: seekPosition,
-      insertionPosition: insertionPosition,
+      caretPosition: caretPosition,
       option: Option.former,
     );
   }
@@ -150,7 +150,7 @@ class BaseListCursor extends TextPaneListCursor {
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
       seekPosition: seekPosition,
-      insertionPosition: nextCursor.insertionPosition,
+      caretPosition: nextCursor.caretPosition,
       option: nextCursor.option,
     );
   }
@@ -162,7 +162,7 @@ class BaseListCursor extends TextPaneListCursor {
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
       seekPosition: seekPosition,
-      insertionPosition: nextCursor.insertionPosition,
+      caretPosition: nextCursor.caretPosition,
       option: nextCursor.option,
     );
   }
@@ -178,7 +178,7 @@ class BaseListCursor extends TextPaneListCursor {
         sentenceMap: SentenceMap.empty,
         sentenceID: SentenceID.empty,
         seekPosition: seekPosition,
-        insertionPosition: InsertionPosition.empty,
+        caretPosition: CaretPosition.empty,
         option: Option.former,
       );
     }
@@ -188,8 +188,8 @@ class BaseListCursor extends TextPaneListCursor {
     }
     Sentence sentence = sentenceMap[sentenceID]!;
     WordIndex currentSeekWordIndex = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
-    InsertionPositionInfo nextSentencePositionInfo = sentence.getInsertionPositionInfo(baseCursor.insertionPosition);
-    if (nextSentencePositionInfo is InvalidInsertionPositionInfo || nextSentencePositionInfo is WordInsertionPositionInfo && nextSentencePositionInfo.wordIndex != currentSeekWordIndex) {
+    CaretPositionInfo nextSentencePositionInfo = sentence.getCaretPositionInfo(baseCursor.caretPosition);
+    if (nextSentencePositionInfo is InvalidCaretPositionInfo || nextSentencePositionInfo is WordCaretPositionInfo && nextSentencePositionInfo.wordIndex != currentSeekWordIndex) {
       return BaseListCursor.defaultCursor(
         sentenceMap: sentenceMap,
         sentenceID: sentenceID,
@@ -201,7 +201,7 @@ class BaseListCursor extends TextPaneListCursor {
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
       seekPosition: seekPosition,
-      insertionPosition: baseCursor.insertionPosition,
+      caretPosition: baseCursor.caretPosition,
       option: baseCursor.option,
     );
   }
@@ -221,14 +221,14 @@ class BaseListCursor extends TextPaneListCursor {
     SentenceMap? sentenceMap,
     SentenceID? sentenceID,
     SeekPosition? seekPosition,
-    InsertionPosition? insertionPosition,
+    CaretPosition? caretPosition,
     Option? option,
   }) {
     return BaseListCursor(
       sentenceMap: sentenceMap ?? this.sentenceMap,
       sentenceID: sentenceID ?? this.sentenceID,
       seekPosition: seekPosition ?? this.seekPosition,
-      insertionPosition: insertionPosition ?? baseCursor.insertionPosition,
+      caretPosition: caretPosition ?? baseCursor.caretPosition,
       option: option ?? baseCursor.option,
     );
   }

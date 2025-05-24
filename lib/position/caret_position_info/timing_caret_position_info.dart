@@ -1,16 +1,16 @@
-import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
+import 'package:lyric_editor/position/caret_position_info/caret_position_info.dart';
 import 'package:lyric_editor/position/timing_index.dart';
 
-class TimingInsertionPositionInfo implements InsertionPositionInfo {
+class TimingCaretPositionInfo implements CaretPositionInfo {
   TimingIndex timingIndex;
   bool duplicate;
-  TimingInsertionPositionInfo(this.timingIndex, this.duplicate);
+  TimingCaretPositionInfo(this.timingIndex, this.duplicate);
 
-  TimingInsertionPositionInfo copyWith({
+  TimingCaretPositionInfo copyWith({
     TimingIndex? timingIndex,
     bool? duplicate,
   }) {
-    return TimingInsertionPositionInfo(
+    return TimingCaretPositionInfo(
       timingIndex ?? this.timingIndex,
       duplicate ?? this.duplicate,
     );
@@ -18,7 +18,7 @@ class TimingInsertionPositionInfo implements InsertionPositionInfo {
 
   @override
   String toString() {
-    return "InsertionPositionInfo: Timing at index $timingIndex";
+    return "CaretPositionInfo: Timing at index $timingIndex";
   }
 
   @override
@@ -26,7 +26,7 @@ class TimingInsertionPositionInfo implements InsertionPositionInfo {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! TimingInsertionPositionInfo) {
+    if (other is! TimingCaretPositionInfo) {
       return false;
     }
     return timingIndex == other.timingIndex && duplicate == other.duplicate;

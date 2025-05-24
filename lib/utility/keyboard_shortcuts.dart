@@ -301,7 +301,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
               BaseCursor cursor = listCursor.textPaneCursor as BaseCursor;
               timingService.addTiming(
                 listCursor.sentenceID,
-                cursor.insertionPosition,
+                cursor.caretPosition,
                 seekPosition,
               );
             }
@@ -310,7 +310,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
               timingService.addRubyTiming(
                 listCursor.sentenceID,
                 cursor.wordRange,
-                cursor.insertionPosition,
+                cursor.caretPosition,
                 seekPosition,
               );
             }
@@ -324,7 +324,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
               BaseCursor cursor = listCursor.textPaneCursor as BaseCursor;
               timingService.removeTiming(
                 sentenceID,
-                cursor.insertionPosition,
+                cursor.caretPosition,
                 cursor.option,
               );
             }
@@ -333,7 +333,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
               timingService.removeRubyTiming(
                 sentenceID,
                 cursor.wordRange,
-                cursor.insertionPosition,
+                cursor.caretPosition,
                 cursor.option,
               );
             }
@@ -344,7 +344,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             TextPaneListCursor listCursor = textPaneProvider.textPaneCursorController.textPaneListCursor;
             if (listCursor is BaseListCursor) {
               BaseCursor cursor = listCursor.textPaneCursor as BaseCursor;
-              timingService.divideSentence(timelinePaneProvider.selectingSentence[0], cursor.insertionPosition, musicPlayerProvider.seekPosition);
+              timingService.divideSentence(timelinePaneProvider.selectingSentence[0], cursor.caretPosition, musicPlayerProvider.seekPosition);
             }
           }(),
         ),

@@ -2,7 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/lyric_data/timing/timing.dart';
-import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/caret_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 
 class TimingList {
@@ -21,8 +21,8 @@ class TimingList {
 
   bool isCharPositionOrdered() {
     return _list.map((Timing timing) {
-      return timing.insertionPosition;
-    }).isSorted((InsertionPosition left, InsertionPosition right) => left.compareTo(right));
+      return timing.caretPosition;
+    }).isSorted((CaretPosition left, CaretPosition right) => left.compareTo(right));
   }
 
   bool isSeekPositionOrdered() {
@@ -34,7 +34,7 @@ class TimingList {
   bool isCharPositionDuplicationAllowed() {
     return groupBy(
       _list,
-      (Timing timing) => timing.insertionPosition,
+      (Timing timing) => timing.caretPosition,
     ).values.every((List<Timing> group) => group.length <= charPositionDuplicationAllowed);
   }
 
@@ -59,8 +59,8 @@ class TimingList {
     List<Timing> timings = list;
     for (int index = 0; index < timings.length - 1; index++) {
       String word = sentence.substring(
-        timings[index].insertionPosition.position,
-        timings[index + 1].insertionPosition.position,
+        timings[index].caretPosition.position,
+        timings[index + 1].caretPosition.position,
       );
       Duration duration = Duration(
         milliseconds: timings[index + 1].seekPosition.position - timings[index].seekPosition.position,

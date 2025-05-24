@@ -33,10 +33,10 @@ class WordListEdit extends StatelessWidget {
       TextPaneCursor? wordCursor = cursorList[index];
 
       bool isTimingPosition = false;
-      if (wordCursor is BaseCursor && wordCursor.insertionPosition.position == 0) {
+      if (wordCursor is BaseCursor && wordCursor.caretPosition.position == 0) {
         isTimingPosition = true;
       }
-      if (wordCursor is RubyCursor && wordCursor.insertionPosition.position == 0) {
+      if (wordCursor is RubyCursor && wordCursor.caretPosition.position == 0) {
         isTimingPosition = true;
       }
 

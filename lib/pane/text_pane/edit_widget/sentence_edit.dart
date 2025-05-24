@@ -8,7 +8,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/base_cursor.
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/word/word_list_edit.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/word/timing_edit.dart';
-import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/caret_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
@@ -40,7 +40,7 @@ class SentenceEdit extends StatelessWidget {
 
       TextPaneCursor? cursor = cursorList[index];
       bool isTimingPosition = false;
-      if (cursor is BaseCursor && cursor.insertionPosition == InsertionPosition(0)) {
+      if (cursor is BaseCursor && cursor.caretPosition == CaretPosition(0)) {
         isTimingPosition = true;
       }
 

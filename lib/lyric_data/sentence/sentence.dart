@@ -2,11 +2,11 @@ import 'package:lyric_editor/lyric_data/ruby/ruby.dart';
 import 'package:lyric_editor/lyric_data/ruby/ruby_map.dart';
 import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
-import 'package:lyric_editor/position/insertion_position.dart';
-import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
-import 'package:lyric_editor/position/insertion_position_info/invalid_insertion_position_info.dart';
-import 'package:lyric_editor/position/insertion_position_info/word_insertion_position_info.dart';
-import 'package:lyric_editor/position/insertion_position_info/timing_insertion_position_info.dart';
+import 'package:lyric_editor/position/caret_position.dart';
+import 'package:lyric_editor/position/caret_position_info/caret_position_info.dart';
+import 'package:lyric_editor/position/caret_position_info/invalid_caret_position_info.dart';
+import 'package:lyric_editor/position/caret_position_info/word_caret_position_info.dart';
+import 'package:lyric_editor/position/caret_position_info/timing_caret_position_info.dart';
 import 'package:lyric_editor/position/option_enum.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/seek_position_info/seek_position_info.dart';
@@ -46,7 +46,7 @@ class Sentence {
   int get charCount => timetable.charCount;
   int get wordCount => timetable.wordCount;
   SeekPositionInfo getSeekPositionInfoBySeekPosition(SeekPosition seekPosition) => timetable.getSeekPositionInfoBySeekPosition(seekPosition);
-  InsertionPositionInfo getInsertionPositionInfo(InsertionPosition insertionPosition) => timetable.getInsertionPositionInfo(insertionPosition);
+  CaretPositionInfo getCaretPositionInfo(CaretPosition caretPosition) => timetable.getCaretPositionInfo(caretPosition);
   WordList getWordList(WordRange wordRange) => timetable.getWordList(wordRange);
   TimingIndex getLeftTimingIndex(WordIndex wordIndex) => timetable.getLeftTimingIndex(wordIndex);
   TimingIndex getRightTimingIndex(WordIndex wordIndex) => timetable.getRightTimingIndex(wordIndex);
@@ -83,24 +83,24 @@ class Sentence {
     return Sentence(vocalistID: vocalistID, timetable: copiedTimetable, rubyMap: rubyMap);
   }
 
-  Sentence addTiming(InsertionPosition charPosition, SeekPosition seekPosition) {
+  Sentence addTiming(CaretPosition charPosition, SeekPosition seekPosition) {
     RubyMap rubyMap = carryUpRubyWords(charPosition);
     Timetable timetable = this.timetable.addTiming(charPosition, seekPosition);
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
-  Sentence removeTiming(InsertionPosition charPosition, Option option) {
+  Sentence removeTiming(CaretPosition charPosition, Option option) {
     RubyMap rubyMap = carryDownRubyWords(charPosition);
     Timetable timetable = this.timetable.deleteTiming(charPosition, option);
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
-  Sentence addRubyTiming(WordRange wordRange, InsertionPosition charPosition, SeekPosition seekPosition) {
+  Sentence addRubyTiming(WordRange wordRange, CaretPosition charPosition, SeekPosition seekPosition) {
     Timetable timetable = rubyMap[wordRange]!.timetable.addTiming(charPosition, seekPosition);
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
-  Sentence removeRubyTiming(WordRange wordRange, InsertionPosition charPosition, Option option) {
+  Sentence removeRubyTiming(WordRange wordRange, CaretPosition charPosition, Option option) {
     Timetable timetable = rubyMap[wordRange]!.timetable.deleteTiming(charPosition, option);
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
@@ -131,7 +131,7 @@ class Sentence {
     return Sentence(vocalistID: vocalistID, timetable: newTimetable, rubyMap: rubyMap);
   }
 
-  Tuple2<Sentence, Sentence> divideSentence(InsertionPosition charPosition, SeekPosition seekPosition) {
+  Tuple2<Sentence, Sentence> divideSentence(CaretPosition charPosition, SeekPosition seekPosition) {
     String formerString = sentence.substring(0, charPosition.position);
     String latterString = sentence.substring(charPosition.position);
     Sentence sentence1 = Sentence.empty;
@@ -160,9 +160,9 @@ class Sentence {
     return Tuple2(sentence1, sentence2);
   }
 
-  RubyMap carryUpRubyWords(InsertionPosition insertionPosition) {
-    InsertionPositionInfo info = timetable.getInsertionPositionInfo(insertionPosition);
-    assert(info is! InvalidInsertionPositionInfo);
+  RubyMap carryUpRubyWords(CaretPosition caretPosition) {
+    CaretPositionInfo info = timetable.getCaretPositionInfo(caretPosition);
+    assert(info is! InvalidCaretPositionInfo);
 
     Map<WordRange, Ruby> updatedRubys = {};
 
@@ -170,7 +170,7 @@ class Sentence {
       WordRange newKey = key.copyWith();
 
       switch (info) {
-        case WordInsertionPositionInfo():
+        case WordCaretPositionInfo():
           WordIndex index = info.wordIndex;
           if (index < key.startIndex) {
             newKey.startIndex++;
@@ -180,7 +180,7 @@ class Sentence {
           }
           break;
 
-        case TimingInsertionPositionInfo():
+        case TimingCaretPositionInfo():
           TimingIndex index = info.timingIndex;
           TimingIndex startIndex = timetable.getLeftTimingIndex(key.startIndex);
           TimingIndex endIndex = timetable.getRightTimingIndex(key.endIndex);
@@ -193,7 +193,7 @@ class Sentence {
           break;
 
         default:
-          assert(false, "An unexpected state occurred for the insertion position info");
+          assert(false, "An unexpected state occurred for the caret position info");
       }
 
       updatedRubys[newKey] = value;
@@ -202,18 +202,18 @@ class Sentence {
     return RubyMap(updatedRubys);
   }
 
-  RubyMap carryDownRubyWords(InsertionPosition insertionPosition) {
-    InsertionPositionInfo info = timetable.getInsertionPositionInfo(insertionPosition);
-    assert(info is! InvalidInsertionPositionInfo);
+  RubyMap carryDownRubyWords(CaretPosition caretPosition) {
+    CaretPositionInfo info = timetable.getCaretPositionInfo(caretPosition);
+    assert(info is! InvalidCaretPositionInfo);
 
     Map<WordRange, Ruby> updatedRubys = {};
     int index = -1;
-    if (info is WordInsertionPositionInfo) {
+    if (info is WordCaretPositionInfo) {
       index = info.wordIndex.index;
-    } else if (info is TimingInsertionPositionInfo) {
+    } else if (info is TimingCaretPositionInfo) {
       index = info.timingIndex.index;
     } else {
-      assert(false, "An unexpected state was occurred for the insertion position");
+      assert(false, "An unexpected state was occurred for the caret position");
     }
 
     rubyMap.map.forEach((WordRange key, Ruby value) {
@@ -221,7 +221,7 @@ class Sentence {
       int startIndex = key.startIndex.index;
       int endIndex = key.endIndex.index + 1;
       if (index == startIndex && index == endIndex + 1) {
-        if (info is TimingInsertionPositionInfo && info.duplicate) {
+        if (info is TimingCaretPositionInfo && info.duplicate) {
           newKey.startIndex--;
           newKey.endIndex--;
         } else {

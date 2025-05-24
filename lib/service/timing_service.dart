@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
 import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
-import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/caret_position.dart';
 import 'package:lyric_editor/position/option_enum.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/sentence_side_enum.dart';
@@ -136,25 +136,25 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addTiming(SentenceID sentenceID, InsertionPosition charPosition, SeekPosition seekPosition) {
+  void addTiming(SentenceID sentenceID, CaretPosition charPosition, SeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
     sentenceMap = sentenceMap.addTiming(sentenceID, charPosition, seekPosition);
     notifyListeners();
   }
 
-  void removeTiming(SentenceID sentenceID, InsertionPosition charPosition, Option option) {
+  void removeTiming(SentenceID sentenceID, CaretPosition charPosition, Option option) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
     sentenceMap = sentenceMap.removeTiming(sentenceID, charPosition, option);
     notifyListeners();
   }
 
-  void addRubyTiming(SentenceID sentenceID, WordRange wordRange, InsertionPosition charPosition, SeekPosition seekPosition) {
+  void addRubyTiming(SentenceID sentenceID, WordRange wordRange, CaretPosition charPosition, SeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
     sentenceMap = sentenceMap.addRubyTiming(sentenceID, wordRange, charPosition, seekPosition);
     notifyListeners();
   }
 
-  void removeRubyTiming(SentenceID sentenceID, WordRange wordRange, InsertionPosition charPosition, Option option) {
+  void removeRubyTiming(SentenceID sentenceID, WordRange wordRange, CaretPosition charPosition, Option option) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
     sentenceMap = sentenceMap.removeRubyTiming(sentenceID, wordRange, charPosition, option);
     notifyListeners();
@@ -166,7 +166,7 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void divideSentence(SentenceID sentenceID, InsertionPosition charPosition, SeekPosition seekPosition) {
+  void divideSentence(SentenceID sentenceID, CaretPosition charPosition, SeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
     sentenceMap = sentenceMap.divideSentence(sentenceID, charPosition, seekPosition);
     notifyListeners();

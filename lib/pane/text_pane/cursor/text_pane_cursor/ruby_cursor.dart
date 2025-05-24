@@ -8,11 +8,11 @@ import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/base_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
-import 'package:lyric_editor/position/insertion_position.dart';
-import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
-import 'package:lyric_editor/position/insertion_position_info/invalid_insertion_position_info.dart';
-import 'package:lyric_editor/position/insertion_position_info/timing_insertion_position_info.dart';
-import 'package:lyric_editor/position/insertion_position_info/word_insertion_position_info.dart';
+import 'package:lyric_editor/position/caret_position.dart';
+import 'package:lyric_editor/position/caret_position_info/caret_position_info.dart';
+import 'package:lyric_editor/position/caret_position_info/invalid_caret_position_info.dart';
+import 'package:lyric_editor/position/caret_position_info/timing_caret_position_info.dart';
+import 'package:lyric_editor/position/caret_position_info/word_caret_position_info.dart';
 import 'package:lyric_editor/position/option_enum.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/timing_index.dart';
@@ -23,14 +23,14 @@ import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 class RubyCursor extends TextPaneCursor {
   WordRange wordRange;
-  InsertionPosition insertionPosition;
+  CaretPosition caretPosition;
   Option option;
 
   RubyCursor({
     required Sentence sentence,
     required SeekPosition seekPosition,
     required this.wordRange,
-    required this.insertionPosition,
+    required this.caretPosition,
     required this.option,
   }) : super(sentence, seekPosition) {
     assert(doesSeekPositionPointRuby(), "The passed seek position does not point to any ruby.");
@@ -45,14 +45,14 @@ class RubyCursor extends TextPaneCursor {
     super.sentence,
     super.seekPosition,
     this.wordRange,
-    this.insertionPosition,
+    this.caretPosition,
     this.option,
   );
   static final RubyCursor _empty = RubyCursor._privateConstructor(
     Sentence.empty,
     SeekPosition.empty,
     WordRange.empty,
-    InsertionPosition.empty,
+    CaretPosition.empty,
     Option.former,
   );
   static RubyCursor get empty => _empty;
@@ -71,117 +71,111 @@ class RubyCursor extends TextPaneCursor {
       sentence: sentence,
       seekPosition: seekPosition,
       wordRange: wordRange,
-      insertionPosition: ruby.timetable.getLeftTiming(wordIndex).insertionPosition + 1,
+      caretPosition: ruby.timetable.getLeftTiming(wordIndex).caretPosition + 1,
       option: Option.former,
     );
   }
 
   @override
   TextPaneCursor moveLeftCursor() {
-    return this;
-    /*
     Timetable rubyTimetable = sentence.rubyMap[wordRange]!.timetable;
 
-    InsertionPositionInfo insertionPositionInfo = rubyTimetable.getInsertionPositionInfo(insertionPosition);
-    assert(insertionPositionInfo is! InvalidInsertionPositionInfo, "An unexpected state was occurred for the insertion position info.");
+    CaretPositionInfo caretPositionInfo = rubyTimetable.getCaretPositionInfo(caretPosition);
+    assert(caretPositionInfo is! InvalidCaretPositionInfo, "An unexpected state was occurred for the caret position info.");
 
     WordIndex highlightWordIndex = rubyTimetable.getSeekPositionInfoBySeekPosition(seekPosition);
-    InsertionPosition nextInsertionPosition = InsertionPosition.empty;
-    if (insertionPositionInfo is WordInsertionPositionInfo) {
-      WordIndex wordIndex = insertionPositionInfo.wordIndex;
+    CaretPosition nextCaretPosition = CaretPosition.empty;
+    if (caretPositionInfo is WordCaretPositionInfo) {
+      WordIndex wordIndex = caretPositionInfo.wordIndex;
       assert(wordIndex == highlightWordIndex, "An unexpected state was occurred.");
-      nextInsertionPosition = insertionPosition - 1;
-      if (nextInsertionPosition <= InsertionPosition(0)) {
+      nextCaretPosition = caretPosition - 1;
+      if (nextCaretPosition <= CaretPosition(0)) {
         return this;
       }
     }
 
-    if (insertionPositionInfo is TimingInsertionPositionInfo) {
+    if (caretPositionInfo is TimingCaretPositionInfo) {
       if (option == Option.latter) {
         return copyWith(option: Option.former);
       }
 
       TimingIndex rightTimingIndex = rubyTimetable.getRightTimingIndex(highlightWordIndex);
-      TimingIndex timingIndex = insertionPositionInfo.timingIndex;
+      TimingIndex timingIndex = caretPositionInfo.timingIndex;
       if (timingIndex == rightTimingIndex) {
-        nextInsertionPosition = insertionPosition - 1;
+        nextCaretPosition = caretPosition - 1;
       } else {
         if (timingIndex.index - 1 <= 0) {
           return this;
         }
         Timing previousTiming = rubyTimetable.timings[timingIndex.index - 1];
-        nextInsertionPosition = previousTiming.insertionPosition;
+        nextCaretPosition = previousTiming.caretPosition;
       }
     }
 
-    InsertionPositionInfo nextInsertionPositionInfo = rubyTimetable.getInsertionPositionInfo(nextInsertionPosition);
-    assert(nextInsertionPositionInfo is! InvalidInsertionPositionInfo, "An unexpected state was occurred for the insertion position info.");
-    if (nextInsertionPositionInfo is WordInsertionPositionInfo) {
-      return copyWith(insertionPosition: nextInsertionPosition, option: Option.none);
+    CaretPositionInfo nextCaretPositionInfo = rubyTimetable.getCaretPositionInfo(nextCaretPosition);
+    assert(nextCaretPositionInfo is! InvalidCaretPositionInfo, "An unexpected state was occurred for the caret position info.");
+    if (nextCaretPositionInfo is WordCaretPositionInfo) {
+      return copyWith(caretPosition: nextCaretPosition, option: Option.none);
     }
-    if (nextInsertionPositionInfo is TimingInsertionPositionInfo) {
+    if (nextCaretPositionInfo is TimingCaretPositionInfo) {
       Option nextOption = Option.former;
-      if (nextInsertionPositionInfo.duplicate) {
+      if (nextCaretPositionInfo.duplicate) {
         nextOption = Option.latter;
       }
-      return copyWith(insertionPosition: nextInsertionPosition, option: nextOption);
+      return copyWith(caretPosition: nextCaretPosition, option: nextOption);
     }
 
     return this;
-    */
   }
 
   @override
   TextPaneCursor moveRightCursor() {
-    return this;
-    /*
     Timetable rubyTimetable = sentence.rubyMap[wordRange]!.timetable;
 
-    InsertionPositionInfo insertionPositionInfo = rubyTimetable.getInsertionPositionInfo(insertionPosition);
-    assert(insertionPositionInfo is! InvalidInsertionPositionInfo, "An unexpected state was occurred for the insertion position info.");
+    CaretPositionInfo caretPositionInfo = rubyTimetable.getCaretPositionInfo(caretPosition);
+    assert(caretPositionInfo is! InvalidCaretPositionInfo, "An unexpected state was occurred for the caret position info.");
 
     WordIndex highlightWordIndex = rubyTimetable.getSeekPositionInfoBySeekPosition(seekPosition);
-    InsertionPosition nextInsertionPosition = InsertionPosition.empty;
-    if (insertionPositionInfo is WordInsertionPositionInfo) {
-      WordIndex wordIndex = insertionPositionInfo.wordIndex;
+    CaretPosition nextCaretPosition = CaretPosition.empty;
+    if (caretPositionInfo is WordCaretPositionInfo) {
+      WordIndex wordIndex = caretPositionInfo.wordIndex;
       assert(wordIndex == highlightWordIndex, "An unexpected state was occurred.");
-      nextInsertionPosition = insertionPosition + 1;
-      if (nextInsertionPosition >= InsertionPosition(rubyTimetable.sentence.length)) {
+      nextCaretPosition = caretPosition + 1;
+      if (nextCaretPosition >= CaretPosition(rubyTimetable.sentence.length)) {
         return this;
       }
     }
 
-    if (insertionPositionInfo is TimingInsertionPositionInfo) {
-      if (insertionPositionInfo.duplicate && option == Option.former) {
+    if (caretPositionInfo is TimingCaretPositionInfo) {
+      if (caretPositionInfo.duplicate && option == Option.former) {
         return copyWith(option: Option.latter);
       }
 
       TimingIndex leftTimingIndex = rubyTimetable.getLeftTimingIndex(highlightWordIndex);
-      TimingIndex timingIndex = insertionPositionInfo.timingIndex;
-      if (insertionPositionInfo.duplicate) timingIndex = timingIndex + 1;
+      TimingIndex timingIndex = caretPositionInfo.timingIndex;
+      if (caretPositionInfo.duplicate) timingIndex = timingIndex + 1;
       if (timingIndex == leftTimingIndex) {
-        nextInsertionPosition = insertionPosition + 1;
+        nextCaretPosition = caretPosition + 1;
       } else {
         TimingIndex nextTimingIndex = timingIndex + 1;
         if (nextTimingIndex.index >= rubyTimetable.timings.length - 1) {
           return this;
         }
         Timing nextTiming = rubyTimetable.timings[nextTimingIndex.index];
-        nextInsertionPosition = nextTiming.insertionPosition;
+        nextCaretPosition = nextTiming.caretPosition;
       }
     }
 
-    InsertionPositionInfo nextInsertionPositionInfo = rubyTimetable.getInsertionPositionInfo(nextInsertionPosition);
-    assert(nextInsertionPositionInfo is! InvalidInsertionPositionInfo, "An unexpected state was occurred for the insertion position info.");
-    if (nextInsertionPositionInfo is WordInsertionPositionInfo) {
-      return copyWith(insertionPosition: nextInsertionPosition, option: Option.none);
+    CaretPositionInfo nextCaretPositionInfo = rubyTimetable.getCaretPositionInfo(nextCaretPosition);
+    assert(nextCaretPositionInfo is! InvalidCaretPositionInfo, "An unexpected state was occurred for the caret position info.");
+    if (nextCaretPositionInfo is WordCaretPositionInfo) {
+      return copyWith(caretPosition: nextCaretPosition, option: Option.none);
     }
-    if (nextInsertionPositionInfo is TimingInsertionPositionInfo) {
-      return copyWith(insertionPosition: nextInsertionPosition, option: Option.former);
+    if (nextCaretPositionInfo is TimingCaretPositionInfo) {
+      return copyWith(caretPosition: nextCaretPosition, option: Option.former);
     }
 
     return this;
-    */
   }
 
   @override
@@ -215,32 +209,32 @@ class RubyCursor extends TextPaneCursor {
   }
 
   RubyCursor? shiftLeftByWord(Word word) {
-    if (insertionPosition.position - word.word.length < 0) {
+    if (caretPosition.position - word.word.length < 0) {
       return null;
     }
-    InsertionPosition newInsertionPosition = insertionPosition - word.word.length;
-    return copyWith(insertionPosition: newInsertionPosition);
+    CaretPosition newCaretPosition = caretPosition - word.word.length;
+    return copyWith(caretPosition: newCaretPosition);
   }
 
   RubyCursor copyWith({
     Sentence? sentence,
     SeekPosition? seekPosition,
     WordRange? wordRange,
-    InsertionPosition? insertionPosition,
+    CaretPosition? caretPosition,
     Option? option,
   }) {
     return RubyCursor(
       sentence: sentence ?? this.sentence,
       seekPosition: seekPosition ?? this.seekPosition,
       wordRange: wordRange ?? this.wordRange,
-      insertionPosition: insertionPosition ?? this.insertionPosition,
+      caretPosition: caretPosition ?? this.caretPosition,
       option: option ?? this.option,
     );
   }
 
   @override
   String toString() {
-    return 'RubyCursor($sentence, wordRange: $wordRange, position: ${insertionPosition.position}, option: $option)';
+    return 'RubyCursor($sentence, wordRange: $wordRange, position: ${caretPosition.position}, option: $option)';
   }
 
   @override
@@ -251,11 +245,11 @@ class RubyCursor extends TextPaneCursor {
     if (sentence != otherWords.sentence) return false;
     if (seekPosition != otherWords.seekPosition) return false;
     if (wordRange != otherWords.wordRange) return false;
-    if (insertionPosition != otherWords.insertionPosition) return false;
+    if (caretPosition != otherWords.caretPosition) return false;
     if (option != otherWords.option) return false;
     return true;
   }
 
   @override
-  int get hashCode => sentence.hashCode ^ seekPosition.hashCode ^ wordRange.hashCode ^ insertionPosition.hashCode ^ option.hashCode;
+  int get hashCode => sentence.hashCode ^ seekPosition.hashCode ^ wordRange.hashCode ^ caretPosition.hashCode ^ option.hashCode;
 }

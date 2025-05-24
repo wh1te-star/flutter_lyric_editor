@@ -4,22 +4,22 @@ import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/word/word_edit.dart';
 import 'package:lyric_editor/position/character_position.dart';
-import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
+import 'package:lyric_editor/position/caret_position_info/caret_position_info.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/lyric_data/timing/timing.dart';
 import 'package:lyric_editor/lyric_data/timing/timing_list.dart';
 import 'package:lyric_editor/lyric_data/timing_exception.dart';
-import 'package:lyric_editor/position/insertion_position.dart';
-import 'package:lyric_editor/position/insertion_position_info/invalid_insertion_position_info.dart';
-import 'package:lyric_editor/position/insertion_position_info/word_insertion_position_info.dart';
-import 'package:lyric_editor/position/insertion_position_info/timing_insertion_position_info.dart';
+import 'package:lyric_editor/position/caret_position.dart';
+import 'package:lyric_editor/position/caret_position_info/invalid_caret_position_info.dart';
+import 'package:lyric_editor/position/caret_position_info/word_caret_position_info.dart';
+import 'package:lyric_editor/position/caret_position_info/timing_caret_position_info.dart';
 import 'package:lyric_editor/position/option_enum.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/seek_position_info/invalid_seek_position_info.dart';
 import 'package:lyric_editor/position/seek_position_info/seek_position_info.dart';
-import 'package:lyric_editor/position/seek_position_info/timing_insertion_position_info.dart';
-import 'package:lyric_editor/position/seek_position_info/word_insertion_position_info.dart';
+import 'package:lyric_editor/position/seek_position_info/timing_seek_position_info.dart';
+import 'package:lyric_editor/position/seek_position_info/word_seek_position_info.dart';
 import 'package:lyric_editor/position/sentence_side_enum.dart';
 import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/word_range.dart';
@@ -102,7 +102,7 @@ class Timetable {
     List<Word> words = wordList.list;
     Timetable timetable = Timetable(startTimestamp: startTimestamp, wordList: wordList);
     for (Timing timing in timingList.list) {
-      InsertionPosition currentCharPosition = timing.insertionPosition;
+      CaretPosition currentCharPosition = timing.caretPosition;
       if (charPositionTranslation[currentCharPosition.position] == -1) {
         try {
           timetable = timetable.deleteTiming(currentCharPosition, Option.former);
@@ -118,8 +118,8 @@ class Timetable {
     }
 
     for (int index = 0; index < words.length; index++) {
-      int leftCharPosition = charPositionTranslation[timings[index].insertionPosition.position];
-      int rightCharPosition = charPositionTranslation[timings[index + 1].insertionPosition.position];
+      int leftCharPosition = charPositionTranslation[timings[index].caretPosition.position];
+      int rightCharPosition = charPositionTranslation[timings[index + 1].caretPosition.position];
       timetable.wordList.list[index].word = newSentence.substring(leftCharPosition, rightCharPosition);
     }
     timetable = timetable.integrate2OrMoreTimings();
@@ -227,39 +227,39 @@ class Timetable {
     return InvalidSeekPositionInfo(SentenceSide.end);
   }
 
-  InsertionPositionInfo getInsertionPositionInfo(InsertionPosition insertionPosition) {
-    if (insertionPosition.position < 0 || sentence.length < insertionPosition.position) {
-      return InvalidInsertionPositionInfo();
+  CaretPositionInfo getCaretPositionInfo(CaretPosition caretPosition) {
+    if (caretPosition.position < 0 || sentence.length < caretPosition.position) {
+      return InvalidCaretPositionInfo();
     }
 
     for (int index = 0; index < timings.length; index++) {
       Timing timing = timings[index];
-      if (timing.insertionPosition == insertionPosition) {
+      if (timing.caretPosition == caretPosition) {
         bool duplicate = false;
         if (index + 1 >= timings.length) {
-          return TimingInsertionPositionInfo(TimingIndex(index), duplicate);
+          return TimingCaretPositionInfo(TimingIndex(index), duplicate);
         }
 
         Timing nextTiming = timings[index + 1];
-        if (timing.insertionPosition == nextTiming.insertionPosition) {
+        if (timing.caretPosition == nextTiming.caretPosition) {
           duplicate = true;
         }
-        return TimingInsertionPositionInfo(TimingIndex(index), duplicate);
+        return TimingCaretPositionInfo(TimingIndex(index), duplicate);
       }
     }
 
     for (int index = 0; index <= words.length; index++) {
       Timing leftTiming = timings[index];
       Timing rightTiming = timings[index + 1];
-      if (leftTiming.insertionPosition < insertionPosition && insertionPosition < rightTiming.insertionPosition) {
-        return WordInsertionPositionInfo(
+      if (leftTiming.caretPosition < caretPosition && caretPosition < rightTiming.caretPosition) {
+        return WordCaretPositionInfo(
           WordIndex(index),
         );
       }
     }
 
     assert(false, "An unexpected state is occurred.");
-    return InvalidInsertionPositionInfo();
+    return InvalidCaretPositionInfo();
   }
 
   Timetable manipulateTimetable(SeekPosition seekPosition, SentenceSide sentenceSide, bool holdLength) {
@@ -347,20 +347,20 @@ class Timetable {
     return Timetable(startTimestamp: startTimestamp, wordList: wordList);
   }
 
-  Timetable addTiming(InsertionPosition insertionPosition, SeekPosition seekPosition) {
-    if (insertionPosition.position <= 0 || sentence.length <= insertionPosition.position) {
-      throw TimingException("The insertion position is out of the valid range.");
+  Timetable addTiming(CaretPosition caretPosition, SeekPosition seekPosition) {
+    if (caretPosition.position <= 0 || sentence.length <= caretPosition.position) {
+      throw TimingException("The caret position is out of the valid range.");
     }
     seekPosition = SeekPosition(seekPosition.position - startTimestamp.position);
 
     int wordIndex = -1;
     int timingIndex = -1;
     for (int index = 0; index < words.length; index++) {
-      if (timings[index].insertionPosition == insertionPosition) {
+      if (timings[index].caretPosition == caretPosition) {
         timingIndex = index;
         break;
       }
-      if (timings[index].insertionPosition < insertionPosition && insertionPosition < timings[index + 1].insertionPosition) {
+      if (timings[index].caretPosition < caretPosition && caretPosition < timings[index + 1].caretPosition) {
         wordIndex = index;
         break;
       }
@@ -376,14 +376,14 @@ class Timetable {
 
       timings.insert(
         wordIndex + 1,
-        Timing(insertionPosition, seekPosition),
+        Timing(caretPosition, seekPosition),
       );
       WordList wordList = syncWords(TimingList(timings));
       return Timetable(startTimestamp: startTimestamp, wordList: wordList);
     }
 
     int count = timings.where((Timing timing) {
-      return timing.insertionPosition == insertionPosition;
+      return timing.caretPosition == caretPosition;
     }).length;
     if (count >= 2) {
       throw TimingException("A timing point cannot be inserted three times or more at the same char position.");
@@ -404,12 +404,12 @@ class Timetable {
     if (seekPosition < centerTiming.seekPosition) {
       timings.insert(
         timingIndex,
-        Timing(insertionPosition, seekPosition),
+        Timing(caretPosition, seekPosition),
       );
     } else {
       timings.insert(
         timingIndex + 1,
-        Timing(insertionPosition, seekPosition),
+        Timing(caretPosition, seekPosition),
       );
     }
 
@@ -417,9 +417,9 @@ class Timetable {
     return Timetable(startTimestamp: startTimestamp, wordList: wordList);
   }
 
-  Timetable deleteTiming(InsertionPosition charPosition, Option option) {
+  Timetable deleteTiming(CaretPosition charPosition, Option option) {
     List<Timing> timings = timingList.list;
-    int index = timings.indexWhere((timing) => timing.insertionPosition == charPosition);
+    int index = timings.indexWhere((timing) => timing.caretPosition == charPosition);
     if (index == -1) {
       throw TimingException("There is not the specified timing point.");
     }

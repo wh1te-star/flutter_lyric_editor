@@ -4,7 +4,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/ruby_cursor.
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/word_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/base_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
-import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/caret_position.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 class WordEdit extends StatelessWidget {
@@ -46,11 +46,11 @@ class WordEdit extends StatelessWidget {
     int caretPosition = -1;
     if (textPaneCursor is BaseCursor && cursorBlinker != null && cursorBlinker!.visible) {
       BaseCursor cursor = textPaneCursor as BaseCursor;
-      caretPosition = cursor.insertionPosition.position;
+      caretPosition = cursor.caretPosition.position;
     }
     if (textPaneCursor is RubyCursor && cursorBlinker != null && cursorBlinker!.visible) {
       RubyCursor cursor = textPaneCursor as RubyCursor;
-      caretPosition = cursor.insertionPosition.position;
+      caretPosition = cursor.caretPosition.position;
     }
 
     if (caretPosition == -1) {

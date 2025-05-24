@@ -15,8 +15,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/word_cursor.
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/base_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_controller.dart';
-import 'package:lyric_editor/position/insertion_position.dart';
-import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
+import 'package:lyric_editor/position/caret_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
@@ -66,7 +65,7 @@ void main() {
       return BaseCursor(
         sentenceID,
         cursorBlinker,
-        InsertionPosition(positionInfo.charPosition),
+        CaretPosition(positionInfo.charPosition),
         positionInfo.option,
       );
     }
@@ -76,8 +75,8 @@ void main() {
       BaseCursor expectedCursor = expected as BaseCursor;
       String order = reverse ? "backward" : "forward";
       debugPrint('Test failed at the $order iteration ${index + 1}:');
-      debugPrint('Expected cursor position: ${expectedCursor.insertionPosition}, option: ${expectedCursor.option}');
-      debugPrint('But the actual cursor position: ${resultCursor.insertionPosition}, option: ${resultCursor.option}');
+      debugPrint('Expected cursor position: ${expectedCursor.caretPosition}, option: ${expectedCursor.option}');
+      debugPrint('But the actual cursor position: ${resultCursor.caretPosition}, option: ${resultCursor.option}');
     }
 
     bool cursorMatcher(SentenceSelectionCursorMover result, BaseCursor expectedCursor) {
@@ -102,7 +101,7 @@ void main() {
       }
 
       BaseCursor resultCursor = result.textPaneCursor as BaseCursor;
-      debugPrint("movement: pos=${resultCursor.insertionPosition}, option=${resultCursor.option}");
+      debugPrint("movement: pos=${resultCursor.caretPosition}, option=${resultCursor.option}");
       return true;
     }
 
@@ -139,7 +138,7 @@ void main() {
       final BaseCursor cursor = BaseCursor(
         sentenceID,
         cursorBlinker,
-        InsertionPosition(1),
+        CaretPosition(1),
         Option.word,
       );
 
@@ -175,7 +174,7 @@ void main() {
       final BaseCursor cursor = BaseCursor(
         sentenceID,
         cursorBlinker,
-        InsertionPosition(5),
+        CaretPosition(5),
         Option.former,
       );
 

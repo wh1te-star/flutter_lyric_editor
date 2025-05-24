@@ -3,7 +3,7 @@ import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/lyric_data/timetable.dart';
 import 'package:lyric_editor/lyric_data/timing_exception.dart';
-import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/caret_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 
@@ -37,7 +37,7 @@ void main() {
 
     test('Test to add a timing point No.1', () {
       Timetable target = dataSet1.copyWith();
-      final InsertionPosition characterPosition = InsertionPosition(7);
+      final CaretPosition characterPosition = CaretPosition(7);
       final SeekPosition seekPosition = SeekPosition(2450);
       final WordList expected = WordList([
         Word("abc", const Duration(milliseconds: 300)),
@@ -55,7 +55,7 @@ void main() {
 
     test('Test to add a timing point No.2', () {
       Timetable target = dataSet1.copyWith();
-      final InsertionPosition characterPosition = InsertionPosition(8);
+      final CaretPosition characterPosition = CaretPosition(8);
       final SeekPosition seekPosition = SeekPosition(2450);
       final WordList expected = WordList([
         Word("abc", const Duration(milliseconds: 300)),
@@ -73,7 +73,7 @@ void main() {
 
     test('Test the seek position is not valid', () {
       Timetable target = dataSet1.copyWith();
-      final InsertionPosition characterPosition = InsertionPosition(8);
+      final CaretPosition characterPosition = CaretPosition(8);
       final SeekPosition seekPosition = SeekPosition(2300);
 
       expect(
@@ -86,7 +86,7 @@ void main() {
 
     test('Test to add a timing point twice. No.1', () {
       Timetable target = dataSet1.copyWith();
-      final InsertionPosition characterPosition = InsertionPosition(5);
+      final CaretPosition characterPosition = CaretPosition(5);
       final SeekPosition seekPosition = SeekPosition(2450);
       final WordList expected = WordList([
         Word("abc", const Duration(milliseconds: 300)),
@@ -104,7 +104,7 @@ void main() {
 
     test('Test to add a timing point twice. No.2', () {
       Timetable target = dataSet1.copyWith();
-      final InsertionPosition characterPosition = InsertionPosition(5);
+      final CaretPosition characterPosition = CaretPosition(5);
       final SeekPosition seekPosition = SeekPosition(2360);
       final WordList expected = WordList([
         Word("abc", const Duration(milliseconds: 300)),
@@ -122,7 +122,7 @@ void main() {
 
     test('Test to add a timing point to a sentence that have a char position with 2 timing point. No.1', () {
       Timetable target = dataSet2.copyWith();
-      final InsertionPosition characterPosition = InsertionPosition(4);
+      final CaretPosition characterPosition = CaretPosition(4);
       final SeekPosition seekPosition = SeekPosition(5450);
       final WordList expected = WordList([
         Word("abc", const Duration(milliseconds: 400)),
@@ -141,7 +141,7 @@ void main() {
 
     test('Test to add a timing point to a sentence that have a char position with 2 timing point. No.2', () {
       Timetable target = dataSet2.copyWith();
-      final InsertionPosition characterPosition = InsertionPosition(18);
+      final CaretPosition characterPosition = CaretPosition(18);
       final SeekPosition seekPosition = SeekPosition(7200);
       final WordList expected = WordList([
         Word("abc", const Duration(milliseconds: 400)),
@@ -160,7 +160,7 @@ void main() {
 
     test('Test to add a timing point twice. No.1', () {
       Timetable target = dataSet2.copyWith();
-      final InsertionPosition characterPosition = InsertionPosition(5);
+      final CaretPosition characterPosition = CaretPosition(5);
       final SeekPosition seekPosition = SeekPosition(5450);
       final WordList expected = WordList([
         Word("abc", const Duration(milliseconds: 400)),
@@ -179,7 +179,7 @@ void main() {
 
     test('Test to add a timing point twice. No.2', () {
       Timetable target = dataSet2.copyWith();
-      final InsertionPosition characterPosition = InsertionPosition(5);
+      final CaretPosition characterPosition = CaretPosition(5);
       final SeekPosition seekPosition = SeekPosition(5800);
       final WordList expected = WordList([
         Word("abc", const Duration(milliseconds: 400)),
@@ -196,9 +196,9 @@ void main() {
       expect(target.wordList, expected);
     });
 
-    test('Test to throw TimingException when tring to add a timing point third time at the same insertion position. No.1', () {
+    test('Test to throw TimingException when tring to add a timing point third time at the same caret position. No.1', () {
       Timetable target = dataSet2.copyWith();
-      final InsertionPosition characterPosition = InsertionPosition(12);
+      final CaretPosition characterPosition = CaretPosition(12);
       final SeekPosition seekPosition = SeekPosition(5800);
 
       expect(
@@ -211,7 +211,7 @@ void main() {
 
     test('Test to delete a timing point. No.1', () {
       Timetable target = dataSet1.copyWith();
-      final InsertionPosition characterPosition = InsertionPosition(5);
+      final CaretPosition characterPosition = CaretPosition(5);
       final option = Option.former;
       final WordList expected = WordList([
         Word("abc", const Duration(milliseconds: 300)),
@@ -227,7 +227,7 @@ void main() {
 
     test('Test to delete a timing point. No.2', () {
       Timetable target = dataSet1.copyWith();
-      final InsertionPosition characterPosition = InsertionPosition(11);
+      final CaretPosition characterPosition = CaretPosition(11);
       final option = Option.former;
       final WordList expected = WordList([
         Word("abc", const Duration(milliseconds: 300)),
@@ -243,7 +243,7 @@ void main() {
 
     test('Test to try to delete a non-existent timing point.', () {
       Timetable target = dataSet1.copyWith();
-      final InsertionPosition characterPosition = InsertionPosition(6);
+      final CaretPosition characterPosition = CaretPosition(6);
       const option = Option.former;
 
       expect(
@@ -256,7 +256,7 @@ void main() {
 
     test('Test to delete a timing point. No.1', () {
       Timetable target = dataSet2.copyWith();
-      final InsertionPosition characterPosition = InsertionPosition(5);
+      final CaretPosition characterPosition = CaretPosition(5);
       const option = Option.former;
       final WordList expected = WordList([
         Word("abc", const Duration(milliseconds: 400)),
@@ -273,7 +273,7 @@ void main() {
 
     test('Test to delete a timing point. No.2', () {
       Timetable target = dataSet2.copyWith();
-      final InsertionPosition characterPosition = InsertionPosition(17);
+      final CaretPosition characterPosition = CaretPosition(17);
       const option = Option.former;
       final WordList expected = WordList([
         Word("abc", const Duration(milliseconds: 400)),
@@ -290,7 +290,7 @@ void main() {
 
     test('Test to try to delete a non-existent timing point.', () {
       Timetable target = dataSet2.copyWith();
-      final InsertionPosition characterPosition = InsertionPosition(18);
+      final CaretPosition characterPosition = CaretPosition(18);
       const option = Option.latter;
 
       expect(
@@ -303,7 +303,7 @@ void main() {
 
     test('Test to a former timing point of a character position.', () {
       Timetable target = dataSet2.copyWith();
-      final InsertionPosition characterPosition = InsertionPosition(12);
+      final CaretPosition characterPosition = CaretPosition(12);
       const option = Option.former;
       final WordList expected = WordList([
         Word("abc", Duration(milliseconds: 400)),
@@ -320,7 +320,7 @@ void main() {
 
     test('Test to a latter timing point of a character position.', () {
       Timetable target = dataSet2.copyWith();
-      final InsertionPosition characterPosition = InsertionPosition(12);
+      final CaretPosition characterPosition = CaretPosition(12);
       const option = Option.latter;
       final WordList expected = WordList([
         Word("abc", Duration(milliseconds: 400)),

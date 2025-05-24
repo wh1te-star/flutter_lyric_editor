@@ -2,7 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/timing/timing.dart';
 import 'package:lyric_editor/lyric_data/timing/timing_list.dart';
-import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/caret_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 
 class WordList {
@@ -47,15 +47,15 @@ class WordList {
 
   TimingList toTimingList() {
     List<Timing> timings = [];
-    InsertionPosition insertionPosition = InsertionPosition(0);
+    CaretPosition caretPosition = CaretPosition(0);
     SeekPosition seekPosition = SeekPosition(0);
     for (Word word in list) {
-      timings.add(Timing(insertionPosition, seekPosition));
+      timings.add(Timing(caretPosition, seekPosition));
 
-      insertionPosition += word.word.length;
+      caretPosition += word.word.length;
       seekPosition += word.duration;
     }
-    timings.add(Timing(insertionPosition, seekPosition));
+    timings.add(Timing(caretPosition, seekPosition));
 
     return TimingList(timings);
   }

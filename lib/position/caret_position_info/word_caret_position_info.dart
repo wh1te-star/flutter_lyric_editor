@@ -1,21 +1,21 @@
-import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
+import 'package:lyric_editor/position/caret_position_info/caret_position_info.dart';
 import 'package:lyric_editor/position/word_index.dart';
 
-class WordInsertionPositionInfo implements InsertionPositionInfo {
+class WordCaretPositionInfo implements CaretPositionInfo {
   WordIndex wordIndex;
-  WordInsertionPositionInfo(this.wordIndex);
+  WordCaretPositionInfo(this.wordIndex);
 
-  WordInsertionPositionInfo copyWith({
+  WordCaretPositionInfo copyWith({
     WordIndex? wordIndex,
   }) {
-    return WordInsertionPositionInfo(
+    return WordCaretPositionInfo(
       wordIndex ?? this.wordIndex,
     );
   }
 
   @override
   String toString() {
-    return "InsertionPositionInfo: Word at index $wordIndex";
+    return "CaretPositionInfo: Word at index $wordIndex";
   }
 
   @override
@@ -23,7 +23,7 @@ class WordInsertionPositionInfo implements InsertionPositionInfo {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! WordInsertionPositionInfo) {
+    if (other is! WordCaretPositionInfo) {
       return false;
     }
     return wordIndex == other.wordIndex;
