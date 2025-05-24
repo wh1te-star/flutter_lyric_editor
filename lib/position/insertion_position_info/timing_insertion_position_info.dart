@@ -13,11 +13,11 @@ class TimingInsertionPositionInfo implements InsertionPositionInfo {
   bool get isNotEmpty => !identical(this, _empty);
 
   TimingInsertionPositionInfo copyWith({
-    TimingIndex? index,
+    TimingIndex? timingIndex,
     bool? duplicate,
   }) {
     return TimingInsertionPositionInfo(
-      index ?? this.timingIndex,
+      timingIndex ?? this.timingIndex,
       duplicate ?? this.duplicate,
     );
   }

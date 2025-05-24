@@ -264,9 +264,9 @@ class Timetable {
     return WordInsertionPositionInfo.empty;
   }
 
-  Timetable manipulateTimetable(SeekPosition seekPosition, SentenceEdge sentenceEdge, bool holdLength) {
+  Timetable manipulateTimetable(SeekPosition seekPosition, SentenceSide sentenceSide, bool holdLength) {
     if (holdLength) {
-      if (sentenceEdge == SentenceEdge.start) {
+      if (sentenceSide == SentenceSide.start) {
         Duration shiftDuration = Duration(milliseconds: startTimestamp.position - seekPosition.position);
         return shiftTimetableBy(shiftDuration);
       } else {
@@ -275,23 +275,23 @@ class Timetable {
       }
     }
 
-    if (sentenceEdge == SentenceEdge.start) {
+    if (sentenceSide == SentenceSide.start) {
       if (seekPosition < startTimestamp) {
         Duration extendDuration = Duration(milliseconds: startTimestamp.position - seekPosition.position);
-        return extendTimetableBy(SentenceEdge.start, extendDuration);
+        return extendTimetableBy(SentenceSide.start, extendDuration);
       }
       if (startTimestamp < seekPosition) {
         Duration shortenDuration = Duration(milliseconds: seekPosition.position - startTimestamp.position);
-        return shortenTimetableBy(SentenceEdge.start, shortenDuration);
+        return shortenTimetableBy(SentenceSide.start, shortenDuration);
       }
     } else {
       if (seekPosition < endTimestamp) {
         Duration shortenDuration = Duration(milliseconds: endTimestamp.position - seekPosition.position);
-        return shortenTimetableBy(SentenceEdge.start, shortenDuration);
+        return shortenTimetableBy(SentenceSide.start, shortenDuration);
       }
       if (endTimestamp < seekPosition) {
         Duration extendDuration = Duration(milliseconds: seekPosition.position - endTimestamp.position);
-        return extendTimetableBy(SentenceEdge.start, extendDuration);
+        return extendTimetableBy(SentenceSide.start, extendDuration);
       }
     }
     return this;
@@ -304,12 +304,12 @@ class Timetable {
     );
   }
 
-  Timetable extendTimetableBy(SentenceEdge sentenceEdge, Duration extendDuration) {
+  Timetable extendTimetableBy(SentenceSide sentenceSide, Duration extendDuration) {
     assert(extendDuration >= Duration.zero, "Should be shorten function.");
 
     SeekPosition startTimestamp = this.startTimestamp;
     WordList wordList = this.wordList;
-    if (sentenceEdge == SentenceEdge.start) {
+    if (sentenceSide == SentenceSide.start) {
       startTimestamp -= extendDuration;
       wordList.list.first.duration += extendDuration;
     } else {
@@ -319,13 +319,13 @@ class Timetable {
     return Timetable(startTimestamp: startTimestamp, wordList: wordList);
   }
 
-  Timetable shortenTimetableBy(SentenceEdge sentenceEdge, Duration shortenDuration) {
+  Timetable shortenTimetableBy(SentenceSide sentenceSide, Duration shortenDuration) {
     assert(shortenDuration >= Duration.zero, "Should be extend function.");
 
     SeekPosition startTimestamp = this.startTimestamp;
     WordList wordList = this.wordList;
     List<Word> words = wordList.list;
-    if (sentenceEdge == SentenceEdge.start) {
+    if (sentenceSide == SentenceSide.start) {
       int index = 0;
       Duration rest = shortenDuration;
       while (index < words.length && rest - words[index].duration > Duration.zero) {

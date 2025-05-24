@@ -12,6 +12,7 @@ import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
 import 'package:lyric_editor/position/insertion_position_info/timing_insertion_position_info.dart';
 import 'package:lyric_editor/position/insertion_position_info/word_insertion_position_info.dart';
+import 'package:lyric_editor/position/option_enum.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/timing_index.dart';
 import 'package:lyric_editor/position/word_index.dart';
@@ -113,7 +114,7 @@ class RubyCursor extends TextPaneCursor {
     InsertionPositionInfo? nextInsertionPositionInfo = rubyTimetable.getInsertionPositionInfo(nextInsertionPosition);
     assert(nextInsertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
     if (nextInsertionPositionInfo is WordInsertionPositionInfo) {
-      return copyWith(insertionPosition: nextInsertionPosition, option: Option.word);
+      return copyWith(insertionPosition: nextInsertionPosition, option: Option.none);
     }
     if (nextInsertionPositionInfo is TimingInsertionPositionInfo) {
       Option nextOption = Option.former;
@@ -167,7 +168,7 @@ class RubyCursor extends TextPaneCursor {
     InsertionPositionInfo? nextInsertionPositionInfo = rubyTimetable.getInsertionPositionInfo(nextInsertionPosition);
     assert(nextInsertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
     if (nextInsertionPositionInfo is WordInsertionPositionInfo) {
-      return copyWith(insertionPosition: nextInsertionPosition, option: Option.word);
+      return copyWith(insertionPosition: nextInsertionPosition, option: Option.none);
     }
     if (nextInsertionPositionInfo is TimingInsertionPositionInfo) {
       return copyWith(insertionPosition: nextInsertionPosition, option: Option.former);

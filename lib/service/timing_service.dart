@@ -6,7 +6,9 @@ import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
 import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/option_enum.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/sentence_side_enum.dart';
 import 'package:lyric_editor/section/section_list.dart';
 import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
@@ -158,9 +160,9 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void manipulateSentence(SentenceID sentenceID, SentenceEdge sentenceEdge, bool holdLength) {
+  void manipulateSentence(SentenceID sentenceID, SentenceSide sentenceSide, bool holdLength) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
-    sentenceMap = sentenceMap.manipulateSentence(sentenceID, musicPlayerProvider.seekPosition, sentenceEdge, holdLength);
+    sentenceMap = sentenceMap.manipulateSentence(sentenceID, musicPlayerProvider.seekPosition, sentenceSide, holdLength);
     notifyListeners();
   }
 
@@ -222,15 +224,4 @@ class TimingService extends ChangeNotifier {
 
     notifyListeners();
   }
-}
-
-enum Option {
-  word,
-  former,
-  latter,
-}
-
-enum SentenceEdge {
-  start,
-  end,
 }

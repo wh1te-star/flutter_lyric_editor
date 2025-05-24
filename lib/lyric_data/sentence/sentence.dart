@@ -122,9 +122,9 @@ class Sentence {
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
-  Sentence manipulateSentence(SeekPosition seekPosition, SentenceEdge sentenceEdge, bool holdLength) {
+  Sentence manipulateSentence(SeekPosition seekPosition, SentenceSide sentenceSide, bool holdLength) {
     Timetable newTimetable = timetable.copyWith();
-    newTimetable = newTimetable.manipulateTimetable(seekPosition, sentenceEdge, holdLength);
+    newTimetable = newTimetable.manipulateTimetable(seekPosition, sentenceSide, holdLength);
     return Sentence(vocalistID: vocalistID, timetable: newTimetable, rubyMap: rubyMap);
   }
 

@@ -9,6 +9,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pa
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
 import 'package:lyric_editor/position/insertion_position_info/word_insertion_position_info.dart';
+import 'package:lyric_editor/position/option_enum.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/word_range.dart';

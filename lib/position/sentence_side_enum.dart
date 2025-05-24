@@ -1,0 +1,4 @@
+enum SentenceSide {
+  start,
+  end,
+}

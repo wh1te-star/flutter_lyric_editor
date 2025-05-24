@@ -12,10 +12,10 @@ class WordInsertionPositionInfo implements InsertionPositionInfo {
   bool get isNotEmpty => !identical(this, _empty);
 
   WordInsertionPositionInfo copyWith({
-    WordIndex? index,
+    WordIndex? wordIndex,
   }) {
     return WordInsertionPositionInfo(
-      index ?? this.wordIndex,
+      wordIndex ?? this.wordIndex,
     );
   }
 

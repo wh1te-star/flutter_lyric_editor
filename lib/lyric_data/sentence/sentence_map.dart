@@ -134,10 +134,10 @@ class SentenceMap {
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  SentenceMap manipulateSentence(SentenceID id, SeekPosition seekPosition, SentenceEdge sentenceEdge, bool holdLength) {
+  SentenceMap manipulateSentence(SentenceID id, SeekPosition seekPosition, SentenceSide sentenceSide, bool holdLength) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
     Sentence sentence = copiedMap[id]!;
-    sentence = sentence.manipulateSentence(seekPosition, sentenceEdge, holdLength);
+    sentence = sentence.manipulateSentence(seekPosition, sentenceSide, holdLength);
     return sortSentenceList(SentenceMap(copiedMap));
   }
 

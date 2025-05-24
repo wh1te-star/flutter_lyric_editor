@@ -15,6 +15,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pa
 import 'package:lyric_editor/pane/text_pane/text_pane_provider.dart';
 import 'package:lyric_editor/pane/video_pane/video_pane_provider.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/sentence_side_enum.dart';
 import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
@@ -214,14 +215,14 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
         SentenceStartMoveIntent: CallbackAction<SentenceStartMoveIntent>(
           onInvoke: (SentenceStartMoveIntent intent) => () {
             for (var id in timelinePaneProvider.selectingSentence) {
-              timingService.manipulateSentence(id, SentenceEdge.start, false);
+              timingService.manipulateSentence(id, SentenceSide.start, false);
             }
           }(),
         ),
         SentenceEndMoveIntent: CallbackAction<SentenceEndMoveIntent>(
           onInvoke: (SentenceEndMoveIntent intent) => () {
             for (var id in timelinePaneProvider.selectingSentence) {
-              timingService.manipulateSentence(id, SentenceEdge.end, false);
+              timingService.manipulateSentence(id, SentenceSide.end, false);
             }
           }(),
         ),
