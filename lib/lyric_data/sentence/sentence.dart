@@ -4,9 +4,12 @@ import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
+import 'package:lyric_editor/position/insertion_position_info/invalid_insertion_position_info.dart';
 import 'package:lyric_editor/position/insertion_position_info/word_insertion_position_info.dart';
 import 'package:lyric_editor/position/insertion_position_info/timing_insertion_position_info.dart';
+import 'package:lyric_editor/position/option_enum.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/sentence_side_enum.dart';
 import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
@@ -42,7 +45,7 @@ class Sentence {
   int get charCount => timetable.charCount;
   int get wordCount => timetable.wordCount;
   WordIndex getWordIndexFromSeekPosition(SeekPosition seekPosition) => timetable.getWordIndexFromSeekPosition(seekPosition);
-  InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timetable.getInsertionPositionInfo(insertionPosition);
+  InsertionPositionInfo getInsertionPositionInfo(InsertionPosition insertionPosition) => timetable.getInsertionPositionInfo(insertionPosition);
   double getWordProgress(SeekPosition seekPosition) => timetable.getWordProgress(seekPosition);
   WordList getWordList(WordRange wordRange) => timetable.getWordList(wordRange);
   TimingIndex leftTimingIndex(WordIndex wordIndex) => timetable.leftTimingIndex(wordIndex);
@@ -158,7 +161,9 @@ class Sentence {
   }
 
   RubyMap carryUpRubyWords(InsertionPosition insertionPosition) {
-    InsertionPositionInfo info = timetable.getInsertionPositionInfo(insertionPosition)!;
+    InsertionPositionInfo info = timetable.getInsertionPositionInfo(insertionPosition);
+    assert(info is! InvalidInsertionPositionInfo);
+
     Map<WordRange, Ruby> updatedRubys = {};
 
     rubyMap.map.forEach((WordRange key, Ruby value) {
@@ -198,7 +203,9 @@ class Sentence {
   }
 
   RubyMap carryDownRubyWords(InsertionPosition insertionPosition) {
-    InsertionPositionInfo info = timetable.getInsertionPositionInfo(insertionPosition)!;
+    InsertionPositionInfo info = timetable.getInsertionPositionInfo(insertionPosition);
+    assert(info is! InvalidInsertionPositionInfo);
+
     Map<WordRange, Ruby> updatedRubys = {};
     int index = -1;
     if (info is WordInsertionPositionInfo) {

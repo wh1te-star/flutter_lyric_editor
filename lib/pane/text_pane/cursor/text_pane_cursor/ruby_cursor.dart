@@ -10,6 +10,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/base_cursor.
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
+import 'package:lyric_editor/position/insertion_position_info/invalid_insertion_position_info.dart';
 import 'package:lyric_editor/position/insertion_position_info/timing_insertion_position_info.dart';
 import 'package:lyric_editor/position/insertion_position_info/word_insertion_position_info.dart';
 import 'package:lyric_editor/position/option_enum.dart';
@@ -79,8 +80,8 @@ class RubyCursor extends TextPaneCursor {
   TextPaneCursor moveLeftCursor() {
     Timetable rubyTimetable = sentence.rubyMap[wordRange]!.timetable;
 
-    InsertionPositionInfo? insertionPositionInfo = rubyTimetable.getInsertionPositionInfo(insertionPosition);
-    assert(insertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
+    InsertionPositionInfo insertionPositionInfo = rubyTimetable.getInsertionPositionInfo(insertionPosition);
+    assert(insertionPositionInfo is! InvalidInsertionPositionInfo, "An unexpected state was occurred for the insertion position info.");
 
     WordIndex highlightWordIndex = rubyTimetable.getWordIndexFromSeekPosition(seekPosition);
     InsertionPosition nextInsertionPosition = InsertionPosition.empty;
@@ -111,8 +112,8 @@ class RubyCursor extends TextPaneCursor {
       }
     }
 
-    InsertionPositionInfo? nextInsertionPositionInfo = rubyTimetable.getInsertionPositionInfo(nextInsertionPosition);
-    assert(nextInsertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
+    InsertionPositionInfo nextInsertionPositionInfo = rubyTimetable.getInsertionPositionInfo(nextInsertionPosition);
+    assert(nextInsertionPositionInfo is! InvalidInsertionPositionInfo, "An unexpected state was occurred for the insertion position info.");
     if (nextInsertionPositionInfo is WordInsertionPositionInfo) {
       return copyWith(insertionPosition: nextInsertionPosition, option: Option.none);
     }
@@ -131,8 +132,8 @@ class RubyCursor extends TextPaneCursor {
   TextPaneCursor moveRightCursor() {
     Timetable rubyTimetable = sentence.rubyMap[wordRange]!.timetable;
 
-    InsertionPositionInfo? insertionPositionInfo = rubyTimetable.getInsertionPositionInfo(insertionPosition);
-    assert(insertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
+    InsertionPositionInfo insertionPositionInfo = rubyTimetable.getInsertionPositionInfo(insertionPosition);
+    assert(insertionPositionInfo is! InvalidInsertionPositionInfo, "An unexpected state was occurred for the insertion position info.");
 
     WordIndex highlightWordIndex = rubyTimetable.getWordIndexFromSeekPosition(seekPosition);
     InsertionPosition nextInsertionPosition = InsertionPosition.empty;
@@ -165,8 +166,8 @@ class RubyCursor extends TextPaneCursor {
       }
     }
 
-    InsertionPositionInfo? nextInsertionPositionInfo = rubyTimetable.getInsertionPositionInfo(nextInsertionPosition);
-    assert(nextInsertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
+    InsertionPositionInfo nextInsertionPositionInfo = rubyTimetable.getInsertionPositionInfo(nextInsertionPosition);
+    assert(nextInsertionPositionInfo is! InvalidInsertionPositionInfo, "An unexpected state was occurred for the insertion position info.");
     if (nextInsertionPositionInfo is WordInsertionPositionInfo) {
       return copyWith(insertionPosition: nextInsertionPosition, option: Option.none);
     }

@@ -5,12 +5,6 @@ class WordInsertionPositionInfo implements InsertionPositionInfo {
   WordIndex wordIndex;
   WordInsertionPositionInfo(this.wordIndex);
 
-  WordInsertionPositionInfo._privateConstructor(this.wordIndex);
-  static final WordInsertionPositionInfo _empty = WordInsertionPositionInfo._privateConstructor(WordIndex.empty);
-  static WordInsertionPositionInfo get empty => _empty;
-  bool get isEmpty => identical(this, _empty);
-  bool get isNotEmpty => !identical(this, _empty);
-
   WordInsertionPositionInfo copyWith({
     WordIndex? wordIndex,
   }) {

@@ -6,12 +6,6 @@ class TimingInsertionPositionInfo implements InsertionPositionInfo {
   bool duplicate;
   TimingInsertionPositionInfo(this.timingIndex, this.duplicate);
 
-  TimingInsertionPositionInfo._privateConstructor(this.timingIndex, this.duplicate);
-  static final TimingInsertionPositionInfo _empty = TimingInsertionPositionInfo._privateConstructor(TimingIndex.empty, false);
-  static TimingInsertionPositionInfo get empty => _empty;
-  bool get isEmpty => identical(this, _empty);
-  bool get isNotEmpty => !identical(this, _empty);
-
   TimingInsertionPositionInfo copyWith({
     TimingIndex? timingIndex,
     bool? duplicate,

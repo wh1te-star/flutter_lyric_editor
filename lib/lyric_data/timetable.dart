@@ -10,9 +10,12 @@ import 'package:lyric_editor/lyric_data/timing/timing.dart';
 import 'package:lyric_editor/lyric_data/timing/timing_list.dart';
 import 'package:lyric_editor/lyric_data/timing_exception.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
+import 'package:lyric_editor/position/insertion_position_info/invalid_insertion_position_info.dart';
 import 'package:lyric_editor/position/insertion_position_info/word_insertion_position_info.dart';
 import 'package:lyric_editor/position/insertion_position_info/timing_insertion_position_info.dart';
+import 'package:lyric_editor/position/option_enum.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/sentence_side_enum.dart';
 import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/position/timing_index.dart';
@@ -229,9 +232,9 @@ class Timetable {
     return partialProgress.inMilliseconds / wordDuration.inMilliseconds;
   }
 
-  InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) {
+  InsertionPositionInfo getInsertionPositionInfo(InsertionPosition insertionPosition) {
     if (insertionPosition.position < 0 || sentence.length < insertionPosition.position) {
-      return null;
+      return InvalidInsertionPositionInfo();
     }
 
     for (int index = 0; index < timings.length; index++) {
@@ -261,7 +264,7 @@ class Timetable {
     }
 
     assert(false, "An unexpected state is occurred.");
-    return WordInsertionPositionInfo.empty;
+      return InvalidInsertionPositionInfo();
   }
 
   Timetable manipulateTimetable(SeekPosition seekPosition, SentenceSide sentenceSide, bool holdLength) {

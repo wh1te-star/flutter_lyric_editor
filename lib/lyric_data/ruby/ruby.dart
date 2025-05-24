@@ -31,7 +31,7 @@ class Ruby {
   List<Word> get words => timetable.wordList.list;
   List<Timing> get timings => timetable.timingList.list;
   WordIndex getWordIndexFromSeekPosition(SeekPosition seekPosition) => timetable.getWordIndexFromSeekPosition(seekPosition);
-  InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timetable.getInsertionPositionInfo(insertionPosition);
+  InsertionPositionInfo getInsertionPositionInfo(InsertionPosition insertionPosition) => timetable.getInsertionPositionInfo(insertionPosition);
   WordList getWordList(WordRange wordRange) => timetable.getWordList(wordRange);
 
   Ruby copyWith({

@@ -6,6 +6,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/word_cursor.
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
+import 'package:lyric_editor/position/insertion_position_info/invalid_insertion_position_info.dart';
 import 'package:lyric_editor/position/insertion_position_info/word_insertion_position_info.dart';
 import 'package:lyric_editor/position/insertion_position_info/timing_insertion_position_info.dart';
 import 'package:lyric_editor/position/option_enum.dart';
@@ -58,8 +59,8 @@ class BaseCursor extends TextPaneCursor {
 
   @override
   TextPaneCursor moveLeftCursor() {
-    InsertionPositionInfo? insertionPositionInfo = sentence.getInsertionPositionInfo(insertionPosition);
-    assert(insertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
+    InsertionPositionInfo insertionPositionInfo = sentence.getInsertionPositionInfo(insertionPosition);
+    assert(insertionPositionInfo is! InvalidInsertionPositionInfo, "An unexpected state was occurred for the insertion position info.");
 
     WordIndex highlightWordIndex = sentence.getWordIndexFromSeekPosition(seekPosition);
     InsertionPosition nextInsertionPosition = InsertionPosition.empty;
@@ -90,8 +91,8 @@ class BaseCursor extends TextPaneCursor {
       }
     }
 
-    InsertionPositionInfo? nextInsertionPositionInfo = sentence.getInsertionPositionInfo(nextInsertionPosition);
-    assert(nextInsertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
+    InsertionPositionInfo nextInsertionPositionInfo = sentence.getInsertionPositionInfo(nextInsertionPosition);
+    assert(nextInsertionPositionInfo is! InvalidInsertionPositionInfo, "An unexpected state was occurred for the insertion position info.");
     if (nextInsertionPositionInfo is WordInsertionPositionInfo) {
       return copyWith(insertionPosition: nextInsertionPosition, option: Option.none);
     }
@@ -108,8 +109,8 @@ class BaseCursor extends TextPaneCursor {
 
   @override
   TextPaneCursor moveRightCursor() {
-    InsertionPositionInfo? insertionPositionInfo = sentence.getInsertionPositionInfo(insertionPosition);
-    assert(insertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
+    InsertionPositionInfo insertionPositionInfo = sentence.getInsertionPositionInfo(insertionPosition);
+    assert(insertionPositionInfo is! InvalidInsertionPositionInfo, "An unexpected state was occurred for the insertion position info.");
 
     WordIndex highlightWordIndex = sentence.getWordIndexFromSeekPosition(seekPosition);
     InsertionPosition nextInsertionPosition = InsertionPosition.empty;
@@ -142,8 +143,8 @@ class BaseCursor extends TextPaneCursor {
       }
     }
 
-    InsertionPositionInfo? nextInsertionPositionInfo = sentence.getInsertionPositionInfo(nextInsertionPosition);
-    assert(nextInsertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
+    InsertionPositionInfo nextInsertionPositionInfo = sentence.getInsertionPositionInfo(nextInsertionPosition);
+    assert(nextInsertionPositionInfo is! InvalidInsertionPositionInfo, "An unexpected state was occurred for the insertion position info.");
     if (nextInsertionPositionInfo is WordInsertionPositionInfo) {
       return copyWith(insertionPosition: nextInsertionPosition, option: Option.none);
     }

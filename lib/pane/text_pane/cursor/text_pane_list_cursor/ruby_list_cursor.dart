@@ -10,6 +10,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/base_li
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pane_list_cursor.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
+import 'package:lyric_editor/position/insertion_position_info/invalid_insertion_position_info.dart';
 import 'package:lyric_editor/position/insertion_position_info/word_insertion_position_info.dart';
 import 'package:lyric_editor/position/option_enum.dart';
 import 'package:lyric_editor/position/seek_position.dart';
@@ -170,9 +171,9 @@ class RubyListCursor extends TextPaneListCursor {
     }
 
     WordIndex currentSeekWordIndex = nextSentence.getWordIndexFromSeekPosition(seekPosition);
-    InsertionPositionInfo? nextSentencePositionInfo = nextSentence.getInsertionPositionInfo(rubyCursor.insertionPosition);
+    InsertionPositionInfo nextSentencePositionInfo = nextSentence.getInsertionPositionInfo(rubyCursor.insertionPosition);
 
-    if (nextSentencePositionInfo == null || nextSentencePositionInfo is WordInsertionPositionInfo && nextSentencePositionInfo.wordIndex != currentSeekWordIndex) {
+    if (nextSentencePositionInfo is InvalidInsertionPositionInfo || nextSentencePositionInfo is WordInsertionPositionInfo && nextSentencePositionInfo.wordIndex != currentSeekWordIndex) {
       return RubyListCursor.defaultCursor(
         sentenceMap: sentenceMap,
         sentenceID: nextSentenceID,
