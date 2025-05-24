@@ -13,7 +13,7 @@ import 'package:lyric_editor/position/insertion_position_info/insertion_position
 import 'package:lyric_editor/position/insertion_position_info/word_insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/word_index.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 
 class RubyListCursor extends TextPaneListCursor {
@@ -23,7 +23,7 @@ class RubyListCursor extends TextPaneListCursor {
     required SentenceMap sentenceMap,
     required SentenceID sentenceID,
     required SeekPosition seekPosition,
-    required PhrasePosition phrasePosition,
+    required WordRange wordRange,
     required InsertionPosition insertionPosition,
     required Option option,
   }) : super(sentenceMap, sentenceID, seekPosition) {
@@ -32,7 +32,7 @@ class RubyListCursor extends TextPaneListCursor {
     rubyCursor = RubyCursor(
       sentence: sentenceMap[sentenceID]!,
       seekPosition: seekPosition,
-      phrasePosition: phrasePosition,
+      wordRange: wordRange,
       insertionPosition: insertionPosition,
       option: option,
     );
@@ -66,8 +66,8 @@ class RubyListCursor extends TextPaneListCursor {
 
   bool doesSeekPositionPointRuby() {
     Sentence sentence = sentenceMap[sentenceID]!;
-    PhrasePosition rubyPhrasePosition = sentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
-    return rubyPhrasePosition.isNotEmpty;
+    WordRange rubyWordRange = sentence.getRubysWordRangeFromSeekPosition(seekPosition);
+    return rubyWordRange.isNotEmpty;
   }
 
   factory RubyListCursor.defaultCursor({
@@ -76,15 +76,15 @@ class RubyListCursor extends TextPaneListCursor {
     required SeekPosition seekPosition,
   }) {
     Sentence sentence = sentenceMap.getSentenceByID(sentenceID);
-    PhrasePosition rubyPhrasePosition = sentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
-    Ruby ruby = sentence.rubyMap[rubyPhrasePosition]!;
+    WordRange rubysWordRange = sentence.getRubysWordRangeFromSeekPosition(seekPosition);
+    Ruby ruby = sentence.rubyMap[rubysWordRange]!;
     WordIndex wordIndex = ruby.getWordIndexFromSeekPosition(seekPosition);
 
     return RubyListCursor(
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
       seekPosition: seekPosition,
-      phrasePosition: rubyPhrasePosition,
+      wordRange: rubysWordRange,
       insertionPosition: ruby.timetable.leftTiming(wordIndex).insertionPosition + 1,
       option: Option.former,
     );
@@ -125,7 +125,7 @@ class RubyListCursor extends TextPaneListCursor {
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
       seekPosition: seekPosition,
-      phrasePosition: nextCursor.phrasePosition,
+      wordRange: nextCursor.wordRange,
       insertionPosition: nextCursor.insertionPosition,
       option: nextCursor.option,
     );
@@ -138,7 +138,7 @@ class RubyListCursor extends TextPaneListCursor {
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
       seekPosition: seekPosition,
-      phrasePosition: nextCursor.phrasePosition,
+      wordRange: nextCursor.wordRange,
       insertionPosition: nextCursor.insertionPosition,
       option: nextCursor.option,
     );
@@ -155,21 +155,21 @@ class RubyListCursor extends TextPaneListCursor {
         sentenceMap: SentenceMap.empty,
         sentenceID: SentenceID.empty,
         seekPosition: seekPosition,
-        phrasePosition: PhrasePosition.empty,
+        wordRange: WordRange.empty,
         insertionPosition: InsertionPosition.empty,
         option: Option.former,
       );
     }
 
     SentenceID nextSentenceID = sentenceMap.keys.first;
-    Sentence sentence = sentenceMap.values.first;
-    if (sentenceMap.containsKey(nextSentenceID)) {
+    Sentence nextSentence = sentenceMap.values.first;
+    if (sentenceMap.containsKey(sentenceID)) {
       nextSentenceID = sentenceID;
-      sentence = sentenceMap[nextSentenceID]!;
+      nextSentence = sentenceMap[sentenceID]!;
     }
 
-    WordIndex currentSeekWordIndex = sentence.getWordIndexFromSeekPosition(seekPosition);
-    InsertionPositionInfo? nextSentencePositionInfo = sentence.getInsertionPositionInfo(rubyCursor.insertionPosition);
+    WordIndex currentSeekWordIndex = nextSentence.getWordIndexFromSeekPosition(seekPosition);
+    InsertionPositionInfo? nextSentencePositionInfo = nextSentence.getInsertionPositionInfo(rubyCursor.insertionPosition);
 
     if (nextSentencePositionInfo == null || nextSentencePositionInfo is WordInsertionPositionInfo && nextSentencePositionInfo.wordIndex != currentSeekWordIndex) {
       return RubyListCursor.defaultCursor(
@@ -186,7 +186,7 @@ class RubyListCursor extends TextPaneListCursor {
     SentenceMap? sentenceMap,
     SentenceID? sentenceID,
     SeekPosition? seekPosition,
-    PhrasePosition? phrasePosition,
+    WordRange? wordRange,
     InsertionPosition? insertionPosition,
     Option? option,
   }) {
@@ -194,7 +194,7 @@ class RubyListCursor extends TextPaneListCursor {
       sentenceMap: sentenceMap ?? this.sentenceMap,
       sentenceID: sentenceID ?? this.sentenceID,
       seekPosition: seekPosition ?? this.seekPosition,
-      phrasePosition: phrasePosition ?? rubyCursor.phrasePosition,
+      wordRange: wordRange ?? rubyCursor.wordRange,
       insertionPosition: insertionPosition ?? rubyCursor.insertionPosition,
       option: option ?? rubyCursor.option,
     );

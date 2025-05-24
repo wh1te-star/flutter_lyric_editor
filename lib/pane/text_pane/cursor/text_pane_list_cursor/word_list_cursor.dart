@@ -5,7 +5,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/word_cursor.
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/base_list_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pane_list_cursor.dart';
 import 'package:lyric_editor/position/seek_position.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/word_range.dart';
 
 class WordListCursor extends TextPaneListCursor {
   late WordCursor wordCursor;
@@ -14,7 +14,7 @@ class WordListCursor extends TextPaneListCursor {
     required SentenceMap sentenceMap,
     required SentenceID sentenceID,
     required SeekPosition seekPosition,
-    required PhrasePosition phrasePosition,
+    required WordRange wordRange,
     required bool isExpandMode,
   }) : super(sentenceMap, sentenceID, seekPosition) {
     assert(isIDContained(), "The passed sentenceID does not point to a sentence in sentenceMap.");
@@ -22,7 +22,7 @@ class WordListCursor extends TextPaneListCursor {
     wordCursor = WordCursor(
       sentence: sentenceMap[sentenceID]!,
       seekPosition: seekPosition,
-      phrasePosition: phrasePosition,
+      wordRange: wordRange,
       isExpandMode: isExpandMode,
     );
     textPaneCursor = wordCursor;
@@ -59,7 +59,7 @@ class WordListCursor extends TextPaneListCursor {
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
       seekPosition: seekPosition,
-      phrasePosition: defaultCursor.phrasePosition,
+      wordRange: defaultCursor.wordRange,
       isExpandMode: defaultCursor.isExpandMode,
     );
   }
@@ -97,7 +97,7 @@ class WordListCursor extends TextPaneListCursor {
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
       seekPosition: seekPosition,
-      phrasePosition: nextCursor.phrasePosition,
+      wordRange: nextCursor.wordRange,
       isExpandMode: nextCursor.isExpandMode,
     );
   }
@@ -109,7 +109,7 @@ class WordListCursor extends TextPaneListCursor {
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
       seekPosition: seekPosition,
-      phrasePosition: nextCursor.phrasePosition,
+      wordRange: nextCursor.wordRange,
       isExpandMode: nextCursor.isExpandMode,
     );
   }
@@ -124,7 +124,7 @@ class WordListCursor extends TextPaneListCursor {
 
   TextPaneListCursor switchToExpandMode() {
     WordCursor nextCursor = wordCursor.switchToExpandMode() as WordCursor;
-    return copyWith(phrasePosition: nextCursor.phrasePosition, isExpandMode: nextCursor.isExpandMode);
+    return copyWith(wordRange: nextCursor.wordRange, isExpandMode: nextCursor.isExpandMode);
   }
 
   @override
@@ -137,7 +137,7 @@ class WordListCursor extends TextPaneListCursor {
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
       seekPosition: seekPosition,
-      phrasePosition: wordCursor.phrasePosition,
+      wordRange: wordCursor.wordRange,
       isExpandMode: wordCursor.isExpandMode,
     );
   }
@@ -147,14 +147,14 @@ class WordListCursor extends TextPaneListCursor {
     SentenceMap? sentenceMap,
     SentenceID? sentenceID,
     SeekPosition? seekPosition,
-    PhrasePosition? phrasePosition,
+    WordRange? wordRange,
     bool? isExpandMode,
   }) {
     return WordListCursor(
       sentenceMap: sentenceMap ?? this.sentenceMap,
       sentenceID: sentenceID ?? this.sentenceID,
       seekPosition: seekPosition ?? this.seekPosition,
-      phrasePosition: phrasePosition ?? wordCursor.phrasePosition,
+      wordRange: wordRange ?? wordCursor.wordRange,
       isExpandMode: isExpandMode ?? wordCursor.isExpandMode,
     );
   }

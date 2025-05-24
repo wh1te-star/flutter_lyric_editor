@@ -6,7 +6,7 @@ import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/word_index.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/word_range.dart';
 
 class Ruby {
   Timetable timetable;
@@ -32,7 +32,7 @@ class Ruby {
   List<Timing> get timings => timetable.timingList.list;
   WordIndex getWordIndexFromSeekPosition(SeekPosition seekPosition) => timetable.getWordIndexFromSeekPosition(seekPosition);
   InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timetable.getInsertionPositionInfo(insertionPosition);
-  WordList getWordList(PhrasePosition phrasePosition) => timetable.getWordList(phrasePosition);
+  WordList getWordList(WordRange wordRange) => timetable.getWordList(wordRange);
 
   Ruby copyWith({
     Timetable? timetable,

@@ -8,7 +8,7 @@ import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/section/section_list.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
 import 'package:lyric_editor/lyric_data/vocalist/vocalist_color_map.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
@@ -122,15 +122,15 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addRuby(SentenceID sentenceID, PhrasePosition phrasePosition, String rubyString) {
+  void addRuby(SentenceID sentenceID, WordRange wordRange, String rubyString) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
-    sentenceMap = sentenceMap.addRuby(sentenceID, phrasePosition, rubyString);
+    sentenceMap = sentenceMap.addRuby(sentenceID, wordRange, rubyString);
     notifyListeners();
   }
 
-  void removeRuby(SentenceID sentenceID, PhrasePosition phrasePosition) {
+  void removeRuby(SentenceID sentenceID, WordRange wordRange) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
-    sentenceMap = sentenceMap.removeRuby(sentenceID, phrasePosition);
+    sentenceMap = sentenceMap.removeRuby(sentenceID, wordRange);
     notifyListeners();
   }
 
@@ -146,15 +146,15 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addRubyTiming(SentenceID sentenceID, PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
+  void addRubyTiming(SentenceID sentenceID, WordRange wordRange, InsertionPosition charPosition, SeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
-    sentenceMap = sentenceMap.addRubyTiming(sentenceID, phrasePosition, charPosition, seekPosition);
+    sentenceMap = sentenceMap.addRubyTiming(sentenceID, wordRange, charPosition, seekPosition);
     notifyListeners();
   }
 
-  void removeRubyTiming(SentenceID sentenceID, PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
+  void removeRubyTiming(SentenceID sentenceID, WordRange wordRange, InsertionPosition charPosition, Option option) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
-    sentenceMap = sentenceMap.removeRubyTiming(sentenceID, phrasePosition, charPosition, option);
+    sentenceMap = sentenceMap.removeRubyTiming(sentenceID, wordRange, charPosition, option);
     notifyListeners();
   }
 

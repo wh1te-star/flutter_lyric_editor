@@ -15,7 +15,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pa
 import 'package:lyric_editor/pane/text_pane/text_pane_provider.dart';
 import 'package:lyric_editor/pane/video_pane/video_pane_provider.dart';
 import 'package:lyric_editor/position/seek_position.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/lyric_data/timetable.dart';
@@ -185,12 +185,12 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             SentenceID sentenceID = listCursor.sentenceID;
 
             WordCursor cursor = listCursor.textPaneCursor as WordCursor;
-            PhrasePosition phrasePosition = cursor.phrasePosition;
+            WordRange wordRange = cursor.wordRange;
 
             textPaneProvider.exitWordMode();
             String rubyString = (await displayTextFieldDialog(context, [""]))[0];
             if (rubyString != "") {
-              timingService.addRuby(sentenceID, phrasePosition, rubyString);
+              timingService.addRuby(sentenceID, wordRange, rubyString);
             }
           }(),
         ),
@@ -207,8 +207,8 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             }
 
             RubyCursor cursor = listCursor.textPaneCursor as RubyCursor;
-            PhrasePosition phrasePosition = cursor.phrasePosition;
-            timingService.removeRuby(sentenceID, phrasePosition);
+            WordRange wordRange = cursor.wordRange;
+            timingService.removeRuby(sentenceID, wordRange);
           }(),
         ),
         SentenceStartMoveIntent: CallbackAction<SentenceStartMoveIntent>(
@@ -308,7 +308,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
               RubyCursor cursor = listCursor.textPaneCursor as RubyCursor;
               timingService.addRubyTiming(
                 listCursor.sentenceID,
-                cursor.phrasePosition,
+                cursor.wordRange,
                 cursor.insertionPosition,
                 seekPosition,
               );
@@ -331,7 +331,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
               RubyCursor cursor = listCursor.textPaneCursor as RubyCursor;
               timingService.removeRubyTiming(
                 sentenceID,
-                cursor.phrasePosition,
+                cursor.wordRange,
                 cursor.insertionPosition,
                 cursor.option,
               );

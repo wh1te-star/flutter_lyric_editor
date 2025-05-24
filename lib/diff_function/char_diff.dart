@@ -4,7 +4,7 @@ import 'package:lyric_editor/diff_function/backtract_table.dart';
 import 'package:lyric_editor/diff_function/word_diff.dart';
 import 'package:lyric_editor/diff_function/lcs_cell.dart';
 import 'package:lyric_editor/diff_function/longest_common_subsequence.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/word_range.dart';
 
 class CharDiff {
   String beforeStr;

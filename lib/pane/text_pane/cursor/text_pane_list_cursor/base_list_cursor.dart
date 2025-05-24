@@ -11,7 +11,7 @@ import 'package:lyric_editor/position/insertion_position_info/insertion_position
 import 'package:lyric_editor/position/insertion_position_info/word_insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/word_index.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 
 class BaseListCursor extends TextPaneListCursor {
@@ -89,7 +89,7 @@ class BaseListCursor extends TextPaneListCursor {
   @override
   TextPaneListCursor moveUpCursor() {
     Sentence sentence = sentenceMap[sentenceID]!;
-    PhrasePosition rubyIndex = sentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
+    WordRange rubyIndex = sentence.getRubysWordRangeFromSeekPosition(seekPosition);
     if (rubyIndex.isNotEmpty) {
       return RubyListCursor.defaultCursor(
         sentenceMap: sentenceMap,
@@ -125,7 +125,7 @@ class BaseListCursor extends TextPaneListCursor {
     SentenceID nextSentenceID = sentenceMap.keys.toList()[index + 1];
     Sentence nextSentence = sentenceMap[nextSentenceID]!;
 
-    PhrasePosition rubyIndex = nextSentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
+    WordRange rubyIndex = nextSentence.getRubysWordRangeFromSeekPosition(seekPosition);
     if (rubyIndex.isNotEmpty) {
       return RubyListCursor.defaultCursor(
         sentenceMap: sentenceMap,
@@ -210,7 +210,7 @@ class BaseListCursor extends TextPaneListCursor {
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
       seekPosition: seekPosition,
-      phrasePosition: nextCursor.phrasePosition,
+      wordRange: nextCursor.wordRange,
       isExpandMode: nextCursor.isExpandMode,
     );
   }

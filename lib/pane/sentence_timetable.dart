@@ -6,7 +6,7 @@ import 'package:lyric_editor/lyric_data/ruby/ruby.dart';
 import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
 import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/lyric_data/timing/timing.dart';
 import 'package:lyric_editor/pane/timeline_pane/rectangle_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/triangle_painter.dart';
@@ -157,8 +157,8 @@ class _SentenceTimelineState extends ConsumerState<SentenceTimeline> {
 
     final Color vocalistColor = Color(timingService.vocalistColorMap[vocalistID]!.color);
 
-    for (MapEntry<PhrasePosition, Ruby> entry in sentence.rubyMap.map.entries) {
-      PhrasePosition phrasePosition = entry.key;
+    for (MapEntry<WordRange, Ruby> entry in sentence.rubyMap.map.entries) {
+      WordRange wordRange = entry.key;
       Ruby ruby = entry.value;
       Size itemSize = Size(
         duration2Length(ruby.endTimestamp.position - ruby.startTimestamp.position),
@@ -227,8 +227,8 @@ class _SentenceTimelineState extends ConsumerState<SentenceTimeline> {
     );
 
     List<Widget> indicatorWidgets = [];
-    for (MapEntry<PhrasePosition, Ruby> entry in sentence.rubyMap.map.entries) {
-      PhrasePosition phrasePosition = entry.key;
+    for (MapEntry<WordRange, Ruby> entry in sentence.rubyMap.map.entries) {
+      WordRange wordRange = entry.key;
       Ruby ruby = entry.value;
       for (int index = 0; index < ruby.timings.length; index++) {
         Timing timing = ruby.timings[index];

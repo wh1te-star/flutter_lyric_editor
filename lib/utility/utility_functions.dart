@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_data/ruby/ruby.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/word_range.dart';
 import 'package:tuple/tuple.dart';
 
 

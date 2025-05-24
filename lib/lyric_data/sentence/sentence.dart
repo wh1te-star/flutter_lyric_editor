@@ -8,7 +8,7 @@ import 'package:lyric_editor/position/insertion_position_info/word_insertion_pos
 import 'package:lyric_editor/position/insertion_position_info/timing_insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/word_index.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/timetable.dart';
 import 'package:lyric_editor/lyric_data/timing/timing.dart';
@@ -44,34 +44,34 @@ class Sentence {
   WordIndex getWordIndexFromSeekPosition(SeekPosition seekPosition) => timetable.getWordIndexFromSeekPosition(seekPosition);
   InsertionPositionInfo? getInsertionPositionInfo(InsertionPosition insertionPosition) => timetable.getInsertionPositionInfo(insertionPosition);
   double getWordProgress(SeekPosition seekPosition) => timetable.getWordProgress(seekPosition);
-  WordList getWordList(PhrasePosition phrasePosition) => timetable.getWordList(phrasePosition);
+  WordList getWordList(WordRange wordRange) => timetable.getWordList(wordRange);
   TimingIndex leftTimingIndex(WordIndex wordIndex) => timetable.leftTimingIndex(wordIndex);
   TimingIndex rightTimingIndex(WordIndex wordIndex) => timetable.rightTimingIndex(wordIndex);
   Timing leftTiming(WordIndex wordIndex) => timetable.leftTiming(wordIndex);
   Timing rightTiming(WordIndex wordIndex) => timetable.rightTiming(wordIndex);
 
-  MapEntry<PhrasePosition, Ruby> getRubyWords(WordIndex index) {
+  MapEntry<WordRange, Ruby> getRubyWords(WordIndex index) {
     return rubyMap.map.entries.firstWhere(
       (entry) => entry.key.startIndex <= index && index <= entry.key.endIndex,
-      orElse: () => MapEntry(PhrasePosition.empty, Ruby.empty),
+      orElse: () => MapEntry(WordRange.empty, Ruby.empty),
     );
   }
 
-  PhrasePosition getRubysPhrasePositionFromSeekPosition(SeekPosition seekPosition) {
-    for (MapEntry<PhrasePosition, Ruby> entry in rubyMap.map.entries) {
-      PhrasePosition phrasePosition = entry.key;
+  WordRange getRubysWordRangeFromSeekPosition(SeekPosition seekPosition) {
+    for (MapEntry<WordRange, Ruby> entry in rubyMap.map.entries) {
+      WordRange wordRange = entry.key;
       Ruby ruby = entry.value;
       SeekPosition startTimestamp = timetable.startTimestamp;
       List<Timing> timings = timetable.timingList.list;
       List<Timing> rubyTimings = ruby.timetable.timingList.list;
-      SeekPosition rubyStartSeekPosition = SeekPosition(startTimestamp.position + timings[phrasePosition.startIndex.index].seekPosition.position);
+      SeekPosition rubyStartSeekPosition = SeekPosition(startTimestamp.position + timings[wordRange.startIndex.index].seekPosition.position);
       SeekPosition startSeekPosition = SeekPosition(rubyStartSeekPosition.position + rubyTimings.first.seekPosition.position);
       SeekPosition endSeekPosition = SeekPosition(rubyStartSeekPosition.position + rubyTimings.last.seekPosition.position);
       if (startSeekPosition <= seekPosition && seekPosition < endSeekPosition) {
-        return phrasePosition;
+        return wordRange;
       }
     }
-    return PhrasePosition.empty;
+    return WordRange.empty;
   }
 
   Sentence editSentence(String newSentence) {
@@ -92,33 +92,33 @@ class Sentence {
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
-  Sentence addRubyTiming(PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
-    Timetable timetable = rubyMap[phrasePosition]!.timetable.addTiming(charPosition, seekPosition);
+  Sentence addRubyTiming(WordRange wordRange, InsertionPosition charPosition, SeekPosition seekPosition) {
+    Timetable timetable = rubyMap[wordRange]!.timetable.addTiming(charPosition, seekPosition);
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
-  Sentence removeRubyTiming(PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
-    Timetable timetable = rubyMap[phrasePosition]!.timetable.deleteTiming(charPosition, option);
+  Sentence removeRubyTiming(WordRange wordRange, InsertionPosition charPosition, Option option) {
+    Timetable timetable = rubyMap[wordRange]!.timetable.deleteTiming(charPosition, option);
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
-  Sentence addRuby(PhrasePosition phrasePosition, String rubyString) {
+  Sentence addRuby(WordRange wordRange, String rubyString) {
     RubyMap rubyMap = this.rubyMap;
-    SeekPosition rubyStartTimestamp = SeekPosition(startTimestamp.position + timings[phrasePosition.startIndex.index].seekPosition.position);
-    SeekPosition rubyEndTimestamp = SeekPosition(startTimestamp.position + timings[phrasePosition.endIndex.index + 1].seekPosition.position);
+    SeekPosition rubyStartTimestamp = SeekPosition(startTimestamp.position + timings[wordRange.startIndex.index].seekPosition.position);
+    SeekPosition rubyEndTimestamp = SeekPosition(startTimestamp.position + timings[wordRange.endIndex.index + 1].seekPosition.position);
     Duration rubyDuration = Duration(milliseconds: rubyEndTimestamp.position - rubyStartTimestamp.position);
     Word word = Word(rubyString, rubyDuration);
     Timetable timetable = Timetable(
       startTimestamp: rubyStartTimestamp,
       wordList: WordList([word]),
     );
-    rubyMap.map[phrasePosition] = Ruby(timetable: timetable);
+    rubyMap.map[wordRange] = Ruby(timetable: timetable);
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
-  Sentence removeRuby(PhrasePosition phrasePosition) {
+  Sentence removeRuby(WordRange wordRange) {
     RubyMap rubyMap = this.rubyMap;
-    rubyMap.map.remove(phrasePosition);
+    rubyMap.map.remove(wordRange);
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
@@ -159,10 +159,10 @@ class Sentence {
 
   RubyMap carryUpRubyWords(InsertionPosition insertionPosition) {
     InsertionPositionInfo info = timetable.getInsertionPositionInfo(insertionPosition)!;
-    Map<PhrasePosition, Ruby> updatedRubys = {};
+    Map<WordRange, Ruby> updatedRubys = {};
 
-    rubyMap.map.forEach((PhrasePosition key, Ruby value) {
-      PhrasePosition newKey = key.copyWith();
+    rubyMap.map.forEach((WordRange key, Ruby value) {
+      WordRange newKey = key.copyWith();
 
       switch (info) {
         case WordInsertionPositionInfo():
@@ -199,7 +199,7 @@ class Sentence {
 
   RubyMap carryDownRubyWords(InsertionPosition insertionPosition) {
     InsertionPositionInfo info = timetable.getInsertionPositionInfo(insertionPosition)!;
-    Map<PhrasePosition, Ruby> updatedRubys = {};
+    Map<WordRange, Ruby> updatedRubys = {};
     int index = -1;
     if (info is WordInsertionPositionInfo) {
       index = info.wordIndex.index;
@@ -209,8 +209,8 @@ class Sentence {
       assert(false, "An unexpected state was occurred for the insertion position");
     }
 
-    rubyMap.map.forEach((PhrasePosition key, Ruby value) {
-      PhrasePosition newKey = key.copyWith();
+    rubyMap.map.forEach((WordRange key, Ruby value) {
+      WordRange newKey = key.copyWith();
       int startIndex = key.startIndex.index;
       int endIndex = key.endIndex.index + 1;
       if (index == startIndex && index == endIndex + 1) {
@@ -232,57 +232,57 @@ class Sentence {
     return RubyMap(updatedRubys);
   }
 
-  List<Tuple2<PhrasePosition, Ruby?>> getRubysPhrasePositionList() {
+  List<Tuple2<WordRange, Ruby?>> getRubysWordRangeList() {
     if (rubyMap.isEmpty) {
       WordIndex startIndex = WordIndex(0);
       WordIndex endIndex = WordIndex(words.length - 1);
       return [
         Tuple2(
-          PhrasePosition(startIndex, endIndex),
+          WordRange(startIndex, endIndex),
           null,
         ),
       ];
     }
 
-    List<Tuple2<PhrasePosition, Ruby?>> phrasePositionList = [];
+    List<Tuple2<WordRange, Ruby?>> wordRangeList = [];
     int previousEnd = -1;
 
-    for (MapEntry<PhrasePosition, Ruby> entry in rubyMap.entries) {
-      PhrasePosition phrasePosition = entry.key;
+    for (MapEntry<WordRange, Ruby> entry in rubyMap.entries) {
+      WordRange wordRange = entry.key;
       Ruby ruby = entry.value;
 
-      if (previousEnd + 1 <= phrasePosition.startIndex.index - 1) {
+      if (previousEnd + 1 <= wordRange.startIndex.index - 1) {
         WordIndex startIndex = WordIndex(previousEnd + 1);
-        WordIndex endIndex = WordIndex(phrasePosition.startIndex.index - 1);
-        phrasePositionList.add(
+        WordIndex endIndex = WordIndex(wordRange.startIndex.index - 1);
+        wordRangeList.add(
           Tuple2(
-            PhrasePosition(startIndex, endIndex),
+            WordRange(startIndex, endIndex),
             null,
           ),
         );
       }
-      phrasePositionList.add(
+      wordRangeList.add(
         Tuple2(
-          phrasePosition,
+          wordRange,
           ruby,
         ),
       );
 
-      previousEnd = phrasePosition.endIndex.index;
+      previousEnd = wordRange.endIndex.index;
     }
 
     if (previousEnd + 1 <= words.length - 1) {
       WordIndex startIndex = WordIndex(previousEnd + 1);
       WordIndex endIndex = WordIndex(words.length - 1);
-      phrasePositionList.add(
+      wordRangeList.add(
         Tuple2(
-          PhrasePosition(startIndex, endIndex),
+          WordRange(startIndex, endIndex),
           null,
         ),
       );
     }
 
-    return phrasePositionList;
+    return wordRangeList;
   }
 
   Sentence copyWith({

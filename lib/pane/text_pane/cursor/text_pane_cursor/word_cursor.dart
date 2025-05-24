@@ -7,29 +7,29 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/base_cursor.
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/word_index.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/word_range.dart';
 
 class WordCursor extends TextPaneCursor {
-  PhrasePosition phrasePosition;
+  WordRange wordRange;
   bool isExpandMode = false;
 
   WordCursor({
     required Sentence sentence,
     required SeekPosition seekPosition,
-    required this.phrasePosition,
+    required this.wordRange,
     required this.isExpandMode,
   }) : super(sentence, seekPosition);
 
   WordCursor._privateConstructor(
     super.sentence,
     super.seekPosition,
-    this.phrasePosition,
+    this.wordRange,
     this.isExpandMode,
   );
   static final WordCursor _empty = WordCursor._privateConstructor(
     Sentence.empty,
     SeekPosition.empty,
-    PhrasePosition.empty,
+    WordRange.empty,
     false,
   );
   static WordCursor get empty => _empty;
@@ -42,61 +42,61 @@ class WordCursor extends TextPaneCursor {
     return WordCursor(
       sentence: sentence,
       seekPosition: seekPosition,
-      phrasePosition: PhrasePosition(wordIndex, wordIndex),
+      wordRange: WordRange(wordIndex, wordIndex),
       isExpandMode: isExpandMode,
     );
   }
 
   @override
   TextPaneCursor moveLeftCursor() {
-    PhrasePosition nextPhrasePosition = phrasePosition.copyWith();
+    WordRange nextWordRange = wordRange.copyWith();
 
     if (!isExpandMode) {
-      WordIndex currentIndex = phrasePosition.startIndex;
+      WordIndex currentIndex = wordRange.startIndex;
       WordIndex nextIndex = currentIndex - 1;
       if (nextIndex < WordIndex(0)) {
         return this;
       }
-      nextPhrasePosition.startIndex = nextIndex;
+      nextWordRange.startIndex = nextIndex;
 
-      nextPhrasePosition.endIndex = phrasePosition.endIndex - 1;
+      nextWordRange.endIndex = wordRange.endIndex - 1;
     } else {
-      WordIndex currentIndex = phrasePosition.endIndex;
+      WordIndex currentIndex = wordRange.endIndex;
       WordIndex nextIndex = currentIndex - 1;
-      if (nextIndex < phrasePosition.startIndex) {
+      if (nextIndex < wordRange.startIndex) {
         return this;
       }
-      nextPhrasePosition.startIndex = phrasePosition.startIndex;
-      nextPhrasePosition.endIndex = nextIndex;
+      nextWordRange.startIndex = wordRange.startIndex;
+      nextWordRange.endIndex = nextIndex;
     }
 
     return WordCursor(
       sentence: sentence,
       seekPosition: seekPosition,
-      phrasePosition: nextPhrasePosition,
+      wordRange: nextWordRange,
       isExpandMode: isExpandMode,
     );
   }
 
   @override
   TextPaneCursor moveRightCursor() {
-    PhrasePosition nextPhrasePosition = phrasePosition.copyWith();
+    WordRange nextWordRange = wordRange.copyWith();
 
-    WordIndex currentIndex = phrasePosition.endIndex;
+    WordIndex currentIndex = wordRange.endIndex;
     WordIndex nextIndex = currentIndex + 1;
     if (nextIndex.index >= sentence.words.length) {
       return this;
     }
 
-    nextPhrasePosition.endIndex = nextIndex;
+    nextWordRange.endIndex = nextIndex;
     if (!isExpandMode) {
-      nextPhrasePosition.startIndex = phrasePosition.startIndex + 1;
+      nextWordRange.startIndex = wordRange.startIndex + 1;
     }
 
     return WordCursor(
       sentence: sentence,
       seekPosition: seekPosition,
-      phrasePosition: nextPhrasePosition,
+      wordRange: nextWordRange,
       isExpandMode: isExpandMode,
     );
   }
@@ -114,34 +114,34 @@ class WordCursor extends TextPaneCursor {
   }
 
   @override
-  List<TextPaneCursor?> getPhrasePositionDividedCursors(Sentence sentence, List<PhrasePosition> phrasePositionList) {
+  List<TextPaneCursor?> getWordRangeDividedCursors(Sentence sentence, List<WordRange> wordRangeList) {
     WordCursor cursor = copyWith();
-    List<WordCursor?> separatedCursors = List.filled(phrasePositionList.length, null);
+    List<WordCursor?> separatedCursors = List.filled(wordRangeList.length, null);
 
-    int startPhrasePositionIndex = phrasePositionList.indexWhere((PhrasePosition phrasePosition) {
-      return phrasePosition.isInRange(cursor.phrasePosition.startIndex);
+    int startWordRangeIndex = wordRangeList.indexWhere((WordRange wordRange) {
+      return wordRange.isInRange(cursor.wordRange.startIndex);
     });
-    int endPhrasePositionIndex = phrasePositionList.indexWhere((PhrasePosition phrasePosition) {
-      return phrasePosition.isInRange(cursor.phrasePosition.endIndex);
+    int endWordRangeIndex = wordRangeList.indexWhere((WordRange wordRange) {
+      return wordRange.isInRange(cursor.wordRange.endIndex);
     });
 
     int shiftLength = 0;
-    for (int index = 0; index <= endPhrasePositionIndex; index++) {
-      WordIndex startIndex = phrasePositionList[index].startIndex - shiftLength;
-      WordIndex endIndex = phrasePositionList[index].endIndex - shiftLength;
-      if (index == startPhrasePositionIndex) {
-        startIndex = cursor.phrasePosition.startIndex - shiftLength;
+    for (int index = 0; index <= endWordRangeIndex; index++) {
+      WordIndex startIndex = wordRangeList[index].startIndex - shiftLength;
+      WordIndex endIndex = wordRangeList[index].endIndex - shiftLength;
+      if (index == startWordRangeIndex) {
+        startIndex = cursor.wordRange.startIndex - shiftLength;
       }
-      if (index == endPhrasePositionIndex) {
-        endIndex = cursor.phrasePosition.endIndex - shiftLength;
+      if (index == endWordRangeIndex) {
+        endIndex = cursor.wordRange.endIndex - shiftLength;
       }
 
-      if (startPhrasePositionIndex <= index && index <= endPhrasePositionIndex) {
+      if (startWordRangeIndex <= index && index <= endWordRangeIndex) {
         separatedCursors[index] = cursor.copyWith(
-          phrasePosition: PhrasePosition(startIndex, endIndex),
+          wordRange: WordRange(startIndex, endIndex),
         );
       }
-      shiftLength += phrasePositionList[index].length;
+      shiftLength += wordRangeList[index].length;
     }
 
     return separatedCursors;
@@ -154,12 +154,12 @@ class WordCursor extends TextPaneCursor {
     WordCursor initialCursor = WordCursor(
       sentence: sentence,
       seekPosition: seekPosition,
-      phrasePosition: PhrasePosition(WordIndex(0), WordIndex(0)),
+      wordRange: WordRange(WordIndex(0), WordIndex(0)),
       isExpandMode: isExpandMode,
     );
     for (int index = 0; index < wordList.length; index++) {
       WordIndex wordIndex = WordIndex(index);
-      if (cursor.phrasePosition.isInRange(wordIndex)) {
+      if (cursor.wordRange.isInRange(wordIndex)) {
         separatedCursors[index] = initialCursor.copyWith();
       }
     }
@@ -168,43 +168,43 @@ class WordCursor extends TextPaneCursor {
 
   @override
   WordCursor shiftLeftByWordList(WordList wordList) {
-    if (phrasePosition.startIndex.index - 1 < 0 || phrasePosition.endIndex.index - 1 < 0) {
+    if (wordRange.startIndex.index - 1 < 0 || wordRange.endIndex.index - 1 < 0) {
       return WordCursor.empty;
     }
-    WordIndex startIndex = phrasePosition.startIndex - wordList.wordCount;
-    WordIndex endIndex = phrasePosition.endIndex - wordList.wordCount;
-    PhrasePosition newPhrasePosition = PhrasePosition(startIndex, endIndex);
-    return copyWith(phrasePosition: newPhrasePosition);
+    WordIndex startIndex = wordRange.startIndex - wordList.wordCount;
+    WordIndex endIndex = wordRange.endIndex - wordList.wordCount;
+    WordRange newWordRange = WordRange(startIndex, endIndex);
+    return copyWith(wordRange: newWordRange);
   }
 
   @override
   WordCursor shiftLeftByWord(Word word) {
-    if (phrasePosition.startIndex.index - 1 < 0 || phrasePosition.endIndex.index - 1 < 0) {
+    if (wordRange.startIndex.index - 1 < 0 || wordRange.endIndex.index - 1 < 0) {
       return WordCursor.empty;
     }
-    WordIndex startIndex = phrasePosition.startIndex - 1;
-    WordIndex endIndex = phrasePosition.endIndex - 1;
-    PhrasePosition newPhrasePosition = PhrasePosition(startIndex, endIndex);
-    return copyWith(phrasePosition: newPhrasePosition);
+    WordIndex startIndex = wordRange.startIndex - 1;
+    WordIndex endIndex = wordRange.endIndex - 1;
+    WordRange newWordRange = WordRange(startIndex, endIndex);
+    return copyWith(wordRange: newWordRange);
   }
 
   WordCursor copyWith({
     Sentence? sentence,
     SeekPosition? seekPosition,
-    PhrasePosition? phrasePosition,
+    WordRange? wordRange,
     bool? isExpandMode,
   }) {
     return WordCursor(
       sentence: sentence ?? this.sentence,
       seekPosition: seekPosition ?? this.seekPosition,
-      phrasePosition: phrasePosition ?? this.phrasePosition,
+      wordRange: wordRange ?? this.wordRange,
       isExpandMode: isExpandMode ?? this.isExpandMode,
     );
   }
 
   @override
   String toString() {
-    return 'WordCursor(ID: $sentence, wordIndex: $phrasePosition)';
+    return 'WordCursor(ID: $sentence, wordIndex: $wordRange)';
   }
 
   @override
@@ -214,11 +214,11 @@ class WordCursor extends TextPaneCursor {
     final WordCursor otherWords = other as WordCursor;
     if (sentence != otherWords.sentence) return false;
     if (seekPosition != otherWords.seekPosition) return false;
-    if (phrasePosition != otherWords.phrasePosition) return false;
+    if (wordRange != otherWords.wordRange) return false;
     if (isExpandMode != otherWords.isExpandMode) return false;
     return true;
   }
 
   @override
-  int get hashCode => sentence.hashCode ^ seekPosition.hashCode ^ phrasePosition.hashCode ^ isExpandMode.hashCode;
+  int get hashCode => sentence.hashCode ^ seekPosition.hashCode ^ wordRange.hashCode ^ isExpandMode.hashCode;
 }

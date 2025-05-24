@@ -14,7 +14,7 @@ import 'package:lyric_editor/position/insertion_position_info/word_insertion_pos
 import 'package:lyric_editor/position/insertion_position_info/timing_insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/word_index.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/position/timing_index.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 
@@ -187,11 +187,11 @@ class Timetable {
     return wordList.list[index].word;
   }
 
-  WordList getWordList(PhrasePosition phrasePosition) {
+  WordList getWordList(WordRange wordRange) {
     return WordList(
       words.sublist(
-        phrasePosition.startIndex.index,
-        phrasePosition.endIndex.index + 1,
+        wordRange.startIndex.index,
+        wordRange.endIndex.index + 1,
       ),
     );
   }

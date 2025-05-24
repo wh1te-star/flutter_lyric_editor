@@ -10,7 +10,7 @@ import 'package:lyric_editor/pane/text_pane/edit_widget/word/word_list_edit.dart
 import 'package:lyric_editor/pane/text_pane/edit_widget/word/timing_edit.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:tuple/tuple.dart';
 
@@ -24,18 +24,18 @@ class SentenceEdit extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Widget> rubyExistenceEdits = [];
-    List<Tuple2<PhrasePosition, Ruby?>> rubyPhrasePositionList = sentence.getRubysPhrasePositionList();
-    List<PhrasePosition> phrasePositionList = rubyPhrasePositionList.map((Tuple2<PhrasePosition, Ruby?> entry) {
+    List<Tuple2<WordRange, Ruby?>> rubyWordRangeList = sentence.getRubysWordRangeList();
+    List<WordRange> wordRangeList = rubyWordRangeList.map((Tuple2<WordRange, Ruby?> entry) {
       return entry.item1;
     }).toList();
-    List<TextPaneCursor?> cursorList = List.filled(phrasePositionList.length, null);
-    cursorList = textPaneCursor!.getPhrasePositionDividedCursors(sentence, phrasePositionList);
+    List<TextPaneCursor?> cursorList = List.filled(wordRangeList.length, null);
+    cursorList = textPaneCursor!.getWordRangeDividedCursors(sentence, wordRangeList);
 
-    for (int index = 0; index < rubyPhrasePositionList.length; index++) {
-      PhrasePosition phrasePosition = rubyPhrasePositionList[index].item1;
-      Ruby? ruby = rubyPhrasePositionList[index].item2;
+    for (int index = 0; index < rubyWordRangeList.length; index++) {
+      WordRange wordRange = rubyWordRangeList[index].item1;
+      Ruby? ruby = rubyWordRangeList[index].item2;
 
-      WordList? baseSubList = sentence.getWordList(phrasePosition);
+      WordList? baseSubList = sentence.getWordList(wordRange);
       WordList? rubySubList = ruby?.timetable.wordList;
 
       TextPaneCursor? cursor = cursorList[index];
@@ -51,10 +51,10 @@ class SentenceEdit extends StatelessWidget {
       TextPaneCursor? rubyCursor;
       if (isTimingPosition) {
         timingCursorBlinker = cursorBlinker;
-      } else if(textPaneCursor is! RubyCursor){
+      } else if (textPaneCursor is! RubyCursor) {
         baseCursorBlinker = cursorBlinker;
         baseCursor = cursor;
-      }else {
+      } else {
         rubyCursorBlinker = cursorBlinker;
         rubyCursor = cursor;
       }

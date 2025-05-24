@@ -10,7 +10,7 @@ import 'package:lyric_editor/position/insertion_position_info/word_insertion_pos
 import 'package:lyric_editor/position/insertion_position_info/timing_insertion_position_info.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/word_index.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/position/timing_index.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 
@@ -157,18 +157,18 @@ class BaseCursor extends TextPaneCursor {
     return WordCursor(
       sentence: sentence,
       seekPosition: seekPosition,
-      phrasePosition: PhrasePosition(WordIndex(0), WordIndex(0)),
+      wordRange: WordRange(WordIndex(0), WordIndex(0)),
       isExpandMode: false,
     );
   }
 
   @override
-  List<TextPaneCursor?> getPhrasePositionDividedCursors(Sentence sentence, List<PhrasePosition> phrasePositionList) {
-    List<BaseCursor?> separatedCursors = List.filled(phrasePositionList.length, null);
+  List<TextPaneCursor?> getWordRangeDividedCursors(Sentence sentence, List<WordRange> wordRangeList) {
+    List<BaseCursor?> separatedCursors = List.filled(wordRangeList.length, null);
     BaseCursor shiftedCursor = copyWith();
-    for (int index = 0; index < phrasePositionList.length; index++) {
-      PhrasePosition phrasePosition = phrasePositionList[index];
-      WordList? sentenceSubList = sentence.getWordList(phrasePosition);
+    for (int index = 0; index < wordRangeList.length; index++) {
+      WordRange wordRange = wordRangeList[index];
+      WordList? sentenceSubList = sentence.getWordList(wordRange);
       BaseCursor? nextCursor = shiftedCursor.shiftLeftByWordList(sentenceSubList);
       if (nextCursor == null) {
         separatedCursors[index] = shiftedCursor;

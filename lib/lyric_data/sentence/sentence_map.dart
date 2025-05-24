@@ -6,7 +6,7 @@ import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/position/insertion_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/lyric_data/timetable.dart';
@@ -95,17 +95,17 @@ class SentenceMap {
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  SentenceMap addRuby(SentenceID id, PhrasePosition phrasePosition, String rubyString) {
+  SentenceMap addRuby(SentenceID id, WordRange wordRange, String rubyString) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
     Sentence sentence = copiedMap[id]!;
-    sentence = sentence.addRuby(phrasePosition, rubyString);
+    sentence = sentence.addRuby(wordRange, rubyString);
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  SentenceMap removeRuby(SentenceID id, PhrasePosition phrasePosition) {
+  SentenceMap removeRuby(SentenceID id, WordRange wordRange) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
     Sentence sentence = copiedMap[id]!;
-    sentence = sentence.removeRuby(phrasePosition);
+    sentence = sentence.removeRuby(wordRange);
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
@@ -120,17 +120,17 @@ class SentenceMap {
     return SentenceMap(map);
   }
 
-  SentenceMap addRubyTiming(SentenceID id, PhrasePosition phrasePosition, InsertionPosition charPosition, SeekPosition seekPosition) {
+  SentenceMap addRubyTiming(SentenceID id, WordRange wordRange, InsertionPosition charPosition, SeekPosition seekPosition) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
     Sentence sentence = copiedMap[id]!;
-    sentence = sentence.addRubyTiming(phrasePosition, charPosition, seekPosition);
+    sentence = sentence.addRubyTiming(wordRange, charPosition, seekPosition);
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  SentenceMap removeRubyTiming(SentenceID id, PhrasePosition phrasePosition, InsertionPosition charPosition, Option option) {
+  SentenceMap removeRubyTiming(SentenceID id, WordRange wordRange, InsertionPosition charPosition, Option option) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
     Sentence sentence = copiedMap[id]!;
-    sentence = sentence.removeRubyTiming(phrasePosition, charPosition, option);
+    sentence = sentence.removeRubyTiming(wordRange, charPosition, option);
     return sortSentenceList(SentenceMap(copiedMap));
   }
 

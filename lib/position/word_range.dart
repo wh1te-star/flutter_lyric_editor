@@ -2,19 +2,19 @@ import 'dart:typed_data';
 
 import 'package:lyric_editor/position/word_index.dart';
 
-class PhrasePosition {
+class WordRange {
   WordIndex startIndex;
   WordIndex endIndex;
-  PhrasePosition(this.startIndex, this.endIndex) {
+  WordRange(this.startIndex, this.endIndex) {
     if (!isEmpty) {
       assert(startIndex >= WordIndex(0));
       assert(endIndex >= WordIndex(0));
     }
   }
 
-  PhrasePosition._privateConstructor(this.startIndex, this.endIndex);
-  static final PhrasePosition _empty = PhrasePosition._privateConstructor(WordIndex.empty, WordIndex.empty);
-  static PhrasePosition get empty => _empty;
+  WordRange._privateConstructor(this.startIndex, this.endIndex);
+  static final WordRange _empty = WordRange._privateConstructor(WordIndex.empty, WordIndex.empty);
+  static WordRange get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
@@ -24,8 +24,8 @@ class PhrasePosition {
     return startIndex <= wordIndex && wordIndex <= endIndex;
   }
 
-  PhrasePosition copyWith({WordIndex? startIndex, WordIndex? endIndex}) {
-    return PhrasePosition(
+  WordRange copyWith({WordIndex? startIndex, WordIndex? endIndex}) {
+    return WordRange(
       startIndex ?? this.startIndex,
       endIndex ?? this.endIndex,
     );
@@ -41,7 +41,7 @@ class PhrasePosition {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! PhrasePosition) {
+    if (other is! WordRange) {
       return false;
     }
     return startIndex == other.startIndex && endIndex == other.endIndex;

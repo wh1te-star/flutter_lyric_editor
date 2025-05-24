@@ -15,19 +15,19 @@ import 'package:lyric_editor/position/insertion_position_info/word_insertion_pos
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/timing_index.dart';
 import 'package:lyric_editor/position/word_index.dart';
-import 'package:lyric_editor/position/phrase_position.dart';
+import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 class RubyCursor extends TextPaneCursor {
-  PhrasePosition phrasePosition;
+  WordRange wordRange;
   InsertionPosition insertionPosition;
   Option option;
 
   RubyCursor({
     required Sentence sentence,
     required SeekPosition seekPosition,
-    required this.phrasePosition,
+    required this.wordRange,
     required this.insertionPosition,
     required this.option,
   }) : super(sentence, seekPosition) {
@@ -35,21 +35,21 @@ class RubyCursor extends TextPaneCursor {
   }
 
   bool doesSeekPositionPointRuby() {
-    PhrasePosition phrasePosition = sentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
-    return phrasePosition.isNotEmpty;
+    WordRange wordRange = sentence.getRubysWordRangeFromSeekPosition(seekPosition);
+    return wordRange.isNotEmpty;
   }
 
   RubyCursor._privateConstructor(
     super.sentence,
     super.seekPosition,
-    this.phrasePosition,
+    this.wordRange,
     this.insertionPosition,
     this.option,
   );
   static final RubyCursor _empty = RubyCursor._privateConstructor(
     Sentence.empty,
     SeekPosition.empty,
-    PhrasePosition.empty,
+    WordRange.empty,
     InsertionPosition.empty,
     Option.former,
   );
@@ -61,14 +61,14 @@ class RubyCursor extends TextPaneCursor {
     required Sentence sentence,
     required SeekPosition seekPosition,
   }) {
-    PhrasePosition phrasePosition = sentence.getRubysPhrasePositionFromSeekPosition(seekPosition);
-    Ruby ruby = sentence.rubyMap[phrasePosition]!;
+    WordRange wordRange = sentence.getRubysWordRangeFromSeekPosition(seekPosition);
+    Ruby ruby = sentence.rubyMap[wordRange]!;
     WordIndex wordIndex = ruby.getWordIndexFromSeekPosition(seekPosition);
 
     return RubyCursor(
       sentence: sentence,
       seekPosition: seekPosition,
-      phrasePosition: phrasePosition,
+      wordRange: wordRange,
       insertionPosition: ruby.timetable.leftTiming(wordIndex).insertionPosition + 1,
       option: Option.former,
     );
@@ -76,7 +76,7 @@ class RubyCursor extends TextPaneCursor {
 
   @override
   TextPaneCursor moveLeftCursor() {
-    Timetable rubyTimetable = sentence.rubyMap[phrasePosition]!.timetable;
+    Timetable rubyTimetable = sentence.rubyMap[wordRange]!.timetable;
 
     InsertionPositionInfo? insertionPositionInfo = rubyTimetable.getInsertionPositionInfo(insertionPosition);
     assert(insertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
@@ -128,7 +128,7 @@ class RubyCursor extends TextPaneCursor {
 
   @override
   TextPaneCursor moveRightCursor() {
-    Timetable rubyTimetable = sentence.rubyMap[phrasePosition]!.timetable;
+    Timetable rubyTimetable = sentence.rubyMap[wordRange]!.timetable;
 
     InsertionPositionInfo? insertionPositionInfo = rubyTimetable.getInsertionPositionInfo(insertionPosition);
     assert(insertionPositionInfo != null, "An unexpected state was occurred for the insertion position info.");
@@ -177,12 +177,12 @@ class RubyCursor extends TextPaneCursor {
   }
 
   @override
-  List<TextPaneCursor?> getPhrasePositionDividedCursors(Sentence sentence, List<PhrasePosition> phrasePositionList) {
-    List<RubyCursor?> separatedCursors = List.filled(phrasePositionList.length, null);
+  List<TextPaneCursor?> getWordRangeDividedCursors(Sentence sentence, List<WordRange> wordRangeList) {
+    List<RubyCursor?> separatedCursors = List.filled(wordRangeList.length, null);
     RubyCursor cursor = copyWith();
-    for (int index = 0; index < phrasePositionList.length; index++) {
-      PhrasePosition phrasePosition = phrasePositionList[index];
-      if (phrasePosition == cursor.phrasePosition) {
+    for (int index = 0; index < wordRangeList.length; index++) {
+      WordRange wordRange = wordRangeList[index];
+      if (wordRange == cursor.wordRange) {
         separatedCursors[index] = cursor;
         break;
       }
@@ -217,14 +217,14 @@ class RubyCursor extends TextPaneCursor {
   RubyCursor copyWith({
     Sentence? sentence,
     SeekPosition? seekPosition,
-    PhrasePosition? phrasePosition,
+    WordRange? wordRange,
     InsertionPosition? insertionPosition,
     Option? option,
   }) {
     return RubyCursor(
       sentence: sentence ?? this.sentence,
       seekPosition: seekPosition ?? this.seekPosition,
-      phrasePosition: phrasePosition ?? this.phrasePosition,
+      wordRange: wordRange ?? this.wordRange,
       insertionPosition: insertionPosition ?? this.insertionPosition,
       option: option ?? this.option,
     );
@@ -232,7 +232,7 @@ class RubyCursor extends TextPaneCursor {
 
   @override
   String toString() {
-    return 'RubyCursor($sentence, phrasePosition: $phrasePosition, position: ${insertionPosition.position}, option: $option)';
+    return 'RubyCursor($sentence, wordRange: $wordRange, position: ${insertionPosition.position}, option: $option)';
   }
 
   @override
@@ -242,12 +242,12 @@ class RubyCursor extends TextPaneCursor {
     final RubyCursor otherWords = other as RubyCursor;
     if (sentence != otherWords.sentence) return false;
     if (seekPosition != otherWords.seekPosition) return false;
-    if (phrasePosition != otherWords.phrasePosition) return false;
+    if (wordRange != otherWords.wordRange) return false;
     if (insertionPosition != otherWords.insertionPosition) return false;
     if (option != otherWords.option) return false;
     return true;
   }
 
   @override
-  int get hashCode => sentence.hashCode ^ seekPosition.hashCode ^ phrasePosition.hashCode ^ insertionPosition.hashCode ^ option.hashCode;
+  int get hashCode => sentence.hashCode ^ seekPosition.hashCode ^ wordRange.hashCode ^ insertionPosition.hashCode ^ option.hashCode;
 }
