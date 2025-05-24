@@ -87,7 +87,7 @@ class RubyListCursor extends TextPaneListCursor {
       sentenceID: sentenceID,
       seekPosition: seekPosition,
       wordRange: rubysWordRange,
-      insertionPosition: ruby.timetable.leftTiming(wordIndex).insertionPosition + 1,
+      insertionPosition: ruby.timetable.getLeftTiming(wordIndex).insertionPosition + 1,
       option: Option.former,
     );
   }
@@ -170,7 +170,7 @@ class RubyListCursor extends TextPaneListCursor {
       nextSentence = sentenceMap[sentenceID]!;
     }
 
-    WordIndex currentSeekWordIndex = nextSentence.getWordIndexFromSeekPosition(seekPosition);
+    WordIndex currentSeekWordIndex = nextSentence.getSeekPositionInfoBySeekPosition(seekPosition);
     InsertionPositionInfo nextSentencePositionInfo = nextSentence.getInsertionPositionInfo(rubyCursor.insertionPosition);
 
     if (nextSentencePositionInfo is InvalidInsertionPositionInfo || nextSentencePositionInfo is WordInsertionPositionInfo && nextSentencePositionInfo.wordIndex != currentSeekWordIndex) {

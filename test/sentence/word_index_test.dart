@@ -23,17 +23,17 @@ void main() {
 
     test('Test the getWordIndexFromSeekPosition() function', () {
       WordIndex result;
-      result = testData1.getWordIndexFromSeekPosition(SeekPosition(1000));
+      result = testData1.getSeekPositionInfoBySeekPosition(SeekPosition(1000));
       expect(result, WordIndex.empty);
-      result = testData1.getWordIndexFromSeekPosition(SeekPosition(2500));
+      result = testData1.getSeekPositionInfoBySeekPosition(SeekPosition(2500));
       expect(result, WordIndex(0));
-      result = testData1.getWordIndexFromSeekPosition(SeekPosition(3500));
+      result = testData1.getSeekPositionInfoBySeekPosition(SeekPosition(3500));
       expect(result, WordIndex(1));
-      result = testData1.getWordIndexFromSeekPosition(SeekPosition(4500));
+      result = testData1.getSeekPositionInfoBySeekPosition(SeekPosition(4500));
       expect(result, WordIndex(2));
-      result = testData1.getWordIndexFromSeekPosition(SeekPosition(5500));
+      result = testData1.getSeekPositionInfoBySeekPosition(SeekPosition(5500));
       expect(result, WordIndex(3));
-      result = testData1.getWordIndexFromSeekPosition(SeekPosition(6500));
+      result = testData1.getSeekPositionInfoBySeekPosition(SeekPosition(6500));
       expect(result, WordIndex(4));
     });
   });

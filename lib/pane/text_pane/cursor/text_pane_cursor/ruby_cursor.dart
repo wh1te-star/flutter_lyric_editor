@@ -71,19 +71,21 @@ class RubyCursor extends TextPaneCursor {
       sentence: sentence,
       seekPosition: seekPosition,
       wordRange: wordRange,
-      insertionPosition: ruby.timetable.leftTiming(wordIndex).insertionPosition + 1,
+      insertionPosition: ruby.timetable.getLeftTiming(wordIndex).insertionPosition + 1,
       option: Option.former,
     );
   }
 
   @override
   TextPaneCursor moveLeftCursor() {
+    return this;
+    /*
     Timetable rubyTimetable = sentence.rubyMap[wordRange]!.timetable;
 
     InsertionPositionInfo insertionPositionInfo = rubyTimetable.getInsertionPositionInfo(insertionPosition);
     assert(insertionPositionInfo is! InvalidInsertionPositionInfo, "An unexpected state was occurred for the insertion position info.");
 
-    WordIndex highlightWordIndex = rubyTimetable.getWordIndexFromSeekPosition(seekPosition);
+    WordIndex highlightWordIndex = rubyTimetable.getSeekPositionInfoBySeekPosition(seekPosition);
     InsertionPosition nextInsertionPosition = InsertionPosition.empty;
     if (insertionPositionInfo is WordInsertionPositionInfo) {
       WordIndex wordIndex = insertionPositionInfo.wordIndex;
@@ -99,7 +101,7 @@ class RubyCursor extends TextPaneCursor {
         return copyWith(option: Option.former);
       }
 
-      TimingIndex rightTimingIndex = rubyTimetable.rightTimingIndex(highlightWordIndex);
+      TimingIndex rightTimingIndex = rubyTimetable.getRightTimingIndex(highlightWordIndex);
       TimingIndex timingIndex = insertionPositionInfo.timingIndex;
       if (timingIndex == rightTimingIndex) {
         nextInsertionPosition = insertionPosition - 1;
@@ -126,16 +128,19 @@ class RubyCursor extends TextPaneCursor {
     }
 
     return this;
+    */
   }
 
   @override
   TextPaneCursor moveRightCursor() {
+    return this;
+    /*
     Timetable rubyTimetable = sentence.rubyMap[wordRange]!.timetable;
 
     InsertionPositionInfo insertionPositionInfo = rubyTimetable.getInsertionPositionInfo(insertionPosition);
     assert(insertionPositionInfo is! InvalidInsertionPositionInfo, "An unexpected state was occurred for the insertion position info.");
 
-    WordIndex highlightWordIndex = rubyTimetable.getWordIndexFromSeekPosition(seekPosition);
+    WordIndex highlightWordIndex = rubyTimetable.getSeekPositionInfoBySeekPosition(seekPosition);
     InsertionPosition nextInsertionPosition = InsertionPosition.empty;
     if (insertionPositionInfo is WordInsertionPositionInfo) {
       WordIndex wordIndex = insertionPositionInfo.wordIndex;
@@ -151,7 +156,7 @@ class RubyCursor extends TextPaneCursor {
         return copyWith(option: Option.latter);
       }
 
-      TimingIndex leftTimingIndex = rubyTimetable.leftTimingIndex(highlightWordIndex);
+      TimingIndex leftTimingIndex = rubyTimetable.getLeftTimingIndex(highlightWordIndex);
       TimingIndex timingIndex = insertionPositionInfo.timingIndex;
       if (insertionPositionInfo.duplicate) timingIndex = timingIndex + 1;
       if (timingIndex == leftTimingIndex) {
@@ -176,6 +181,7 @@ class RubyCursor extends TextPaneCursor {
     }
 
     return this;
+    */
   }
 
   @override

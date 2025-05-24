@@ -9,6 +9,7 @@ import 'package:lyric_editor/position/insertion_position_info/word_insertion_pos
 import 'package:lyric_editor/position/insertion_position_info/timing_insertion_position_info.dart';
 import 'package:lyric_editor/position/option_enum.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position_info/seek_position_info.dart';
 import 'package:lyric_editor/position/sentence_side_enum.dart';
 import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/word_range.dart';
@@ -44,14 +45,13 @@ class Sentence {
   List<Timing> get timings => timetable.timingList.list;
   int get charCount => timetable.charCount;
   int get wordCount => timetable.wordCount;
-  WordIndex getWordIndexFromSeekPosition(SeekPosition seekPosition) => timetable.getWordIndexFromSeekPosition(seekPosition);
+  SeekPositionInfo getSeekPositionInfoBySeekPosition(SeekPosition seekPosition) => timetable.getSeekPositionInfoBySeekPosition(seekPosition);
   InsertionPositionInfo getInsertionPositionInfo(InsertionPosition insertionPosition) => timetable.getInsertionPositionInfo(insertionPosition);
-  double getWordProgress(SeekPosition seekPosition) => timetable.getWordProgress(seekPosition);
   WordList getWordList(WordRange wordRange) => timetable.getWordList(wordRange);
-  TimingIndex leftTimingIndex(WordIndex wordIndex) => timetable.leftTimingIndex(wordIndex);
-  TimingIndex rightTimingIndex(WordIndex wordIndex) => timetable.rightTimingIndex(wordIndex);
-  Timing leftTiming(WordIndex wordIndex) => timetable.leftTiming(wordIndex);
-  Timing rightTiming(WordIndex wordIndex) => timetable.rightTiming(wordIndex);
+  TimingIndex getLeftTimingIndex(WordIndex wordIndex) => timetable.getLeftTimingIndex(wordIndex);
+  TimingIndex getRightTimingIndex(WordIndex wordIndex) => timetable.getRightTimingIndex(wordIndex);
+  Timing getLeftTiming(WordIndex wordIndex) => timetable.getLeftTiming(wordIndex);
+  Timing getRightTiming(WordIndex wordIndex) => timetable.getRightTiming(wordIndex);
 
   MapEntry<WordRange, Ruby> getRubyWords(WordIndex index) {
     return rubyMap.map.entries.firstWhere(
@@ -182,8 +182,8 @@ class Sentence {
 
         case TimingInsertionPositionInfo():
           TimingIndex index = info.timingIndex;
-          TimingIndex startIndex = timetable.leftTimingIndex(key.startIndex);
-          TimingIndex endIndex = timetable.rightTimingIndex(key.endIndex);
+          TimingIndex startIndex = timetable.getLeftTimingIndex(key.startIndex);
+          TimingIndex endIndex = timetable.getRightTimingIndex(key.endIndex);
           if (index <= startIndex) {
             newKey.startIndex++;
             newKey.endIndex++;

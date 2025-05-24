@@ -1,16 +1,14 @@
 import 'package:lyric_editor/position/seek_position_info/seek_position_info.dart';
 import 'package:lyric_editor/position/sentence_side_enum.dart';
-import 'package:lyric_editor/position/word_index.dart';
-import 'package:lyric_editor/service/timing_service.dart';
 
-class WordSeekPositionInfo implements SeekPositionInfo {
+class InvalidSeekPositionInfo implements SeekPositionInfo {
   SentenceSide sentenceSide;
-  WordSeekPositionInfo(this.sentenceSide);
+  InvalidSeekPositionInfo(this.sentenceSide);
 
-  WordSeekPositionInfo copyWith({
+  InvalidSeekPositionInfo copyWith({
     SentenceSide? sentenceSide,
   }) {
-    return WordSeekPositionInfo(
+    return InvalidSeekPositionInfo(
       sentenceSide ?? this.sentenceSide,
     );
   }
@@ -25,7 +23,7 @@ class WordSeekPositionInfo implements SeekPositionInfo {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! WordSeekPositionInfo) {
+    if (other is! InvalidSeekPositionInfo) {
       return false;
     }
     return true;

@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/word/word_edit.dart';
 import 'package:lyric_editor/position/character_position.dart';
 import 'package:lyric_editor/position/insertion_position_info/insertion_position_info.dart';
@@ -15,6 +16,10 @@ import 'package:lyric_editor/position/insertion_position_info/word_insertion_pos
 import 'package:lyric_editor/position/insertion_position_info/timing_insertion_position_info.dart';
 import 'package:lyric_editor/position/option_enum.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position_info/invalid_seek_position_info.dart';
+import 'package:lyric_editor/position/seek_position_info/seek_position_info.dart';
+import 'package:lyric_editor/position/seek_position_info/timing_insertion_position_info.dart';
+import 'package:lyric_editor/position/seek_position_info/word_insertion_position_info.dart';
 import 'package:lyric_editor/position/sentence_side_enum.dart';
 import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/word_range.dart';
@@ -62,28 +67,28 @@ class Timetable {
     return words[wordIndex.index];
   }
 
-  TimingIndex leftTimingIndex(WordIndex wordIndex) {
+  TimingIndex getLeftTimingIndex(WordIndex wordIndex) {
     if (wordIndex.index < 0 && words.length < wordIndex.index) {
       return TimingIndex.empty;
     }
     return TimingIndex(wordIndex.index);
   }
 
-  TimingIndex rightTimingIndex(WordIndex wordIndex) {
+  TimingIndex getRightTimingIndex(WordIndex wordIndex) {
     if (wordIndex.index + 1 < 0 && words.length < wordIndex.index + 1) {
       return TimingIndex.empty;
     }
     return TimingIndex(wordIndex.index + 1);
   }
 
-  Timing leftTiming(WordIndex wordIndex) {
+  Timing getLeftTiming(WordIndex wordIndex) {
     if (wordIndex.index < 0 && words.length < wordIndex.index) {
       return Timing.empty;
     }
     return timings[wordIndex.index];
   }
 
-  Timing rightTiming(WordIndex wordIndex) {
+  Timing getRightTiming(WordIndex wordIndex) {
     if (wordIndex.index + 1 < 0 && words.length < wordIndex.index + 1) {
       return Timing.empty;
     }
@@ -199,37 +204,27 @@ class Timetable {
     );
   }
 
-  WordIndex getWordIndexFromSeekPosition(SeekPosition seekPosition) {
+  SeekPositionInfo getSeekPositionInfoBySeekPosition(SeekPosition seekPosition) {
     if (seekPosition < startTimestamp) {
-      return WordIndex.empty;
+      return InvalidSeekPositionInfo(SentenceSide.start);
     }
-    if (endTimestamp < seekPosition) {
-      return WordIndex.empty;
+
+    if (seekPosition == startTimestamp) {
+      return TimingSeekPositionInfo(TimingIndex(0));
     }
-    List<Word> words = wordList.list;
-    List<Timing> timings = timingList.list;
     for (int index = 0; index < words.length; index++) {
-      if (seekPosition.position < startTimestamp.position + timings[index + 1].seekPosition.position) {
-        return WordIndex(index);
+      WordIndex wordIndex = WordIndex(index);
+      Timing rightTiming = getRightTiming(wordIndex);
+      SeekPosition rightSeekPosition = SeekPosition(startTimestamp.position + rightTiming.seekPosition.position);
+      if (seekPosition < rightSeekPosition) {
+        return WordSeekPositionInfo(wordIndex);
+      }
+      if (seekPosition == rightSeekPosition) {
+        TimingIndex rightTimingIndex = getRightTimingIndex(wordIndex);
+        return TimingSeekPositionInfo(rightTimingIndex);
       }
     }
-    assert(false);
-    return WordIndex.empty;
-  }
-
-  double getWordProgress(SeekPosition seekPosition) {
-    WordIndex wordIndex = getWordIndexFromSeekPosition(seekPosition);
-    SeekPosition wordStartSeekPosition = SeekPosition(startTimestamp.position + leftTiming(wordIndex).seekPosition.position);
-    SeekPosition wordEndSeekPosition = SeekPosition(startTimestamp.position + rightTiming(wordIndex).seekPosition.position);
-    if (seekPosition < wordStartSeekPosition) {
-      return 0.0;
-    }
-    if (wordEndSeekPosition < seekPosition) {
-      return 1.0;
-    }
-    Duration partialProgress = Duration(milliseconds: seekPosition.position - wordStartSeekPosition.position);
-    Duration wordDuration = toWord(wordIndex).duration;
-    return partialProgress.inMilliseconds / wordDuration.inMilliseconds;
+    return InvalidSeekPositionInfo(SentenceSide.end);
   }
 
   InsertionPositionInfo getInsertionPositionInfo(InsertionPosition insertionPosition) {
@@ -264,7 +259,7 @@ class Timetable {
     }
 
     assert(false, "An unexpected state is occurred.");
-      return InvalidInsertionPositionInfo();
+    return InvalidInsertionPositionInfo();
   }
 
   Timetable manipulateTimetable(SeekPosition seekPosition, SentenceSide sentenceSide, bool holdLength) {

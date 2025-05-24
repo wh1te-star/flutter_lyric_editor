@@ -4,6 +4,12 @@ import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/timing/timing.dart';
 import 'package:lyric_editor/pane/video_pane/colored_text_painter.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position_info/invalid_seek_position_info.dart';
+import 'package:lyric_editor/position/seek_position_info/seek_position_info.dart';
+import 'package:lyric_editor/position/seek_position_info/timing_insertion_position_info.dart';
+import 'package:lyric_editor/position/seek_position_info/word_insertion_position_info.dart';
+import 'package:lyric_editor/position/sentence_side_enum.dart';
+import 'package:lyric_editor/position/timing_index.dart';
 import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/utility/utility_functions.dart';
 
@@ -20,7 +26,8 @@ class ColoredCaption extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Widget> coloredWords = [];
     for (int index = 0; index < sentence.words.length; index++) {
-      coloredWords.add(getColoredWord(sentence, seekPosition, color, index));
+      WordIndex wordIndex = WordIndex(index);
+      coloredWords.add(getColoredWord(sentence, seekPosition, color, wordIndex));
     }
     return Wrap(
       children: coloredWords,
@@ -31,10 +38,12 @@ class ColoredCaption extends StatelessWidget {
     Sentence sentence,
     SeekPosition seekPosition,
     Color color,
-    int index,
+    WordIndex wordIndex,
   ) {
-    Word word = sentence.words[index];
-    double progress = getProgress(sentence, index);
+    Word word = sentence.words[wordIndex.index];
+
+    SeekPositionInfo seekPositionInfo = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
+    double progress = getProgress(sentence, wordIndex, seekPositionInfo);
     return CustomPaint(
       painter: ColoredTextPainter(
         text: word.word,
@@ -49,24 +58,43 @@ class ColoredCaption extends StatelessWidget {
     );
   }
 
-  double getProgress(Sentence sentence, int index) {
-    WordIndex seekWordIndex = sentence.getWordIndexFromSeekPosition(seekPosition);
-    if (seekWordIndex.isEmpty) {
-      if (seekPosition <= sentence.startTimestamp) {
+  double getProgress(Sentence sentence, WordIndex wordIndex, SeekPositionInfo seekPositionInfo) {
+    if (seekPositionInfo is InvalidSeekPositionInfo) {
+      InvalidSeekPositionInfo info = seekPositionInfo;
+      if (info.sentenceSide == SentenceSide.start) {
         return 0.0;
-      }
-      if (sentence.endTimestamp <= seekPosition) {
+      } else {
         return 1.0;
       }
-      assert(false);
     }
 
-    if (index == seekWordIndex.index) {
-      return sentence.getWordProgress(seekPosition);
+    if (seekPositionInfo is TimingSeekPositionInfo) {
+      TimingSeekPositionInfo info = seekPositionInfo;
+      TimingIndex timingIndex = info.timingIndex;
+      if (wordIndex.index < timingIndex.index) {
+        return 1.0;
+      } else {
+        return 0.0;
+      }
     }
-    if (index < seekWordIndex.index) {
-      return 1.0;
+
+    if (seekPositionInfo is WordSeekPositionInfo) {
+      WordSeekPositionInfo info = seekPositionInfo;
+      WordIndex seekingWordIndex = info.wordIndex;
+      if (wordIndex < seekingWordIndex) {
+        return 1.0;
+      }
+      if (wordIndex > seekingWordIndex) {
+        return 0.0;
+      }
+
+      SeekPosition leftSeekPosition = sentence.getLeftTiming(wordIndex).seekPosition;
+      SeekPosition rightSeekPosition = sentence.getRightTiming(wordIndex).seekPosition;
+      double numerator = seekPosition.position.toDouble() - leftSeekPosition.position.toDouble();
+      double denominator = rightSeekPosition.position.toDouble() - leftSeekPosition.position.toDouble();
+      return numerator / denominator;
     }
-    return 0.0;
+    assert(false, "An unexpected type of the seek position info type.");
+    return -1.0;
   }
 }

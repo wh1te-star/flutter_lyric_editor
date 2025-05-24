@@ -77,8 +77,8 @@ class BaseListCursor extends TextPaneListCursor {
       );
     }
     Sentence sentence = sentenceMap.getSentenceByID(sentenceID);
-    WordIndex wordIndex = sentence.getWordIndexFromSeekPosition(seekPosition);
-    InsertionPosition insertionPosition = sentence.timetable.leftTiming(wordIndex).insertionPosition + 1;
+    WordIndex wordIndex = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
+    InsertionPosition insertionPosition = sentence.timetable.getLeftTiming(wordIndex).insertionPosition + 1;
     return BaseListCursor(
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
@@ -187,7 +187,7 @@ class BaseListCursor extends TextPaneListCursor {
       sentenceID = sentenceMap.keys.first;
     }
     Sentence sentence = sentenceMap[sentenceID]!;
-    WordIndex currentSeekWordIndex = sentence.getWordIndexFromSeekPosition(seekPosition);
+    WordIndex currentSeekWordIndex = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
     InsertionPositionInfo nextSentencePositionInfo = sentence.getInsertionPositionInfo(baseCursor.insertionPosition);
     if (nextSentencePositionInfo is InvalidInsertionPositionInfo || nextSentencePositionInfo is WordInsertionPositionInfo && nextSentencePositionInfo.wordIndex != currentSeekWordIndex) {
       return BaseListCursor.defaultCursor(
