@@ -1,9 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/lyric_data/timing/timing.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/word_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
+import 'package:lyric_editor/position/caret_position.dart';
 import 'package:lyric_editor/position/caret_position.dart';
 import 'package:lyric_editor/position/caret_position_info/caret_position_info.dart';
 import 'package:lyric_editor/position/caret_position_info/invalid_caret_position_info.dart';
@@ -73,28 +75,44 @@ class BaseCursor extends TextPaneCursor {
     );
   }
 
-  @override
-  TextPaneCursor moveLeftCursor() {
+  CaretPosition decreasedPosition(CaretPosition caretPosition) {
+    CaretPosition nextCaretPosition = caretPosition - 1;
+    if (nextCaretPosition <= CaretPosition(0)) {
+      return CaretPosition.empty;
+    }
+    return nextCaretPosition;
+  }
+
+  CaretPosition prevTimingPosition(TimingIndex timingIndex) {
+    if (timingIndex - 1 <= TimingIndex(0)) {
+      return CaretPosition.empty;
+    }
+    Timing previousTiming = sentence.timings[timingIndex.index - 1];
+    return previousTiming.caretPosition;
+  }
+
+  CaretPosition getLeftPosition() {
     CaretPositionInfo caretPositionInfo = sentence.getCaretPositionInfo(caretPosition);
     assert(caretPositionInfo is! InvalidCaretPositionInfo, "An unexpected state was occurred for the caret position info.");
 
     SeekPositionInfo seekPositionInfo = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
     assert(seekPositionInfo is! InvalidSeekPositionInfo, "An unexpected state was occurred for the seek position info.");
 
-    CaretPosition nextCaretPosition = CaretPosition.empty;
     if (caretPositionInfo is WordCaretPositionInfo && seekPositionInfo is WordSeekPositionInfo) {
       WordIndex incaretWordIndex = caretPositionInfo.wordIndex;
       WordIndex seekingWordIndex = seekPositionInfo.wordIndex;
       assert(incaretWordIndex == seekingWordIndex, "An unexpected state was occurred.");
-      nextCaretPosition = caretPosition - 1;
-      if (nextCaretPosition <= CaretPosition(0)) {
-        return this;
-      }
+
+      return decreasedPosition(caretPosition);
     }
 
-    if (caretPositionInfo is TimingCaretPositionInfo) {
+    if (caretPositionInfo is TimingCaretPositionInfo && seekPositionInfo is TimingSeekPositionInfo) {
+      TimingIndex incaretTimingIndex = caretPositionInfo.timingIndex;
+      return prevTimingPosition(incaretTimingIndex);
+    }
+    {
       if (option == Option.latter) {
-        return copyWith(option: Option.former);
+        return caretPosition;
       }
 
       TimingIndex rightTimingIndex = sentence.timetable.getRightTimingIndex(seekPositionInfo);
@@ -102,28 +120,41 @@ class BaseCursor extends TextPaneCursor {
       if (incaretTimingIndex == rightTimingIndex) {
         nextCaretPosition = caretPosition - 1;
       } else {
-        if (incaretTimingIndex.index - 1 <= 0) {
-          return this;
-        }
-        Timing previousTiming = sentence.timings[incaretTimingIndex.index - 1];
-        nextCaretPosition = previousTiming.caretPosition;
+        ////
       }
     }
 
-    CaretPositionInfo nextCaretPositionInfo = sentence.getCaretPositionInfo(nextCaretPosition);
+    assert(false);
+    return CaretPosition.empty;
+  }
+
+  TextPaneCursor moveToCaretPositionFromRight(CaretPosition targetPosition) {
+    CaretPositionInfo nextCaretPositionInfo = sentence.getCaretPositionInfo(targetPosition);
     assert(nextCaretPositionInfo is! InvalidCaretPositionInfo, "An unexpected state was occurred for the caret position info.");
     if (nextCaretPositionInfo is WordCaretPositionInfo) {
-      return copyWith(caretPosition: nextCaretPosition, option: Option.none);
+      return copyWith(caretPosition: targetPosition, option: Option.none);
     }
     if (nextCaretPositionInfo is TimingCaretPositionInfo) {
       Option nextOption = Option.former;
       if (nextCaretPositionInfo.duplicate) {
         nextOption = Option.latter;
       }
-      return copyWith(caretPosition: nextCaretPosition, option: nextOption);
+      return copyWith(caretPosition: targetPosition, option: nextOption);
     }
 
     return this;
+  }
+
+  @override
+  TextPaneCursor moveLeftCursor() {
+    CaretPosition nextCaretPosition = getLeftPosition();
+    if (nextCaretPosition.isEmpty) {
+      return this;
+    }
+    if (nextCaretPosition == caretPosition) {
+      return copyWith(option: Option.former);
+    }
+    return moveToCaretPositionFromRight(nextCaretPosition);
   }
 
   @override

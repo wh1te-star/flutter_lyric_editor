@@ -31,7 +31,7 @@ class Ruby {
   SeekPosition get endTimestamp => timetable.endTimestamp;
   List<Word> get words => timetable.wordList.list;
   List<Timing> get timings => timetable.timingList.list;
-  SeekPositionInfo getWordIndexFromSeekPosition(SeekPosition seekPosition) => timetable.getSeekPositionInfoBySeekPosition(seekPosition);
+  SeekPositionInfo getSeekPositionInfoBySeekPosition(SeekPosition seekPosition) => timetable.getSeekPositionInfoBySeekPosition(seekPosition);
   CaretPositionInfo getCaretPositionInfo(CaretPosition caretPosition) => timetable.getCaretPositionInfo(caretPosition);
   WordList getWordList(WordRange wordRange) => timetable.getWordList(wordRange);
 

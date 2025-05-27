@@ -80,7 +80,7 @@ class RubyListCursor extends TextPaneListCursor {
     Sentence sentence = sentenceMap.getSentenceByID(sentenceID);
     WordRange rubysWordRange = sentence.getRubysWordRangeFromSeekPosition(seekPosition);
     Ruby ruby = sentence.rubyMap[rubysWordRange]!;
-    WordIndex wordIndex = ruby.getWordIndexFromSeekPosition(seekPosition);
+    WordIndex wordIndex = ruby.getSeekPositionInfoBySeekPosition(seekPosition);
 
     return RubyListCursor(
       sentenceMap: sentenceMap,

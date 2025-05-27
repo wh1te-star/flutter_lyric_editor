@@ -15,6 +15,10 @@ import 'package:lyric_editor/position/caret_position_info/timing_caret_position_
 import 'package:lyric_editor/position/caret_position_info/word_caret_position_info.dart';
 import 'package:lyric_editor/position/option_enum.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position_info/invalid_seek_position_info.dart';
+import 'package:lyric_editor/position/seek_position_info/seek_position_info.dart';
+import 'package:lyric_editor/position/seek_position_info/timing_seek_position_info.dart';
+import 'package:lyric_editor/position/seek_position_info/word_seek_position_info.dart';
 import 'package:lyric_editor/position/timing_index.dart';
 import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/word_range.dart';
@@ -63,21 +67,37 @@ class RubyCursor extends TextPaneCursor {
     required Sentence sentence,
     required SeekPosition seekPosition,
   }) {
+
     WordRange wordRange = sentence.getRubysWordRangeFromSeekPosition(seekPosition);
     Ruby ruby = sentence.rubyMap[wordRange]!;
-    WordIndex wordIndex = ruby.getWordIndexFromSeekPosition(seekPosition);
+    SeekPositionInfo seekPositionInfo = ruby.getSeekPositionInfoBySeekPosition(seekPosition);
+    if (seekPositionInfo is InvalidSeekPositionInfo) {
+      return empty;
+    }
+
+    CaretPosition caretPosition = CaretPosition.empty;
+    if (seekPositionInfo is TimingSeekPositionInfo) {
+      caretPosition = sentence.timings[seekPositionInfo.timingIndex.index].caretPosition;
+    }
+    if (seekPositionInfo is WordSeekPositionInfo) {
+      caretPosition = sentence.timetable.getLeftTiming(seekPositionInfo.wordIndex).caretPosition + 1;
+    }
+    assert(caretPosition.isNotEmpty);
 
     return RubyCursor(
       sentence: sentence,
       seekPosition: seekPosition,
       wordRange: wordRange,
-      caretPosition: ruby.timetable.getLeftTiming(wordIndex).caretPosition + 1,
+      caretPosition: caretPosition,
       option: Option.former,
     );
   }
 
   @override
   TextPaneCursor moveLeftCursor() {
+    return this;
+
+    /*
     Timetable rubyTimetable = sentence.rubyMap[wordRange]!.timetable;
 
     CaretPositionInfo caretPositionInfo = rubyTimetable.getCaretPositionInfo(caretPosition);
@@ -126,10 +146,14 @@ class RubyCursor extends TextPaneCursor {
     }
 
     return this;
+    */
   }
 
   @override
   TextPaneCursor moveRightCursor() {
+    return this;
+
+    /*
     Timetable rubyTimetable = sentence.rubyMap[wordRange]!.timetable;
 
     CaretPositionInfo caretPositionInfo = rubyTimetable.getCaretPositionInfo(caretPosition);
@@ -176,6 +200,7 @@ class RubyCursor extends TextPaneCursor {
     }
 
     return this;
+    */
   }
 
   @override
