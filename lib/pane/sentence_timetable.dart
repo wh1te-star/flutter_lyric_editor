@@ -6,6 +6,8 @@ import 'package:lyric_editor/lyric_data/ruby/ruby.dart';
 import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
 import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
+import 'package:lyric_editor/position/timing_index.dart';
+import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/lyric_data/timing/timing.dart';
 import 'package:lyric_editor/pane/timeline_pane/rectangle_painter.dart';
@@ -201,7 +203,8 @@ class _SentenceTimelineState extends ConsumerState<SentenceTimeline> {
 
     List<Widget> indicatorWidgets = [];
     for (int index = 0; index < sentence.timings.length; index++) {
-      Timing timing = sentence.timings[index];
+      TimingIndex timingIndex = TimingIndex(index);
+      Timing timing = sentence.timings[timingIndex];
       Widget indicator = Positioned(
         left: duration2Length(sentence.startTimestamp.position + timing.seekPosition.position),
         top: trackHeight * sentenceTracks[sentenceID]! + topMargin + timingIndicatorHeight + rubyItemHeight + rubySentenceMargin + sentenceItemHeight,

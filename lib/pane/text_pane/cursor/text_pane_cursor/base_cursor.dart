@@ -60,7 +60,7 @@ class BaseCursor extends TextPaneCursor {
 
     CaretPosition caretPosition = CaretPosition.empty;
     if (seekPositionInfo is TimingSeekPositionInfo) {
-      caretPosition = sentence.timings[seekPositionInfo.timingIndex.index].caretPosition;
+      caretPosition = sentence.timings[seekPositionInfo.timingIndex].caretPosition;
     }
     if (seekPositionInfo is WordSeekPositionInfo) {
       caretPosition = sentence.timetable.getLeftTiming(seekPositionInfo.wordIndex).caretPosition + 1;
@@ -75,6 +75,38 @@ class BaseCursor extends TextPaneCursor {
     );
   }
 
+  @override
+  TextPaneCursor moveLeftCursor() {
+    CaretPosition nextCaretPosition = getLeftPosition();
+    if (nextCaretPosition.isEmpty) {
+      return this;
+    }
+    if (nextCaretPosition == caretPosition) {
+      return copyWith(option: Option.former);
+    }
+    return moveToCaretPositionFromRight(nextCaretPosition);
+  }
+
+  @override
+  TextPaneCursor moveRightCursor() {
+    CaretPosition nextCaretPosition = getRightPosition();
+    if (nextCaretPosition.isEmpty) {
+      return this;
+    }
+    if (nextCaretPosition == caretPosition) {
+      return copyWith(option: Option.latter);
+    }
+    return moveToCaretPositionFromLeft(nextCaretPosition);
+  }
+
+  CaretPosition increasedPosition(CaretPosition caretPosition) {
+    CaretPosition nextCaretPosition = caretPosition + 1;
+    if (nextCaretPosition >= CaretPosition(sentence.sentence.length)) {
+      return CaretPosition.empty;
+    }
+    return nextCaretPosition;
+  }
+
   CaretPosition decreasedPosition(CaretPosition caretPosition) {
     CaretPosition nextCaretPosition = caretPosition - 1;
     if (nextCaretPosition <= CaretPosition(0)) {
@@ -83,20 +115,27 @@ class BaseCursor extends TextPaneCursor {
     return nextCaretPosition;
   }
 
-  CaretPosition prevTimingPosition(TimingIndex timingIndex) {
-    if (timingIndex - 1 <= TimingIndex(0)) {
+  CaretPosition nextTimingPosition(TimingIndex timingIndex) {
+    TimingIndex nextTimingIndex = timingIndex + 1;
+    if (nextTimingIndex.index >= sentence.timings.length - 1) {
       return CaretPosition.empty;
     }
-    Timing previousTiming = sentence.timings[timingIndex.index - 1];
-    return previousTiming.caretPosition;
+    Timing nextTiming = sentence.timings[nextTimingIndex];
+    return nextTiming.caretPosition;
+  }
+
+  CaretPosition prevTimingPosition(TimingIndex timingIndex) {
+    TimingIndex prevTimingIndex = timingIndex - 1;
+    if (prevTimingIndex <= TimingIndex(0)) {
+      return CaretPosition.empty;
+    }
+    Timing prevTiming = sentence.timings[prevTimingIndex];
+    return prevTiming.caretPosition;
   }
 
   CaretPosition getLeftPosition() {
     CaretPositionInfo caretPositionInfo = sentence.getCaretPositionInfo(caretPosition);
-    assert(caretPositionInfo is! InvalidCaretPositionInfo, "An unexpected state was occurred for the caret position info.");
-
     SeekPositionInfo seekPositionInfo = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
-    assert(seekPositionInfo is! InvalidSeekPositionInfo, "An unexpected state was occurred for the seek position info.");
 
     if (caretPositionInfo is WordCaretPositionInfo && seekPositionInfo is WordSeekPositionInfo) {
       WordIndex incaretWordIndex = caretPositionInfo.wordIndex;
@@ -106,25 +145,27 @@ class BaseCursor extends TextPaneCursor {
       return decreasedPosition(caretPosition);
     }
 
-    if (caretPositionInfo is TimingCaretPositionInfo && seekPositionInfo is TimingSeekPositionInfo) {
-      TimingIndex incaretTimingIndex = caretPositionInfo.timingIndex;
-      return prevTimingPosition(incaretTimingIndex);
-    }
-    {
-      if (option == Option.latter) {
+    if (caretPositionInfo is TimingCaretPositionInfo) {
+      if (caretPositionInfo.duplicate && option == Option.latter) {
         return caretPosition;
       }
 
-      TimingIndex rightTimingIndex = sentence.timetable.getRightTimingIndex(seekPositionInfo);
       TimingIndex incaretTimingIndex = caretPositionInfo.timingIndex;
-      if (incaretTimingIndex == rightTimingIndex) {
-        nextCaretPosition = caretPosition - 1;
-      } else {
-        ////
+      if (seekPositionInfo is TimingSeekPositionInfo) {
+        return prevTimingPosition(incaretTimingIndex);
+      }
+
+      if (seekPositionInfo is WordSeekPositionInfo) {
+        WordIndex seekingWordIndex = seekPositionInfo.wordIndex;
+        TimingIndex rightTimingIndex = sentence.timetable.getRightTimingIndex(seekingWordIndex);
+        if (incaretTimingIndex == rightTimingIndex) {
+          return decreasedPosition(caretPosition);
+        }
+        return prevTimingPosition(incaretTimingIndex);
       }
     }
 
-    assert(false);
+    assert(false, "Invalid state: caretPositionInfo type is ${caretPositionInfo.runtimeType} and seekPositionInfo type is ${seekPositionInfo.runtimeType}");
     return CaretPosition.empty;
   }
 
@@ -145,61 +186,50 @@ class BaseCursor extends TextPaneCursor {
     return this;
   }
 
-  @override
-  TextPaneCursor moveLeftCursor() {
-    CaretPosition nextCaretPosition = getLeftPosition();
-    if (nextCaretPosition.isEmpty) {
-      return this;
-    }
-    if (nextCaretPosition == caretPosition) {
-      return copyWith(option: Option.former);
-    }
-    return moveToCaretPositionFromRight(nextCaretPosition);
-  }
-
-  @override
-  TextPaneCursor moveRightCursor() {
+  CaretPosition getRightPosition() {
     CaretPositionInfo caretPositionInfo = sentence.getCaretPositionInfo(caretPosition);
-    assert(caretPositionInfo is! InvalidCaretPositionInfo, "An unexpected state was occurred for the caret position info.");
+    SeekPositionInfo seekPositionInfo = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
 
-    WordIndex highlightWordIndex = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
-    CaretPosition nextCaretPosition = CaretPosition.empty;
-    if (caretPositionInfo is WordCaretPositionInfo) {
-      WordIndex wordIndex = caretPositionInfo.wordIndex;
-      assert(wordIndex == highlightWordIndex, "An unexpected state was occurred.");
-      nextCaretPosition = caretPosition + 1;
-      if (nextCaretPosition >= CaretPosition(sentence.sentence.length)) {
-        return this;
-      }
+    if (caretPositionInfo is WordCaretPositionInfo && seekPositionInfo is WordSeekPositionInfo) {
+      WordIndex incaretWordIndex = caretPositionInfo.wordIndex;
+      WordIndex seekingWordIndex = seekPositionInfo.wordIndex;
+      assert(incaretWordIndex == seekingWordIndex, "An unexpected state was occurred.");
+
+      return increasedPosition(caretPosition);
     }
 
     if (caretPositionInfo is TimingCaretPositionInfo) {
       if (caretPositionInfo.duplicate && option == Option.former) {
-        return copyWith(option: Option.latter);
+        return caretPosition;
       }
 
-      TimingIndex leftTimingIndex = sentence.timetable.getLeftTimingIndex(highlightWordIndex);
-      TimingIndex timingIndex = caretPositionInfo.timingIndex;
-      if (caretPositionInfo.duplicate) timingIndex = timingIndex + 1;
-      if (timingIndex == leftTimingIndex) {
-        nextCaretPosition = caretPosition + 1;
-      } else {
-        TimingIndex nextTimingIndex = timingIndex + 1;
-        if (nextTimingIndex.index >= sentence.timings.length - 1) {
-          return this;
+      TimingIndex incaretTimingIndex = caretPositionInfo.timingIndex;
+      if (seekPositionInfo is TimingSeekPositionInfo) {
+        return nextTimingPosition(incaretTimingIndex);
+      }
+
+      if (seekPositionInfo is WordSeekPositionInfo) {
+        TimingIndex leftTimingIndex = sentence.getLeftTimingIndex(seekPositionInfo.wordIndex);
+        if (incaretTimingIndex == leftTimingIndex) {
+          return increasedPosition(caretPosition);
+        } else {
+          return nextTimingPosition(incaretTimingIndex);
         }
-        Timing nextTiming = sentence.timings[nextTimingIndex.index];
-        nextCaretPosition = nextTiming.caretPosition;
       }
     }
 
-    CaretPositionInfo nextCaretPositionInfo = sentence.getCaretPositionInfo(nextCaretPosition);
+    assert(false, "Invalid state: caretPositionInfo type is ${caretPositionInfo.runtimeType} and seekPositionInfo type is ${seekPositionInfo.runtimeType}");
+    return CaretPosition.empty;
+  }
+
+  TextPaneCursor moveToCaretPositionFromLeft(CaretPosition targetPosition) {
+    CaretPositionInfo nextCaretPositionInfo = sentence.getCaretPositionInfo(targetPosition);
     assert(nextCaretPositionInfo is! InvalidCaretPositionInfo, "An unexpected state was occurred for the caret position info.");
     if (nextCaretPositionInfo is WordCaretPositionInfo) {
-      return copyWith(caretPosition: nextCaretPosition, option: Option.none);
+      return copyWith(caretPosition: targetPosition, option: Option.none);
     }
     if (nextCaretPositionInfo is TimingCaretPositionInfo) {
-      return copyWith(caretPosition: nextCaretPosition, option: Option.former);
+      return copyWith(caretPosition: targetPosition, option: Option.former);
     }
 
     return this;
@@ -236,7 +266,8 @@ class BaseCursor extends TextPaneCursor {
     List<BaseCursor?> separatedCursors = List.filled(wordList.length, null);
     BaseCursor shiftedCursor = copyWith();
     for (int index = 0; index < wordList.length; index++) {
-      Word word = wordList[index];
+      WordIndex wordIndex = WordIndex(index);
+      Word word = wordList[wordIndex];
       BaseCursor? nextCursor = shiftedCursor.shiftLeftByWord(word);
       if (nextCursor == null) {
         separatedCursors[index] = shiftedCursor;

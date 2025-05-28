@@ -14,6 +14,8 @@ import 'package:lyric_editor/position/caret_position_info/invalid_caret_position
 import 'package:lyric_editor/position/caret_position_info/word_caret_position_info.dart';
 import 'package:lyric_editor/position/option_enum.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position_info/seek_position_info.dart';
+import 'package:lyric_editor/position/seek_position_info/word_seek_position_info.dart';
 import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/service/timing_service.dart';
@@ -77,17 +79,24 @@ class RubyListCursor extends TextPaneListCursor {
     required SentenceID sentenceID,
     required SeekPosition seekPosition,
   }) {
+    if (sentenceMap.isEmpty) {
+      return RubyListCursor(
+        sentenceMap: SentenceMap.empty,
+        sentenceID: SentenceID.empty,
+        seekPosition: SeekPosition.empty,
+        wordRange: WordRange.empty,
+        caretPosition: CaretPosition.empty,
+        option: Option.former,
+      );
+    }
     Sentence sentence = sentenceMap.getSentenceByID(sentenceID);
-    WordRange rubysWordRange = sentence.getRubysWordRangeFromSeekPosition(seekPosition);
-    Ruby ruby = sentence.rubyMap[rubysWordRange]!;
-    WordIndex wordIndex = ruby.getSeekPositionInfoBySeekPosition(seekPosition);
-
+    RubyCursor defaultCursor = RubyCursor.defaultCursor(sentence: sentence, seekPosition: seekPosition);
     return RubyListCursor(
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
       seekPosition: seekPosition,
-      wordRange: rubysWordRange,
-      caretPosition: ruby.timetable.getLeftTiming(wordIndex).caretPosition + 1,
+      wordRange: defaultCursor.wordRange,
+      caretPosition: defaultCursor.caretPosition,
       option: Option.former,
     );
   }
@@ -163,25 +172,32 @@ class RubyListCursor extends TextPaneListCursor {
       );
     }
 
-    SentenceID nextSentenceID = sentenceMap.keys.first;
-    Sentence nextSentence = sentenceMap.values.first;
-    if (sentenceMap.containsKey(sentenceID)) {
-      nextSentenceID = sentenceID;
-      nextSentence = sentenceMap[sentenceID]!;
+    if (!sentenceMap.containsKey(sentenceID)) {
+      sentenceID = sentenceMap.keys.first;
+    }
+    Sentence sentence = sentenceMap[sentenceID]!;
+    CaretPositionInfo caretPositionInfo = sentence.getCaretPositionInfo(rubyCursor.caretPosition);
+    SeekPositionInfo seekPositionInfo = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
+    if (caretPositionInfo is WordCaretPositionInfo && seekPositionInfo is WordSeekPositionInfo) {
+      WordIndex incaretWordIndex = caretPositionInfo.wordIndex;
+      WordIndex seekingWordIndex = seekPositionInfo.wordIndex;
+      if (incaretWordIndex == seekingWordIndex) {
+        return BaseListCursor.defaultCursor(
+          sentenceMap: sentenceMap,
+          sentenceID: sentenceID,
+          seekPosition: seekPosition,
+        );
+      }
     }
 
-    WordIndex currentSeekWordIndex = nextSentence.getSeekPositionInfoBySeekPosition(seekPosition);
-    CaretPositionInfo nextSentencePositionInfo = nextSentence.getCaretPositionInfo(rubyCursor.caretPosition);
-
-    if (nextSentencePositionInfo is InvalidCaretPositionInfo || nextSentencePositionInfo is WordCaretPositionInfo && nextSentencePositionInfo.wordIndex != currentSeekWordIndex) {
-      return RubyListCursor.defaultCursor(
-        sentenceMap: sentenceMap,
-        sentenceID: nextSentenceID,
-        seekPosition: seekPosition,
-      );
-    }
-
-    return this;
+    return RubyListCursor(
+      sentenceMap: sentenceMap,
+      sentenceID: sentenceID,
+      seekPosition: seekPosition,
+      wordRange: rubyCursor.wordRange,
+      caretPosition: rubyCursor.caretPosition,
+      option: rubyCursor.option,
+    );
   }
 
   RubyListCursor copyWith({

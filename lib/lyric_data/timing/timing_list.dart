@@ -4,6 +4,7 @@ import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/lyric_data/timing/timing.dart';
 import 'package:lyric_editor/position/caret_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/timing_index.dart';
 
 class TimingList {
   static const charPositionDuplicationAllowed = 2;
@@ -49,9 +50,9 @@ class TimingList {
   bool get isEmpty => list.isEmpty;
 
   int get length => list.length;
-  Timing operator [](int index) => list[index];
-  void operator []=(int index, Timing value) {
-    list[index] = value;
+  Timing operator [](TimingIndex index) => list[index.index];
+  void operator []=(TimingIndex index, Timing value) {
+    list[index.index] = value;
   }
 
   WordList toWordList(String sentence) {

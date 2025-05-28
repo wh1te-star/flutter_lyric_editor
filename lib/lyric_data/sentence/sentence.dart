@@ -1,6 +1,7 @@
 import 'package:lyric_editor/lyric_data/ruby/ruby.dart';
 import 'package:lyric_editor/lyric_data/ruby/ruby_map.dart';
 import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
+import 'package:lyric_editor/lyric_data/timing/timing_list.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/position/caret_position.dart';
 import 'package:lyric_editor/position/caret_position_info/caret_position_info.dart';
@@ -41,8 +42,8 @@ class Sentence {
   String get sentence => timetable.sentence;
   SeekPosition get startTimestamp => timetable.startTimestamp;
   SeekPosition get endTimestamp => timetable.endTimestamp;
-  List<Word> get words => timetable.wordList.list;
-  List<Timing> get timings => timetable.timingList.list;
+  WordList get words => timetable.wordList;
+  TimingList get timings => timetable.timingList;
   int get charCount => timetable.charCount;
   int get wordCount => timetable.wordCount;
   SeekPositionInfo getSeekPositionInfoBySeekPosition(SeekPosition seekPosition) => timetable.getSeekPositionInfoBySeekPosition(seekPosition);
@@ -106,9 +107,8 @@ class Sentence {
   }
 
   Sentence addRuby(WordRange wordRange, String rubyString) {
-    RubyMap rubyMap = this.rubyMap;
-    SeekPosition rubyStartTimestamp = SeekPosition(startTimestamp.position + timings[wordRange.startIndex.index].seekPosition.position);
-    SeekPosition rubyEndTimestamp = SeekPosition(startTimestamp.position + timings[wordRange.endIndex.index + 1].seekPosition.position);
+    SeekPosition rubyStartTimestamp = SeekPosition(startTimestamp.position + getLeftTiming(wordRange.startIndex).seekPosition.position);
+    SeekPosition rubyEndTimestamp = SeekPosition(startTimestamp.position + getRightTiming(wordRange.endIndex).seekPosition.position);
     Duration rubyDuration = Duration(milliseconds: rubyEndTimestamp.position - rubyStartTimestamp.position);
     Word word = Word(rubyString, rubyDuration);
     Timetable timetable = Timetable(

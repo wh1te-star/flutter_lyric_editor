@@ -40,7 +40,7 @@ class ColoredCaption extends StatelessWidget {
     Color color,
     WordIndex wordIndex,
   ) {
-    Word word = sentence.words[wordIndex.index];
+    Word word = sentence.words[wordIndex];
 
     SeekPositionInfo seekPositionInfo = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
     double progress = getProgress(sentence, wordIndex, seekPositionInfo);

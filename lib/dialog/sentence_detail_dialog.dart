@@ -6,6 +6,7 @@ import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
 import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
+import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 import 'package:lyric_editor/diff_function/char_diff.dart';
 import 'package:lyric_editor/diff_function/word_diff.dart';
@@ -118,8 +119,9 @@ class __SentenceDetailDialogState extends ConsumerState<_SentenceDetailDialog> {
       wordWiseVocalistCheckValues[vocalistID] = List.filled(sentence.words.length, true);
     }
 
-    for (int i = 0; i < sentence.words.length; i++) {
-      Word word = sentence.words[i];
+    for (int index = 0; index < sentence.words.length; index++) {
+      WordIndex wordIndex = WordIndex(index);
+      Word word = sentence.words[wordIndex];
       wordTexts.add(word.word);
 
       List<Widget> wordWiseVocalistCheckboxes = [];
@@ -130,10 +132,10 @@ class __SentenceDetailDialogState extends ConsumerState<_SentenceDetailDialog> {
         wordWiseVocalistCheckboxes.add(StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return Checkbox(
-              value: wordWiseVocalistCheckValues[vocalistID]![i],
+              value: wordWiseVocalistCheckValues[vocalistID]![index],
               onChanged: (bool? value) {
                 setState(() {
-                  wordWiseVocalistCheckValues[vocalistID]![i] = value ?? false;
+                  wordWiseVocalistCheckValues[vocalistID]![index] = value ?? false;
                 });
               },
               activeColor: Color(vocalist.color),

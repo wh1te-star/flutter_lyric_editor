@@ -67,7 +67,7 @@ class RubyCursor extends TextPaneCursor {
     required Sentence sentence,
     required SeekPosition seekPosition,
   }) {
-
+/*
     WordRange wordRange = sentence.getRubysWordRangeFromSeekPosition(seekPosition);
     Ruby ruby = sentence.rubyMap[wordRange]!;
     SeekPositionInfo seekPositionInfo = ruby.getSeekPositionInfoBySeekPosition(seekPosition);
@@ -89,6 +89,14 @@ class RubyCursor extends TextPaneCursor {
       seekPosition: seekPosition,
       wordRange: wordRange,
       caretPosition: caretPosition,
+      option: Option.former,
+    );
+    */
+    return RubyCursor(
+      sentence: sentence,
+      seekPosition: seekPosition,
+      wordRange: WordRange.empty,
+      caretPosition: CaretPosition.empty,
       option: Option.former,
     );
   }
@@ -222,7 +230,8 @@ class RubyCursor extends TextPaneCursor {
     List<RubyCursor?> separatedCursors = List.filled(wordList.length, null);
     RubyCursor shiftedCursor = copyWith();
     for (int index = 0; index < wordList.length; index++) {
-      Word word = wordList[index];
+      WordIndex wordIndex = WordIndex(index);
+      Word word = wordList[wordIndex];
       RubyCursor? nextCursor = shiftedCursor.shiftLeftByWord(word);
       if (nextCursor == null) {
         separatedCursors[index] = shiftedCursor;

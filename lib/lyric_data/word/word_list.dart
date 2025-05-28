@@ -4,6 +4,7 @@ import 'package:lyric_editor/lyric_data/timing/timing.dart';
 import 'package:lyric_editor/lyric_data/timing/timing_list.dart';
 import 'package:lyric_editor/position/caret_position.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/word_index.dart';
 
 class WordList {
   final List<Word> _list;
@@ -18,9 +19,9 @@ class WordList {
   bool get isEmpty => list.isEmpty;
 
   int get length => list.length;
-  Word operator [](int index) => list[index];
-  void operator []=(int index, Word value) {
-    list[index] = value;
+  Word operator [](WordIndex index) => list[index.index];
+  void operator []=(WordIndex index, Word value) {
+    list[index.index] = value;
   }
 
   String get sentence {

@@ -38,7 +38,7 @@ class WordCursor extends TextPaneCursor {
 
   @override
   WordCursor defaultCursor() {
-    WordIndex wordIndex = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
+    WordIndex wordIndex = WordIndex(0);
     return WordCursor(
       sentence: sentence,
       seekPosition: seekPosition,

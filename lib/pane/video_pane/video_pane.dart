@@ -152,9 +152,10 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
     double sumPosition = 0;
     int index = 0;
     for (index = 0; index < startIndex; index++) {
-      sumPosition += getSizeFromTextStyle(sentence.words[index].word, const TextStyle(fontSize: 40)).width;
+      WordIndex wordIndex = WordIndex(index);
+      sumPosition += getSizeFromTextStyle(sentence.words[wordIndex].word, const TextStyle(fontSize: 40)).width;
     }
-    sumPosition += getSizeFromTextStyle(sentence.words[index].word, const TextStyle(fontSize: 40)).width / 2;
+    sumPosition += getSizeFromTextStyle(sentence.words[wordIndex].word, const TextStyle(fontSize: 40)).width / 2;
     return sumPosition - getSizeFromTextStyle(sentence.sentence, const TextStyle(fontSize: 40)).width / 2;
   }
 

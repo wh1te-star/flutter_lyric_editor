@@ -12,6 +12,8 @@ import 'package:lyric_editor/position/caret_position_info/invalid_caret_position
 import 'package:lyric_editor/position/caret_position_info/word_caret_position_info.dart';
 import 'package:lyric_editor/position/option_enum.dart';
 import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position_info/seek_position_info.dart';
+import 'package:lyric_editor/position/seek_position_info/word_seek_position_info.dart';
 import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/service/timing_service.dart';
@@ -77,13 +79,12 @@ class BaseListCursor extends TextPaneListCursor {
       );
     }
     Sentence sentence = sentenceMap.getSentenceByID(sentenceID);
-    WordIndex wordIndex = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
-    CaretPosition caretPosition = sentence.timetable.getLeftTiming(wordIndex).caretPosition + 1;
+    BaseCursor defaultCursor = BaseCursor.defaultCursor(sentence: sentence, seekPosition: seekPosition);
     return BaseListCursor(
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
       seekPosition: seekPosition,
-      caretPosition: caretPosition,
+      caretPosition: defaultCursor.caretPosition,
       option: Option.former,
     );
   }
@@ -187,14 +188,18 @@ class BaseListCursor extends TextPaneListCursor {
       sentenceID = sentenceMap.keys.first;
     }
     Sentence sentence = sentenceMap[sentenceID]!;
-    WordIndex currentSeekWordIndex = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
-    CaretPositionInfo nextSentencePositionInfo = sentence.getCaretPositionInfo(baseCursor.caretPosition);
-    if (nextSentencePositionInfo is InvalidCaretPositionInfo || nextSentencePositionInfo is WordCaretPositionInfo && nextSentencePositionInfo.wordIndex != currentSeekWordIndex) {
-      return BaseListCursor.defaultCursor(
-        sentenceMap: sentenceMap,
-        sentenceID: sentenceID,
-        seekPosition: seekPosition,
-      );
+    CaretPositionInfo caretPositionInfo = sentence.getCaretPositionInfo(baseCursor.caretPosition);
+    SeekPositionInfo seekPositionInfo = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
+    if (caretPositionInfo is WordCaretPositionInfo && seekPositionInfo is WordSeekPositionInfo) {
+      WordIndex incaretWordIndex = caretPositionInfo.wordIndex;
+      WordIndex seekingWordIndex = seekPositionInfo.wordIndex;
+      if (incaretWordIndex == seekingWordIndex) {
+        return BaseListCursor.defaultCursor(
+          sentenceMap: sentenceMap,
+          sentenceID: sentenceID,
+          seekPosition: seekPosition,
+        );
+      }
     }
 
     return BaseListCursor(
