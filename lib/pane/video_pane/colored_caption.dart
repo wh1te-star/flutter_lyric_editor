@@ -88,8 +88,8 @@ class ColoredCaption extends StatelessWidget {
         return 0.0;
       }
 
-      SeekPosition leftSeekPosition = sentence.getLeftTiming(wordIndex).seekPosition;
-      SeekPosition rightSeekPosition = sentence.getRightTiming(wordIndex).seekPosition;
+      SeekPosition leftSeekPosition = SeekPosition(sentence.startTimestamp.position + sentence.getLeftTiming(wordIndex).seekPosition.position);
+      SeekPosition rightSeekPosition = SeekPosition(sentence.startTimestamp.position + sentence.getRightTiming(wordIndex).seekPosition.position);
       double numerator = seekPosition.position.toDouble() - leftSeekPosition.position.toDouble();
       double denominator = rightSeekPosition.position.toDouble() - leftSeekPosition.position.toDouble();
       return numerator / denominator;
