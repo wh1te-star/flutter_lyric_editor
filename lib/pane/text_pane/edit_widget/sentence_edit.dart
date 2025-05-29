@@ -29,8 +29,8 @@ class SentenceEdit extends StatelessWidget {
     List<WordRange> wordRangeList = rubyWordRangeList.map((Tuple2<WordRange, Ruby?> entry) {
       return entry.item1;
     }).toList();
-    List<TextPaneCursor?> cursorList = List.filled(wordRangeList.length, null);
-    cursorList = textPaneListCursor!.textPaneCursor.getWordRangeDividedCursors(sentence.timetable, wordRangeList);
+    List<TextPaneCursor?> baseCursorList = List.filled(wordRangeList.length, null);
+    baseCursorList = textPaneListCursor!.textPaneCursor.getWordRangeDividedCursors(sentence.timetable, wordRangeList);
 
     for (int index = 0; index < rubyWordRangeList.length; index++) {
       WordRange wordRange = rubyWordRangeList[index].item1;
@@ -39,25 +39,25 @@ class SentenceEdit extends StatelessWidget {
       WordList? baseSubList = sentence.getWordList(wordRange);
       WordList? rubySubList = ruby?.timetable.wordList;
 
-      TextPaneCursor? cursor = cursorList[index];
+      TextPaneCursor? cursor = baseCursorList[index];
       bool isTimingPosition = false;
       if (cursor is CaretCursor && cursor.caretPosition == CaretPosition(0)) {
         isTimingPosition = true;
       }
 
       CursorBlinker? timingCursorBlinker;
-      CursorBlinker? baseCursorBlinker;
+      CursorBlinker? wordListCursorBlinker;
       TextPaneCursor? baseCursor;
-      CursorBlinker? rubyCursorBlinker;
       TextPaneCursor? rubyCursor;
       if (isTimingPosition) {
         timingCursorBlinker = cursorBlinker;
-      } else if (textPaneListCursor is! RubyListCursor) {
-        baseCursorBlinker = cursorBlinker;
-        baseCursor = cursor;
       } else {
-        rubyCursorBlinker = cursorBlinker;
-        rubyCursor = cursor;
+        wordListCursorBlinker = cursorBlinker;
+        if (textPaneListCursor is RubyListCursor) {
+          rubyCursor = textPaneListCursor!.textPaneCursor;
+        } else {
+          baseCursor = cursor;
+        }
       }
 
       if (index > 0) {
@@ -78,12 +78,12 @@ class SentenceEdit extends StatelessWidget {
       Widget baseEdit = getSentenceEdit(
         baseSubList,
         baseCursor,
-        baseCursorBlinker,
+        wordListCursorBlinker,
       );
       Widget rubyEdit = getRubyEdit(
         rubySubList,
         rubyCursor,
-        rubyCursorBlinker,
+        wordListCursorBlinker,
       );
       rubyExistenceEdits.add(Column(children: [
         rubyEdit,
@@ -102,7 +102,7 @@ class SentenceEdit extends StatelessWidget {
     TextPaneCursor? textPaneCursor,
     CursorBlinker? cursorBlinker,
   ) {
-    if (textPaneCursor is! CaretCursor && textPaneCursor is! WordCursor) {
+    if (textPaneListCursor is RubyListCursor) {
       textPaneCursor = null;
       cursorBlinker = null;
     }
