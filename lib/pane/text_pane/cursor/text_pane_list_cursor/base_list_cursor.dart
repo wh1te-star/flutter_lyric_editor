@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
@@ -80,6 +81,7 @@ class BaseListCursor extends TextPaneListCursor {
     }
     Sentence sentence = sentenceMap.getSentenceByID(sentenceID);
     BaseCursor defaultCursor = BaseCursor.defaultCursor(sentence: sentence, seekPosition: seekPosition);
+
     return BaseListCursor(
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
@@ -194,20 +196,20 @@ class BaseListCursor extends TextPaneListCursor {
       WordIndex incaretWordIndex = caretPositionInfo.wordIndex;
       WordIndex seekingWordIndex = seekPositionInfo.wordIndex;
       if (incaretWordIndex == seekingWordIndex) {
-        return BaseListCursor.defaultCursor(
+        return BaseListCursor(
           sentenceMap: sentenceMap,
           sentenceID: sentenceID,
           seekPosition: seekPosition,
+          caretPosition: baseCursor.caretPosition,
+          option: baseCursor.option,
         );
       }
     }
 
-    return BaseListCursor(
+    return BaseListCursor.defaultCursor(
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
       seekPosition: seekPosition,
-      caretPosition: baseCursor.caretPosition,
-      option: baseCursor.option,
     );
   }
 
