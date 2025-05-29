@@ -20,7 +20,7 @@ class WordListCursor extends TextPaneListCursor {
     assert(isIDContained(), "The passed sentenceID does not point to a sentence in sentenceMap.");
 
     wordCursor = WordCursor(
-      sentence: sentenceMap[sentenceID]!,
+      timetable: sentenceMap[sentenceID]!.timetable,
       seekPosition: seekPosition,
       wordRange: wordRange,
       isExpandMode: isExpandMode,

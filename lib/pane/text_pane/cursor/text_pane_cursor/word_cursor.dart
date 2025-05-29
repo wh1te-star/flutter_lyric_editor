@@ -1,6 +1,4 @@
-import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
-import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
-import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
+import 'package:lyric_editor/lyric_data/timetable.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/caret_cursor.dart';
@@ -14,20 +12,20 @@ class WordCursor extends TextPaneCursor {
   bool isExpandMode = false;
 
   WordCursor({
-    required Sentence sentence,
+    required Timetable timetable,
     required SeekPosition seekPosition,
     required this.wordRange,
     required this.isExpandMode,
-  }) : super(sentence, seekPosition);
+  }) : super(timetable, seekPosition);
 
   WordCursor._privateConstructor(
-    super.sentence,
+    super.timetable,
     super.seekPosition,
     this.wordRange,
     this.isExpandMode,
   );
   static final WordCursor _empty = WordCursor._privateConstructor(
-    Sentence.empty,
+    Timetable.empty,
     SeekPosition.empty,
     WordRange.empty,
     false,
@@ -40,7 +38,7 @@ class WordCursor extends TextPaneCursor {
   WordCursor defaultCursor() {
     WordIndex wordIndex = WordIndex(0);
     return WordCursor(
-      sentence: sentence,
+      timetable: timetable,
       seekPosition: seekPosition,
       wordRange: WordRange(wordIndex, wordIndex),
       isExpandMode: isExpandMode,
@@ -71,7 +69,7 @@ class WordCursor extends TextPaneCursor {
     }
 
     return WordCursor(
-      sentence: sentence,
+      timetable: timetable,
       seekPosition: seekPosition,
       wordRange: nextWordRange,
       isExpandMode: isExpandMode,
@@ -84,7 +82,7 @@ class WordCursor extends TextPaneCursor {
 
     WordIndex currentIndex = wordRange.endIndex;
     WordIndex nextIndex = currentIndex + 1;
-    if (nextIndex.index >= sentence.words.length) {
+    if (nextIndex.index >= timetable.wordList.length) {
       return this;
     }
 
@@ -94,7 +92,7 @@ class WordCursor extends TextPaneCursor {
     }
 
     return WordCursor(
-      sentence: sentence,
+      timetable: timetable,
       seekPosition: seekPosition,
       wordRange: nextWordRange,
       isExpandMode: isExpandMode,
@@ -103,7 +101,7 @@ class WordCursor extends TextPaneCursor {
 
   TextPaneCursor exitWordMode() {
     return CaretCursor.defaultCursor(
-      sentence: sentence,
+      timetable: timetable,
       seekPosition: seekPosition,
     );
   }
@@ -114,7 +112,7 @@ class WordCursor extends TextPaneCursor {
   }
 
   @override
-  List<TextPaneCursor?> getWordRangeDividedCursors(Sentence sentence, List<WordRange> wordRangeList) {
+  List<TextPaneCursor?> getWordRangeDividedCursors(Timetable timetable, List<WordRange> wordRangeList) {
     WordCursor cursor = copyWith();
     List<WordCursor?> separatedCursors = List.filled(wordRangeList.length, null);
 
@@ -152,7 +150,7 @@ class WordCursor extends TextPaneCursor {
     WordCursor cursor = copyWith();
     List<WordCursor?> separatedCursors = List.filled(wordList.length, null);
     WordCursor initialCursor = WordCursor(
-      sentence: sentence,
+      timetable: timetable,
       seekPosition: seekPosition,
       wordRange: WordRange(WordIndex(0), WordIndex(0)),
       isExpandMode: isExpandMode,
@@ -189,13 +187,13 @@ class WordCursor extends TextPaneCursor {
   }
 
   WordCursor copyWith({
-    Sentence? sentence,
+    Timetable? timetable,
     SeekPosition? seekPosition,
     WordRange? wordRange,
     bool? isExpandMode,
   }) {
     return WordCursor(
-      sentence: sentence ?? this.sentence,
+      timetable: timetable ?? this.timetable,
       seekPosition: seekPosition ?? this.seekPosition,
       wordRange: wordRange ?? this.wordRange,
       isExpandMode: isExpandMode ?? this.isExpandMode,
@@ -204,7 +202,7 @@ class WordCursor extends TextPaneCursor {
 
   @override
   String toString() {
-    return 'WordCursor(ID: $sentence, wordIndex: $wordRange)';
+    return 'WordCursor(ID: $timetable, wordIndex: $wordRange)';
   }
 
   @override
@@ -212,7 +210,7 @@ class WordCursor extends TextPaneCursor {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
     final WordCursor otherWords = other as WordCursor;
-    if (sentence != otherWords.sentence) return false;
+    if (timetable != otherWords.timetable) return false;
     if (seekPosition != otherWords.seekPosition) return false;
     if (wordRange != otherWords.wordRange) return false;
     if (isExpandMode != otherWords.isExpandMode) return false;
@@ -220,5 +218,5 @@ class WordCursor extends TextPaneCursor {
   }
 
   @override
-  int get hashCode => sentence.hashCode ^ seekPosition.hashCode ^ wordRange.hashCode ^ isExpandMode.hashCode;
+  int get hashCode => timetable.hashCode ^ seekPosition.hashCode ^ wordRange.hashCode ^ isExpandMode.hashCode;
 }

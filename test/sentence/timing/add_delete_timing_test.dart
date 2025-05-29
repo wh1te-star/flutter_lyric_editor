@@ -50,7 +50,7 @@ void main() {
 
       target = target.addTiming(characterPosition, seekPosition);
 
-      expect(target.wordList, expected);
+      expect(target._wordList, expected);
     });
 
     test('Test to add a timing point No.2', () {
@@ -68,7 +68,7 @@ void main() {
 
       target = target.addTiming(characterPosition, seekPosition);
 
-      expect(target.wordList, expected);
+      expect(target._wordList, expected);
     });
 
     test('Test the seek position is not valid', () {
@@ -99,7 +99,7 @@ void main() {
 
       target = target.addTiming(characterPosition, seekPosition);
 
-      expect(target.wordList, expected);
+      expect(target._wordList, expected);
     });
 
     test('Test to add a timing point twice. No.2', () {
@@ -117,7 +117,7 @@ void main() {
 
       target = target.addTiming(characterPosition, seekPosition);
 
-      expect(target.wordList, expected);
+      expect(target._wordList, expected);
     });
 
     test('Test to add a timing point to a sentence that have a char position with 2 timing point. No.1', () {
@@ -136,7 +136,7 @@ void main() {
 
       target = target.addTiming(characterPosition, seekPosition);
 
-      expect(target.wordList, expected);
+      expect(target._wordList, expected);
     });
 
     test('Test to add a timing point to a sentence that have a char position with 2 timing point. No.2', () {
@@ -155,7 +155,7 @@ void main() {
 
       target = target.addTiming(characterPosition, seekPosition);
 
-      expect(target.wordList, expected);
+      expect(target._wordList, expected);
     });
 
     test('Test to add a timing point twice. No.1', () {
@@ -174,7 +174,7 @@ void main() {
 
       target = target.addTiming(characterPosition, seekPosition);
 
-      expect(target.wordList, expected);
+      expect(target._wordList, expected);
     });
 
     test('Test to add a timing point twice. No.2', () {
@@ -193,7 +193,7 @@ void main() {
 
       target = target.addTiming(characterPosition, seekPosition);
 
-      expect(target.wordList, expected);
+      expect(target._wordList, expected);
     });
 
     test('Test to throw TimingException when tring to add a timing point third time at the same caret position. No.1', () {
@@ -222,7 +222,7 @@ void main() {
 
       target = target.deleteTiming(characterPosition, option);
 
-      expect(target.wordList, expected);
+      expect(target._wordList, expected);
     });
 
     test('Test to delete a timing point. No.2', () {
@@ -238,7 +238,7 @@ void main() {
 
       target = target.deleteTiming(characterPosition, option);
 
-      expect(target.wordList, expected);
+      expect(target._wordList, expected);
     });
 
     test('Test to try to delete a non-existent timing point.', () {
@@ -268,7 +268,7 @@ void main() {
 
       target = target.deleteTiming(characterPosition, option);
 
-      expect(target.wordList, expected);
+      expect(target._wordList, expected);
     });
 
     test('Test to delete a timing point. No.2', () {
@@ -285,7 +285,7 @@ void main() {
 
       target = target.deleteTiming(characterPosition, option);
 
-      expect(target.wordList, expected);
+      expect(target._wordList, expected);
     });
 
     test('Test to try to delete a non-existent timing point.', () {
@@ -315,7 +315,7 @@ void main() {
 
       target = target.deleteTiming(characterPosition, option);
 
-      expect(target.wordList, expected);
+      expect(target._wordList, expected);
     });
 
     test('Test to a latter timing point of a character position.', () {
@@ -332,7 +332,7 @@ void main() {
 
       target = target.deleteTiming(characterPosition, option);
 
-      expect(target.wordList, expected);
+      expect(target._wordList, expected);
     });
   });
 }

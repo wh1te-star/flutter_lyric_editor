@@ -34,7 +34,7 @@ class RubyListCursor extends TextPaneListCursor {
     assert(isIDContained(), "The passed sentenceID does not point to a sentence in sentenceMap.");
     assert(doesSeekPositionPointRuby(), "The passed seek position does not point to any ruby.");
     caretCursor = CaretCursor(
-      sentence: sentenceMap[sentenceID]!.rubyMap[wordRange],
+      timetable: sentenceMap[sentenceID]!.rubyMap[wordRange]!.timetable,
       seekPosition: seekPosition,
       caretPosition: caretPosition,
       option: option,

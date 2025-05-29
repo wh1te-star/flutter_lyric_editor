@@ -30,7 +30,7 @@ class SentenceEdit extends StatelessWidget {
       return entry.item1;
     }).toList();
     List<TextPaneCursor?> cursorList = List.filled(wordRangeList.length, null);
-    cursorList = textPaneListCursor!.textPaneCursor.getWordRangeDividedCursors(sentence, wordRangeList);
+    cursorList = textPaneListCursor!.textPaneCursor.getWordRangeDividedCursors(sentence.timetable, wordRangeList);
 
     for (int index = 0; index < rubyWordRangeList.length; index++) {
       WordRange wordRange = rubyWordRangeList[index].item1;

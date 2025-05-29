@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
+import 'package:lyric_editor/lyric_data/timetable.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/lyric_data/timing/timing.dart';
@@ -27,20 +28,20 @@ class CaretCursor extends TextPaneCursor {
   Option option;
 
   CaretCursor({
-    required Sentence sentence,
+    required Timetable timetable,
     required SeekPosition seekPosition,
     required this.caretPosition,
     required this.option,
-  }) : super(sentence, seekPosition);
+  }) : super(timetable, seekPosition);
 
   CaretCursor._privateConstructor(
-    super.sentence,
+    super.timetable,
     super.seekPosition,
     this.caretPosition,
     this.option,
   );
   static final CaretCursor _empty = CaretCursor._privateConstructor(
-    Sentence.empty,
+    Timetable.empty,
     SeekPosition.empty,
     CaretPosition.empty,
     Option.former,
@@ -50,25 +51,25 @@ class CaretCursor extends TextPaneCursor {
   bool get isNotEmpty => !identical(this, _empty);
 
   factory CaretCursor.defaultCursor({
-    required Sentence sentence,
+    required Timetable timetable,
     required SeekPosition seekPosition,
   }) {
-    SeekPositionInfo seekPositionInfo = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
+    SeekPositionInfo seekPositionInfo = timetable.getSeekPositionInfoBySeekPosition(seekPosition);
     if (seekPositionInfo is InvalidSeekPositionInfo) {
       return empty;
     }
 
     CaretPosition caretPosition = CaretPosition.empty;
     if (seekPositionInfo is TimingSeekPositionInfo) {
-      caretPosition = sentence.timings[seekPositionInfo.timingIndex].caretPosition;
+      caretPosition = timetable.timingList[seekPositionInfo.timingIndex].caretPosition;
     }
     if (seekPositionInfo is WordSeekPositionInfo) {
-      caretPosition = sentence.timetable.getLeftTiming(seekPositionInfo.wordIndex).caretPosition + 1;
+      caretPosition = timetable.getLeftTiming(seekPositionInfo.wordIndex).caretPosition + 1;
     }
     assert(caretPosition.isNotEmpty);
 
     return CaretCursor(
-      sentence: sentence,
+      timetable: timetable,
       seekPosition: seekPosition,
       caretPosition: caretPosition,
       option: Option.former,
@@ -101,7 +102,7 @@ class CaretCursor extends TextPaneCursor {
 
   CaretPosition increasedPosition(CaretPosition caretPosition) {
     CaretPosition nextCaretPosition = caretPosition + 1;
-    if (nextCaretPosition >= CaretPosition(sentence.sentence.length)) {
+    if (nextCaretPosition >= CaretPosition(timetable.sentence.length)) {
       return CaretPosition.empty;
     }
     return nextCaretPosition;
@@ -117,10 +118,10 @@ class CaretCursor extends TextPaneCursor {
 
   CaretPosition nextTimingPosition(TimingIndex timingIndex) {
     TimingIndex nextTimingIndex = timingIndex + 1;
-    if (nextTimingIndex.index >= sentence.timings.length - 1) {
+    if (nextTimingIndex.index >= timetable.timingList.length - 1) {
       return CaretPosition.empty;
     }
-    Timing nextTiming = sentence.timings[nextTimingIndex];
+    Timing nextTiming = timetable.timingList[nextTimingIndex];
     return nextTiming.caretPosition;
   }
 
@@ -129,13 +130,13 @@ class CaretCursor extends TextPaneCursor {
     if (prevTimingIndex <= TimingIndex(0)) {
       return CaretPosition.empty;
     }
-    Timing prevTiming = sentence.timings[prevTimingIndex];
+    Timing prevTiming = timetable.timingList[prevTimingIndex];
     return prevTiming.caretPosition;
   }
 
   CaretPosition getLeftPosition() {
-    CaretPositionInfo caretPositionInfo = sentence.getCaretPositionInfo(caretPosition);
-    SeekPositionInfo seekPositionInfo = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
+    CaretPositionInfo caretPositionInfo = timetable.getCaretPositionInfo(caretPosition);
+    SeekPositionInfo seekPositionInfo = timetable.getSeekPositionInfoBySeekPosition(seekPosition);
 
     if (caretPositionInfo is WordCaretPositionInfo && seekPositionInfo is WordSeekPositionInfo) {
       WordIndex incaretWordIndex = caretPositionInfo.wordIndex;
@@ -157,7 +158,7 @@ class CaretCursor extends TextPaneCursor {
 
       if (seekPositionInfo is WordSeekPositionInfo) {
         WordIndex seekingWordIndex = seekPositionInfo.wordIndex;
-        TimingIndex rightTimingIndex = sentence.timetable.getRightTimingIndex(seekingWordIndex);
+        TimingIndex rightTimingIndex = timetable.getRightTimingIndex(seekingWordIndex);
         if (incaretTimingIndex == rightTimingIndex) {
           return decreasedPosition(caretPosition);
         }
@@ -170,7 +171,7 @@ class CaretCursor extends TextPaneCursor {
   }
 
   TextPaneCursor moveToCaretPositionFromRight(CaretPosition targetPosition) {
-    CaretPositionInfo nextCaretPositionInfo = sentence.getCaretPositionInfo(targetPosition);
+    CaretPositionInfo nextCaretPositionInfo = timetable.getCaretPositionInfo(targetPosition);
     assert(nextCaretPositionInfo is! InvalidCaretPositionInfo, "An unexpected state was occurred for the caret position info.");
     if (nextCaretPositionInfo is WordCaretPositionInfo) {
       return copyWith(caretPosition: targetPosition, option: Option.none);
@@ -187,8 +188,8 @@ class CaretCursor extends TextPaneCursor {
   }
 
   CaretPosition getRightPosition() {
-    CaretPositionInfo caretPositionInfo = sentence.getCaretPositionInfo(caretPosition);
-    SeekPositionInfo seekPositionInfo = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
+    CaretPositionInfo caretPositionInfo = timetable.getCaretPositionInfo(caretPosition);
+    SeekPositionInfo seekPositionInfo = timetable.getSeekPositionInfoBySeekPosition(seekPosition);
 
     if (caretPositionInfo is WordCaretPositionInfo && seekPositionInfo is WordSeekPositionInfo) {
       WordIndex incaretWordIndex = caretPositionInfo.wordIndex;
@@ -209,7 +210,7 @@ class CaretCursor extends TextPaneCursor {
       }
 
       if (seekPositionInfo is WordSeekPositionInfo) {
-        TimingIndex leftTimingIndex = sentence.getLeftTimingIndex(seekPositionInfo.wordIndex);
+        TimingIndex leftTimingIndex = timetable.getLeftTimingIndex(seekPositionInfo.wordIndex);
         if (incaretTimingIndex == leftTimingIndex) {
           return increasedPosition(caretPosition);
         } else {
@@ -223,7 +224,7 @@ class CaretCursor extends TextPaneCursor {
   }
 
   TextPaneCursor moveToCaretPositionFromLeft(CaretPosition targetPosition) {
-    CaretPositionInfo nextCaretPositionInfo = sentence.getCaretPositionInfo(targetPosition);
+    CaretPositionInfo nextCaretPositionInfo = timetable.getCaretPositionInfo(targetPosition);
     assert(nextCaretPositionInfo is! InvalidCaretPositionInfo, "An unexpected state was occurred for the caret position info.");
     if (nextCaretPositionInfo is WordCaretPositionInfo) {
       return copyWith(caretPosition: targetPosition, option: Option.none);
@@ -237,7 +238,7 @@ class CaretCursor extends TextPaneCursor {
 
   TextPaneCursor enterWordMode() {
     return WordCursor(
-      sentence: sentence,
+      timetable: timetable,
       seekPosition: seekPosition,
       wordRange: WordRange(WordIndex(0), WordIndex(0)),
       isExpandMode: false,
@@ -245,12 +246,12 @@ class CaretCursor extends TextPaneCursor {
   }
 
   @override
-  List<TextPaneCursor?> getWordRangeDividedCursors(Sentence sentence, List<WordRange> wordRangeList) {
+  List<TextPaneCursor?> getWordRangeDividedCursors(Timetable timetable, List<WordRange> wordRangeList) {
     List<CaretCursor?> separatedCursors = List.filled(wordRangeList.length, null);
     CaretCursor shiftedCursor = copyWith();
     for (int index = 0; index < wordRangeList.length; index++) {
       WordRange wordRange = wordRangeList[index];
-      WordList? sentenceSubList = sentence.getWordList(wordRange);
+      WordList? sentenceSubList = timetable.getWordList(wordRange);
       CaretCursor? nextCursor = shiftedCursor.shiftLeftByWordList(sentenceSubList);
       if (nextCursor == null) {
         separatedCursors[index] = shiftedCursor;
@@ -297,13 +298,13 @@ class CaretCursor extends TextPaneCursor {
   }
 
   CaretCursor copyWith({
-    Sentence? sentence,
+    Timetable? timetable,
     SeekPosition? seekPosition,
     CaretPosition? caretPosition,
     Option? option,
   }) {
     return CaretCursor(
-      sentence: sentence ?? this.sentence,
+      timetable: timetable ?? this.timetable,
       seekPosition: seekPosition ?? this.seekPosition,
       caretPosition: caretPosition ?? this.caretPosition,
       option: option ?? this.option,
@@ -320,7 +321,7 @@ class CaretCursor extends TextPaneCursor {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
     final CaretCursor otherWords = other as CaretCursor;
-    if (sentence != otherWords.sentence) return false;
+    if (timetable != otherWords.timetable) return false;
     if (seekPosition != otherWords.seekPosition) return false;
     if (caretPosition != otherWords.caretPosition) return false;
     if (option != otherWords.option) return false;
@@ -328,5 +329,5 @@ class CaretCursor extends TextPaneCursor {
   }
 
   @override
-  int get hashCode => sentence.hashCode ^ seekPosition.hashCode ^ caretPosition.hashCode ^ option.hashCode;
+  int get hashCode => timetable.hashCode ^ seekPosition.hashCode ^ caretPosition.hashCode ^ option.hashCode;
 }

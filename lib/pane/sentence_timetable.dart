@@ -234,7 +234,8 @@ class _SentenceTimelineState extends ConsumerState<SentenceTimeline> {
       WordRange wordRange = entry.key;
       Ruby ruby = entry.value;
       for (int index = 0; index < ruby.timings.length; index++) {
-        Timing timing = ruby.timings[index];
+        TimingIndex timingIndex = TimingIndex(index);
+        Timing timing = ruby.timings[timingIndex];
         Widget indicator = Positioned(
           left: duration2Length(ruby.startTimestamp.position + timing.seekPosition.position),
           top: trackHeight * sentenceTracks[sentenceID]! + topMargin,

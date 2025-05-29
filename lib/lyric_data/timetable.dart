@@ -28,25 +28,25 @@ import 'package:lyric_editor/service/timing_service.dart';
 
 class Timetable {
   final SeekPosition startTimestamp;
-  final WordList wordList;
-  late TimingList timingList;
+  final WordList _wordList;
+  late TimingList _timingList;
 
   Timetable({
     required this.startTimestamp,
-    required this.wordList,
-  }) {
-    timingList = constructTimingList(wordList);
+    required WordList wordList,
+  }) : _wordList = wordList {
+    _timingList = constructTimingList(_wordList);
   }
 
-  String get sentence => wordList.sentence;
+  String get sentence => _wordList.sentence;
   SeekPosition get endTimestamp {
     return SeekPosition(startTimestamp.position + timingList.list.last.seekPosition.position);
   }
 
-  List<Word> get words => wordList.list;
-  List<Timing> get timings => timingList.list;
-  int get charCount => wordList.charCount;
-  int get wordCount => wordList.wordCount;
+  WordList get wordList => _wordList;
+  TimingList get timingList => _timingList;
+  int get charCount => _wordList.charCount;
+  int get wordCount => _wordList.wordCount;
 
   static Timetable get empty => Timetable(
         startTimestamp: SeekPosition.empty,
@@ -64,44 +64,43 @@ class Timetable {
   }
 
   Word toWord(WordIndex wordIndex) {
-    return words[wordIndex.index];
+    return wordList[wordIndex];
   }
 
   TimingIndex getLeftTimingIndex(WordIndex wordIndex) {
-    if (wordIndex.index < 0 && words.length < wordIndex.index) {
+    if (wordIndex.index < 0 && wordList.length < wordIndex.index) {
       return TimingIndex.empty;
     }
     return TimingIndex(wordIndex.index);
   }
 
   TimingIndex getRightTimingIndex(WordIndex wordIndex) {
-    if (wordIndex.index + 1 < 0 && words.length < wordIndex.index + 1) {
+    if (wordIndex.index + 1 < 0 && wordList.length < wordIndex.index + 1) {
       return TimingIndex.empty;
     }
     return TimingIndex(wordIndex.index + 1);
   }
 
   Timing getLeftTiming(WordIndex wordIndex) {
-    if (wordIndex.index < 0 && words.length < wordIndex.index) {
+    if (wordIndex.index < 0 && wordList.length < wordIndex.index) {
       return Timing.empty;
     }
-    return timings[wordIndex.index];
+    return timingList.list[wordIndex.index];
   }
 
   Timing getRightTiming(WordIndex wordIndex) {
-    if (wordIndex.index + 1 < 0 && words.length < wordIndex.index + 1) {
+    if (wordIndex.index + 1 < 0 && wordList.length < wordIndex.index + 1) {
       return Timing.empty;
     }
-    return timings[wordIndex.index + 1];
+    return timingList.list[wordIndex.index + 1];
   }
 
   Timetable editSentence(String newSentence) {
     List<int> charPositionTranslation = getCharPositionTranslation(sentence, newSentence);
 
-    WordList wordList = this.wordList;
     List<Word> words = wordList.list;
     Timetable timetable = Timetable(startTimestamp: startTimestamp, wordList: wordList);
-    for (Timing timing in timingList.list) {
+    for (Timing timing in _timingList.list) {
       CaretPosition currentCharPosition = timing.caretPosition;
       if (charPositionTranslation[currentCharPosition.position] == -1) {
         try {
@@ -118,9 +117,10 @@ class Timetable {
     }
 
     for (int index = 0; index < words.length; index++) {
-      int leftCharPosition = charPositionTranslation[timings[index].caretPosition.position];
-      int rightCharPosition = charPositionTranslation[timings[index + 1].caretPosition.position];
-      timetable.wordList.list[index].word = newSentence.substring(leftCharPosition, rightCharPosition);
+      TimingIndex timingIndex = TimingIndex(index);
+      int leftCharPosition = charPositionTranslation[timingList[timingIndex].caretPosition.position];
+      int rightCharPosition = charPositionTranslation[timingList[timingIndex + 1].caretPosition.position];
+      timetable._wordList.list[index].word = newSentence.substring(leftCharPosition, rightCharPosition);
     }
     timetable = timetable.integrate2OrMoreTimings();
 
@@ -166,7 +166,7 @@ class Timetable {
     List<Word> result = [];
     int accumulatedSum = 0;
 
-    for (Word word in wordList.list) {
+    for (Word word in _wordList.list) {
       if (word.word == "") {
         accumulatedSum += word.duration.inMilliseconds;
       } else {
@@ -192,12 +192,12 @@ class Timetable {
   }
 
   String getWordString(int index) {
-    return wordList.list[index].word;
+    return _wordList.list[index].word;
   }
 
   WordList getWordList(WordRange wordRange) {
     return WordList(
-      words.sublist(
+      wordList.list.sublist(
         wordRange.startIndex.index,
         wordRange.endIndex.index + 1,
       ),
@@ -212,7 +212,7 @@ class Timetable {
     if (seekPosition == startTimestamp) {
       return TimingSeekPositionInfo(TimingIndex(0));
     }
-    for (int index = 0; index < words.length; index++) {
+    for (int index = 0; index < wordList.length; index++) {
       WordIndex wordIndex = WordIndex(index);
       Timing rightTiming = getRightTiming(wordIndex);
       SeekPosition rightSeekPosition = SeekPosition(startTimestamp.position + rightTiming.seekPosition.position);
@@ -232,15 +232,16 @@ class Timetable {
       return InvalidCaretPositionInfo();
     }
 
-    for (int index = 0; index < timings.length; index++) {
-      Timing timing = timings[index];
+    for (int index = 0; index < timingList.length; index++) {
+      TimingIndex timingIndex = TimingIndex(index);
+      Timing timing = timingList[timingIndex];
       if (timing.caretPosition == caretPosition) {
         bool duplicate = false;
-        if (index + 1 >= timings.length) {
+        if (index + 1 >= timingList.length) {
           return TimingCaretPositionInfo(TimingIndex(index), duplicate);
         }
 
-        Timing nextTiming = timings[index + 1];
+        Timing nextTiming = timingList[timingIndex + 1];
         if (timing.caretPosition == nextTiming.caretPosition) {
           duplicate = true;
         }
@@ -248,9 +249,10 @@ class Timetable {
       }
     }
 
-    for (int index = 0; index <= words.length; index++) {
-      Timing leftTiming = timings[index];
-      Timing rightTiming = timings[index + 1];
+    for (int index = 0; index <= wordList.length; index++) {
+      TimingIndex timingIndex = TimingIndex(index);
+      Timing leftTiming = timingList[timingIndex];
+      Timing rightTiming = timingList[timingIndex + 1];
       if (leftTiming.caretPosition < caretPosition && caretPosition < rightTiming.caretPosition) {
         return WordCaretPositionInfo(
           WordIndex(index),
@@ -298,7 +300,7 @@ class Timetable {
   Timetable shiftTimetableBy(Duration shiftDuration) {
     return Timetable(
       startTimestamp: startTimestamp + shiftDuration,
-      wordList: wordList,
+      wordList: _wordList,
     );
   }
 
@@ -306,7 +308,7 @@ class Timetable {
     assert(extendDuration >= Duration.zero, "Should be shorten function.");
 
     SeekPosition startTimestamp = this.startTimestamp;
-    WordList wordList = this.wordList;
+    WordList wordList = this._wordList;
     if (sentenceSide == SentenceSide.start) {
       startTimestamp -= extendDuration;
       wordList.list.first.duration += extendDuration;
@@ -321,7 +323,7 @@ class Timetable {
     assert(shortenDuration >= Duration.zero, "Should be extend function.");
 
     SeekPosition startTimestamp = this.startTimestamp;
-    WordList wordList = this.wordList;
+    WordList wordList = this._wordList;
     List<Word> words = wordList.list;
     if (sentenceSide == SentenceSide.start) {
       int index = 0;
@@ -353,72 +355,69 @@ class Timetable {
     }
     seekPosition = SeekPosition(seekPosition.position - startTimestamp.position);
 
-    int wordIndex = -1;
-    int timingIndex = -1;
-    for (int index = 0; index < words.length; index++) {
-      if (timings[index].caretPosition == caretPosition) {
-        timingIndex = index;
-        break;
-      }
-      if (timings[index].caretPosition < caretPosition && caretPosition < timings[index + 1].caretPosition) {
-        wordIndex = index;
-        break;
-      }
-    }
-    assert(wordIndex != -1 || timingIndex != -1, "An unexpected state occured.");
+    CaretPositionInfo caretPositionInfo = getCaretPositionInfo(caretPosition);
 
-    if (wordIndex != -1) {
-      Timing leftTiming = timings[wordIndex];
-      Timing rightTiming = timings[wordIndex + 1];
+    if (caretPositionInfo is WordCaretPositionInfo) {
+      WordIndex wordIndex = caretPositionInfo.wordIndex;
+      Timing leftTiming = getLeftTiming(wordIndex);
+      Timing rightTiming = getRightTiming(wordIndex);
       if (seekPosition <= leftTiming.seekPosition || rightTiming.seekPosition <= seekPosition) {
         throw TimingException("The seek position is out of the valid range.");
       }
 
-      timings.insert(
-        wordIndex + 1,
+      List<Timing> newTimingList = timingList.list;
+      newTimingList.insert(
+        wordIndex.index + 1,
         Timing(caretPosition, seekPosition),
       );
-      WordList wordList = syncWords(TimingList(timings));
+      WordList wordList = syncWords(TimingList(newTimingList));
       return Timetable(startTimestamp: startTimestamp, wordList: wordList);
     }
 
-    int count = timings.where((Timing timing) {
-      return timing.caretPosition == caretPosition;
-    }).length;
-    if (count >= 2) {
-      throw TimingException("A timing point cannot be inserted three times or more at the same char position.");
+    if (caretPositionInfo is TimingCaretPositionInfo) {
+      int count = timingList.list.where((Timing timing) {
+        return timing.caretPosition == caretPosition;
+      }).length;
+      if (count >= 2) {
+        throw TimingException("A timing point cannot be inserted three times or more at the same char position.");
+      }
+
+      TimingIndex timingIndex = caretPositionInfo.timingIndex;
+      assert(0 < timingIndex.index && timingIndex.index < timingList.length - 1);
+      Timing leftTiming = timingList[timingIndex - 1];
+      Timing centerTiming = timingList[timingIndex];
+      Timing rightTiming = timingList[timingIndex + 1];
+
+      if (seekPosition <= leftTiming.seekPosition || rightTiming.seekPosition <= seekPosition) {
+        throw TimingException("The seek position is out of the valid range.");
+      }
+      if (seekPosition == centerTiming.seekPosition) {
+        throw TimingException("A timing point cannot be inserted twice or more at the same seek position.");
+      }
+
+      List<Timing> newTimingList = timingList.list;
+      if (seekPosition < centerTiming.seekPosition) {
+        newTimingList.insert(
+          timingIndex.index,
+          Timing(caretPosition, seekPosition),
+        );
+      } else {
+        newTimingList.insert(
+          timingIndex.index + 1,
+          Timing(caretPosition, seekPosition),
+        );
+      }
+
+      WordList newWordList = syncWords(TimingList(newTimingList));
+      return Timetable(startTimestamp: startTimestamp, wordList: newWordList);
     }
 
-    assert(0 < timingIndex && timingIndex < timings.length - 1);
-    Timing leftTiming = timings[timingIndex - 1];
-    Timing centerTiming = timings[timingIndex];
-    Timing rightTiming = timings[timingIndex + 1];
-
-    if (seekPosition <= leftTiming.seekPosition || rightTiming.seekPosition <= seekPosition) {
-      throw TimingException("The seek position is out of the valid range.");
-    }
-    if (seekPosition == centerTiming.seekPosition) {
-      throw TimingException("A timing point cannot be inserted twice or more at the same seek position.");
-    }
-
-    if (seekPosition < centerTiming.seekPosition) {
-      timings.insert(
-        timingIndex,
-        Timing(caretPosition, seekPosition),
-      );
-    } else {
-      timings.insert(
-        timingIndex + 1,
-        Timing(caretPosition, seekPosition),
-      );
-    }
-
-    WordList wordList = syncWords(TimingList(timings));
-    return Timetable(startTimestamp: startTimestamp, wordList: wordList);
+    assert(false);
+    return Timetable.empty;
   }
 
   Timetable deleteTiming(CaretPosition charPosition, Option option) {
-    List<Timing> timings = timingList.list;
+    List<Timing> timings = _timingList.list;
     int index = timings.indexWhere((timing) => timing.caretPosition == charPosition);
     if (index == -1) {
       throw TimingException("There is not the specified timing point.");
@@ -439,13 +438,13 @@ class Timetable {
   }) {
     return Timetable(
       startTimestamp: startTimestamp ?? this.startTimestamp.copyWith(),
-      wordList: wordList ?? this.wordList.copyWith(),
+      wordList: wordList ?? this._wordList.copyWith(),
     );
   }
 
   @override
   String toString() {
-    return "$startTimestamp/$wordList";
+    return "$startTimestamp/$_wordList";
   }
 
   @override
@@ -456,9 +455,9 @@ class Timetable {
     if (other is! Timetable) {
       return false;
     }
-    return startTimestamp == other.startTimestamp && wordList == other.wordList;
+    return startTimestamp == other.startTimestamp && _wordList == other._wordList;
   }
 
   @override
-  int get hashCode => startTimestamp.hashCode ^ wordList.hashCode;
+  int get hashCode => startTimestamp.hashCode ^ _wordList.hashCode;
 }

@@ -32,7 +32,7 @@ class BaseListCursor extends TextPaneListCursor {
 
     Sentence sentence = sentenceMap.containsKey(sentenceID) ? sentenceMap[sentenceID]! : Sentence.empty;
     caretCursor = CaretCursor(
-      sentence: sentence,
+      timetable: sentence.timetable,
       seekPosition: seekPosition,
       caretPosition: caretPosition,
       option: option,
@@ -80,7 +80,7 @@ class BaseListCursor extends TextPaneListCursor {
       );
     }
     Sentence sentence = sentenceMap[sentenceID]!;
-    CaretCursor defaultCursor = CaretCursor.defaultCursor(sentence: sentence, seekPosition: seekPosition);
+    CaretCursor defaultCursor = CaretCursor.defaultCursor(timetable: sentence.timetable, seekPosition: seekPosition);
 
     return BaseListCursor(
       sentenceMap: sentenceMap,
