@@ -3,7 +3,7 @@ import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/word_cursor.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/base_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/caret_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/ruby_list_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/word_list_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pane_list_cursor.dart';
@@ -20,7 +20,7 @@ import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 
 class BaseListCursor extends TextPaneListCursor {
-  late BaseCursor baseCursor;
+  late CaretCursor caretCursor;
   BaseListCursor({
     required SentenceMap sentenceMap,
     required SentenceID sentenceID,
@@ -31,13 +31,13 @@ class BaseListCursor extends TextPaneListCursor {
     assert(isIDContained(), "The passed sentenceID does not point to a sentence in sentenceMap.");
 
     Sentence sentence = sentenceMap.containsKey(sentenceID) ? sentenceMap[sentenceID]! : Sentence.empty;
-    baseCursor = BaseCursor(
+    caretCursor = CaretCursor(
       sentence: sentence,
       seekPosition: seekPosition,
       caretPosition: caretPosition,
       option: option,
     );
-    textPaneCursor = baseCursor;
+    textPaneCursor = caretCursor;
   }
 
   bool isIDContained() {
@@ -79,8 +79,8 @@ class BaseListCursor extends TextPaneListCursor {
         option: Option.former,
       );
     }
-    Sentence sentence = sentenceMap.getSentenceByID(sentenceID);
-    BaseCursor defaultCursor = BaseCursor.defaultCursor(sentence: sentence, seekPosition: seekPosition);
+    Sentence sentence = sentenceMap[sentenceID]!;
+    CaretCursor defaultCursor = CaretCursor.defaultCursor(sentence: sentence, seekPosition: seekPosition);
 
     return BaseListCursor(
       sentenceMap: sentenceMap,
@@ -94,12 +94,13 @@ class BaseListCursor extends TextPaneListCursor {
   @override
   TextPaneListCursor moveUpCursor() {
     Sentence sentence = sentenceMap[sentenceID]!;
-    WordRange rubyIndex = sentence.getRubysWordRangeFromSeekPosition(seekPosition);
-    if (rubyIndex.isNotEmpty) {
+    WordRange rubysWordRange = sentence.getRubysWordRangeFromSeekPosition(seekPosition);
+    if (rubysWordRange.isNotEmpty) {
       return RubyListCursor.defaultCursor(
         sentenceMap: sentenceMap,
         sentenceID: sentenceID,
         seekPosition: seekPosition,
+        wordRange: rubysWordRange,
       );
     }
 
@@ -130,12 +131,13 @@ class BaseListCursor extends TextPaneListCursor {
     SentenceID nextSentenceID = sentenceMap.keys.toList()[index + 1];
     Sentence nextSentence = sentenceMap[nextSentenceID]!;
 
-    WordRange rubyIndex = nextSentence.getRubysWordRangeFromSeekPosition(seekPosition);
-    if (rubyIndex.isNotEmpty) {
+    WordRange rubysWordRange = nextSentence.getRubysWordRangeFromSeekPosition(seekPosition);
+    if (rubysWordRange.isNotEmpty) {
       return RubyListCursor.defaultCursor(
         sentenceMap: sentenceMap,
         sentenceID: sentenceID,
         seekPosition: seekPosition,
+        wordRange: rubysWordRange,
       );
     }
 
@@ -148,7 +150,7 @@ class BaseListCursor extends TextPaneListCursor {
 
   @override
   TextPaneListCursor moveLeftCursor() {
-    BaseCursor nextCursor = baseCursor.moveLeftCursor() as BaseCursor;
+    CaretCursor nextCursor = caretCursor.moveLeftCursor() as CaretCursor;
     return BaseListCursor(
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
@@ -160,7 +162,7 @@ class BaseListCursor extends TextPaneListCursor {
 
   @override
   TextPaneListCursor moveRightCursor() {
-    BaseCursor nextCursor = baseCursor.moveRightCursor() as BaseCursor;
+    CaretCursor nextCursor = caretCursor.moveRightCursor() as CaretCursor;
     return BaseListCursor(
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
@@ -190,7 +192,7 @@ class BaseListCursor extends TextPaneListCursor {
       sentenceID = sentenceMap.keys.first;
     }
     Sentence sentence = sentenceMap[sentenceID]!;
-    CaretPositionInfo caretPositionInfo = sentence.getCaretPositionInfo(baseCursor.caretPosition);
+    CaretPositionInfo caretPositionInfo = sentence.getCaretPositionInfo(caretCursor.caretPosition);
     SeekPositionInfo seekPositionInfo = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
     if (caretPositionInfo is WordCaretPositionInfo && seekPositionInfo is WordSeekPositionInfo) {
       WordIndex incaretWordIndex = caretPositionInfo.wordIndex;
@@ -200,8 +202,8 @@ class BaseListCursor extends TextPaneListCursor {
           sentenceMap: sentenceMap,
           sentenceID: sentenceID,
           seekPosition: seekPosition,
-          caretPosition: baseCursor.caretPosition,
-          option: baseCursor.option,
+          caretPosition: caretCursor.caretPosition,
+          option: caretCursor.option,
         );
       }
     }
@@ -214,7 +216,7 @@ class BaseListCursor extends TextPaneListCursor {
   }
 
   TextPaneListCursor enterWordMode() {
-    WordCursor nextCursor = baseCursor.enterWordMode() as WordCursor;
+    WordCursor nextCursor = caretCursor.enterWordMode() as WordCursor;
     return WordListCursor(
       sentenceMap: sentenceMap,
       sentenceID: sentenceID,
@@ -235,14 +237,14 @@ class BaseListCursor extends TextPaneListCursor {
       sentenceMap: sentenceMap ?? this.sentenceMap,
       sentenceID: sentenceID ?? this.sentenceID,
       seekPosition: seekPosition ?? this.seekPosition,
-      caretPosition: caretPosition ?? baseCursor.caretPosition,
-      option: option ?? baseCursor.option,
+      caretPosition: caretPosition ?? caretCursor.caretPosition,
+      option: option ?? caretCursor.option,
     );
   }
 
   @override
   String toString() {
-    return 'BaseListCursor(ID: ${sentenceID.id}, position: $baseCursor)';
+    return 'BaseListCursor(ID: ${sentenceID.id}, position: $caretCursor)';
   }
 
   @override
@@ -253,10 +255,10 @@ class BaseListCursor extends TextPaneListCursor {
     if (sentenceMap != otherBaseListCursor.sentenceMap) return false;
     if (sentenceID != otherBaseListCursor.sentenceID) return false;
     if (seekPosition != otherBaseListCursor.seekPosition) return false;
-    if (baseCursor != otherBaseListCursor.baseCursor) return false;
+    if (caretCursor != otherBaseListCursor.caretCursor) return false;
     return true;
   }
 
   @override
-  int get hashCode => sentenceMap.hashCode ^ sentenceID.hashCode ^ seekPosition.hashCode ^ baseCursor.hashCode;
+  int get hashCode => sentenceMap.hashCode ^ sentenceID.hashCode ^ seekPosition.hashCode ^ caretCursor.hashCode;
 }

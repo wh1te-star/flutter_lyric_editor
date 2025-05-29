@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_data/ruby/ruby.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/ruby_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/word_cursor.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/base_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/caret_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/ruby_list_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pane_list_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/word/word_list_edit.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/word/timing_edit.dart';
 import 'package:lyric_editor/position/caret_position.dart';
@@ -17,9 +18,9 @@ import 'package:tuple/tuple.dart';
 class SentenceEdit extends StatelessWidget {
   final Sentence sentence;
   final SeekPosition seekPosition;
-  final TextPaneCursor? textPaneCursor;
+  final TextPaneListCursor? textPaneListCursor;
   final CursorBlinker cursorBlinker;
-  SentenceEdit(this.sentence, this.seekPosition, this.textPaneCursor, this.cursorBlinker);
+  SentenceEdit(this.sentence, this.seekPosition, this.textPaneListCursor, this.cursorBlinker);
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +30,7 @@ class SentenceEdit extends StatelessWidget {
       return entry.item1;
     }).toList();
     List<TextPaneCursor?> cursorList = List.filled(wordRangeList.length, null);
-    cursorList = textPaneCursor!.getWordRangeDividedCursors(sentence, wordRangeList);
+    cursorList = textPaneListCursor!.textPaneCursor.getWordRangeDividedCursors(sentence, wordRangeList);
 
     for (int index = 0; index < rubyWordRangeList.length; index++) {
       WordRange wordRange = rubyWordRangeList[index].item1;
@@ -40,7 +41,7 @@ class SentenceEdit extends StatelessWidget {
 
       TextPaneCursor? cursor = cursorList[index];
       bool isTimingPosition = false;
-      if (cursor is BaseCursor && cursor.caretPosition == CaretPosition(0)) {
+      if (cursor is CaretCursor && cursor.caretPosition == CaretPosition(0)) {
         isTimingPosition = true;
       }
 
@@ -51,7 +52,7 @@ class SentenceEdit extends StatelessWidget {
       TextPaneCursor? rubyCursor;
       if (isTimingPosition) {
         timingCursorBlinker = cursorBlinker;
-      } else if (textPaneCursor is! RubyCursor) {
+      } else if (textPaneListCursor is! RubyListCursor) {
         baseCursorBlinker = cursorBlinker;
         baseCursor = cursor;
       } else {
@@ -101,7 +102,7 @@ class SentenceEdit extends StatelessWidget {
     TextPaneCursor? textPaneCursor,
     CursorBlinker? cursorBlinker,
   ) {
-    if (textPaneCursor is! BaseCursor && textPaneCursor is! WordCursor) {
+    if (textPaneCursor is! CaretCursor && textPaneCursor is! WordCursor) {
       textPaneCursor = null;
       cursorBlinker = null;
     }
@@ -118,7 +119,7 @@ class SentenceEdit extends StatelessWidget {
     TextPaneCursor? textPaneCursor,
     CursorBlinker? cursorBlinker,
   ) {
-    if (textPaneCursor is! RubyCursor) {
+    if (textPaneListCursor is! RubyListCursor) {
       textPaneCursor = null;
       cursorBlinker = null;
     }

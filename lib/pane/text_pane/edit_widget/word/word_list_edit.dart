@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/base_cursor.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/ruby_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/caret_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/word/word_edit.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/word/timing_edit.dart';
@@ -33,10 +32,7 @@ class WordListEdit extends StatelessWidget {
       TextPaneCursor? wordCursor = cursorList[index];
 
       bool isTimingPosition = false;
-      if (wordCursor is BaseCursor && wordCursor.caretPosition.position == 0) {
-        isTimingPosition = true;
-      }
-      if (wordCursor is RubyCursor && wordCursor.caretPosition.position == 0) {
+      if (wordCursor is CaretCursor && wordCursor.caretPosition.position == 0) {
         isTimingPosition = true;
       }
 

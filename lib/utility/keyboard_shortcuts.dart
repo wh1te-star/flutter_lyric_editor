@@ -3,9 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/lyric_data/ruby/ruby_map.dart';
 import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/ruby_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/word_cursor.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/base_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/caret_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_controller.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/ruby_list_cursor.dart';
@@ -207,8 +206,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
               );
             }
 
-            RubyCursor cursor = listCursor.textPaneCursor as RubyCursor;
-            WordRange wordRange = cursor.wordRange;
+            WordRange wordRange = (listCursor as RubyListCursor).wordRange;
             timingService.removeRuby(sentenceID, wordRange);
           }(),
         ),
@@ -298,7 +296,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             SeekPosition seekPosition = musicPlayerProvider.seekPosition;
             TextPaneListCursor listCursor = textPaneProvider.textPaneCursorController.textPaneListCursor;
             if (listCursor is BaseListCursor) {
-              BaseCursor cursor = listCursor.textPaneCursor as BaseCursor;
+              CaretCursor cursor = listCursor.textPaneCursor as CaretCursor;
               timingService.addTiming(
                 listCursor.sentenceID,
                 cursor.caretPosition,
@@ -306,10 +304,10 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
               );
             }
             if (listCursor is RubyListCursor) {
-              RubyCursor cursor = listCursor.textPaneCursor as RubyCursor;
+              CaretCursor cursor = listCursor.textPaneCursor as CaretCursor;
               timingService.addRubyTiming(
                 listCursor.sentenceID,
-                cursor.wordRange,
+                listCursor.wordRange,
                 cursor.caretPosition,
                 seekPosition,
               );
@@ -321,7 +319,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
             TextPaneListCursor listCursor = textPaneProvider.textPaneCursorController.textPaneListCursor;
             SentenceID sentenceID = listCursor.sentenceID;
             if (listCursor is BaseListCursor) {
-              BaseCursor cursor = listCursor.textPaneCursor as BaseCursor;
+              CaretCursor cursor = listCursor.textPaneCursor as CaretCursor;
               timingService.removeTiming(
                 sentenceID,
                 cursor.caretPosition,
@@ -329,10 +327,10 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
               );
             }
             if (listCursor is RubyListCursor) {
-              RubyCursor cursor = listCursor.textPaneCursor as RubyCursor;
+              CaretCursor cursor = listCursor.textPaneCursor as CaretCursor;
               timingService.removeRubyTiming(
                 sentenceID,
-                cursor.wordRange,
+                listCursor.wordRange,
                 cursor.caretPosition,
                 cursor.option,
               );
@@ -343,7 +341,7 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
           onInvoke: (SentenceDivideIntent intent) => () {
             TextPaneListCursor listCursor = textPaneProvider.textPaneCursorController.textPaneListCursor;
             if (listCursor is BaseListCursor) {
-              BaseCursor cursor = listCursor.textPaneCursor as BaseCursor;
+              CaretCursor cursor = listCursor.textPaneCursor as CaretCursor;
               timingService.divideSentence(timelinePaneProvider.selectingSentence[0], cursor.caretPosition, musicPlayerProvider.seekPosition);
             }
           }(),

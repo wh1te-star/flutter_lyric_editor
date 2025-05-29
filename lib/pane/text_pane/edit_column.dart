@@ -24,15 +24,15 @@ class EditColumn extends StatelessWidget {
     for (MapEntry<SentenceID, Sentence> sentenceEntry in sentenceMap.map.entries) {
       SentenceID sentenceID = sentenceEntry.key;
       Sentence sentence = sentenceEntry.value;
-      TextPaneCursor? textPaneCursor = null;
+      TextPaneListCursor? listCursor;
       if (sentenceID == textPaneListCursor.sentenceID) {
-        textPaneCursor = textPaneListCursor.textPaneCursor;
+        listCursor = textPaneListCursor;
       }
 
       Widget widget = SentenceEdit(
         sentence,
         seekPosition,
-        textPaneCursor,
+        listCursor,
         cursorBlinker,
       );
       elements.add(widget);

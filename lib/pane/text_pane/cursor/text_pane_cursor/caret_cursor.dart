@@ -22,34 +22,34 @@ import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/position/timing_index.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 
-class BaseCursor extends TextPaneCursor {
+class CaretCursor extends TextPaneCursor {
   CaretPosition caretPosition;
   Option option;
 
-  BaseCursor({
+  CaretCursor({
     required Sentence sentence,
     required SeekPosition seekPosition,
     required this.caretPosition,
     required this.option,
   }) : super(sentence, seekPosition);
 
-  BaseCursor._privateConstructor(
+  CaretCursor._privateConstructor(
     super.sentence,
     super.seekPosition,
     this.caretPosition,
     this.option,
   );
-  static final BaseCursor _empty = BaseCursor._privateConstructor(
+  static final CaretCursor _empty = CaretCursor._privateConstructor(
     Sentence.empty,
     SeekPosition.empty,
     CaretPosition.empty,
     Option.former,
   );
-  static BaseCursor get empty => _empty;
+  static CaretCursor get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
-  factory BaseCursor.defaultCursor({
+  factory CaretCursor.defaultCursor({
     required Sentence sentence,
     required SeekPosition seekPosition,
   }) {
@@ -67,7 +67,7 @@ class BaseCursor extends TextPaneCursor {
     }
     assert(caretPosition.isNotEmpty);
 
-    return BaseCursor(
+    return CaretCursor(
       sentence: sentence,
       seekPosition: seekPosition,
       caretPosition: caretPosition,
@@ -246,12 +246,12 @@ class BaseCursor extends TextPaneCursor {
 
   @override
   List<TextPaneCursor?> getWordRangeDividedCursors(Sentence sentence, List<WordRange> wordRangeList) {
-    List<BaseCursor?> separatedCursors = List.filled(wordRangeList.length, null);
-    BaseCursor shiftedCursor = copyWith();
+    List<CaretCursor?> separatedCursors = List.filled(wordRangeList.length, null);
+    CaretCursor shiftedCursor = copyWith();
     for (int index = 0; index < wordRangeList.length; index++) {
       WordRange wordRange = wordRangeList[index];
       WordList? sentenceSubList = sentence.getWordList(wordRange);
-      BaseCursor? nextCursor = shiftedCursor.shiftLeftByWordList(sentenceSubList);
+      CaretCursor? nextCursor = shiftedCursor.shiftLeftByWordList(sentenceSubList);
       if (nextCursor == null) {
         separatedCursors[index] = shiftedCursor;
         break;
@@ -263,12 +263,12 @@ class BaseCursor extends TextPaneCursor {
 
   @override
   List<TextPaneCursor?> getWordDividedCursors(WordList wordList) {
-    List<BaseCursor?> separatedCursors = List.filled(wordList.length, null);
-    BaseCursor shiftedCursor = copyWith();
+    List<CaretCursor?> separatedCursors = List.filled(wordList.length, null);
+    CaretCursor shiftedCursor = copyWith();
     for (int index = 0; index < wordList.length; index++) {
       WordIndex wordIndex = WordIndex(index);
       Word word = wordList[wordIndex];
-      BaseCursor? nextCursor = shiftedCursor.shiftLeftByWord(word);
+      CaretCursor? nextCursor = shiftedCursor.shiftLeftByWord(word);
       if (nextCursor == null) {
         separatedCursors[index] = shiftedCursor;
         break;
@@ -279,7 +279,7 @@ class BaseCursor extends TextPaneCursor {
   }
 
   @override
-  BaseCursor? shiftLeftByWordList(WordList wordList) {
+  CaretCursor? shiftLeftByWordList(WordList wordList) {
     if (caretPosition.position - wordList.charCount < 0) {
       return null;
     }
@@ -288,7 +288,7 @@ class BaseCursor extends TextPaneCursor {
   }
 
   @override
-  BaseCursor? shiftLeftByWord(Word word) {
+  CaretCursor? shiftLeftByWord(Word word) {
     if (caretPosition.position - word.word.length < 0) {
       return null;
     }
@@ -296,13 +296,13 @@ class BaseCursor extends TextPaneCursor {
     return copyWith(caretPosition: newCaretPosition);
   }
 
-  BaseCursor copyWith({
+  CaretCursor copyWith({
     Sentence? sentence,
     SeekPosition? seekPosition,
     CaretPosition? caretPosition,
     Option? option,
   }) {
-    return BaseCursor(
+    return CaretCursor(
       sentence: sentence ?? this.sentence,
       seekPosition: seekPosition ?? this.seekPosition,
       caretPosition: caretPosition ?? this.caretPosition,
@@ -312,14 +312,14 @@ class BaseCursor extends TextPaneCursor {
 
   @override
   String toString() {
-    return 'BaseCursor(position: ${caretPosition.position}, option: $option)';
+    return 'CaretCursor(position: ${caretPosition.position}, option: $option)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final BaseCursor otherWords = other as BaseCursor;
+    final CaretCursor otherWords = other as CaretCursor;
     if (sentence != otherWords.sentence) return false;
     if (seekPosition != otherWords.seekPosition) return false;
     if (caretPosition != otherWords.caretPosition) return false;

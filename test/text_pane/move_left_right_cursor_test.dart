@@ -12,7 +12,7 @@ import 'package:lyric_editor/lyric_data/timing_exception.dart';
 import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/ruby_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/word_cursor.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/base_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/caret_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_controller.dart';
 import 'package:lyric_editor/position/caret_position.dart';
@@ -61,8 +61,8 @@ void main() {
 
     TestWidgetsFlutterBinding.ensureInitialized();
 
-    BaseCursor constructCursor(PositionTestInfo positionInfo) {
-      return BaseCursor(
+    CaretCursor constructCursor(PositionTestInfo positionInfo) {
+      return CaretCursor(
         sentenceID,
         cursorBlinker,
         CaretPosition(positionInfo.charPosition),
@@ -71,23 +71,23 @@ void main() {
     }
 
     void failedMessage(int index, TextPaneCursorController actual, TextPaneListCursor expected, bool reverse) {
-      BaseCursor resultCursor = actual.textPaneListCursor as BaseCursor;
-      BaseCursor expectedCursor = expected as BaseCursor;
+      CaretCursor resultCursor = actual.textPaneListCursor as CaretCursor;
+      CaretCursor expectedCursor = expected as CaretCursor;
       String order = reverse ? "backward" : "forward";
       debugPrint('Test failed at the $order iteration ${index + 1}:');
       debugPrint('Expected cursor position: ${expectedCursor.caretPosition}, option: ${expectedCursor.option}');
       debugPrint('But the actual cursor position: ${resultCursor.caretPosition}, option: ${resultCursor.option}');
     }
 
-    bool cursorMatcher(SentenceSelectionCursorMover result, BaseCursor expectedCursor) {
-      if (result.textPaneCursor is! BaseCursor) return false;
+    bool cursorMatcher(SentenceSelectionCursorMover result, CaretCursor expectedCursor) {
+      if (result.textPaneCursor is! CaretCursor) return false;
 
-      BaseCursor resultCursor = result.textPaneCursor as BaseCursor;
+      CaretCursor resultCursor = result.textPaneCursor as CaretCursor;
       return resultCursor == expectedCursor;
     }
 
     bool checkCursor(TextPaneCursorController result, int index, List<PositionTestInfo> expectedMovement, bool reverse) {
-      BaseCursor expectedCursor = constructCursor(expectedMovement[index]);
+      CaretCursor expectedCursor = constructCursor(expectedMovement[index]);
       if (reverse) {
         result = result.moveLeftCursor();
       } else {
@@ -100,7 +100,7 @@ void main() {
         return false;
       }
 
-      BaseCursor resultCursor = result.textPaneCursor as BaseCursor;
+      CaretCursor resultCursor = result.textPaneCursor as CaretCursor;
       debugPrint("movement: pos=${resultCursor.caretPosition}, option=${resultCursor.option}");
       return true;
     }
@@ -135,7 +135,7 @@ void main() {
         rubyMap: RubyMap.empty,
       );
 
-      final BaseCursor cursor = BaseCursor(
+      final CaretCursor cursor = CaretCursor(
         sentenceID,
         cursorBlinker,
         CaretPosition(1),
@@ -171,7 +171,7 @@ void main() {
         rubyMap: RubyMap.empty,
       );
 
-      final BaseCursor cursor = BaseCursor(
+      final CaretCursor cursor = CaretCursor(
         sentenceID,
         cursorBlinker,
         CaretPosition(5),

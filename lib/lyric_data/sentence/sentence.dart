@@ -71,7 +71,7 @@ class Sentence {
       SeekPosition rubyStartSeekPosition = SeekPosition(startTimestamp.position + timings[wordRange.startIndex.index].seekPosition.position);
       SeekPosition startSeekPosition = SeekPosition(rubyStartSeekPosition.position + rubyTimings.first.seekPosition.position);
       SeekPosition endSeekPosition = SeekPosition(rubyStartSeekPosition.position + rubyTimings.last.seekPosition.position);
-      if (startSeekPosition <= seekPosition && seekPosition < endSeekPosition) {
+      if (startSeekPosition < seekPosition && seekPosition < endSeekPosition) {
         return wordRange;
       }
     }

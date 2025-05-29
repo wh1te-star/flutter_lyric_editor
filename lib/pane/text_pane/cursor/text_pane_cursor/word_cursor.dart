@@ -3,7 +3,7 @@ import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
-import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/base_cursor.dart';
+import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/caret_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
 import 'package:lyric_editor/position/seek_position.dart';
 import 'package:lyric_editor/position/word_index.dart';
@@ -102,7 +102,7 @@ class WordCursor extends TextPaneCursor {
   }
 
   TextPaneCursor exitWordMode() {
-    return BaseCursor.defaultCursor(
+    return CaretCursor.defaultCursor(
       sentence: sentence,
       seekPosition: seekPosition,
     );
