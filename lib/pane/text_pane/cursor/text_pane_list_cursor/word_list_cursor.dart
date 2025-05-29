@@ -4,7 +4,7 @@ import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/word_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/base_list_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pane_list_cursor.dart';
-import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/word_range.dart';
 
 class WordListCursor extends TextPaneListCursor {

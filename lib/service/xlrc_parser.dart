@@ -3,7 +3,7 @@ import 'package:lyric_editor/lyric_data/ruby/ruby_map.dart';
 import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
-import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/section/section_list.dart';

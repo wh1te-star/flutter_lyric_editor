@@ -3,7 +3,7 @@ import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/lyric_data/timing/timing.dart';
 import 'package:lyric_editor/position/caret_position.dart';
-import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/timing_index.dart';
 
 class TimingList {

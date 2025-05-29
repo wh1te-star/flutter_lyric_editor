@@ -4,7 +4,7 @@ import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/lyric_data/timetable.dart';
 import 'package:lyric_editor/lyric_data/timing_exception.dart';
 import 'package:lyric_editor/position/caret_position.dart';
-import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/service/timing_service.dart';
 
 void main() {

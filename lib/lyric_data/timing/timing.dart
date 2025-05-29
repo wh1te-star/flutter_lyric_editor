@@ -1,5 +1,5 @@
 import 'package:lyric_editor/position/caret_position.dart';
-import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position/seek_position.dart';
 
 class Timing {
   final CaretPosition caretPosition;

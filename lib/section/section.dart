@@ -1,4 +1,4 @@
-import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position/seek_position.dart';
 
 class Section implements Comparable<Section> {
   SeekPosition seekPosition;

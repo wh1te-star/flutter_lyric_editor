@@ -13,7 +13,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/base_li
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pane_list_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/text_pane_provider.dart';
 import 'package:lyric_editor/pane/video_pane/video_pane_provider.dart';
-import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/sentence_side_enum.dart';
 import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';

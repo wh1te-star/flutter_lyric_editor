@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/section/section.dart';
 
 class SectionList {

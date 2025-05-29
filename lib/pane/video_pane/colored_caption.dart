@@ -3,7 +3,7 @@ import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/timing/timing.dart';
 import 'package:lyric_editor/pane/video_pane/colored_text_painter.dart';
-import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/seek_position_info/invalid_seek_position_info.dart';
 import 'package:lyric_editor/position/seek_position_info/seek_position_info.dart';
 import 'package:lyric_editor/position/seek_position_info/timing_seek_position_info.dart';

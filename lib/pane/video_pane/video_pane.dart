@@ -8,7 +8,7 @@ import 'package:lyric_editor/pane/text_pane/text_pane_provider.dart';
 import 'package:lyric_editor/pane/video_pane/colored_caption.dart';
 import 'package:lyric_editor/pane/video_pane/show_hide_mode/show_hide_mode_screen.dart';
 import 'package:lyric_editor/pane/video_pane/video_pane_provider.dart';
-import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
 import 'package:lyric_editor/pane/video_pane/colored_text_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/timeline_pane.dart';

@@ -10,7 +10,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pa
 import 'package:lyric_editor/pane/text_pane/edit_widget/word/word_list_edit.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/word/timing_edit.dart';
 import 'package:lyric_editor/position/caret_position.dart';
-import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/word_range.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 import 'package:tuple/tuple.dart';

@@ -13,7 +13,7 @@ import 'package:lyric_editor/position/caret_position_info/invalid_caret_position
 import 'package:lyric_editor/position/caret_position_info/word_caret_position_info.dart';
 import 'package:lyric_editor/position/caret_position_info/timing_caret_position_info.dart';
 import 'package:lyric_editor/position/option_enum.dart';
-import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/seek_position_info/invalid_seek_position_info.dart';
 import 'package:lyric_editor/position/seek_position_info/seek_position_info.dart';
 import 'package:lyric_editor/position/seek_position_info/timing_seek_position_info.dart';

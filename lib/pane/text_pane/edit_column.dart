@@ -6,7 +6,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cu
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_controller.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pane_list_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/edit_widget/sentence_edit.dart';
-import 'package:lyric_editor/position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
 class EditColumn extends StatelessWidget {
