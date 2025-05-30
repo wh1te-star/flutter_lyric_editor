@@ -15,7 +15,7 @@ class AbsoluteSeekPosition extends SeekPosition implements Comparable<AbsoluteSe
   @override
   AbsoluteSeekPosition get absolute => this;
   RelativeSeekPosition toRelative(SeekPosition basePosition) {
-    return RelativeSeekPosition(basePosition, durationUntil(basePosition).inMilliseconds);
+    return RelativeSeekPosition(basePosition, basePosition.absolute.durationUntil(this).inMilliseconds);
   }
 
   Duration durationUntil(SeekPosition other) {
