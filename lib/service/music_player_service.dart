@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
@@ -8,7 +9,7 @@ final musicPlayerMasterProvider = ChangeNotifierProvider((ref) => MusicPlayerSer
 
 class MusicPlayerService extends ChangeNotifier {
   AudioPlayer player = AudioPlayer();
-  SeekPosition _seekPosition = AbsoluteSeekPosition(10);
+  AbsoluteSeekPosition _seekPosition = AbsoluteSeekPosition(10);
   bool _isPlaying = false;
   Duration _audioDuration = Duration.zero;
   late DeviceFileSource audioFile;
@@ -32,7 +33,7 @@ class MusicPlayerService extends ChangeNotifier {
     });
   }
 
-  SeekPosition get seekPosition => _seekPosition;
+  AbsoluteSeekPosition get seekPosition => _seekPosition;
 
   bool get isPlaying => _isPlaying;
 

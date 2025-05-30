@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/section/section.dart';
 
@@ -16,7 +17,7 @@ class SectionList {
   bool isSeekPositionOrdered() {
     return list.map((Section section) {
       return section.seekPosition;
-    }).isSorted((SeekPosition left, SeekPosition right) => left.compareTo(right));
+    }).isSorted((AbsoluteSeekPosition left, AbsoluteSeekPosition right) => left.compareTo(right));
   }
 
   bool isSeekPositionDuplicationAllowed() {
@@ -34,7 +35,7 @@ class SectionList {
     list[index] = value;
   }
 
-  SectionList addSection(SeekPosition seekPosition) {
+  SectionList addSection(AbsoluteSeekPosition seekPosition) {
     List<Section> newList = List.from(list);
     if (!newList.contains(Section(seekPosition))) {
       newList.add(Section(seekPosition));
@@ -42,7 +43,7 @@ class SectionList {
     return SectionList(newList);
   }
 
-  SectionList removeSection(SeekPosition seekPosition) {
+  SectionList removeSection(AbsoluteSeekPosition seekPosition) {
     List<Section> newList = List.from(list);
 
     int targetIndex = 0;

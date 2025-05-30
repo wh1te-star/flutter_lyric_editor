@@ -11,6 +11,7 @@ import 'package:lyric_editor/pane/timeline_pane/rectangle_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/scale_mark.dart';
 import 'package:lyric_editor/pane/sentence_timetable.dart';
 import 'package:lyric_editor/pane/video_pane/show_hide_mode/sentence_track_map.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
@@ -196,7 +197,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
 
     final Duration audioDuration = musicPlayerService.audioDuration;
-    final SeekPosition seekPosition = musicPlayerService.seekPosition;
+    final AbsoluteSeekPosition seekPosition = musicPlayerService.seekPosition;
     final Map<VocalistID, Vocalist> vocalistColorMap = timingService.vocalistColorMap.map;
     final double intervalLength = timelinePaneProvider.intervalLength;
     final int intervalDuration = timelinePaneProvider.intervalDuration;

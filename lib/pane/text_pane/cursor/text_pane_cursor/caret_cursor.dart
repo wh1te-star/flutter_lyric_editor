@@ -13,6 +13,7 @@ import 'package:lyric_editor/position/caret_position_info/invalid_caret_position
 import 'package:lyric_editor/position/caret_position_info/word_caret_position_info.dart';
 import 'package:lyric_editor/position/caret_position_info/timing_caret_position_info.dart';
 import 'package:lyric_editor/position/option_enum.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/seek_position_info/invalid_seek_position_info.dart';
 import 'package:lyric_editor/position/seek_position_info/seek_position_info.dart';
@@ -29,7 +30,7 @@ class CaretCursor extends TextPaneCursor {
 
   CaretCursor({
     required Timetable timetable,
-    required SeekPosition seekPosition,
+    required AbsoluteSeekPosition seekPosition,
     required this.caretPosition,
     required this.option,
   }) : super(timetable, seekPosition);
@@ -42,7 +43,7 @@ class CaretCursor extends TextPaneCursor {
   );
   static final CaretCursor _empty = CaretCursor._privateConstructor(
     Timetable.empty,
-    SeekPosition.empty,
+    AbsoluteSeekPosition.empty,
     CaretPosition.empty,
     Option.former,
   );
@@ -52,7 +53,7 @@ class CaretCursor extends TextPaneCursor {
 
   factory CaretCursor.defaultCursor({
     required Timetable timetable,
-    required SeekPosition seekPosition,
+    required AbsoluteSeekPosition seekPosition,
   }) {
     SeekPositionInfo seekPositionInfo = timetable.getSeekPositionInfoBySeekPosition(seekPosition);
     if (seekPositionInfo is InvalidSeekPositionInfo) {
@@ -299,7 +300,7 @@ class CaretCursor extends TextPaneCursor {
 
   CaretCursor copyWith({
     Timetable? timetable,
-    SeekPosition? seekPosition,
+    AbsoluteSeekPosition? seekPosition,
     CaretPosition? caretPosition,
     Option? option,
   }) {

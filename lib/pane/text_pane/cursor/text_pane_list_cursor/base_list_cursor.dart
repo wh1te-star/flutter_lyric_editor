@@ -12,6 +12,7 @@ import 'package:lyric_editor/position/caret_position_info/caret_position_info.da
 import 'package:lyric_editor/position/caret_position_info/invalid_caret_position_info.dart';
 import 'package:lyric_editor/position/caret_position_info/word_caret_position_info.dart';
 import 'package:lyric_editor/position/option_enum.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/seek_position_info/seek_position_info.dart';
 import 'package:lyric_editor/position/seek_position_info/word_seek_position_info.dart';
@@ -24,7 +25,7 @@ class BaseListCursor extends TextPaneListCursor {
   BaseListCursor({
     required SentenceMap sentenceMap,
     required SentenceID sentenceID,
-    required SeekPosition seekPosition,
+    required AbsoluteSeekPosition seekPosition,
     required CaretPosition caretPosition,
     required Option option,
   }) : super(sentenceMap, sentenceID, seekPosition) {
@@ -59,7 +60,7 @@ class BaseListCursor extends TextPaneListCursor {
   static final BaseListCursor _empty = BaseListCursor._privateConstructor(
     SentenceMap.empty,
     SentenceID.empty,
-    SeekPosition.empty,
+    AbsoluteSeekPosition.empty,
   );
   static BaseListCursor get empty => _empty;
   bool get isEmpty => identical(this, _empty);
@@ -68,13 +69,13 @@ class BaseListCursor extends TextPaneListCursor {
   factory BaseListCursor.defaultCursor({
     required SentenceMap sentenceMap,
     required SentenceID sentenceID,
-    required SeekPosition seekPosition,
+    required AbsoluteSeekPosition seekPosition,
   }) {
     if (sentenceMap.isEmpty) {
       return BaseListCursor(
         sentenceMap: SentenceMap.empty,
         sentenceID: SentenceID.empty,
-        seekPosition: SeekPosition.empty,
+        seekPosition: AbsoluteSeekPosition.empty,
         caretPosition: CaretPosition.empty,
         option: Option.former,
       );
@@ -176,7 +177,7 @@ class BaseListCursor extends TextPaneListCursor {
   TextPaneListCursor updateCursor(
     SentenceMap sentenceMap,
     SentenceID sentenceID,
-    SeekPosition seekPosition,
+    AbsoluteSeekPosition seekPosition,
   ) {
     if (sentenceMap.isEmpty) {
       return BaseListCursor(
@@ -229,7 +230,7 @@ class BaseListCursor extends TextPaneListCursor {
   BaseListCursor copyWith({
     SentenceMap? sentenceMap,
     SentenceID? sentenceID,
-    SeekPosition? seekPosition,
+    AbsoluteSeekPosition? seekPosition,
     CaretPosition? caretPosition,
     Option? option,
   }) {

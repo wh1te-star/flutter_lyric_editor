@@ -4,6 +4,7 @@ import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/word_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/base_list_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pane_list_cursor.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/word_range.dart';
 
@@ -13,7 +14,7 @@ class WordListCursor extends TextPaneListCursor {
   WordListCursor({
     required SentenceMap sentenceMap,
     required SentenceID sentenceID,
-    required SeekPosition seekPosition,
+    required AbsoluteSeekPosition seekPosition,
     required WordRange wordRange,
     required bool isExpandMode,
   }) : super(sentenceMap, sentenceID, seekPosition) {
@@ -47,7 +48,7 @@ class WordListCursor extends TextPaneListCursor {
   static final WordListCursor _empty = WordListCursor._privateConstructor(
     SentenceMap.empty,
     SentenceID.empty,
-    SeekPosition.empty,
+    AbsoluteSeekPosition.empty,
   );
   static WordListCursor get empty => _empty;
   bool get isEmpty => identical(this, _empty);
@@ -131,7 +132,7 @@ class WordListCursor extends TextPaneListCursor {
   TextPaneListCursor updateCursor(
     SentenceMap sentenceMap,
     SentenceID sentenceID,
-    SeekPosition seekPosition,
+    AbsoluteSeekPosition seekPosition,
   ) {
     return WordListCursor(
       sentenceMap: sentenceMap,
@@ -146,7 +147,7 @@ class WordListCursor extends TextPaneListCursor {
   WordListCursor copyWith({
     SentenceMap? sentenceMap,
     SentenceID? sentenceID,
-    SeekPosition? seekPosition,
+    AbsoluteSeekPosition? seekPosition,
     WordRange? wordRange,
     bool? isExpandMode,
   }) {

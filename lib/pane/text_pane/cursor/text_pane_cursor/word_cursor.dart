@@ -3,6 +3,7 @@ import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/caret_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/text_pane_cursor.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/word_range.dart';
@@ -13,7 +14,7 @@ class WordCursor extends TextPaneCursor {
 
   WordCursor({
     required Timetable timetable,
-    required SeekPosition seekPosition,
+    required AbsoluteSeekPosition seekPosition,
     required this.wordRange,
     required this.isExpandMode,
   }) : super(timetable, seekPosition);
@@ -26,7 +27,7 @@ class WordCursor extends TextPaneCursor {
   );
   static final WordCursor _empty = WordCursor._privateConstructor(
     Timetable.empty,
-    SeekPosition.empty,
+    AbsoluteSeekPosition.empty,
     WordRange.empty,
     false,
   );
@@ -188,7 +189,7 @@ class WordCursor extends TextPaneCursor {
 
   WordCursor copyWith({
     Timetable? timetable,
-    SeekPosition? seekPosition,
+    AbsoluteSeekPosition? seekPosition,
     WordRange? wordRange,
     bool? isExpandMode,
   }) {

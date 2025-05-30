@@ -5,6 +5,7 @@ import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/caret_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor_controller.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/base_list_cursor.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/service/music_player_service.dart';
 import 'package:lyric_editor/service/timing_service.dart';
@@ -42,7 +43,7 @@ class TextPaneProvider with ChangeNotifier {
 
     musicPlayerProvider.addListener(() {
       SentenceMap sentenceMap = timingService.getSentencesAtSeekPosition();
-      SeekPosition seekPosition = musicPlayerProvider.seekPosition;
+      AbsoluteSeekPosition seekPosition = musicPlayerProvider.seekPosition;
       textPaneCursorController = textPaneCursorController.updateCursor(sentenceMap, seekPosition);
 
       notifyListeners();
@@ -50,7 +51,7 @@ class TextPaneProvider with ChangeNotifier {
 
     timingService.addListener(() {
       SentenceMap sentenceMap = timingService.getSentencesAtSeekPosition();
-      SeekPosition seekPosition = musicPlayerProvider.seekPosition;
+      AbsoluteSeekPosition seekPosition = musicPlayerProvider.seekPosition;
       textPaneCursorController = textPaneCursorController.updateCursor(sentenceMap, seekPosition);
 
       notifyListeners();

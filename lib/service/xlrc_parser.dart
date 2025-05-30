@@ -3,6 +3,7 @@ import 'package:lyric_editor/lyric_data/ruby/ruby_map.dart';
 import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/word_range.dart';
@@ -100,7 +101,7 @@ class XlrcParser {
       }).toList());
 
       final VocalistID vocalistID = vocalistColorMap.getVocalistIDByName(vocalistName);
-      final Timetable timetable = Timetable(startTimestamp: SeekPosition(startTimestamp), wordList: wordList);
+      final Timetable timetable = Timetable(startTimestamp: AbsoluteSeekPosition(startTimestamp), wordList: wordList);
 
       sentenceMap = sentenceMap.addSentence(Sentence(
         vocalistID: vocalistID,

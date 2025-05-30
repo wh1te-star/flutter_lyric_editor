@@ -12,6 +12,7 @@ import 'package:lyric_editor/position/caret_position_info/caret_position_info.da
 import 'package:lyric_editor/position/caret_position_info/invalid_caret_position_info.dart';
 import 'package:lyric_editor/position/caret_position_info/word_caret_position_info.dart';
 import 'package:lyric_editor/position/option_enum.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/seek_position_info/seek_position_info.dart';
 import 'package:lyric_editor/position/seek_position_info/word_seek_position_info.dart';
@@ -26,7 +27,7 @@ class RubyListCursor extends TextPaneListCursor {
   RubyListCursor({
     required SentenceMap sentenceMap,
     required SentenceID sentenceID,
-    required SeekPosition seekPosition,
+    required AbsoluteSeekPosition seekPosition,
     required this.wordRange,
     required CaretPosition caretPosition,
     required Option option,
@@ -68,7 +69,7 @@ class RubyListCursor extends TextPaneListCursor {
   static final RubyListCursor _empty = RubyListCursor._privateConstructor(
     SentenceMap.empty,
     SentenceID.empty,
-    SeekPosition.empty,
+    AbsoluteSeekPosition.empty,
     WordRange.empty,
   );
   static RubyListCursor get empty => _empty;
@@ -78,14 +79,14 @@ class RubyListCursor extends TextPaneListCursor {
   factory RubyListCursor.defaultCursor({
     required SentenceMap sentenceMap,
     required SentenceID sentenceID,
-    required SeekPosition seekPosition,
+    required AbsoluteSeekPosition seekPosition,
     required WordRange wordRange,
   }) {
     if (sentenceMap.isEmpty) {
       return RubyListCursor(
         sentenceMap: SentenceMap.empty,
         sentenceID: SentenceID.empty,
-        seekPosition: SeekPosition.empty,
+        seekPosition: AbsoluteSeekPosition.empty,
         wordRange: WordRange.empty,
         caretPosition: CaretPosition.empty,
         option: Option.former,
@@ -160,7 +161,7 @@ class RubyListCursor extends TextPaneListCursor {
   TextPaneListCursor updateCursor(
     SentenceMap sentenceMap,
     SentenceID sentenceID,
-    SeekPosition seekPosition,
+    AbsoluteSeekPosition seekPosition,
   ) {
     if (sentenceMap.isEmpty) {
       return RubyListCursor(
@@ -226,7 +227,7 @@ class RubyListCursor extends TextPaneListCursor {
   RubyListCursor copyWith({
     SentenceMap? sentenceMap,
     SentenceID? sentenceID,
-    SeekPosition? seekPosition,
+    AbsoluteSeekPosition? seekPosition,
     WordRange? wordRange,
     CaretPosition? caretPosition,
     Option? option,

@@ -5,6 +5,7 @@ import 'package:lyric_editor/pane/text_pane/cursor/text_pane_cursor/caret_cursor
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/word_list_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/base_list_cursor.dart';
 import 'package:lyric_editor/pane/text_pane/cursor/text_pane_list_cursor/text_pane_list_cursor.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/utility/cursor_blinker.dart';
 
@@ -12,7 +13,7 @@ class TextPaneCursorController {
   final SentenceMap sentenceMap;
   final SentenceID sentenceID;
   final TextPaneListCursor textPaneListCursor;
-  final SeekPosition seekPosition;
+  final AbsoluteSeekPosition seekPosition;
   final CursorBlinker cursorBlinker;
 
   TextPaneCursorController({
@@ -34,7 +35,7 @@ class TextPaneCursorController {
     SentenceMap.empty,
     SentenceID.empty,
     BaseListCursor.empty,
-    SeekPosition.empty,
+    AbsoluteSeekPosition.empty,
     CursorBlinker.empty,
   );
   static TextPaneCursorController get empty => _empty;
@@ -89,7 +90,7 @@ class TextPaneCursorController {
 
   TextPaneCursorController updateCursor(
     SentenceMap sentenceMap,
-    SeekPosition seekPosition,
+    AbsoluteSeekPosition seekPosition,
   ) {
     TextPaneListCursor nextCursor = textPaneListCursor.updateCursor(sentenceMap, sentenceID, seekPosition);
     return copyWith(textPaneListCursor: nextCursor);
@@ -99,7 +100,7 @@ class TextPaneCursorController {
     SentenceMap? sentenceMap,
     SentenceID? sentenceID,
     TextPaneListCursor? textPaneListCursor,
-    SeekPosition? seekPosition,
+    AbsoluteSeekPosition? seekPosition,
     CursorBlinker? cursorBlinker,
   }) {
     return TextPaneCursorController(

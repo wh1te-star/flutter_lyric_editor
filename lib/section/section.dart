@@ -1,15 +1,16 @@
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 
 class Section implements Comparable<Section> {
-  SeekPosition seekPosition;
+  AbsoluteSeekPosition seekPosition;
 
   Section(this.seekPosition);
 
-  static Section get empty => Section(SeekPosition(-1));
+  static Section get empty => Section(AbsoluteSeekPosition.empty);
   bool get isEmpty => this == empty;
 
   Section copyWith({
-    SeekPosition? seekPosition,
+    AbsoluteSeekPosition? seekPosition,
   }) {
     return Section(seekPosition ?? this.seekPosition);
   }

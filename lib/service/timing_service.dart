@@ -7,6 +7,7 @@ import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence_map.dart';
 import 'package:lyric_editor/position/caret_position.dart';
 import 'package:lyric_editor/position/option_enum.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/sentence_side_enum.dart';
 import 'package:lyric_editor/section/section_list.dart';
@@ -41,13 +42,13 @@ class TimingService extends ChangeNotifier {
   /* * * * * * * * * * * * * * * * * *
    SectionList functions
   * * * * * * * * * * * * * * * * * */
-  void addSection(SeekPosition seekPosition) {
+  void addSection(AbsoluteSeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.section, sectionList);
     sectionList.addSection(seekPosition);
     notifyListeners();
   }
 
-  void removeSection(SeekPosition seekPosition) {
+  void removeSection(AbsoluteSeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.section, sectionList);
     sectionList.removeSection(seekPosition);
     notifyListeners();
@@ -92,7 +93,7 @@ class TimingService extends ChangeNotifier {
   }
 
   SentenceMap getSentencesAtSeekPosition({
-    SeekPosition? seekPosition,
+    AbsoluteSeekPosition? seekPosition,
     VocalistID? vocalistID,
     Duration startBulge = Duration.zero,
     Duration endBulge = Duration.zero,
@@ -136,7 +137,7 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addTiming(SentenceID sentenceID, CaretPosition charPosition, SeekPosition seekPosition) {
+  void addTiming(SentenceID sentenceID, CaretPosition charPosition, AbsoluteSeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
     sentenceMap = sentenceMap.addTiming(sentenceID, charPosition, seekPosition);
     notifyListeners();
@@ -148,7 +149,7 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addRubyTiming(SentenceID sentenceID, WordRange wordRange, CaretPosition charPosition, SeekPosition seekPosition) {
+  void addRubyTiming(SentenceID sentenceID, WordRange wordRange, CaretPosition charPosition, AbsoluteSeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
     sentenceMap = sentenceMap.addRubyTiming(sentenceID, wordRange, charPosition, seekPosition);
     notifyListeners();
@@ -166,7 +167,7 @@ class TimingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void divideSentence(SentenceID sentenceID, CaretPosition charPosition, SeekPosition seekPosition) {
+  void divideSentence(SentenceID sentenceID, CaretPosition charPosition, AbsoluteSeekPosition seekPosition) {
     undoHistory.pushUndoHistory(LyricUndoType.sentence, sentenceMap);
     sentenceMap = sentenceMap.divideSentence(sentenceID, charPosition, seekPosition);
     notifyListeners();
