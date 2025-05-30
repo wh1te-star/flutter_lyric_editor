@@ -3,6 +3,7 @@ import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/timing/timing.dart';
 import 'package:lyric_editor/pane/video_pane/colored_text_painter.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/seek_position_info/invalid_seek_position_info.dart';
 import 'package:lyric_editor/position/seek_position_info/seek_position_info.dart';
@@ -42,7 +43,7 @@ class ColoredCaption extends StatelessWidget {
   ) {
     Word word = sentence.words[wordIndex];
 
-    SeekPositionInfo seekPositionInfo = sentence.getSeekPositionInfoBySeekPosition(seekPosition);
+    SeekPositionInfo seekPositionInfo = sentence.getSeekPositionInfoBySeekPosition(seekPosition.absolute);
     double progress = getProgress(sentence, wordIndex, seekPositionInfo);
     return CustomPaint(
       painter: ColoredTextPainter(
@@ -88,9 +89,9 @@ class ColoredCaption extends StatelessWidget {
         return 0.0;
       }
 
-      SeekPosition leftSeekPosition = SeekPosition(sentence.startTimestamp.position + sentence.getLeftTiming(wordIndex).seekPosition.position);
-      SeekPosition rightSeekPosition = SeekPosition(sentence.startTimestamp.position + sentence.getRightTiming(wordIndex).seekPosition.position);
-      double numerator = seekPosition.position.toDouble() - leftSeekPosition.position.toDouble();
+      AbsoluteSeekPosition leftSeekPosition = sentence.getLeftTiming(wordIndex).seekPosition.absolute;
+      AbsoluteSeekPosition rightSeekPosition = sentence.getRightTiming(wordIndex).seekPosition.absolute;
+      double numerator = seekPosition.absolute.position.toDouble() - leftSeekPosition.position.toDouble();
       double denominator = rightSeekPosition.position.toDouble() - leftSeekPosition.position.toDouble();
       return numerator / denominator;
     }

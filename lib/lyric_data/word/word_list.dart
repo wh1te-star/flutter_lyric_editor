@@ -1,8 +1,11 @@
 import 'package:collection/collection.dart';
+import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/timing/timing.dart';
 import 'package:lyric_editor/lyric_data/timing/timing_list.dart';
 import 'package:lyric_editor/position/caret_position.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
+import 'package:lyric_editor/position/seek_position/relative_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/word_index.dart';
 
@@ -46,16 +49,18 @@ class WordList {
     return false;
   }
 
-  TimingList toTimingList() {
+  TimingList toTimingList(AbsoluteSeekPosition startTimestamp) {
     List<Timing> timings = [];
     CaretPosition caretPosition = CaretPosition(0);
-    SeekPosition seekPosition = SeekPosition(0);
+    int shiftDuration = 0;
     for (Word word in list) {
+      RelativeSeekPosition seekPosition = RelativeSeekPosition(startTimestamp, shiftDuration);
       timings.add(Timing(caretPosition, seekPosition));
 
       caretPosition += word.word.length;
-      seekPosition += word.duration;
+      shiftDuration += word.duration.inMilliseconds;
     }
+    RelativeSeekPosition seekPosition = RelativeSeekPosition(startTimestamp, shiftDuration);
     timings.add(Timing(caretPosition, seekPosition));
 
     return TimingList(timings);

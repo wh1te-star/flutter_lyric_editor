@@ -3,6 +3,8 @@ import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
 import 'package:lyric_editor/lyric_data/timing/timing.dart';
 import 'package:lyric_editor/position/caret_position.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
+import 'package:lyric_editor/position/seek_position/relative_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/timing_index.dart';
 
@@ -29,7 +31,7 @@ class TimingList {
   bool isSeekPositionOrdered() {
     return _list.map((Timing timing) {
       return timing.seekPosition;
-    }).isSorted((SeekPosition left, SeekPosition right) => left.compareTo(right));
+    }).isSorted((RelativeSeekPosition left, RelativeSeekPosition right) => left.compareTo(right));
   }
 
   bool isCharPositionDuplicationAllowed() {
@@ -56,20 +58,21 @@ class TimingList {
   }
 
   WordList toWordList(String sentence) {
-    List<Word> words = [];
-    List<Timing> timings = list;
-    for (int index = 0; index < timings.length - 1; index++) {
+    List<Word> newWordlist = [];
+    for (int index = 0; index < list.length - 1; index++) {
+      Timing leftTiming = list[index];
+      Timing rightTiming = list[index + 1];
       String word = sentence.substring(
-        timings[index].caretPosition.position,
-        timings[index + 1].caretPosition.position,
+        leftTiming.caretPosition.position,
+        rightTiming.caretPosition.position,
       );
-      Duration duration = Duration(
-        milliseconds: timings[index + 1].seekPosition.position - timings[index].seekPosition.position,
-      );
-      words.add(Word(word, duration));
+      AbsoluteSeekPosition leftAbsolute = leftTiming.seekPosition.absolute;
+      AbsoluteSeekPosition rightAbsolute = rightTiming.seekPosition.absolute;
+      Duration duration = leftAbsolute.durationUntil(rightAbsolute);
+      newWordlist.add(Word(word, duration));
     }
 
-    return WordList(words);
+    return WordList(newWordlist);
   }
 
   TimingList copyWith({

@@ -163,11 +163,11 @@ class _SentenceTimelineState extends ConsumerState<SentenceTimeline> {
       WordRange wordRange = entry.key;
       Ruby ruby = entry.value;
       Size itemSize = Size(
-        duration2Length(ruby.endTimestamp.position - ruby.startTimestamp.position),
+        duration2Length((ruby.startTimestamp.absolute.durationUntil(ruby.endTimestamp).inMilliseconds)),
         rubyItemHeight,
       );
       Widget rubyItem = Positioned(
-        left: duration2Length(ruby.startTimestamp.position),
+        left: duration2Length(ruby.startTimestamp.absolute.position),
         top: trackHeight * sentenceTracks[sentenceID]! + topMargin + timingIndicatorHeight,
         child: GestureDetector(
           onTap: () {
@@ -206,7 +206,7 @@ class _SentenceTimelineState extends ConsumerState<SentenceTimeline> {
       TimingIndex timingIndex = TimingIndex(index);
       Timing timing = sentence.timings[timingIndex];
       Widget indicator = Positioned(
-        left: duration2Length(sentence.startTimestamp.position + timing.seekPosition.position),
+        left: duration2Length(timing.seekPosition.absolute.position),
         top: trackHeight * sentenceTracks[sentenceID]! + topMargin + timingIndicatorHeight + rubyItemHeight + rubySentenceMargin + sentenceItemHeight,
         child: CustomPaint(
           size: itemSize,
@@ -237,7 +237,7 @@ class _SentenceTimelineState extends ConsumerState<SentenceTimeline> {
         TimingIndex timingIndex = TimingIndex(index);
         Timing timing = ruby.timings[timingIndex];
         Widget indicator = Positioned(
-          left: duration2Length(ruby.startTimestamp.position + timing.seekPosition.position),
+          left: duration2Length(timing.seekPosition.absolute.position),
           top: trackHeight * sentenceTracks[sentenceID]! + topMargin,
           child: CustomPaint(
             size: itemSize,

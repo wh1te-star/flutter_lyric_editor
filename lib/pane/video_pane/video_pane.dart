@@ -55,7 +55,7 @@ class _VideoPaneState extends ConsumerState<VideoPane> {
       bool isPlaying = musicPlayerService.isPlaying;
       if (videoPaneProvider.displayMode == DisplayMode.verticalScroll && isPlaying) {
         SeekPosition seekPosition = musicPlayerService.seekPosition;
-        scrollController.jumpTo(getScrollOffsetFromSeekPosition(seekPosition.position));
+        scrollController.jumpTo(getScrollOffsetFromSeekPosition(seekPosition.absolute.position));
       }
       setState(() {});
     });

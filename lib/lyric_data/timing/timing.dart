@@ -1,19 +1,19 @@
 import 'package:lyric_editor/position/caret_position.dart';
-import 'package:lyric_editor/position/seek_position/seek_position.dart';
+import 'package:lyric_editor/position/seek_position/relative_seek_position.dart';
 
 class Timing {
   final CaretPosition caretPosition;
-  final SeekPosition seekPosition;
+  final RelativeSeekPosition seekPosition;
 
   Timing(this.caretPosition, this.seekPosition);
 
   Timing._privateConstructor(this.caretPosition, this.seekPosition);
-  static final Timing _empty = Timing._privateConstructor(CaretPosition.empty, SeekPosition.empty);
+  static final Timing _empty = Timing._privateConstructor(CaretPosition.empty, RelativeSeekPosition.empty);
   static Timing get empty => _empty;
   bool get isEmpty => identical(this, _empty);
   bool get isNotEmpty => !identical(this, _empty);
 
-  Timing copyWith({CaretPosition? caretPosition, SeekPosition? seekPosition}) {
+  Timing copyWith({CaretPosition? caretPosition, RelativeSeekPosition? seekPosition}) {
     return Timing(
       caretPosition ?? this.caretPosition,
       seekPosition ?? this.seekPosition,

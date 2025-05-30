@@ -9,6 +9,8 @@ import 'package:lyric_editor/position/caret_position_info/invalid_caret_position
 import 'package:lyric_editor/position/caret_position_info/word_caret_position_info.dart';
 import 'package:lyric_editor/position/caret_position_info/timing_caret_position_info.dart';
 import 'package:lyric_editor/position/option_enum.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
+import 'package:lyric_editor/position/seek_position/relative_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/seek_position_info/seek_position_info.dart';
 import 'package:lyric_editor/position/sentence_side_enum.dart';
@@ -37,16 +39,16 @@ class Sentence {
         timetable: Timetable.empty,
         rubyMap: RubyMap.empty,
       );
-  bool get isEmpty => vocalistID.id == 0 && timetable.startTimestamp.isEmpty && timetable.isEmpty;
+  bool get isEmpty => vocalistID.id == 0 && timetable.isEmpty && rubyMap.isEmpty;
 
   String get sentence => timetable.sentence;
-  SeekPosition get startTimestamp => timetable.startTimestamp;
-  SeekPosition get endTimestamp => timetable.endTimestamp;
+  AbsoluteSeekPosition get startTimestamp => timetable.startTimestamp.absolute;
+  AbsoluteSeekPosition get endTimestamp => timetable.endTimestamp.absolute;
   WordList get words => timetable.wordList;
   TimingList get timings => timetable.timingList;
   int get charCount => timetable.charCount;
   int get wordCount => timetable.wordCount;
-  SeekPositionInfo getSeekPositionInfoBySeekPosition(SeekPosition seekPosition) => timetable.getSeekPositionInfoBySeekPosition(seekPosition);
+  SeekPositionInfo getSeekPositionInfoBySeekPosition(AbsoluteSeekPosition seekPosition) => timetable.getSeekPositionInfoBySeekPosition(seekPosition);
   CaretPositionInfo getCaretPositionInfo(CaretPosition caretPosition) => timetable.getCaretPositionInfo(caretPosition);
   WordList getWordList(WordRange wordRange) => timetable.getWordList(wordRange);
   TimingIndex getLeftTimingIndex(WordIndex wordIndex) => timetable.getLeftTimingIndex(wordIndex);
@@ -61,16 +63,13 @@ class Sentence {
     );
   }
 
-  WordRange getRubysWordRangeFromSeekPosition(SeekPosition seekPosition) {
+  WordRange getRubysWordRangeFromSeekPosition(AbsoluteSeekPosition seekPosition) {
     for (MapEntry<WordRange, Ruby> entry in rubyMap.map.entries) {
       WordRange wordRange = entry.key;
       Ruby ruby = entry.value;
-      SeekPosition startTimestamp = timetable.startTimestamp;
-      List<Timing> timings = timetable.timingList.list;
-      List<Timing> rubyTimings = ruby.timetable.timingList.list;
-      SeekPosition rubyStartSeekPosition = SeekPosition(startTimestamp.position + timings[wordRange.startIndex.index].seekPosition.position);
-      SeekPosition startSeekPosition = SeekPosition(rubyStartSeekPosition.position + rubyTimings.first.seekPosition.position);
-      SeekPosition endSeekPosition = SeekPosition(rubyStartSeekPosition.position + rubyTimings.last.seekPosition.position);
+
+      AbsoluteSeekPosition startSeekPosition = ruby.startTimestamp.absolute;
+      AbsoluteSeekPosition endSeekPosition = ruby.endTimestamp.absolute;
       if (startSeekPosition < seekPosition && seekPosition < endSeekPosition) {
         return wordRange;
       }
@@ -84,7 +83,7 @@ class Sentence {
     return Sentence(vocalistID: vocalistID, timetable: copiedTimetable, rubyMap: rubyMap);
   }
 
-  Sentence addTiming(CaretPosition charPosition, SeekPosition seekPosition) {
+  Sentence addTiming(CaretPosition charPosition, AbsoluteSeekPosition seekPosition) {
     RubyMap rubyMap = carryUpRubyWords(charPosition);
     Timetable timetable = this.timetable.addTiming(charPosition, seekPosition);
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
@@ -96,7 +95,7 @@ class Sentence {
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
-  Sentence addRubyTiming(WordRange wordRange, CaretPosition charPosition, SeekPosition seekPosition) {
+  Sentence addRubyTiming(WordRange wordRange, CaretPosition charPosition, AbsoluteSeekPosition seekPosition) {
     Timetable timetable = rubyMap[wordRange]!.timetable.addTiming(charPosition, seekPosition);
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
@@ -107,9 +106,9 @@ class Sentence {
   }
 
   Sentence addRuby(WordRange wordRange, String rubyString) {
-    SeekPosition rubyStartTimestamp = SeekPosition(startTimestamp.position + getLeftTiming(wordRange.startIndex).seekPosition.position);
-    SeekPosition rubyEndTimestamp = SeekPosition(startTimestamp.position + getRightTiming(wordRange.endIndex).seekPosition.position);
-    Duration rubyDuration = Duration(milliseconds: rubyEndTimestamp.position - rubyStartTimestamp.position);
+    RelativeSeekPosition rubyStartTimestamp = getLeftTiming(wordRange.startIndex).seekPosition.absolute.toRelative(startTimestamp);
+    RelativeSeekPosition rubyEndTimestamp = getRightTiming(wordRange.endIndex).seekPosition.absolute.toRelative(startTimestamp);
+    Duration rubyDuration = rubyStartTimestamp.absolute.durationUntil(rubyEndTimestamp);
     Word word = Word(rubyString, rubyDuration);
     Timetable timetable = Timetable(
       startTimestamp: rubyStartTimestamp,
@@ -125,13 +124,13 @@ class Sentence {
     return Sentence(vocalistID: vocalistID, timetable: timetable, rubyMap: rubyMap);
   }
 
-  Sentence manipulateSentence(SeekPosition seekPosition, SentenceSide sentenceSide, bool holdLength) {
+  Sentence manipulateSentence(AbsoluteSeekPosition seekPosition, SentenceSide sentenceSide, bool holdLength) {
     Timetable newTimetable = timetable.copyWith();
     newTimetable = newTimetable.manipulateTimetable(seekPosition, sentenceSide, holdLength);
     return Sentence(vocalistID: vocalistID, timetable: newTimetable, rubyMap: rubyMap);
   }
 
-  Tuple2<Sentence, Sentence> divideSentence(CaretPosition charPosition, SeekPosition seekPosition) {
+  Tuple2<Sentence, Sentence> divideSentence(CaretPosition charPosition, AbsoluteSeekPosition seekPosition) {
     String formerString = sentence.substring(0, charPosition.position);
     String latterString = sentence.substring(charPosition.position);
     Sentence sentence1 = Sentence.empty;

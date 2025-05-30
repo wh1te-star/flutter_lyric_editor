@@ -29,7 +29,7 @@ class ShowHideModeScreen extends StatelessWidget {
       endBulge: endBulge,
     );
     SentenceMap currentSentences = sentenceMap.getSentencesAtSeekPosition(
-      seekPosition: seekPosition,
+      seekPosition: seekPosition.absolute,
       startBulge: startBulge,
       endBulge: endBulge,
     );

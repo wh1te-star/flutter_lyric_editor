@@ -16,7 +16,7 @@ class CurrentPositionIndicatorPainter extends CustomPainter {
       ..color = Colors.grey
       ..strokeWidth = 1.0;
     for (var section in sections) {
-      double x = section.seekPosition.position * intervalLength / intervalDuration;
+      double x = section.seekPosition.absolute.position * intervalLength / intervalDuration;
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), sectionPaint);
     }
 

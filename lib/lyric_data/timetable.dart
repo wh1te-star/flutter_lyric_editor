@@ -15,6 +15,9 @@ import 'package:lyric_editor/position/caret_position_info/invalid_caret_position
 import 'package:lyric_editor/position/caret_position_info/word_caret_position_info.dart';
 import 'package:lyric_editor/position/caret_position_info/timing_caret_position_info.dart';
 import 'package:lyric_editor/position/option_enum.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
+import 'package:lyric_editor/position/seek_position/empty_seek_position.dart';
+import 'package:lyric_editor/position/seek_position/relative_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/seek_position_info/invalid_seek_position_info.dart';
 import 'package:lyric_editor/position/seek_position_info/seek_position_info.dart';
@@ -40,7 +43,7 @@ class Timetable {
 
   String get sentence => _wordList.sentence;
   SeekPosition get endTimestamp {
-    return SeekPosition(startTimestamp.position + timingList.list.last.seekPosition.position);
+    return timingList.list.last.seekPosition;
   }
 
   WordList get wordList => _wordList;
@@ -49,14 +52,14 @@ class Timetable {
   int get wordCount => _wordList.wordCount;
 
   static Timetable get empty => Timetable(
-        startTimestamp: SeekPosition.empty,
+        startTimestamp: EmptySeekPosition(),
         wordList: WordList.empty,
       );
 
   bool get isEmpty => this == empty;
 
   TimingList constructTimingList(WordList wordList) {
-    return wordList.toTimingList();
+    return wordList.toTimingList(startTimestamp.absolute);
   }
 
   WordList syncWords(TimingList timingList) {
@@ -204,8 +207,8 @@ class Timetable {
     );
   }
 
-  SeekPositionInfo getSeekPositionInfoBySeekPosition(SeekPosition seekPosition) {
-    if (seekPosition < startTimestamp) {
+  SeekPositionInfo getSeekPositionInfoBySeekPosition(AbsoluteSeekPosition seekPosition) {
+    if (seekPosition < startTimestamp.absolute) {
       return InvalidSeekPositionInfo(SentenceSide.start);
     }
 
@@ -215,7 +218,7 @@ class Timetable {
     for (int index = 0; index < wordList.length; index++) {
       WordIndex wordIndex = WordIndex(index);
       Timing rightTiming = getRightTiming(wordIndex);
-      SeekPosition rightSeekPosition = SeekPosition(startTimestamp.position + rightTiming.seekPosition.position);
+      AbsoluteSeekPosition rightSeekPosition = rightTiming.seekPosition.absolute;
       if (seekPosition < rightSeekPosition) {
         return WordSeekPositionInfo(wordIndex);
       }
@@ -264,33 +267,33 @@ class Timetable {
     return InvalidCaretPositionInfo();
   }
 
-  Timetable manipulateTimetable(SeekPosition seekPosition, SentenceSide sentenceSide, bool holdLength) {
+  Timetable manipulateTimetable(AbsoluteSeekPosition seekPosition, SentenceSide sentenceSide, bool holdLength) {
     if (holdLength) {
       if (sentenceSide == SentenceSide.start) {
-        Duration shiftDuration = Duration(milliseconds: startTimestamp.position - seekPosition.position);
+        Duration shiftDuration = startTimestamp.absolute.durationUntil(seekPosition);
         return shiftTimetableBy(shiftDuration);
       } else {
-        Duration shiftDuration = Duration(milliseconds: seekPosition.position - endTimestamp.position);
+        Duration shiftDuration = endTimestamp.absolute.durationUntil(seekPosition);
         return shiftTimetableBy(shiftDuration);
       }
     }
 
     if (sentenceSide == SentenceSide.start) {
-      if (seekPosition < startTimestamp) {
-        Duration extendDuration = Duration(milliseconds: startTimestamp.position - seekPosition.position);
+      if (seekPosition < startTimestamp.absolute) {
+        Duration extendDuration = seekPosition.durationUntil(startTimestamp.absolute);
         return extendTimetableBy(SentenceSide.start, extendDuration);
       }
-      if (startTimestamp < seekPosition) {
-        Duration shortenDuration = Duration(milliseconds: seekPosition.position - startTimestamp.position);
+      if (startTimestamp.absolute < seekPosition) {
+        Duration shortenDuration = startTimestamp.absolute.durationUntil(seekPosition);
         return shortenTimetableBy(SentenceSide.start, shortenDuration);
       }
     } else {
-      if (seekPosition < endTimestamp) {
-        Duration shortenDuration = Duration(milliseconds: endTimestamp.position - seekPosition.position);
+      if (seekPosition < endTimestamp.absolute) {
+        Duration shortenDuration = seekPosition.durationUntil(endTimestamp.absolute);
         return shortenTimetableBy(SentenceSide.start, shortenDuration);
       }
-      if (endTimestamp < seekPosition) {
-        Duration extendDuration = Duration(milliseconds: seekPosition.position - endTimestamp.position);
+      if (endTimestamp.absolute < seekPosition) {
+        Duration extendDuration = endTimestamp.absolute.durationUntil(seekPosition);
         return extendTimetableBy(SentenceSide.start, extendDuration);
       }
     }
@@ -307,24 +310,24 @@ class Timetable {
   Timetable extendTimetableBy(SentenceSide sentenceSide, Duration extendDuration) {
     assert(extendDuration >= Duration.zero, "Should be shorten function.");
 
-    SeekPosition startTimestamp = this.startTimestamp;
-    WordList wordList = this._wordList;
+    SeekPosition newStartTimestamp = startTimestamp;
+    WordList newWordList = this._wordList;
     if (sentenceSide == SentenceSide.start) {
-      startTimestamp -= extendDuration;
-      wordList.list.first.duration += extendDuration;
+      newStartTimestamp -= extendDuration;
+      newWordList.list.first.duration += extendDuration;
     } else {
-      wordList.list.last.duration += extendDuration;
+      newWordList.list.last.duration += extendDuration;
     }
 
-    return Timetable(startTimestamp: startTimestamp, wordList: wordList);
+    return Timetable(startTimestamp: newStartTimestamp, wordList: newWordList);
   }
 
   Timetable shortenTimetableBy(SentenceSide sentenceSide, Duration shortenDuration) {
     assert(shortenDuration >= Duration.zero, "Should be extend function.");
 
-    SeekPosition startTimestamp = this.startTimestamp;
-    WordList wordList = this._wordList;
-    List<Word> words = wordList.list;
+    SeekPosition newStartTimestamp = startTimestamp;
+    WordList newWordList = _wordList;
+    List<Word> words = newWordList.list;
     if (sentenceSide == SentenceSide.start) {
       int index = 0;
       Duration rest = shortenDuration;
@@ -332,7 +335,7 @@ class Timetable {
         rest -= words[index].duration;
         index++;
       }
-      startTimestamp += shortenDuration;
+      newStartTimestamp += shortenDuration;
       words = words.sublist(index);
       words.first.duration -= rest;
     } else {
@@ -346,14 +349,13 @@ class Timetable {
       words.last.duration -= rest;
     }
 
-    return Timetable(startTimestamp: startTimestamp, wordList: wordList);
+    return Timetable(startTimestamp: newStartTimestamp, wordList: newWordList);
   }
 
-  Timetable addTiming(CaretPosition caretPosition, SeekPosition seekPosition) {
+  Timetable addTiming(CaretPosition caretPosition, AbsoluteSeekPosition seekPosition) {
     if (caretPosition.position <= 0 || sentence.length <= caretPosition.position) {
       throw TimingException("The caret position is out of the valid range.");
     }
-    seekPosition = SeekPosition(seekPosition.position - startTimestamp.position);
 
     CaretPositionInfo caretPositionInfo = getCaretPositionInfo(caretPosition);
 
@@ -361,14 +363,15 @@ class Timetable {
       WordIndex wordIndex = caretPositionInfo.wordIndex;
       Timing leftTiming = getLeftTiming(wordIndex);
       Timing rightTiming = getRightTiming(wordIndex);
-      if (seekPosition <= leftTiming.seekPosition || rightTiming.seekPosition <= seekPosition) {
+      if (seekPosition <= leftTiming.seekPosition.absolute || rightTiming.seekPosition.absolute <= seekPosition) {
         throw TimingException("The seek position is out of the valid range.");
       }
 
       List<Timing> newTimingList = timingList.list;
+      RelativeSeekPosition relativeSeekPosition = seekPosition.toRelative(startTimestamp);
       newTimingList.insert(
         wordIndex.index + 1,
-        Timing(caretPosition, seekPosition),
+        Timing(caretPosition, relativeSeekPosition),
       );
       WordList wordList = syncWords(TimingList(newTimingList));
       return Timetable(startTimestamp: startTimestamp, wordList: wordList);
@@ -388,23 +391,24 @@ class Timetable {
       Timing centerTiming = timingList[timingIndex];
       Timing rightTiming = timingList[timingIndex + 1];
 
-      if (seekPosition <= leftTiming.seekPosition || rightTiming.seekPosition <= seekPosition) {
+      if (seekPosition <= leftTiming.seekPosition.absolute || rightTiming.seekPosition.absolute <= seekPosition) {
         throw TimingException("The seek position is out of the valid range.");
       }
       if (seekPosition == centerTiming.seekPosition) {
         throw TimingException("A timing point cannot be inserted twice or more at the same seek position.");
       }
 
+      RelativeSeekPosition relativeSeekPosition = seekPosition.toRelative(startTimestamp);
       List<Timing> newTimingList = timingList.list;
-      if (seekPosition < centerTiming.seekPosition) {
+      if (seekPosition < centerTiming.seekPosition.absolute) {
         newTimingList.insert(
           timingIndex.index,
-          Timing(caretPosition, seekPosition),
+          Timing(caretPosition, relativeSeekPosition),
         );
       } else {
         newTimingList.insert(
           timingIndex.index + 1,
-          Timing(caretPosition, seekPosition),
+          Timing(caretPosition, relativeSeekPosition),
         );
       }
 
@@ -437,8 +441,8 @@ class Timetable {
     WordList? wordList,
   }) {
     return Timetable(
-      startTimestamp: startTimestamp ?? this.startTimestamp.copyWith(),
-      wordList: wordList ?? this._wordList.copyWith(),
+      startTimestamp: startTimestamp ?? this.startTimestamp,
+      wordList: wordList ?? this._wordList,
     );
   }
 

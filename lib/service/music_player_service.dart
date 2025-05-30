@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 
 final musicPlayerMasterProvider = ChangeNotifierProvider((ref) => MusicPlayerService());
 
 class MusicPlayerService extends ChangeNotifier {
   AudioPlayer player = AudioPlayer();
-  SeekPosition _seekPosition = SeekPosition(10);
+  SeekPosition _seekPosition = AbsoluteSeekPosition(10);
   bool _isPlaying = false;
   Duration _audioDuration = Duration.zero;
   late DeviceFileSource audioFile;
 
   MusicPlayerService() {
     player.onPositionChanged.listen((Duration event) {
-      _seekPosition = SeekPosition(event.inMilliseconds);
+      _seekPosition = AbsoluteSeekPosition(event.inMilliseconds);
       notifyListeners();
     });
     player.onPlayerStateChanged.listen((PlayerState event) {
@@ -50,11 +51,10 @@ class MusicPlayerService extends ChangeNotifier {
     return ((number / unit).round()) * unit;
   }
 
-  void seek(int seekPosition) async {
-    int roundedSeekPosition = roundToNear(seekPosition, 100);
-    Duration position = Duration(milliseconds: roundedSeekPosition);
+  void seek(int targetSeekPosition) async {
+    Duration position = Duration(milliseconds: targetSeekPosition);
     player.seek(position);
-    _seekPosition = SeekPosition(roundedSeekPosition);
+    _seekPosition = AbsoluteSeekPosition(targetSeekPosition);
     notifyListeners();
   }
 
@@ -66,7 +66,7 @@ class MusicPlayerService extends ChangeNotifier {
         newPosition = Duration.zero;
       }
       player.seek(newPosition);
-      _seekPosition = SeekPosition(newPosition.inMilliseconds);
+      _seekPosition = AbsoluteSeekPosition(newPosition.inMilliseconds);
       notifyListeners();
     }
   }
@@ -80,7 +80,7 @@ class MusicPlayerService extends ChangeNotifier {
         newPosition = musicDuration;
       }
       player.seek(newPosition);
-      _seekPosition = SeekPosition(newPosition.inMilliseconds);
+      _seekPosition = AbsoluteSeekPosition(newPosition.inMilliseconds);
       notifyListeners();
     }
   }

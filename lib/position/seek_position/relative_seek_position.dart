@@ -1,28 +1,33 @@
-import 'package:lyric_editor/position/seek_position/seek_position_base.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
+import 'package:lyric_editor/position/seek_position/empty_seek_position.dart';
+import 'package:lyric_editor/position/seek_position/seek_position.dart';
 
-class RelativeSeekPosition implements SeekPositionBase {
-  final SeekPositionBase base;
-  final int shift; // The offset in milliseconds from the base
+class RelativeSeekPosition extends SeekPosition implements Comparable<RelativeSeekPosition> {
+  final SeekPosition basePosition;
+  final int shiftDuration;
 
-  /// Creates a RelativeSeekPosition.
-  /// The [base] can be either an [AbsoluteSeekPosition] or another [RelativeSeekPosition].
-  /// The [shift] is the offset in milliseconds from the [base].
-  const RelativeSeekPosition(this.base, this.shift);
+  RelativeSeekPosition(this.basePosition, this.shiftDuration);
 
-  /// Returns the absolute seek position by applying the shift to the base's absolute position.
+  RelativeSeekPosition._privateConstructor(this.basePosition, this.shiftDuration);
+  static final RelativeSeekPosition _empty = RelativeSeekPosition._privateConstructor(EmptySeekPosition(), -1);
+  static RelativeSeekPosition get empty => _empty;
+  bool get isEmpty => identical(this, _empty);
+  bool get isNotEmpty => !identical(this, _empty);
+
   @override
-  AbsoluteSeekPosition get absolute => AbsoluteSeekPosition(base.absolute.position + shift);
+  AbsoluteSeekPosition get absolute => basePosition.absolute + Duration(milliseconds: shiftDuration);
+  AbsoluteSeekPosition get relative => AbsoluteSeekPosition(shiftDuration);
 
-  RelativeSeekPosition copyWith({SeekPositionBase? base, int? shift}) {
+  RelativeSeekPosition copyWith({SeekPosition? basePosition, int? shiftDuration}) {
     return RelativeSeekPosition(
-      base ?? this.base,
-      shift ?? this.shift,
+      basePosition ?? this.basePosition,
+      shiftDuration ?? this.shiftDuration,
     );
   }
 
   @override
   String toString() {
-    return "RelativeSeekPosition: shift $shift from base: ${base.toString()}.";
+    return "RelativeSeekPosition($basePosition, $shiftDuration)";
   }
 
   @override
@@ -33,9 +38,24 @@ class RelativeSeekPosition implements SeekPositionBase {
     if (other is! RelativeSeekPosition) {
       return false;
     }
-    return base == other.base && shift == other.shift;
+    return basePosition == other.basePosition && shiftDuration == other.shiftDuration;
   }
 
   @override
-  int get hashCode => Object.hash(base, shift);
+  int get hashCode => shiftDuration.hashCode;
+
+  @override
+  RelativeSeekPosition operator +(Duration shift) => RelativeSeekPosition(basePosition, shiftDuration + shift.inMilliseconds);
+  @override
+  RelativeSeekPosition operator -(Duration shift) => RelativeSeekPosition(basePosition, shiftDuration - shift.inMilliseconds);
+
+  @override
+  int compareTo(RelativeSeekPosition other) {
+    return shiftDuration.compareTo(other.shiftDuration);
+  }
+
+  bool operator >(RelativeSeekPosition other) => absolute > other.absolute;
+  bool operator <(RelativeSeekPosition other) => absolute < other.absolute;
+  bool operator >=(RelativeSeekPosition other) => absolute >= other.absolute;
+  bool operator <=(RelativeSeekPosition other) => absolute <= other.absolute;
 }

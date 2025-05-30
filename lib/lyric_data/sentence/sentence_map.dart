@@ -6,6 +6,7 @@ import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/position/caret_position.dart';
 import 'package:lyric_editor/position/option_enum.dart';
+import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/sentence_side_enum.dart';
 import 'package:lyric_editor/position/word_range.dart';
@@ -27,8 +28,8 @@ class SentenceMap {
 
   bool isSentencesOrdered() {
     return map.values.map((Sentence sentence) {
-      return sentence.timetable.startTimestamp;
-    }).isSorted((SeekPosition left, SeekPosition right) => left.compareTo(right));
+      return sentence.startTimestamp.absolute;
+    }).isSorted((AbsoluteSeekPosition left, AbsoluteSeekPosition right) => left.compareTo(right));
   }
 
   static SentenceMap get empty => SentenceMap({});
@@ -62,8 +63,8 @@ class SentenceMap {
       sentenceMap.map.entries.toList()
         ..sort(
           (MapEntry<SentenceID, Sentence> left, MapEntry<SentenceID, Sentence> right) {
-            SeekPosition leftStartTimestamp = left.value.startTimestamp;
-            SeekPosition rightStartTimestamp = right.value.startTimestamp;
+            AbsoluteSeekPosition leftStartTimestamp = left.value.startTimestamp;
+            AbsoluteSeekPosition rightStartTimestamp = right.value.startTimestamp;
             int compareStartTime = leftStartTimestamp.compareTo(rightStartTimestamp);
             if (compareStartTime != 0) {
               return compareStartTime;
@@ -111,7 +112,7 @@ class SentenceMap {
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  SentenceMap addTiming(SentenceID id, CaretPosition charPosition, SeekPosition seekPosition) {
+  SentenceMap addTiming(SentenceID id, CaretPosition charPosition, AbsoluteSeekPosition seekPosition) {
     map[id] = map[id]!.addTiming(charPosition, seekPosition);
     return SentenceMap(map);
   }
@@ -122,7 +123,7 @@ class SentenceMap {
     return SentenceMap(map);
   }
 
-  SentenceMap addRubyTiming(SentenceID id, WordRange wordRange, CaretPosition charPosition, SeekPosition seekPosition) {
+  SentenceMap addRubyTiming(SentenceID id, WordRange wordRange, CaretPosition charPosition, AbsoluteSeekPosition seekPosition) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
     Sentence sentence = copiedMap[id]!;
     sentence = sentence.addRubyTiming(wordRange, charPosition, seekPosition);
@@ -136,14 +137,14 @@ class SentenceMap {
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  SentenceMap manipulateSentence(SentenceID id, SeekPosition seekPosition, SentenceSide sentenceSide, bool holdLength) {
+  SentenceMap manipulateSentence(SentenceID id, AbsoluteSeekPosition seekPosition, SentenceSide sentenceSide, bool holdLength) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
     Sentence sentence = copiedMap[id]!;
     sentence = sentence.manipulateSentence(seekPosition, sentenceSide, holdLength);
     return sortSentenceList(SentenceMap(copiedMap));
   }
 
-  SentenceMap divideSentence(SentenceID id, CaretPosition charPosition, SeekPosition seekPosition) {
+  SentenceMap divideSentence(SentenceID id, CaretPosition charPosition, AbsoluteSeekPosition seekPosition) {
     final Map<SentenceID, Sentence> copiedMap = Map<SentenceID, Sentence>.from(map);
     Sentence sentence = copiedMap[id]!;
     Tuple2<Sentence, Sentence> dividedSentences = sentence.divideSentence(charPosition, seekPosition);
@@ -204,13 +205,17 @@ class SentenceMap {
   }
 
   SentenceMap getSentencesAtSeekPosition({
-    required SeekPosition seekPosition,
+    required AbsoluteSeekPosition seekPosition,
     Duration startBulge = Duration.zero,
     Duration endBulge = Duration.zero,
     VocalistID? vocalistID,
   }) {
     final Iterable<MapEntry<SentenceID, Sentence>> filteredEntries = map.entries.where((MapEntry<SentenceID, Sentence> entry) {
-      bool isWithinTimestamp = entry.value.startTimestamp.position - startBulge.inMilliseconds <= seekPosition.position && seekPosition.position <= entry.value.endTimestamp.position + endBulge.inMilliseconds;
+      SentenceID sentenceID = entry.key;
+      Sentence sentence = entry.value;
+      SeekPosition expandedStartTimestamp = sentence.startTimestamp - startBulge;
+      SeekPosition expandedEndTimestamp = sentence.endTimestamp + endBulge;
+      bool isWithinTimestamp = expandedStartTimestamp.absolute <= seekPosition && seekPosition <= expandedEndTimestamp.absolute;
       bool isMatchingVocalist = vocalistID == null || entry.value.vocalistID == vocalistID;
       return isWithinTimestamp && isMatchingVocalist;
     });
