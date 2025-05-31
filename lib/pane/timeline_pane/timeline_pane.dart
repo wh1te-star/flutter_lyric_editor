@@ -9,7 +9,7 @@ import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
 import 'package:lyric_editor/pane/timeline_pane/current_position_indicator_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/rectangle_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/scale_mark.dart';
-import 'package:lyric_editor/pane/sentence_timeline.dart';
+import 'package:lyric_editor/pane/timeline_pane/sentence_timeline.dart';
 import 'package:lyric_editor/pane/video_pane/show_hide_mode/sentence_track_map.dart';
 import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';

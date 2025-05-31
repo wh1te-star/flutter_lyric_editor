@@ -6,6 +6,7 @@ import 'package:lyric_editor/lyric_data/ruby/ruby.dart';
 import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
 import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
+import 'package:lyric_editor/pane/timeline_pane/sentence_item.dart';
 import 'package:lyric_editor/position/timing_index.dart';
 import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/word_range.dart';
@@ -137,6 +138,9 @@ class _SentenceTimelineState extends ConsumerState<SentenceTimeline> {
         onDoubleTap: () {
           displaySentenceDetailDialog(context, sentenceID, sentence);
         },
+        //child: SentenceItem(width: duration2Length(sentence.startTimestamp.durationUntil(sentence.endTimestamp).inMilliseconds),),
+        child: SentenceItem(width: 100,),
+        /*
         child: CustomPaint(
           size: itemSize,
           painter: RectanglePainter(
@@ -146,6 +150,7 @@ class _SentenceTimelineState extends ConsumerState<SentenceTimeline> {
             borderLineWidth: 2.0,
           ),
         ),
+        */
       ),
     );
     return sentenceItem;
