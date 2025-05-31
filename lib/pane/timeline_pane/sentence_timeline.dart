@@ -145,17 +145,6 @@ class _SentenceTimelineState extends ConsumerState<SentenceTimeline> {
           sentence: sentence.sentence,
           vocalistColor: vocalistColor,
         ),
-        /*
-        child: CustomPaint(
-          size: itemSize,
-          painter: RectanglePainter(
-            sentence: sentence.sentence,
-            color: vocalistColor,
-            isSelected: timelinePaneProvider.selectingSentence.contains(sentenceID),
-            borderLineWidth: 2.0,
-          ),
-        ),
-        */
       ),
     );
     return sentenceItem;

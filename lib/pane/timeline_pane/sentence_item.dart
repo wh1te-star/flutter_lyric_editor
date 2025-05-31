@@ -41,7 +41,7 @@ class _RippleColorContainerState extends State<SentenceItem> {
 
   @override
   Widget build(BuildContext context) {
-    final BorderRadius effectiveBorderRadius = BorderRadius.circular(1.0);
+    final BorderRadius effectiveBorderRadius = BorderRadius.circular(5.0);
 
     final Color currentBackgroundColor = _selected ? widget.selectedColor : widget.nonselectedColor;
 
@@ -50,7 +50,6 @@ class _RippleColorContainerState extends State<SentenceItem> {
     return Material(
       color: Colors.transparent,
       borderRadius: effectiveBorderRadius,
-      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: changeColor,
         splashColor: splashAndHighlightColor,
@@ -60,7 +59,7 @@ class _RippleColorContainerState extends State<SentenceItem> {
           height: widget.height,
           decoration: BoxDecoration(
             color: currentBackgroundColor,
-            borderRadius: BorderRadius.circular(5.0),
+            borderRadius: effectiveBorderRadius,
             boxShadow: [
               BoxShadow(
                 color: widget.shadowColor.withOpacity(0.5),
