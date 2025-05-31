@@ -47,32 +47,34 @@ class _RippleColorContainerState extends State<SentenceItem> {
 
     final Color splashAndHighlightColor = _selected ? widget.nonselectedColor : widget.selectedColor;
 
-    return Material(
-      color: Colors.transparent,
-      borderRadius: effectiveBorderRadius,
-      child: InkWell(
-        onTap: changeColor,
-        splashColor: splashAndHighlightColor,
+    return Container(
+      decoration: BoxDecoration(
+        color: currentBackgroundColor,
         borderRadius: effectiveBorderRadius,
-        child: Ink(
-          width: widget.width,
-          height: widget.height,
-          decoration: BoxDecoration(
-            color: currentBackgroundColor,
-            borderRadius: effectiveBorderRadius,
-            boxShadow: [
-              BoxShadow(
-                color: widget.shadowColor.withOpacity(0.5),
-                spreadRadius: 5,
-                blurRadius: 8,
-                offset: const Offset(2, 2),
-              ),
-            ],
+        boxShadow: [
+          BoxShadow(
+            color: widget.shadowColor.withOpacity(0.5),
+            spreadRadius: 1,
+            blurRadius: 0.5,
+            offset: const Offset(0.5, 0.5),
           ),
-          child: Text(
-            widget.sentence,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: determineBlackOrWhite(widget.vocalistColor), fontSize: 16),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: effectiveBorderRadius,
+        child: InkWell(
+          onTap: changeColor,
+          splashColor: splashAndHighlightColor,
+          borderRadius: effectiveBorderRadius,
+          child: Ink(
+            width: widget.width,
+            height: widget.height,
+            child: Text(
+              widget.sentence,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: determineBlackOrWhite(widget.vocalistColor), fontSize: 16),
+            ),
           ),
         ),
       ),
