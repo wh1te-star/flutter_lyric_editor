@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:lyric_editor/utility/utility_functions.dart';
 
 class SentenceItem extends StatefulWidget {
+  late Color nonselectedColor;
+  late Color selectedColor;
+  final Color shadowColor = Colors.black38;
+
   final double width;
   final double height;
-  final Color nonselectedColor;
-  final Color selectedColor;
-  final Color shadowColor;
-  final BorderRadius? borderRadius;
-  final Widget? child;
-  final VoidCallback? onTap;
+  final String sentence;
+  final Color vocalistColor;
 
-  const SentenceItem({
+  SentenceItem({
     Key? key,
-    this.width = 150.0,
-    this.height = 100.0,
-    this.nonselectedColor = Colors.deepPurple,
-    this.selectedColor = Colors.purpleAccent,
-    this.shadowColor = Colors.black38,
-    this.borderRadius,
-    this.child,
-    this.onTap,
-  }) : super(key: key);
+    required this.width,
+    required this.height,
+    required this.sentence,
+    required this.vocalistColor,
+  }) : super(key: key) {
+    selectedColor = adjustColorBrightness(vocalistColor, 0.5);
+    nonselectedColor = vocalistColor;
+  }
 
   @override
   _RippleColorContainerState createState() => _RippleColorContainerState();
@@ -34,16 +34,14 @@ class _RippleColorContainerState extends State<SentenceItem> {
     super.initState();
   }
 
-  void _changeColor() {
-    setState(() {
-      _selected = !_selected;
-    });
-    widget.onTap?.call();
+  void changeColor() {
+    _selected = !_selected;
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final BorderRadius effectiveBorderRadius = widget.borderRadius ?? BorderRadius.circular(12.0);
+    final BorderRadius effectiveBorderRadius = BorderRadius.circular(1.0);
 
     final Color currentBackgroundColor = _selected ? widget.selectedColor : widget.nonselectedColor;
 
@@ -54,7 +52,7 @@ class _RippleColorContainerState extends State<SentenceItem> {
       borderRadius: effectiveBorderRadius,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: _changeColor,
+        onTap: changeColor,
         splashColor: splashAndHighlightColor,
         borderRadius: effectiveBorderRadius,
         child: Ink(
@@ -62,17 +60,21 @@ class _RippleColorContainerState extends State<SentenceItem> {
           height: widget.height,
           decoration: BoxDecoration(
             color: currentBackgroundColor,
-            borderRadius: effectiveBorderRadius,
+            borderRadius: BorderRadius.circular(5.0),
             boxShadow: [
               BoxShadow(
                 color: widget.shadowColor.withOpacity(0.5),
-                spreadRadius: 1,
-                blurRadius: 5,
-                offset: const Offset(0, 2),
+                spreadRadius: 5,
+                blurRadius: 8,
+                offset: const Offset(2, 2),
               ),
             ],
           ),
-          child: widget.child,
+          child: Text(
+            widget.sentence,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: determineBlackOrWhite(widget.vocalistColor), fontSize: 16),
+          ),
         ),
       ),
     );

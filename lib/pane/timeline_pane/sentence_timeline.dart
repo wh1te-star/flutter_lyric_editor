@@ -15,6 +15,7 @@ import 'package:lyric_editor/pane/timeline_pane/rectangle_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/triangle_painter.dart';
 import 'package:lyric_editor/pane/timeline_pane/timeline_pane.dart';
 import 'package:lyric_editor/service/timing_service.dart';
+import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
 
 class SentenceTimeline extends ConsumerStatefulWidget {
   VocalistID vocalistID;
@@ -138,8 +139,12 @@ class _SentenceTimelineState extends ConsumerState<SentenceTimeline> {
         onDoubleTap: () {
           displaySentenceDetailDialog(context, sentenceID, sentence);
         },
-        //child: SentenceItem(width: duration2Length(sentence.startTimestamp.durationUntil(sentence.endTimestamp).inMilliseconds),),
-        child: SentenceItem(width: 100,),
+        child: SentenceItem(
+          width: duration2Length(sentence.startTimestamp.durationUntil(sentence.endTimestamp).inMilliseconds),
+          height: sentenceItemHeight,
+          sentence: sentence.sentence,
+          vocalistColor: vocalistColor,
+        ),
         /*
         child: CustomPaint(
           size: itemSize,
