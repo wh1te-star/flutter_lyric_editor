@@ -6,10 +6,12 @@ import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
 import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
-import 'package:lyric_editor/pane/timeline_pane/current_position_indicator_painter.dart';
-import 'package:lyric_editor/pane/timeline_pane/rectangle_painter.dart';
-import 'package:lyric_editor/pane/timeline_pane/scale_mark.dart';
-import 'package:lyric_editor/pane/timeline_pane/sentence_timeline.dart';
+import 'package:lyric_editor/pane/timeline_pane/seek_position/current_position_indicator_painter.dart';
+import 'package:lyric_editor/pane/timeline_pane/reorderable_list.dart/rectangle_painter.dart';
+import 'package:lyric_editor/pane/timeline_pane/top_title/function_cell.dart';
+import 'package:lyric_editor/pane/timeline_pane/top_title/scale_mark.dart';
+import 'package:lyric_editor/pane/timeline_pane/reorderable_list.dart/sentence_timeline.dart';
+import 'package:lyric_editor/pane/timeline_pane/top_title/top_title.dart';
 import 'package:lyric_editor/pane/video_pane/show_hide_mode/sentence_track_map.dart';
 import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
@@ -36,9 +38,6 @@ class TimelinePaneProvider with ChangeNotifier {
   List<SentenceID> selectingSentence = [];
   List<VocalistID> selectingVocalist = [];
   double intervalLength = 10.0;
-  double majorMarkLength = 15.0;
-  double midiumMarkLength = 11.0;
-  double minorMarkLength = 8.0;
   int intervalDuration = 1000;
   bool autoCurrentSelectMode = true;
 
@@ -275,27 +274,12 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
           children: [
             Column(
               children: [
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 155,
-                      height: 30,
-                      child: cellFunctionButton(),
-                    ),
-                    borderLine,
-                    Expanded(
-                      child: SingleChildScrollView(
-                        key: const ValueKey("Scale Mark"),
-                        controller: scaleMarkScrollController,
-                        scrollDirection: Axis.horizontal,
-                        child: SizedBox(
-                          width: audioDuration.inMilliseconds * intervalLength / intervalDuration,
-                          height: 30,
-                          child: cellScaleMark(),
-                        ),
-                      ),
-                    ),
-                  ],
+                TopTitle(
+                  seekPosition: seekPosition,
+                  audioDuration: audioDuration,
+                  intervalLength: intervalLength,
+                  intervalDuration: intervalDuration,
+                  scrollController: scaleMarkScrollController,
                 ),
                 Expanded(
                   child: ReorderableListView(
@@ -526,55 +510,6 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
     }
 
     return maxOverlap;
-  }
-
-  Widget cellFunctionButton() {
-    final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
-    final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
-
-    return GestureDetector(
-      onTapDown: (TapDownDetails details) {
-        timelinePaneProvider.autoCurrentSelectMode = !timelinePaneProvider.autoCurrentSelectMode;
-        setState(() {});
-      },
-      child: CustomPaint(
-        painter: RectanglePainter(
-          rect: const Rect.fromLTRB(0.0, 0.0, 155, 30),
-          sentence: musicPlayerService.seekPosition.toString(),
-          color: Colors.purpleAccent,
-          isSelected: timelinePaneProvider.autoCurrentSelectMode,
-          borderLineWidth: 3.0,
-        ),
-      ),
-    );
-  }
-
-  Widget cellScaleMark() {
-    final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
-    final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
-    final double intervalLength = timelinePaneProvider.intervalLength;
-    final int intervalDuration = timelinePaneProvider.intervalDuration;
-    final double majorMarkLength = timelinePaneProvider.majorMarkLength;
-    final double midiumMarkLength = timelinePaneProvider.midiumMarkLength;
-    final double minorMarkLength = timelinePaneProvider.minorMarkLength;
-
-    return GestureDetector(
-      onTapDown: (TapDownDetails details) async {
-        Offset localPosition = details.localPosition;
-        final touchedSeekPosition = localPosition.dx * intervalDuration / intervalLength;
-        musicPlayerService.seek(touchedSeekPosition.toInt());
-        setState(() {});
-      },
-      child: CustomPaint(
-        painter: ScaleMark(
-          intervalLength: intervalLength,
-          majorMarkLength: majorMarkLength,
-          midiumMarkLength: midiumMarkLength,
-          minorMarkLength: minorMarkLength,
-          intervalDuration: intervalDuration,
-        ),
-      ),
-    );
   }
 
   Widget cellVocalistPanel(int index) {

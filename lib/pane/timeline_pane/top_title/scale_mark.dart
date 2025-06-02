@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 
 class ScaleMark extends CustomPainter {
+  final double majorMarkLength = 15.0;
+  final double midiumMarkLength = 11.0;
+  final double minorMarkLength = 8.0;
   final double intervalLength;
-  final double majorMarkLength;
-  final double midiumMarkLength;
-  final double minorMarkLength;
   final int intervalDuration;
 
-  ScaleMark({required this.intervalLength, required this.majorMarkLength, required this.midiumMarkLength, required this.minorMarkLength, required this.intervalDuration});
+  ScaleMark({
+    required this.intervalLength,
+    required this.intervalDuration,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
