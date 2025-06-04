@@ -282,24 +282,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                   scrollController: scaleMarkScrollController,
                 ),
                 Expanded(
-                  child: ReorderableListView(
-                    key: const ValueKey("Reorderable List Vertical"),
-                    buildDefaultDragHandles: false,
-                    scrollController: verticalScrollController,
-                    onReorder: onReorder,
-                    onReorderEnd: (index) {
-                      isDragging = false;
-                    },
-                    children: List.generate(vocalistColorMap.length + 1, (index) {
-                      return AnimatedContainer(
-                        key: ValueKey('VocalistPanel_$index'),
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.easeInOut,
-                        height: getReorderableListHeight(index),
-                        child: itemBuilder(context, index),
-                      );
-                    }),
-                  ),
+                  child: ,
                 ),
               ],
             ),
