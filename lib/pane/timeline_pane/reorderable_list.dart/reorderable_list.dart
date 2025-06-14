@@ -32,6 +32,7 @@ class ReorderableSentenceTimelineListState extends State<ReorderableSentenceTime
       onReorderEnd: (index) {
         isDragging = false;
       },
+
       children: List.generate(vocalistColorMap.length + 1, (index) {
         return AnimatedContainer(
           key: ValueKey('VocalistPanel_$index'),
