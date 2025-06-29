@@ -1,33 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
+import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
+import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
+import 'package:lyric_editor/lyric_data/vocalist/vocalist.dart';
 import 'package:lyric_editor/lyric_data/vocalist/vocalist_color_map.dart';
+import 'package:lyric_editor/pane/timeline_pane/reorderable_list.dart/sentence_timeline.dart';
+import 'package:lyric_editor/pane/timeline_pane/reorderable_list.dart/vocalist_item.dart';
 import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
+import 'package:lyric_editor/utility/keyboard_shortcuts.dart';
+import 'package:lyric_editor/utility/svg_icon.dart';
+import 'package:lyric_editor/utility/utility_functions.dart';
 
 class ReorderableSentenceTimelineList extends StatefulWidget {
   final AbsoluteSeekPosition seekPosition;
   final VocalistColorMap vocalistColorMap;
+  final ScrollController verticalScrollController;
 
   const ReorderableSentenceTimelineList({
     required this.seekPosition,
     required this.vocalistColorMap,
+    required this.verticalScrollController,
   });
 
   @override
-  State<ReorderableSentenceTimelineList> createState(seekPosition, VocalistColorMap vocalistColorMap) => ReorderableSentenceTimelineListState(seekPosition, vocalistColorMap);
+  State<ReorderableSentenceTimelineList> createState() => ReorderableSentenceTimelineListState();
 }
 
 class ReorderableSentenceTimelineListState extends State<ReorderableSentenceTimelineList> {
-  final AbsoluteSeekPosition seekPosition;
-  final VocalistColorMap vocalistColorMap;
-  late ScrollController _scrollController;
-  bool _isDragging = false;
+  late ScrollController scrollController;
+  bool isDragging = false;
 
   @override
   Widget build(BuildContext context) {
+    final Map<VocalistID, Vocalist> vocalistColorMap = widget.vocalistColorMap.map;
+
     return ReorderableListView(
       key: const ValueKey("Reorderable List Vertical"),
       buildDefaultDragHandles: false,
-      scrollController: verticalScrollController,
+      scrollController: widget.verticalScrollController,
       onReorder: onReorder,
       onReorderEnd: (index) {
         isDragging = false;
@@ -46,7 +57,7 @@ class ReorderableSentenceTimelineListState extends State<ReorderableSentenceTime
   }
 
   void onReorder(int oldIndex, int newIndex) {
-    final Map<VocalistID, Vocalist> vocalistColorMap = ref.read(timingMasterProvider).vocalistColorMap.map;
+    final Map<VocalistID, Vocalist> vocalistColorMap = widget.vocalistColorMap.map;
     if (newIndex > vocalistColorMap.length) {
       newIndex = vocalistColorMap.length;
     }
@@ -67,32 +78,14 @@ class ReorderableSentenceTimelineListState extends State<ReorderableSentenceTime
   }
 
   Widget itemBuilder(BuildContext context, int index) {
-    final MusicPlayerService musicPlayerService = ref.read(musicPlayerMasterProvider);
-    final TimingService timingService = ref.read(timingMasterProvider);
-    final TimelinePaneProvider timelinePaneProvider = ref.read(timelinePaneMasterProvider);
-
-    final Duration audioDuration = musicPlayerService.audioDuration;
-    final Map<VocalistID, Vocalist> vocalistColorMap = timingService.vocalistColorMap.map;
-    final double intervalLength = timelinePaneProvider.intervalLength;
-    final int intervalDuration = timelinePaneProvider.intervalDuration;
+    final Map<VocalistID, Vocalist> vocalistColorMap = widget.vocalistColorMap.map;
 
     if (index < vocalistColorMap.length) {
       final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
 
+      final String vocalistName = vocalistColorMap[vocalistID]!.name;
       final Color vocalistColor = Color(vocalistColorMap[vocalistID]!.color);
       final Color backgroundColor = adjustColorBrightness(vocalistColor, 0.3);
-
-      final Widget borderLine = Container(
-        width: 5,
-        decoration: const BoxDecoration(
-          border: Border(
-            left: BorderSide(
-              color: Colors.black,
-              width: 5,
-            ),
-          ),
-        ),
-      );
 
       return Row(
         children: [
@@ -115,11 +108,7 @@ class ReorderableSentenceTimelineListState extends State<ReorderableSentenceTime
               ),
             ),
           ),
-          SizedBox(
-            width: 135,
-            child: Container(alignment: Alignment.topLeft, child: cellVocalistPanel(index)),
-          ),
-          borderLine,
+            Container(alignment: Alignment.topLeft, child: VocalistItem(width: 1000, height: 60, name: vocalistName, vocalistColor: vocalistColor,)),
           Expanded(
             child: SingleChildScrollView(
               key: ValueKey("Reorderable List Item ${vocalistID.id}"),
@@ -127,37 +116,47 @@ class ReorderableSentenceTimelineListState extends State<ReorderableSentenceTime
               scrollDirection: Axis.horizontal,
               child: SizedBox(
                 width: audioDuration.inMilliseconds * intervalLength / intervalDuration,
-                child: cellSentenceTimeline(index),
+                child: SentenceTimeline(vocalistID),
+                  )
               ),
             ),
           ),
         ],
       );
     } else {
-      final Widget borderLine = Container(
-        width: 5,
-        height: 40,
-        decoration: const BoxDecoration(
-          border: Border(
-            left: BorderSide(
-              color: Colors.black,
-              width: 5,
-            ),
-          ),
-        ),
-      );
       return Row(
         key: const ValueKey('AddVocalistButton'),
         children: [
-          SizedBox(
-            width: 155,
-            height: getReorderableListHeight(index),
-            child: cellAddVocalistButton(),
-          ),
-          borderLine,
-          Expanded(child: cellAddVocalistButtonNeighbor()),
+            VocalistItem(width: 160, height: getReorderableListHeight(index), name: "+", vocalistColor: Colors.grey),
+          const Expanded(child: ColoredBox( color: Colors.blueGrey)),
         ],
       );
     }
   }
+
+  double getReorderableListHeight(int index) {
+    final Map<VocalistID, Vocalist> vocalistColorMap = widget.vocalistColorMap.map;
+
+    if (index >= vocalistColorMap.length) {
+      if (isDragging) {
+        return 0;
+      } else {
+        return 40;
+      }
+    }
+
+  return 60.0;
+/*
+    final Map<VocalistID, Map<SentenceID, Sentence>> sentencesForeachVocalist = timelinePaneProvider.sentencesForeachVocalist;
+    final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
+    if (isDragging || sentencesForeachVocalist[vocalistID] == null) {
+      return 20;
+    } else {
+      ShowHideTrackMap showHideTrackMap = ShowHideTrackMap(sentenceMap: timingService.sentenceMap, vocalistID: vocalistID);
+      final int lanes = showHideTrackMap.getMaxTrackNumber();
+      return 60.0 * lanes;
+    }
+  }
+*/
+
 }
