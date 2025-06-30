@@ -16,11 +16,17 @@ class ReorderableSentenceTimelineList extends StatefulWidget {
   final AbsoluteSeekPosition seekPosition;
   final VocalistColorMap vocalistColorMap;
   final ScrollController verticalScrollController;
+  final Duration audioDuration;
+  final double intervalLength;
+  final int intervalDuration;
 
   const ReorderableSentenceTimelineList({
     required this.seekPosition,
     required this.vocalistColorMap,
     required this.verticalScrollController,
+    required this.audioDuration,
+    required this.intervalLength,
+    required this.intervalDuration,
   });
 
   @override
@@ -112,12 +118,12 @@ class ReorderableSentenceTimelineListState extends State<ReorderableSentenceTime
           Expanded(
             child: SingleChildScrollView(
               key: ValueKey("Reorderable List Item ${vocalistID.id}"),
-              controller: sentenceTimelineScrollController[vocalistID],
+              //controller: sentenceTimelineScrollController[vocalistID],
+              controller: ScrollController(),
               scrollDirection: Axis.horizontal,
               child: SizedBox(
-                width: audioDuration.inMilliseconds * intervalLength / intervalDuration,
+                width: widget.audioDuration.inMilliseconds * widget.intervalLength / widget.intervalDuration,
                 child: SentenceTimeline(vocalistID),
-                  )
               ),
             ),
           ),
@@ -146,6 +152,7 @@ class ReorderableSentenceTimelineListState extends State<ReorderableSentenceTime
     }
 
   return 60.0;
+  }
 /*
     final Map<VocalistID, Map<SentenceID, Sentence>> sentencesForeachVocalist = timelinePaneProvider.sentencesForeachVocalist;
     final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
