@@ -314,6 +314,7 @@ class _TimelinePaneState extends ConsumerState<TimelinePane> {
                     seekPosition: seekPosition,
                     vocalistColorMap: timingService.vocalistColorMap,
                     verticalScrollController: verticalScrollController,
+                    horizontalScrollControllers: sentenceTimelineScrollController,
                     audioDuration: audioDuration,
                     intervalLength: intervalLength,
                     intervalDuration: intervalDuration,

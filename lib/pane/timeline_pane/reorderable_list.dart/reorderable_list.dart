@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:lyric_editor/lyric_data/id/sentence_id.dart';
 import 'package:lyric_editor/lyric_data/id/vocalist_id.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
@@ -16,6 +17,7 @@ class ReorderableSentenceTimelineList extends StatefulWidget {
   final AbsoluteSeekPosition seekPosition;
   final VocalistColorMap vocalistColorMap;
   final ScrollController verticalScrollController;
+  final  Map<VocalistID, ScrollController> horizontalScrollControllers;
   final Duration audioDuration;
   final double intervalLength;
   final int intervalDuration;
@@ -24,6 +26,7 @@ class ReorderableSentenceTimelineList extends StatefulWidget {
     required this.seekPosition,
     required this.vocalistColorMap,
     required this.verticalScrollController,
+    required this.horizontalScrollControllers,
     required this.audioDuration,
     required this.intervalLength,
     required this.intervalDuration,
@@ -119,7 +122,7 @@ class ReorderableSentenceTimelineListState extends State<ReorderableSentenceTime
             child: SingleChildScrollView(
               key: ValueKey("Reorderable List Item ${vocalistID.id}"),
               //controller: sentenceTimelineScrollController[vocalistID],
-              controller: ScrollController(),
+              controller: widget.horizontalScrollControllers[vocalistID],
               scrollDirection: Axis.horizontal,
               child: SizedBox(
                 width: widget.audioDuration.inMilliseconds * widget.intervalLength / widget.intervalDuration,
