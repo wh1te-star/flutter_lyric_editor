@@ -114,7 +114,7 @@ class ReorderableSentenceTimelineListState extends State<ReorderableSentenceTime
               ),
             ),
           ),
-            Container(alignment: Alignment.topLeft, child: VocalistItem(width: 1000, height: 60, name: vocalistName, vocalistColor: vocalistColor,)),
+            Container(alignment: Alignment.topLeft, child: VocalistItem(width: 140, height: 60, name: vocalistName, vocalistColor: vocalistColor,)),
           Expanded(
             child: SingleChildScrollView(
               key: ValueKey("Reorderable List Item ${vocalistID.id}"),
