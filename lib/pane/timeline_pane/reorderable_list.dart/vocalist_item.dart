@@ -7,14 +7,12 @@ class VocalistItem extends StatefulWidget {
   final Color shadowColor = Colors.black38;
 
   final double width;
-  final double height;
   final String name;
   final Color vocalistColor;
 
   VocalistItem({
     Key? key,
     required this.width,
-    required this.height,
     required this.name,
     required this.vocalistColor,
   }) : super(key: key) {
@@ -43,9 +41,11 @@ class _RippleColorContainerState extends State<VocalistItem> {
   Widget build(BuildContext context) {
     final BorderRadius effectiveBorderRadius = BorderRadius.circular(1.0);
 
-    final Color currentBackgroundColor = _selected ? widget.selectedColor : widget.nonselectedColor;
+    final Color currentBackgroundColor =
+        _selected ? widget.selectedColor : widget.nonselectedColor;
 
-    final Color splashAndHighlightColor = _selected ? widget.nonselectedColor : widget.selectedColor;
+    final Color splashAndHighlightColor =
+        _selected ? widget.nonselectedColor : widget.selectedColor;
 
     return Container(
       decoration: BoxDecoration(
@@ -60,23 +60,24 @@ class _RippleColorContainerState extends State<VocalistItem> {
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: effectiveBorderRadius,
-        child: InkWell(
-          onTap: changeColor,
-          splashColor: splashAndHighlightColor,
+        child: Material(
+          color: Colors.transparent,
           borderRadius: effectiveBorderRadius,
-          child: Ink(
-            width: widget.width,
-            height: widget.height,
-            child: Text(
-              widget.name,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: determineBlackOrWhite(widget.vocalistColor), fontSize: 16),
+          child: InkWell(
+            onTap: changeColor,
+            splashColor: splashAndHighlightColor,
+            borderRadius: effectiveBorderRadius,
+            child: Ink(
+              width: widget.width,
+              child: Text(
+                widget.name,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    color: determineBlackOrWhite(widget.vocalistColor),
+                    fontSize: 16),
+              ),
             ),
           ),
-        ),
       ),
     );
   }

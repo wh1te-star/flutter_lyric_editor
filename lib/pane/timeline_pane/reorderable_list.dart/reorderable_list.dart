@@ -17,7 +17,7 @@ class ReorderableSentenceTimelineList extends StatefulWidget {
   final AbsoluteSeekPosition seekPosition;
   final VocalistColorMap vocalistColorMap;
   final ScrollController verticalScrollController;
-  final  Map<VocalistID, ScrollController> horizontalScrollControllers;
+  final Map<VocalistID, ScrollController> horizontalScrollControllers;
   final Duration audioDuration;
   final double intervalLength;
   final int intervalDuration;
@@ -33,16 +33,19 @@ class ReorderableSentenceTimelineList extends StatefulWidget {
   });
 
   @override
-  State<ReorderableSentenceTimelineList> createState() => ReorderableSentenceTimelineListState();
+  State<ReorderableSentenceTimelineList> createState() =>
+      ReorderableSentenceTimelineListState();
 }
 
-class ReorderableSentenceTimelineListState extends State<ReorderableSentenceTimelineList> {
+class ReorderableSentenceTimelineListState
+    extends State<ReorderableSentenceTimelineList> {
   late ScrollController scrollController;
   bool isDragging = false;
 
   @override
   Widget build(BuildContext context) {
-    final Map<VocalistID, Vocalist> vocalistColorMap = widget.vocalistColorMap.map;
+    final Map<VocalistID, Vocalist> vocalistColorMap =
+        widget.vocalistColorMap.map;
 
     return ReorderableListView(
       key: const ValueKey("Reorderable List Vertical"),
@@ -52,7 +55,6 @@ class ReorderableSentenceTimelineListState extends State<ReorderableSentenceTime
       onReorderEnd: (index) {
         isDragging = false;
       },
-
       children: List.generate(vocalistColorMap.length + 1, (index) {
         return AnimatedContainer(
           key: ValueKey('VocalistPanel_$index'),
@@ -66,17 +68,20 @@ class ReorderableSentenceTimelineListState extends State<ReorderableSentenceTime
   }
 
   void onReorder(int oldIndex, int newIndex) {
-    final Map<VocalistID, Vocalist> vocalistColorMap = widget.vocalistColorMap.map;
+    final Map<VocalistID, Vocalist> vocalistColorMap =
+        widget.vocalistColorMap.map;
     if (newIndex > vocalistColorMap.length) {
       newIndex = vocalistColorMap.length;
     }
 
-    if (oldIndex < vocalistColorMap.length && newIndex <= vocalistColorMap.length) {
+    if (oldIndex < vocalistColorMap.length &&
+        newIndex <= vocalistColorMap.length) {
       final key = vocalistColorMap.keys.elementAt(oldIndex);
       final value = vocalistColorMap.remove(key)!;
 
       final entries = vocalistColorMap.entries.toList();
-      entries.insert(newIndex > oldIndex ? newIndex - 1 : newIndex, MapEntry(key, value));
+      entries.insert(
+          newIndex > oldIndex ? newIndex - 1 : newIndex, MapEntry(key, value));
 
       vocalistColorMap
         ..clear()
@@ -87,7 +92,8 @@ class ReorderableSentenceTimelineListState extends State<ReorderableSentenceTime
   }
 
   Widget itemBuilder(BuildContext context, int index) {
-    final Map<VocalistID, Vocalist> vocalistColorMap = widget.vocalistColorMap.map;
+    final Map<VocalistID, Vocalist> vocalistColorMap =
+        widget.vocalistColorMap.map;
 
     if (index < vocalistColorMap.length) {
       final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
@@ -117,15 +123,20 @@ class ReorderableSentenceTimelineListState extends State<ReorderableSentenceTime
               ),
             ),
           ),
-            Container(alignment: Alignment.topLeft, child: VocalistItem(width: 140, height: 60, name: vocalistName, vocalistColor: vocalistColor,)),
+          VocalistItem(
+            width: 140,
+            name: vocalistName,
+            vocalistColor: vocalistColor,
+          ),
           Expanded(
             child: SingleChildScrollView(
               key: ValueKey("Reorderable List Item ${vocalistID.id}"),
-              //controller: sentenceTimelineScrollController[vocalistID],
               controller: widget.horizontalScrollControllers[vocalistID],
               scrollDirection: Axis.horizontal,
               child: SizedBox(
-                width: widget.audioDuration.inMilliseconds * widget.intervalLength / widget.intervalDuration,
+                width: widget.audioDuration.inMilliseconds *
+                    widget.intervalLength /
+                    widget.intervalDuration,
                 child: SentenceTimeline(vocalistID),
               ),
             ),
@@ -136,15 +147,16 @@ class ReorderableSentenceTimelineListState extends State<ReorderableSentenceTime
       return Row(
         key: const ValueKey('AddVocalistButton'),
         children: [
-            VocalistItem(width: 160, height: getReorderableListHeight(index), name: "+", vocalistColor: Colors.grey),
-          const Expanded(child: ColoredBox( color: Colors.blueGrey)),
+          VocalistItem(width: 160, name: "+", vocalistColor: Colors.grey),
+          const Expanded(child: ColoredBox(color: Colors.blueGrey)),
         ],
       );
     }
   }
 
   double getReorderableListHeight(int index) {
-    final Map<VocalistID, Vocalist> vocalistColorMap = widget.vocalistColorMap.map;
+    final Map<VocalistID, Vocalist> vocalistColorMap =
+        widget.vocalistColorMap.map;
 
     if (index >= vocalistColorMap.length) {
       if (isDragging) {
@@ -154,7 +166,11 @@ class ReorderableSentenceTimelineListState extends State<ReorderableSentenceTime
       }
     }
 
-  return 60.0;
+    if (isDragging) {
+      return 20.0;
+    } else {
+      return 60.0;
+    }
   }
 /*
     final Map<VocalistID, Map<SentenceID, Sentence>> sentencesForeachVocalist = timelinePaneProvider.sentencesForeachVocalist;
@@ -168,5 +184,4 @@ class ReorderableSentenceTimelineListState extends State<ReorderableSentenceTime
     }
   }
 */
-
 }
