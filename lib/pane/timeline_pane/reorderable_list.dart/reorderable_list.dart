@@ -38,56 +38,122 @@ class ReorderableSentenceTimelineList extends StatefulWidget {
 }
 
 class ReorderableSentenceTimelineListState
-    extends State<ReorderableSentenceTimelineList> {
+    extends State<ReorderableSentenceTimelineList> with TickerProviderStateMixin {
   final double normalHeight = 60.0;
   final double draggingHeight = 20.0;
-  final double addVocalistDraggingHeight = 0.0;
+  final double addVocalistDraggingHeight = 0.0; // This might need adjustment
+  final Duration animationDuration = const Duration(milliseconds: 250);
+  final Curve animationCurve = Curves.easeInOut;
 
-  late ScrollController scrollController;
-  bool isDragging = false;
+  // Use a single bool for dragging state, and animate the height based on it
+  bool _isReordering = false;
+
+  // Animation controller for the height of all items
+  late AnimationController _heightAnimationController;
+  late Animation<double> _itemHeightAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _heightAnimationController = AnimationController(
+      vsync: this,
+      duration: animationDuration,
+    );
+
+    // Initial state: normal height
+    _itemHeightAnimation = Tween<double>(
+      begin: normalHeight,
+      end: normalHeight,
+    ).animate(CurvedAnimation(parent: _heightAnimationController, curve: animationCurve));
+
+    // Listen to animation changes to trigger rebuilds
+    _heightAnimationController.addListener(() {
+      // Rebuild the widget to apply the animated height from itemExtentBuilder
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _heightAnimationController.dispose();
+    super.dispose();
+  }
+
+  // Helper to start the height animation
+  void _startHeightAnimation(bool toShrink) {
+    double targetHeight = toShrink ? draggingHeight : normalHeight;
+    if (_itemHeightAnimation.value == targetHeight && _heightAnimationController.isCompleted) {
+      // Avoid re-starting if already at target and completed
+      return;
+    }
+
+    _itemHeightAnimation = Tween<double>(
+      begin: _itemHeightAnimation.value,
+      end: targetHeight,
+    ).animate(CurvedAnimation(parent: _heightAnimationController, curve: animationCurve));
+
+    _heightAnimationController.forward(from: 0.0);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final Map<VocalistID, Vocalist> vocalistColorMap =
-        widget.vocalistColorMap.map;
+    final Map<VocalistID, Vocalist> vocalistColorMap = widget.vocalistColorMap.map;
 
     return ReorderableListView(
       key: const ValueKey("Reorderable List Vertical"),
       buildDefaultDragHandles: false,
       scrollController: widget.verticalScrollController,
-      onReorder: onReorder,
-      onReorderEnd: (index) {
-        isDragging = false;
+      onReorderStart: (index) {
+        setState(() {
+          _isReordering = true;
+        });
+        _startHeightAnimation(true); // Shrink all items
       },
-      itemExtentBuilder: (index, dimensions) {
-        if (isDragging) {
-          return draggingHeight;
-        } else {
-          return normalHeight;
-        }
+      onReorder: (oldIndex, newIndex) {
+        setState(() {
+          onReorder(oldIndex, newIndex);
+        });
+      },
+      onReorderEnd: (index) {
+        setState(() {
+          _isReordering = false;
+        });
+        _startHeightAnimation(false); // Expand all items back to normal
       },
       proxyDecorator: (child, index, animation) {
-        return Container(
-          key: ValueKey('ProxyAnimatedContainer_$index'),
-          height: draggingHeight,
-          child: Material(
-            elevation: 6.0 * animation.value,
-            color: Colors.transparent,
+        // The proxyDecorator is for the visual representation of the dragging item.
+        // Its height should reflect the desired draggingHeight directly.
+        return Material(
+          elevation: 6.0 * animation.value,
+          color: Colors.transparent,
+          child: SizedBox(
+            height: 20.0, // This is the height of the dragging proxy
+            width: MediaQuery.of(context).size.width,
             child: child,
           ),
         );
       },
+      itemExtentBuilder: (index, dimensions) {
+        // This determines the actual space each item occupies in the list.
+        // It will animate based on _itemHeightAnimation.value
+        return _itemHeightAnimation.value;
+      },
       children: List.generate(vocalistColorMap.length + 1, (index) {
-        return AnimatedContainer(
-          key: ValueKey('VocalistPanel_$index'),
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
-          height: getReorderableListHeight(index),
+        return SizedBox(
+          key: ValueKey('VocalistPanel_$index'), // Unique key is essential!
+          // The height of the child itself should match the animated height from itemExtentBuilder
+          height: _itemHeightAnimation.value,
           child: itemBuilder(context, index),
         );
       }),
     );
   }
+
+  // The getReorderableListHeightForChild function is no longer needed
+  // as _itemHeightAnimation directly drives the height for all list items.
+  // The itemBuilder will receive this animated height via its parent SizedBox.
 
   void onReorder(int oldIndex, int newIndex) {
     final Map<VocalistID, Vocalist> vocalistColorMap =
@@ -109,8 +175,6 @@ class ReorderableSentenceTimelineListState
         ..clear()
         ..addEntries(entries);
     }
-
-    setState(() {});
   }
 
   Widget itemBuilder(BuildContext context, int index) {
@@ -126,28 +190,21 @@ class ReorderableSentenceTimelineListState
 
       return Row(
         children: [
-          GestureDetector(
-            onTapDown: (details) {
-              isDragging = true;
-              setState(() {});
-            },
-            onTapUp: (details) {
-              isDragging = false;
-              setState(() {});
-            },
-            child: ReorderableDragStartListener(
-              index: index,
-              child: SvgIcon(
-                assetName: 'assets/drag_handle.svg',
-                iconColor: determineBlackOrWhite(backgroundColor),
-                backgroundColor: vocalistColor,
-                width: 20,
-              ),
+          // The GestureDetector on onTapDown/onTapUp for `isDragging` is no longer needed here,
+          // as the reorder callbacks manage the _isReordering state and animation.
+          ReorderableDragStartListener(
+            index: index,
+            child: SvgIcon(
+              assetName: 'assets/drag_handle.svg',
+              iconColor: determineBlackOrWhite(backgroundColor),
+              backgroundColor: vocalistColor,
+              width: 20,
             ),
           ),
           VocalistItem(
             width: 140,
-            height: getReorderableListHeight(index),
+            // Pass the current animated height to VocalistItem
+            height: _itemHeightAnimation.value,
             name: vocalistName,
             vocalistColor: vocalistColor,
           ),
@@ -167,70 +224,20 @@ class ReorderableSentenceTimelineListState
         ],
       );
     } else {
+      // "Add Vocalist" button
       return Row(
         key: const ValueKey('AddVocalistButton'),
         children: [
           VocalistItem(
             width: 160,
-            height: getReorderableListHeight(index),
+            // Pass the current animated height to VocalistItem
+            height: _itemHeightAnimation.value,
             name: "+",
             vocalistColor: Colors.grey,
           ),
           const Expanded(child: ColoredBox(color: Colors.blueGrey)),
         ],
       );
-    }
-  }
-
-  double getReorderableListHeight(int index) {
-    final Map<VocalistID, Vocalist> vocalistColorMap =
-        widget.vocalistColorMap.map;
-
-    if (index >= vocalistColorMap.length) {
-      if (isDragging) {
-        return 0;
-      } else {
-        return 40;
-      }
-    }
-
-    if (isDragging) {
-      return 20.0;
-    } else {
-      return 60.0;
-    }
-  }
-
-  double _getReorderableListHeight(int index) {
-    final Map<VocalistID, Vocalist> vocalistColorMap =
-        widget.vocalistColorMap.map;
-
-    // Logic for your "Add Vocalist" button (the very last item)
-    if (index >= vocalistColorMap.length) {
-      if (isDragging) {
-        return 0.0; // When dragging, the add button shrinks to 0 height
-      } else {
-        return normalHeight; // Normal height for the add button (40.0)
-      }
-    }
-
-    // Logic for regular Vocalist items
-    if (isDragging) {
-      return draggingHeight; // When dragging, regular items shrink to 20.0
-    } else {
-      // Your original commented-out logic for dynamic height based on 'lanes'
-      /*
-    final Map<VocalistID, Map<SentenceID, Sentence>> sentencesForeachVocalist = timelinePaneProvider.sentencesForeachVocalist;
-    final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
-    if (sentencesForeachVocalist[vocalistID] == null) {
-      return _draggingItemHeight; // If no sentences, perhaps keep it small
-    } else {
-      ShowHideTrackMap showHideTrackMap = ShowHideTrackMap(sentenceMap: timingService.sentenceMap, vocalistID: vocalistID);
-      final int lanes = showHideTrackMap.getMaxTrackNumber();
-      return _normalItemHeight * lanes; // Dynamic height based on lanes
-    }
-    */
-      return normalHeight; // Default to normal height (60.0) if complex lane logic is not active
     }
   }
 }
