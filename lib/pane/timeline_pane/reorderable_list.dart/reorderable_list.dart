@@ -125,6 +125,7 @@ class ReorderableSentenceTimelineListState
           ),
           VocalistItem(
             width: 140,
+            height: getReorderableListHeight(index),
             name: vocalistName,
             vocalistColor: vocalistColor,
           ),
@@ -147,7 +148,12 @@ class ReorderableSentenceTimelineListState
       return Row(
         key: const ValueKey('AddVocalistButton'),
         children: [
-          VocalistItem(width: 160, name: "+", vocalistColor: Colors.grey),
+          VocalistItem(
+            width: 160,
+            height: getReorderableListHeight(index),
+            name: "+",
+            vocalistColor: Colors.grey,
+          ),
           const Expanded(child: ColoredBox(color: Colors.blueGrey)),
         ],
       );

@@ -7,6 +7,7 @@ class VocalistItem extends StatefulWidget {
   final Color shadowColor = Colors.black38;
 
   final double width;
+  final double height;
   final String name;
   final Color vocalistColor;
 
@@ -14,6 +15,7 @@ class VocalistItem extends StatefulWidget {
     Key? key,
     required this.width,
     required this.name,
+    required this.height,
     required this.vocalistColor,
   }) : super(key: key) {
     selectedColor = adjustColorBrightness(vocalistColor, 0.5);
@@ -47,7 +49,10 @@ class _RippleColorContainerState extends State<VocalistItem> {
     final Color splashAndHighlightColor =
         _selected ? widget.nonselectedColor : widget.selectedColor;
 
-    return Container(
+    return AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          height: widget.height,
       decoration: BoxDecoration(
         color: currentBackgroundColor,
         borderRadius: effectiveBorderRadius,
