@@ -39,6 +39,10 @@ class ReorderableSentenceTimelineList extends StatefulWidget {
 
 class ReorderableSentenceTimelineListState
     extends State<ReorderableSentenceTimelineList> {
+  final double normalHeight = 60.0;
+  final double draggingHeight = 20.0;
+  final double addVocalistDraggingHeight = 0.0;
+
   late ScrollController scrollController;
   bool isDragging = false;
 
@@ -54,6 +58,24 @@ class ReorderableSentenceTimelineListState
       onReorder: onReorder,
       onReorderEnd: (index) {
         isDragging = false;
+      },
+      itemExtentBuilder: (index, dimensions) {
+        if (isDragging) {
+          return draggingHeight;
+        } else {
+          return normalHeight;
+        }
+      },
+      proxyDecorator: (child, index, animation) {
+        return Container(
+          key: ValueKey('ProxyAnimatedContainer_$index'),
+          height: draggingHeight,
+          child: Material(
+            elevation: 6.0 * animation.value,
+            color: Colors.transparent,
+            child: child,
+          ),
+        );
       },
       children: List.generate(vocalistColorMap.length + 1, (index) {
         return AnimatedContainer(
@@ -178,16 +200,37 @@ class ReorderableSentenceTimelineListState
       return 60.0;
     }
   }
-/*
+
+  double _getReorderableListHeight(int index) {
+    final Map<VocalistID, Vocalist> vocalistColorMap =
+        widget.vocalistColorMap.map;
+
+    // Logic for your "Add Vocalist" button (the very last item)
+    if (index >= vocalistColorMap.length) {
+      if (isDragging) {
+        return 0.0; // When dragging, the add button shrinks to 0 height
+      } else {
+        return normalHeight; // Normal height for the add button (40.0)
+      }
+    }
+
+    // Logic for regular Vocalist items
+    if (isDragging) {
+      return draggingHeight; // When dragging, regular items shrink to 20.0
+    } else {
+      // Your original commented-out logic for dynamic height based on 'lanes'
+      /*
     final Map<VocalistID, Map<SentenceID, Sentence>> sentencesForeachVocalist = timelinePaneProvider.sentencesForeachVocalist;
     final VocalistID vocalistID = vocalistColorMap.keys.toList()[index];
-    if (isDragging || sentencesForeachVocalist[vocalistID] == null) {
-      return 20;
+    if (sentencesForeachVocalist[vocalistID] == null) {
+      return _draggingItemHeight; // If no sentences, perhaps keep it small
     } else {
       ShowHideTrackMap showHideTrackMap = ShowHideTrackMap(sentenceMap: timingService.sentenceMap, vocalistID: vocalistID);
       final int lanes = showHideTrackMap.getMaxTrackNumber();
-      return 60.0 * lanes;
+      return _normalItemHeight * lanes; // Dynamic height based on lanes
+    }
+    */
+      return normalHeight; // Default to normal height (60.0) if complex lane logic is not active
     }
   }
-*/
 }
