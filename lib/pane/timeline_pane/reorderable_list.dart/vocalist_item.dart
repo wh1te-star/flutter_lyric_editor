@@ -50,9 +50,9 @@ class _RippleColorContainerState extends State<VocalistItem> {
         _selected ? widget.nonselectedColor : widget.selectedColor;
 
     return AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
-          height: widget.height,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      height: widget.height,
       decoration: BoxDecoration(
         color: currentBackgroundColor,
         borderRadius: effectiveBorderRadius,
@@ -65,15 +65,16 @@ class _RippleColorContainerState extends State<VocalistItem> {
           ),
         ],
       ),
-        child: Material(
-          color: Colors.transparent,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: effectiveBorderRadius,
+        child: InkWell(
+          onTap: changeColor,
+          splashColor: splashAndHighlightColor,
           borderRadius: effectiveBorderRadius,
-          child: InkWell(
-            onTap: changeColor,
-            splashColor: splashAndHighlightColor,
-            borderRadius: effectiveBorderRadius,
-            child: Ink(
-              width: widget.width,
+          child: Ink(
+            width: widget.width,
+            child: Center(
               child: Text(
                 widget.name,
                 overflow: TextOverflow.ellipsis,
@@ -83,6 +84,7 @@ class _RippleColorContainerState extends State<VocalistItem> {
               ),
             ),
           ),
+        ),
       ),
     );
   }
