@@ -20,17 +20,24 @@ class SentenceEdit extends StatelessWidget {
   final SeekPosition seekPosition;
   final TextPaneListCursor? textPaneListCursor;
   final CursorBlinker cursorBlinker;
-  SentenceEdit(this.sentence, this.seekPosition, this.textPaneListCursor, this.cursorBlinker);
+  SentenceEdit(this.sentence, this.seekPosition, this.textPaneListCursor,
+      this.cursorBlinker);
 
   @override
   Widget build(BuildContext context) {
     List<Widget> rubyExistenceEdits = [];
-    List<Tuple2<WordRange, Ruby?>> rubyWordRangeList = sentence.getRubysWordRangeList();
-    List<WordRange> wordRangeList = rubyWordRangeList.map((Tuple2<WordRange, Ruby?> entry) {
+    List<Tuple2<WordRange, Ruby?>> rubyWordRangeList =
+        sentence.getRubysWordRangeList();
+    List<WordRange> wordRangeList =
+        rubyWordRangeList.map((Tuple2<WordRange, Ruby?> entry) {
       return entry.item1;
     }).toList();
-    List<TextPaneCursor?> baseCursorList = List.filled(wordRangeList.length, null);
-    baseCursorList = textPaneListCursor!.textPaneCursor.getWordRangeDividedCursors(sentence.timetable, wordRangeList);
+    List<TextPaneCursor?> baseCursorList =
+        List.filled(wordRangeList.length, null);
+    if (textPaneListCursor != null) {
+      baseCursorList = textPaneListCursor!.textPaneCursor
+          .getWordRangeDividedCursors(sentence.timetable, wordRangeList);
+    }
 
     for (int index = 0; index < rubyWordRangeList.length; index++) {
       WordRange wordRange = rubyWordRangeList[index].item1;

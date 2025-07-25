@@ -21,14 +21,16 @@ class ColoredCaption extends StatelessWidget {
   final SeekPosition seekPosition;
   final Color color;
 
-  const ColoredCaption(this.sentence, this.seekPosition, this.color, {super.key});
+  const ColoredCaption(this.sentence, this.seekPosition, this.color,
+      {super.key});
 
   @override
   Widget build(BuildContext context) {
     List<Widget> coloredWords = [];
     for (int index = 0; index < sentence.words.length; index++) {
       WordIndex wordIndex = WordIndex(index);
-      coloredWords.add(getColoredWord(sentence, seekPosition, color, wordIndex));
+      coloredWords
+          .add(getColoredWord(sentence, seekPosition, color, wordIndex));
     }
     return Wrap(
       children: coloredWords,
@@ -41,9 +43,20 @@ class ColoredCaption extends StatelessWidget {
     Color color,
     WordIndex wordIndex,
   ) {
+    /*
+    double leftPadding = 0.0;
+    if(wordIndex.index == 0){
+      leftPadding = 20.0;
+    }
+    */
+    double rightPadding = 0.0;
+    if(wordIndex.index == sentence.words.length - 1){
+      rightPadding = 20.0;
+    }
     Word word = sentence.words[wordIndex];
 
-    SeekPositionInfo seekPositionInfo = sentence.getSeekPositionInfoBySeekPosition(seekPosition.absolute);
+    SeekPositionInfo seekPositionInfo =
+        sentence.getSeekPositionInfoBySeekPosition(seekPosition.absolute);
     double progress = getProgress(sentence, wordIndex, seekPositionInfo);
     return CustomPaint(
       painter: ColoredTextPainter(
@@ -55,11 +68,13 @@ class ColoredCaption extends StatelessWidget {
         firstOutlineWidth: 2,
         secondOutlineWidth: 4,
       ),
-      size: getSizeFromFontInfo(word.word, fontSize, fontFamily),
+      size: getSizeFromFontInfo(word.word, fontSize, fontFamily) +
+          Offset(rightPadding, 60.0),
     );
   }
 
-  double getProgress(Sentence sentence, WordIndex wordIndex, SeekPositionInfo seekPositionInfo) {
+  double getProgress(Sentence sentence, WordIndex wordIndex,
+      SeekPositionInfo seekPositionInfo) {
     if (seekPositionInfo is InvalidSeekPositionInfo) {
       InvalidSeekPositionInfo info = seekPositionInfo;
       if (info.sentenceSide == SentenceSide.start) {
@@ -89,10 +104,14 @@ class ColoredCaption extends StatelessWidget {
         return 0.0;
       }
 
-      AbsoluteSeekPosition leftSeekPosition = sentence.getLeftTiming(wordIndex).seekPosition.absolute;
-      AbsoluteSeekPosition rightSeekPosition = sentence.getRightTiming(wordIndex).seekPosition.absolute;
-      double numerator = seekPosition.absolute.position.toDouble() - leftSeekPosition.position.toDouble();
-      double denominator = rightSeekPosition.position.toDouble() - leftSeekPosition.position.toDouble();
+      AbsoluteSeekPosition leftSeekPosition =
+          sentence.getLeftTiming(wordIndex).seekPosition.absolute;
+      AbsoluteSeekPosition rightSeekPosition =
+          sentence.getRightTiming(wordIndex).seekPosition.absolute;
+      double numerator = seekPosition.absolute.position.toDouble() -
+          leftSeekPosition.position.toDouble();
+      double denominator = rightSeekPosition.position.toDouble() -
+          leftSeekPosition.position.toDouble();
       return numerator / denominator;
     }
     assert(false, "An unexpected type of the seek position info type.");
