@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lyric_editor/lyric_data/sentence/sentence.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
-import 'package:lyric_editor/lyric_data/timing/timing.dart';
 import 'package:lyric_editor/pane/video_pane/colored_text_painter.dart';
 import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
@@ -17,6 +16,7 @@ import 'package:lyric_editor/utility/utility_functions.dart';
 class ColoredCaption extends StatelessWidget {
   static const String fontFamily = "Times New Roman";
   static const double fontSize = 40.0;
+  static const double sidePadding = 3.0;
   final Sentence sentence;
   final SeekPosition seekPosition;
   final Color color;
@@ -33,6 +33,7 @@ class ColoredCaption extends StatelessWidget {
           .add(getColoredWord(sentence, seekPosition, color, wordIndex));
     }
     return Wrap(
+      alignment: WrapAlignment.center,
       children: coloredWords,
     );
   }
@@ -50,7 +51,7 @@ class ColoredCaption extends StatelessWidget {
     }
     */
     double rightPadding = 0.0;
-    if(wordIndex.index == sentence.words.length - 1){
+    if (wordIndex.index == sentence.words.length - 1) {
       rightPadding = 20.0;
     }
     Word word = sentence.words[wordIndex];
@@ -68,7 +69,8 @@ class ColoredCaption extends StatelessWidget {
         firstOutlineWidth: 2,
         secondOutlineWidth: 4,
       ),
-      size: getSizeFromFontInfo(word.word, fontSize, fontFamily),
+      size: getSizeFromFontInfo(word.word, fontSize, fontFamily) +
+          Offset(sidePadding, 3.0),
     );
   }
 

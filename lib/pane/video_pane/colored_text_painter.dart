@@ -39,20 +39,28 @@ class ColoredTextPainter extends CustomPainter {
     if (textStylesBefore == null || textStylesAfter == null) {
       Shadow shadow = Shadow(
         color: fontBaseColor,
-        blurRadius: 30.0,
+        blurRadius: 3.0,
         offset: const Offset(0.0, 0.0),
       );
 
       textStylesBefore = [
         createTextStyle(color: Colors.white),
-        createTextStyle(strokeWidth: firstOutlineWidth, strokeColor: Colors.black),
-        createTextStyle(strokeWidth: firstOutlineWidth + secondOutlineWidth, strokeColor: fontBaseColor, shadow: shadow),
+        createTextStyle(
+            strokeWidth: firstOutlineWidth, strokeColor: Colors.black),
+        createTextStyle(
+            strokeWidth: firstOutlineWidth + secondOutlineWidth,
+            strokeColor: fontBaseColor,
+            shadow: shadow),
       ];
 
       textStylesAfter = [
         createTextStyle(color: fontBaseColor),
-        createTextStyle(strokeWidth: firstOutlineWidth, strokeColor: Colors.white),
-        createTextStyle(strokeWidth: firstOutlineWidth + secondOutlineWidth, strokeColor: Colors.black, shadow: shadow),
+        createTextStyle(
+            strokeWidth: firstOutlineWidth, strokeColor: Colors.white),
+        createTextStyle(
+            strokeWidth: firstOutlineWidth + secondOutlineWidth,
+            strokeColor: Colors.black,
+            shadow: shadow),
       ];
     }
   }
@@ -79,21 +87,31 @@ class ColoredTextPainter extends CustomPainter {
 
   void setupTextSpans() {
     if (textSpansBefore == null || textSpansAfter == null) {
-      textSpansBefore = textStylesBefore!.map((style) => TextSpan(text: text, style: style)).toList();
-      textSpansAfter = textStylesAfter!.map((style) => TextSpan(text: text, style: style)).toList();
+      textSpansBefore = textStylesBefore!
+          .map((style) => TextSpan(text: text, style: style))
+          .toList();
+      textSpansAfter = textStylesAfter!
+          .map((style) => TextSpan(text: text, style: style))
+          .toList();
     }
   }
 
   void setupTextPainters(Size size) {
     if (textPaintersBefore == null || textPaintersAfter == null) {
       textPaintersBefore = textSpansBefore!.map((span) {
-        final painter = TextPainter(text: span, textAlign: TextAlign.center, textDirection: TextDirection.ltr);
+        final painter = TextPainter(
+            text: span,
+            textAlign: TextAlign.center,
+            textDirection: TextDirection.ltr);
         painter.layout(maxWidth: size.width);
         return painter;
       }).toList();
 
       textPaintersAfter = textSpansAfter!.map((span) {
-        final painter = TextPainter(text: span, textAlign: TextAlign.center, textDirection: TextDirection.ltr);
+        final painter = TextPainter(
+            text: span,
+            textAlign: TextAlign.center,
+            textDirection: TextDirection.ltr);
         painter.layout(maxWidth: size.width);
         return painter;
       }).toList();
