@@ -68,8 +68,7 @@ class ColoredCaption extends StatelessWidget {
         firstOutlineWidth: 2,
         secondOutlineWidth: 4,
       ),
-      size: getSizeFromFontInfo(word.word, fontSize, fontFamily) +
-          Offset(rightPadding, 60.0),
+      size: getSizeFromFontInfo(word.word, fontSize, fontFamily),
     );
   }
 
