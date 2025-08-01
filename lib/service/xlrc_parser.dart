@@ -25,11 +25,11 @@ class XlrcParser {
   static const String vocalistColorAttribute = "color";
   static const String vocalistCombinationElement = "Vocalist";
 
-  static const String sentenceElement = "LineTimestamp";
+  static const String sentenceElement = "Sentence";
   static const String sentenceVocalistNameAttribute = "vocalistName";
   static const String sentenceStartTimestampAttribute = "startTime";
-  static const String wordElement = "WordTimestamp";
-  static const String wordDurationAttribute = "time";
+  static const String wordElement = "Word";
+  static const String wordDurationAttribute = "Duration";
 
   String serialize(Tuple3<SentenceMap, VocalistColorMap, SectionList> data) {
     SentenceMap sentenceMap = data.item1;
