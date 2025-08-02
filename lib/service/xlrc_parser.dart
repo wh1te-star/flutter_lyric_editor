@@ -7,6 +7,7 @@ import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart'
 import 'package:lyric_editor/position/seek_position/seek_position.dart';
 import 'package:lyric_editor/position/word_index.dart';
 import 'package:lyric_editor/position/word_range.dart';
+import 'package:lyric_editor/section/section.dart';
 import 'package:lyric_editor/section/section_list.dart';
 import 'package:lyric_editor/lyric_data/word/word.dart';
 import 'package:lyric_editor/lyric_data/word/word_list.dart';
@@ -18,6 +19,9 @@ import 'package:xml/xml.dart';
 
 class XlrcParser {
   static const String rootElement = "LyricFile";
+
+  static const String sectionListElement = "SectionList";
+  static const String sectionElement = "Section";
 
   static const String vocalistColorMapElement = "VocalistsList";
   static const String vocalistColorMapEntryElement = "VocalistInfo";
@@ -39,6 +43,13 @@ class XlrcParser {
     final XmlBuilder builder = XmlBuilder();
     builder.processing('xml', 'version="1.0" encoding="UTF-8"');
     builder.element(rootElement, nest: () {
+      builder.element(sectionListElement, nest: () {
+        for (Section section in sectionList.list) {
+          builder.element(sectionElement, attributes: {
+            'seekPosition': section.seekPosition.position.toString(),
+          });
+        }
+      });
       for (Sentence sentence in sentenceMap.values) {
         builder.element(sentenceElement, attributes: {
           sentenceVocalistNameAttribute: vocalistColorMap[sentence.vocalistID]!.name,
