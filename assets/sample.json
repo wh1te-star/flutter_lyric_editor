@@ -1,16 +1,35 @@
 {
+    "vocalists": [
+        {
+            "id": "v1",
+            "name": "あよ",
+            "alias": "パチュリー",
+            "color": "#7F51B9",
+            "subColor": "#B9A0D6"
+        },
+        {
+            "id": "v2",
+            "name": "lily-an",
+            "color": "#CAD7DA"
+        },
+        {
+            "id": "v3",
+            "name": "lilyあよ",
+            "color": "#A594C9"
+        }
+    ],
     "interjections": [
         {
           "id": "i1",
           "text": "Oh!",
-          "words": [2,1],
-          "timestamp": [500,0]
+          "lengths": [2,1],
+          "durations": [500,0]
         },
         {
             "id": "i2",
             "text": "Yeah!",
-            "words": [4,1],
-            "timestamp": [300,0]
+            "lengths": [4,1],
+            "durations": [300,0]
         }
     ],
     "sentenceElements": [
@@ -20,22 +39,32 @@
                 {
                     "id": "t1",
                     "sentence": "Every Bodyブレンドティータイム",
-                    "words": [5,1,4,4,3,3]
+                    "lengths": [5,1,4,4,3,3],
+                    "vocalist": [
+                        {
+                            "wordIndex": [0,2,4],
+                            "vocalistID": "v1"
+                        },
+                        {
+                            "wordIndex": [1,3],
+                            "vocalistID": "v2"
+                        }
+                    ]
                 },
                 {
                     "id": "t2",
                     "sentence": "Some Bodyブレンドティータイム",
-                    "words": [4,1,4,4,3,3]
+                    "lengths": [4,1,4,4,3,3]
                 }
             ],
             "timestamps": [
                 {
                     "id": "ts1",
-                    "time": [100,0,200,400,300,300]
+                    "durations": [100,0,200,400,300,300]
                 },
                 {
                     "id": "ts2",
-                    "time": [100,0,200,400,300,900]
+                    "durations": [100,0,200,400,300,900]
                 }
             ]
         },
@@ -45,19 +74,19 @@
                 {
                     "id": "t3",
                     "text": "カフェインベースのGirl Phrase",
-                    "words": [9,4,1,6],
+                    "lengths": [9,4,1,6],
                     "ruby": [
                         {
                             "position": {"start": 0, "end": 0},
                             "text": "カフェインベースの",
-                            "words": [9],
-                            "timestamp": [600]
+                            "lengths": [9],
+                            "durations": [600]
                         },
                         {
                             "position": {"start": 1, "end": 3},
                             "text": "ガールフレーズ",
-                            "words": [3,4],
-                            "timestamp": [300,100]
+                            "lengths": [3,4],
+                            "durations": [300,100]
                         }
                     ]
                 }
@@ -65,7 +94,7 @@
             "timestamps": [
                 {
                     "id": "ts3",
-                    "time": [500,100,0,100]
+                    "durations": [500,100,0,100]
                 }
             ]
         }
@@ -73,23 +102,21 @@
     "paragraphs": [
         {
             "id": "p1",
+            "vocalistID": "v1",
             "refs": [
                 {
                     "textId": "t1",
                     "timestampId": "ts1",
                     "startTime": 100,
+                    "vocalistID": "v1",
                     "interjections": [
                         {
                             "ref": "i1",
-                            "position": {
-                                "wordIndex": 0
-                            }
+                            "insertionIndex": 0
                         },
                         {
                             "ref": "i2",
-                            "position": {
-                                "timeOffset": 200
-                            }
+                            "seekPosition": 200
                         }
                     ]
                 },
@@ -119,10 +146,12 @@
     "sections": [
         {
             "name": "verse",
+            "vocalistID": "v3",
             "subsections": [
                 {
                     "paragraphRef": "p1",
-                    "startTime": 100
+                    "startTime": 100,
+                    "vocalistID": "v1"
                 },
                 {
                     "paragraphRef": "p2",
@@ -138,6 +167,11 @@
                     "startTime": 40000
                 }
             ]
+        },
+        {
+            "name": "guitar solo",
+            "startTime": 80000,
+            "duration": 30000
         }
     ]
 }
