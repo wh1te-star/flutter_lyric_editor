@@ -1,8 +1,22 @@
 {
-    "sentences": [
+    "interjections": [
+        {
+          "id": "i1",
+          "text": "Oh!",
+          "words": [2,1],
+          "timestamp": [500,0]
+        },
+        {
+            "id": "i2",
+            "text": "Yeah!",
+            "words": [4,1],
+            "timestamp": [300,0]
+        }
+    ],
+    "sentenceElements": [
         {
             "wordCount": 6,
-            "texts": [
+            "sentences": [
                 {
                     "id": "t1",
                     "sentence": "Every Bodyブレンドティータイム",
@@ -63,7 +77,21 @@
                 {
                     "textId": "t1",
                     "timestampId": "ts1",
-                    "startTime": 100
+                    "startTime": 100,
+                    "interjections": [
+                        {
+                            "ref": "i1",
+                            "position": {
+                                "wordIndex": 0
+                            }
+                        },
+                        {
+                            "ref": "i2",
+                            "position": {
+                                "timeOffset": 200
+                            }
+                        }
+                    ]
                 },
                 {
                     "textId": "t1",
