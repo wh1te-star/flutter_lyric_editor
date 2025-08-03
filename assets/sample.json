@@ -1,0 +1,60 @@
+{
+    "combinations": [
+        {
+            "wordCount": 6,
+            "texts": [
+                {
+                    "id": "t1",
+                    "text": "Every Bodyブレンドティータイム",
+	            "words": "5,1,4,4,3,3"
+                },
+                {
+                    "id": "t2",
+                    "text": "Some Bodyブレンドティータイム",
+                    "words": "4,1,4,4,3,3"
+                }
+            ],
+            "timestamps": [
+                {
+                    "id": "ts1",
+                    "time": "100,0,200,400,300,300"
+                },
+                {
+                    "id": "ts2",
+                    "time": "100,0,200,400,300,900"
+                }
+            ]
+        },
+        {
+            "wordCount": 4,
+            "texts": [
+                {
+                    "id": "t3",
+                    "text": "カフェインベースのGirl Phrase"
+                }
+            ],
+            "timestamps": [
+                {
+                    "id": "ts3",
+                    "time": "500,100,0,100"
+                }
+            ]
+        }
+    ],
+    "timeline": [
+        {
+            "type": "paragraph",
+            "refs": [
+                { "textId": "t1", "timestampId": "ts1", "startTime": 100 },
+                { "textId": "t3", "timestampId": "ts3", "startTime": 500 }
+            ]
+        },
+        {
+            "type": "paragraph",
+            "refs": [
+                { "textId": "t2", "timestampId": "ts2", "startTime": 100 },
+                { "textId": "t3", "timestampId": "ts3", "startTime": 500 }
+            ]
+        }
+    ]
+}
