@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyric_editor/lyric_data/word/word.dart';
-import 'package:lyric_editor/lyric_data/word/word_list.dart';
-import 'package:lyric_editor/lyric_data/timetable.dart';
-import 'package:lyric_editor/lyric_data/timing_exception.dart';
-import 'package:lyric_editor/position/caret_position.dart';
-import 'package:lyric_editor/position/option_enum.dart';
-import 'package:lyric_editor/position/seek_position/absolute_seek_position.dart';
-import 'package:lyric_editor/position/seek_position/seek_position.dart';
-import 'package:lyric_editor/service/timing_service.dart';
+import 'package:lyric_editor/!%20old/lyric_data/word/word.dart';
+import 'package:lyric_editor/!%20old/lyric_data/word/word_list.dart';
+import 'package:lyric_editor/!%20old/lyric_data/timetable.dart';
+import 'package:lyric_editor/!%20old/lyric_data/timing_exception.dart';
+import 'package:lyric_editor/!%20old/position/caret_position.dart';
+import 'package:lyric_editor/!%20old/position/option_enum.dart';
+import 'package:lyric_editor/!%20old/position/seek_position/absolute_seek_position.dart';
+import 'package:lyric_editor/!%20old/position/seek_position/seek_position.dart';
+import 'package:lyric_editor/!%20old/service/timing_service.dart';
 
 void main() {
   group('Tests to add and delete a timing point.', () {

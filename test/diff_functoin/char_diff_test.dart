@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyric_editor/diff_function/word_diff.dart';
-import 'package:lyric_editor/diff_function/char_diff.dart';
+import 'package:lyric_editor/!%20old/diff_function/word_diff.dart';
+import 'package:lyric_editor/!%20old/diff_function/char_diff.dart';
 
 void main() {
   group('diff function test', () {

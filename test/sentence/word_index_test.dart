@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyric_editor/lyric_data/word/word.dart';
-import 'package:lyric_editor/lyric_data/word/word_list.dart';
-import 'package:lyric_editor/lyric_data/timetable.dart';
-import 'package:lyric_editor/position/seek_position/seek_position.dart';
-import 'package:lyric_editor/position/word_index.dart';
+import 'package:lyric_editor/!%20old/lyric_data/word/word.dart';
+import 'package:lyric_editor/!%20old/lyric_data/word/word_list.dart';
+import 'package:lyric_editor/!%20old/lyric_data/timetable.dart';
+import 'package:lyric_editor/!%20old/position/seek_position/seek_position.dart';
+import 'package:lyric_editor/!%20old/position/word_index.dart';
 
 void main() {
   group('test', () {

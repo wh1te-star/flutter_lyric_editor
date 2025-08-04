@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyric_editor/lyric_data/timing/timing.dart';
-import 'package:lyric_editor/lyric_data/timing/timing_list.dart';
-import 'package:lyric_editor/position/caret_position.dart';
-import 'package:lyric_editor/position/seek_position/seek_position.dart';
+import 'package:lyric_editor/!%20old/lyric_data/timing/timing.dart';
+import 'package:lyric_editor/!%20old/lyric_data/timing/timing_list.dart';
+import 'package:lyric_editor/!%20old/position/caret_position.dart';
+import 'package:lyric_editor/!%20old/position/seek_position/seek_position.dart';
 
 void main() {
   group('test', () {

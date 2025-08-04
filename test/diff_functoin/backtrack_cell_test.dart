@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyric_editor/diff_function/backtrack_cell.dart';
-import 'package:lyric_editor/diff_function/backtrack_point.dart';
-import 'package:lyric_editor/diff_function/backtrack_route.dart';
+import 'package:lyric_editor/old/diff_function/backtrack_cell.dart';
+import 'package:lyric_editor/old/diff_function/backtrack_point.dart';
+import 'package:lyric_editor/old/diff_function/backtrack_route.dart';
 
 void main() {
   group('Backtrack of Longest Common Subsequence Test', () {

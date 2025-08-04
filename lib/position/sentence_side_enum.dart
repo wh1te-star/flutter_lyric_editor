@@ -1,4 +1,0 @@
-enum SentenceSide {
-  start,
-  end,
-}

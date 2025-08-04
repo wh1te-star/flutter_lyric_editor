@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyric_editor/diff_function/lcs_cell.dart';
-import 'package:lyric_editor/diff_function/longest_common_subsequence.dart';
+import 'package:lyric_editor/!%20old/diff_function/lcs_cell.dart';
+import 'package:lyric_editor/!%20old/diff_function/longest_common_subsequence.dart';
 
 void main() {
   group('Longest Common Subsequence Test', () {
