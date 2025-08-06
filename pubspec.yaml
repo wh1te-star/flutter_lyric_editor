@@ -35,7 +35,7 @@ dependencies:
   file_selector: ^1.0.3
   flutter_svg: 2.0.10+1
   linked_scroll_controller: ^0.2.0
-  metadata_god: ^1.0.0
+  audiotags: ^1.4.5
   permission_handler: ^11.3.1
   tuple: ^2.0.2
   xml: ^6.5.0

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:file_selector/file_selector.dart';
+import 'package:lyric_editor/screen/top_screen_load_lyric.dart';
+import 'package:audiotags/audiotags.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -10,15 +12,10 @@ class HomeScreen extends StatelessWidget {
       ),
       body: Center(
         child: ElevatedButton(
-          /*
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => SecondScreen()),
-            );
+            _openFile(context);
           },
-            */
-          onPressed: () => _openFile(context),
+          //onPressed: () => _openFile(context),
           child: Text('Go to Second Screen'),
         ),
       ),
@@ -26,32 +23,37 @@ class HomeScreen extends StatelessWidget {
   }
 
   Future<void> _openFile(BuildContext context) async {
-    // Open the file selection dialog.
-    final XFile? file = await openFile(
-      acceptedTypeGroups: <XTypeGroup>[
-        const XTypeGroup(label: 'All Files', extensions: <String>['*']),
-      ],
+    const XTypeGroup typeGroup = XTypeGroup(
+      label: 'audio',
+      extensions: <String>['mp3', 'flac', 'ogg', 'm4a'],
     );
 
-    // Check if a file was selected.
-    if (file != null) {
-      // Get the name of the selected file.
-      final String fileName = file.name;
+    final XFile? file =
+        await openFile(acceptedTypeGroups: <XTypeGroup>[typeGroup]);
+    if (file == null) {
+      return;
+    }
 
-      // Create a SnackBar with the filename.
+    final String extension = file.name.split('.').last.toLowerCase();
+    if (!['mp3', 'flac', 'ogg', 'm4a'].contains(extension)) {
       final snackBar = SnackBar(
-        content: Text('Selected file: $fileName'),
+        content: Text('Unsupported file type: $extension'),
         duration: const Duration(seconds: 3),
         action: SnackBarAction(
           label: 'Dismiss',
-          onPressed: () {
-            // Optional: You can add an action here.
-          },
+          onPressed: () {},
         ),
       );
-
-      // Display the SnackBar.
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
+
+    Tag? tag = await AudioTags.read(file.path);
+    String? title = tag?.title;
+    String? trackArtist = tag?.trackArtist;
+    String? album = tag?.album;
+    String? albumArtist = tag?.albumArtist;
+
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => LoadLyricScreen(album!)));
   }
 }

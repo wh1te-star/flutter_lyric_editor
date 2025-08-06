@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:file_selector/file_selector.dart';
 
-class SecondScreen extends StatelessWidget {
+class LoadLyricScreen extends StatelessWidget {
+  String album;
+  LoadLyricScreen(this.album);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -9,12 +11,17 @@ class SecondScreen extends StatelessWidget {
         title: Text('Second Screen'),
       ),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            // Navigate back to the previous screen
-            Navigator.pop(context);
-          },
-          child: Text('Go Back'),
+        child: Column(
+          children: [
+            Text(album),
+            ElevatedButton(
+              onPressed: () {
+                // Navigate back to the home screen
+                Navigator.pop(context);
+              },
+              child: const Text('Go Back'),
+            ),
+          ],
         ),
       ),
     );
