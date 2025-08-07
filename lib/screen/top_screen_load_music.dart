@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:file_selector/file_selector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lyric_editor/audio_player/player_provider.dart';
 import 'package:lyric_editor/screen/top_screen_load_lyric.dart';
 import 'package:audiotags/audiotags.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Home Screen'),
@@ -13,7 +15,7 @@ class HomeScreen extends StatelessWidget {
       body: Center(
         child: ElevatedButton(
           onPressed: () {
-            _openFile(context);
+            _openFile(context, ref);
           },
           //onPressed: () => _openFile(context),
           child: Text('Go to Second Screen'),
@@ -22,7 +24,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _openFile(BuildContext context) async {
+  Future<void> _openFile(BuildContext context, WidgetRef ref) async {
     const XTypeGroup typeGroup = XTypeGroup(
       label: 'audio',
       extensions: <String>['mp3', 'flac', 'ogg', 'm4a'],
@@ -53,7 +55,12 @@ class HomeScreen extends StatelessWidget {
     String? album = tag?.album;
     String? albumArtist = tag?.albumArtist;
 
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => LoadLyricScreen(album!)));
+    final playerState = ref.watch(playerProvider);
+    final playerNotifier = ref.read(playerProvider.notifier);
+
+    //await playerNotifier.playAudio(file.path);
+
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => LoadLyricScreen(album!)));
   }
 }
