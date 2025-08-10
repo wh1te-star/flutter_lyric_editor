@@ -26,7 +26,7 @@ class PlayerNotifier extends StateNotifier<EditPlayerState> {
 
   Future<void> setAndPlayAudioSource(AudioSource audioSource) async {
     await _audioPlayer.stop();
-    await _audioPlayer.setAudioSource(audioSource);
+    await _audioPlayer.setAudioSource(audioSource,preload: true);
     state = state.copyWith(currentAudioUrl: audioSource.toString());
     await _audioPlayer.play();
   }

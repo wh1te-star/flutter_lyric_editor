@@ -46,9 +46,9 @@ class HomeScreen extends ConsumerWidget {
         Uri.dataFromBytes(fileBytes, mimeType: file.mimeType!),
       );
 
-      //playerNotifier.setAndPlayAudioSource(audioSource);
-      AudioPlayer player = AudioPlayer();
-      await player.setAudioSource(audioSource);
+      playerNotifier.setAndPlayAudioSource(audioSource);
+      //AudioPlayer player = AudioPlayer();
+      //await player.setAudioSource(audioSource);
 
       Tag? audioTag = await AudioTags.read(file.path);
       if (audioTag != null) {
